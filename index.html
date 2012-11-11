@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Parse Examples</title>
+</head>
+
+<body lang="en">    
+    <script type="application/javascript" src="resources/require.js"></script>
+    <script type="application/javascript">
+        requirejs.config({
+            paths: {
+                'parse': 'resources/parse',
+                'polish': 'examples/polish-calc/polish'
+            }
+        });
+        require(['parse', 'polish'], function(p, polish) {
+            
+            // set global.
+            parse = p;
+            var z = polish;
+        });
+    </script>
+
+</body>
+    
+</html>
