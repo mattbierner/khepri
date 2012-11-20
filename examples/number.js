@@ -5,9 +5,14 @@ define(['parse'], function(parse){
 
 /* Helpers
  ******************************************************************************/
-
 var test = RegExp.prototype.test;
 
+
+var joinParser = function(p, joiner) {
+    return parse.bind(p, function(v) {
+        return parse.always(v.join(joiner));
+    });
+};
 
 /* Exported Objects
  ******************************************************************************/
@@ -69,16 +74,12 @@ var nonZeroDigit = parse.token(test.bind(/^[1-9]$/));
 /**
  * Parser that matches a string of 1 or more decimal digits.
  */
-var decimalDigits = parse.bind(parse.many1(decimalDigit), function(v) {
-    return parse.always(v.join(''));
-});
+var decimalDigits = joinParser(parse.many1(decimalDigit), '');
 
 /**
  * Parser that matches a string of 1 or more hex digits.
  */
-var hexDigits = parse.bind(parse.many1(hexDigit), function(v) {
-    return parse.always(v.join(''));
-});
+var hexDigits = joinParser(parse.many1(hexDigit), '');
 
 // Integer
 ////////////////////////////////////////
@@ -165,14 +166,13 @@ var decimalLiteral = parse.choice(
     })
 );
 
-
 /**
  * Literal for any numeric value
  * Returns the number value of the input.
  */
 var numericLiteral = parse.either(
-    parse.attempt(decimalLiteral),
-    hexIntegerLiteral
+    parse.attempt(hexIntegerLiteral),
+    decimalLiteral
 );
 
 

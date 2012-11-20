@@ -1,4 +1,4 @@
-define(['parse'], function(parse){
+define(['parse', 'number'], function(parse, number){
     /*
      * An example of a two pass parser for Polish Notation.
      * 
@@ -25,43 +25,9 @@ define(['parse'], function(parse){
         var op = parse.bind(parse.choice(add, sub, mul, div),
             Token.bind(undefined, 'op'));
         
-        // Numbers
-        var digit = parse.digit(),
-            decimal = parse.char('.'),
-            neg = parse.char('-');
-        
-        var naturalNumber = parse.bind(parse.many1(digit), function(digits) {
-            return parse.always(digits.join(''));
-        });
-        
-        var decimalNumber = parse.either(
-            parse.attempt(parse.bind(naturalNumber, function(p) {
-                return parse.bind(decimal, function() {
-                    return parse.bind(parse.many(digit), function(t) {
-                        return parse.always(p + '.' + t.join(''));
-                    });
-                });
-            })),
-            parse.bind(parse.many(digit), function(p) {
-                return parse.bind(decimal, function() {
-                    return parse.bind(naturalNumber, function(t) {
-                        return parse.always(p.join('') + '.' + t);
-                    });
-                });
-            }));
-        
-        var positiveNumber = parse.either(
-            parse.attempt(decimalNumber),
-            naturalNumber);
-        
-        var sign = parse.either(
-            parse.attempt(neg),
-            parse.always(''));
-        
-        var number = parse.bind(sign, function(neg) {
-            return parse.bind(positiveNumber, function(num) {
-                return Token('number', parseFloat(neg + num));
-            });
+        // Number
+        var num = parse.bind(number.numericLiteral, function(v) {
+            return Token('number', v);
         });
         
         // Tokens
@@ -70,7 +36,7 @@ define(['parse'], function(parse){
         var tok = parse.Parser(function(self) {
             return parse.choice(
                 parse.next(whiteSpace, self),
-                parse.attempt(number),
+                parse.attempt(num),
                 op
             );
         });
@@ -123,7 +89,7 @@ define(['parse'], function(parse){
                     return parse.next(parse.eof(), parse.always(result.value));
         }));
     }());
-
+debugger;
     return {
         'lex': lex,
         'eval': eval

@@ -11,7 +11,8 @@
         requirejs.config({
             paths: {
                 'parse': 'resources/parse',
-                'polish': 'examples/polish-calc/polish'
+                'polish': 'examples/polish',
+                'number': 'examples/number'
             }
         });
         require(['parse', 'polish'], function(p, polish) {
