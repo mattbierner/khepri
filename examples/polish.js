@@ -1,7 +1,8 @@
 define(['parse'], function(parse){
     /*
-     * An example of a two pass parser, a lexer that tokenizes an input stream
-     * and a parser that evaluates the results during parsing.
+     * An example of a two pass parser for Polish Notation.
+     * 
+     *  Demonstrates tokenizing input and building a tree.
      */
     
     var lex = (function(){
@@ -66,10 +67,10 @@ define(['parse'], function(parse){
         // Tokens
         var whiteSpace = parse.many1(parse.space());
         
-        var tok = parse.Parser('tok', function() {
+        var tok = parse.Parser(function(self) {
             return parse.choice(
-                parse.next(whiteSpace, this.tok),
-                number,
+                parse.next(whiteSpace, self),
+                parse.attempt(number),
                 op
             );
         });
@@ -81,25 +82,39 @@ define(['parse'], function(parse){
     }());
     
     var eval = (function(){
+        var NumberNode = function(v) {
+            return { 'value': v };
+        };
+        var ExprNode = function(f, e1, e2) {
+            return Object.create(Object.prototype, {
+                'value': {
+                    'get': function() {
+                        return f(e1.value, e2.value);
+                    }
+                }
+            });
+        };
+
         var op = parse.token(function(t){
             return t.type === 'op';
         });
         
-        var num = parse.token(function(t) {
+        var num =parse.token(function(t) {
             return t.type === 'number';
         });
         
-        var expr = parse.Parser('expr', function() {
-            var expr = this.expr;
+        var expr = parse.Parser(function(self) {
             return parse.choice(
                 parse.bind(op, function(op) {
-                    return parse.bind(expr, function(e1) {
-                        return parse.bind(expr, function(e2) {
-                            return parse.always({'value': op.value(e1.value, e2.value)});
+                    return parse.bind(self, function(e1) {
+                        return parse.bind(self, function(e2) {
+                            return parse.always(ExprNode(op.value, e1, e2));
                         });
                     });
                 }),
-                num
+                parse.bind(num, function(tok) {
+                    return parse.always(NumberNode(tok.value));
+                })
             );
         });
         
