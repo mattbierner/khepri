@@ -3,7 +3,7 @@ define(['parse'], function(parse){
  * @fileOverview Defines parsers for numbers based on ECMAScript 5.1.
  */
 
-/* 
+/* Helpers
  ******************************************************************************/
 
 var test = RegExp.prototype.test;
@@ -125,14 +125,21 @@ var hexIntegerLiteral = parse.next(hexIndicator, parse.bind(hexDigits, function(
 }));
 
 /**
- * A integer number literal. 
+ * A integer number literal.
+ * 
+ * Returns the number value of the input.
  */
 var decimalIntegerLiteral = parse.bind(decimalDigits, function(num) {
     return parse.always(parseInt(num));
 });
 
 /**
+ * A decimal number literal.
  * 
+ * Either a integer or a decimal number. Before or after the decimal must contain
+ * at least one number. May contain an exponent value at the end.
+ * 
+ * Returns the number value of the input.
  */
 var decimalLiteral = parse.choice(
     parse.attempt(parse.bind(parse.optional(decimalDigits), function(whole) {
@@ -160,7 +167,8 @@ var decimalLiteral = parse.choice(
 
 
 /**
- * 
+ * Literal for any numeric value
+ * Returns the number value of the input.
  */
 var numericLiteral = parse.either(
     parse.attempt(decimalLiteral),
@@ -197,7 +205,8 @@ return {
 // Literals
     'hexIntegerLiteral': hexIntegerLiteral,
     'decimalIntegerLiteral': decimalIntegerLiteral,
-    'decimalLiteral': decimalLiteral
+    'decimalLiteral': decimalLiteral,
+    'numericLiteral': numericLiteral
 };
 
 });
