@@ -121,6 +121,33 @@ define(['parse', 'number'], function(parse, number){
                 assert.equal(parse.run(number.hexIntegerLiteral, '0x00123'), 291);
                 assert.equal(parse.run(number.hexIntegerLiteral, '0XAf01'), 44801);
             }],
+            ["Decimal Integer Literal",
+            function(){
+                assert.equal(parse.run(number.decimalIntegerLiteral, '00123'), 123);
+                assert.equal(parse.run(number.decimalIntegerLiteral, '99'), 99);
+            }],
+            ["Decimal Literal",
+            function(){
+                assert.equal(parse.run(number.decimalLiteral, '00123'), 123);
+                assert.equal(parse.run(number.decimalLiteral, '123.'), 123);
+                assert.equal(parse.run(number.decimalLiteral, '99.9'), 99.9);
+                assert.equal(parse.run(number.decimalLiteral, '.123'), .123);
+                
+                assert.equal(parse.run(number.decimalLiteral, '00123e3'), 123000);
+                assert.equal(parse.run(number.decimalLiteral, '123.e3'), 123000);
+                assert.equal(parse.run(number.decimalLiteral, '99.9e3'), 99900);
+                assert.equal(parse.run(number.decimalLiteral, '.123e3'), 123);
+                
+                assert.equal(parse.run(number.decimalLiteral, '00123e+3'), 123000);
+                assert.equal(parse.run(number.decimalLiteral, '123.e+3'), 123000);
+                assert.equal(parse.run(number.decimalLiteral, '99.9e+3'), 99900);
+                assert.equal(parse.run(number.decimalLiteral, '.123e+3'), 123);
+                
+                assert.equal(parse.run(number.decimalLiteral, '00123e-3'), 0.123);
+                assert.equal(parse.run(number.decimalLiteral, '123.e-3'), 0.123);
+                assert.equal(parse.run(number.decimalLiteral, '99.9e-3'), 0.0999);
+                assert.equal(parse.run(number.decimalLiteral, '.123e-3'), 0.000123);
+            }],
         ],
     };
 });

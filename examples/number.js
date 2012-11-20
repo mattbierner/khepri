@@ -135,9 +135,25 @@ var decimalIntegerLiteral = parse.bind(decimalDigits, function(num) {
  * 
  */
 var decimalLiteral = parse.choice(
-    parse.bind(decimalDigits, function(integerPart) {
-        return parse.bind(exponentPart, function(e) {
-            return parse.always(parseInt(integerPart) * 10 ^ parseInt(e));
+    parse.attempt(parse.bind(parse.optional(decimalDigits), function(whole) {
+        return parse.next(decimal, parse.bind(decimalDigits, function(decimal) {
+            var base = parseFloat((whole.length > 0 ? whole[0] : 0) + '.' + decimal);
+            return parse.bind(parse.optional(exponentPart), function(e) {
+                return parse.always(base * Math.pow(10, parseInt(e.length > 0 ? e[0] : 0)));
+            });
+        }));
+    })),
+    parse.attempt(parse.bind(decimalDigits, function(whole) {
+        return parse.next(decimal, parse.bind(parse.optional(decimalDigits), function(decimal) {
+            var base = parseFloat(whole + '.' + (decimal ? decimal[0] : 0));
+            return parse.bind(parse.optional(exponentPart), function(e) {
+                return parse.always(base * Math.pow(10, parseInt(e.length > 0 ? e[0] : 0)));
+            });
+        }));
+    })),
+    parse.bind(decimalIntegerLiteral, function(integerPart) {
+        return parse.bind(parse.optional(exponentPart), function(e) {
+            return parse.always(integerPart * Math.pow(10, parseInt(e.length > 0 ? e[0] : 0)));
         });
     })
 );
