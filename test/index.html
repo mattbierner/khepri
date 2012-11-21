@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Gen Tests</title>
+    <title>Parse Example Tests</title>
     <link rel="stylesheet" href="resources/qunit-1.9.0.css">
 </head>
 
@@ -15,14 +15,15 @@
         requirejs.config({
             paths: {
                 parse: '../resources/parse',
-                number: '../examples/number'
+                numberParser: '../examples/numberParser',
+                whiteSpaceParser: '../examples/whiteSpaceParser'
             }
         });
         require(
-            ['parse', 'testNumber'],
-            function(parse, testNumber)
+            ['parse', 'testNumber', 'testWhiteSpace'],
+            function(parse, testNumber, testWhiteSpace)
             {
-                [testNumber].forEach(function(m){
+                [testNumber, testWhiteSpace].forEach(function(m){
                     m.module && module(m.module);
                     m.tests && m.tests.forEach(function(e){ test.apply(this, e); });
                     m.asyncTests && m.asyncTests.forEach(function(e){ asyncTest.apply(this, e); });

@@ -33,20 +33,20 @@ var nbsp = parse.char('\u00A0');
 /**
  * Byte Order Mark
  */
-var bom = parse.char('\uFEFE');
+var bom = parse.char('\uFEFF');
 
 /**
- * Any other Unicode space separator.
+ * Any Unicode space separator.
  */
-var usp = parse.token.bind(Regex.prototype.test.bind(/^\s$/));
+var usp = parse.token.bind(RegExp.prototype.test.bind(/^\s$/));
 
 
 /**
  * A whitespace character.
  */
-var whiteSpace = parse.either(
+var whiteSpace = parse.choice(
     tab,
-    bt,
+    vt,
     ff,
     sp,
     nbsp,
@@ -57,12 +57,16 @@ var whiteSpace = parse.either(
 
 /* Export
  ******************************************************************************/
-
 return {
-// Literals
-    'trueLiteral': trueLiteral,
-    'falseLiteral': falseLiteral,
-    'booleanLiteral': booleanLiteral
+    'tab': tab,
+    'vt': vt,
+    'ff': ff,
+    'sp': sp,
+    'nbsp': nbsp,
+    'bom': bom,
+    'usp': usp,
+    
+    'whiteSpace': whiteSpace
 };
 
 });
