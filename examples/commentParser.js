@@ -45,15 +45,20 @@ var multiLineCommentEndMarker = parse.string('*/');
  */
 var multiLineCommentChars = parse.Parser(function(self) {
     return parse.either(
-        parse.attempt(parse.bind(multiLineCommentEndMarker, function(){ return parse.always(['']); })),
-        parse.bind(parse.token(function(tok){ return true; }), function(tok) {
-            return parse.bind(self, function(s) {
-                return parse.always(Array.prototype.concat.apply([tok], s));
+        parse.attempt(parse.next(multiLineCommentEndMarker, parse.always([]))),
+        parse.bind(parse.anyToken, function(tok) {
+            return parse.bind(self, function(next) {
+                return parse.always(Array.prototype.concat.apply([tok], next));
             });
         })
     );
 });
 
+/**
+ * Parser for a multi line comment.
+ * 
+ * Returns the contents of the comment.
+ */
 var multiLineComment = parse.next(multiLineCommentStartMarker,
     parse.bind(multiLineCommentChars, function(chars) {
         return parse.always(chars.join(''));
@@ -64,8 +69,7 @@ var multiLineComment = parse.next(multiLineCommentStartMarker,
 ////////////////////////////////////////
 var comment = parse.either(
     singleLineComment,
-    multiLineComment
-);
+    multiLineComment);
 
 
 /* Export
