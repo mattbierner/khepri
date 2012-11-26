@@ -37,42 +37,35 @@ var lineTerminator = parse.choice(
 );
 
 /**
+ * A sequence of characters denoting a linter terminator.
  * 
+ * CRLF sequences are returned as a single token.
  */
-var lineTerminatorSequence = (function(){
-    var notlf = parse.either(
-        parse.attempt(parse.eof),
-        parse.token(function(tok) {
-            return tok.toString() !== '\u000A';
-        })
-    );
-    
-    return parse.choice(
-        lf,
-        ls,
-        ps,
-        parse.bind(cr, function(c) {
-            return parse.bind(parse.lookahead(notlf), function() {
-                return parse.always(c);
-            });
-        }),
-        parse.bind(cr, function(c) {
-            return parse.bind(lf, function(f) {
+var lineTerminatorSequence = parse.choice(
+    lf,
+    ls,
+    ps,
+    parse.bind(cr, function(c) {
+        return parse.either(
+            parse.attempt(parse.bind(lf, function(f) {
                 return parse.always(c + f);
-            })
-        })
-    );
-}());
+            })),
+            parse.always(c)
+        );
+    })
+);
 
 
 /* Export
  ******************************************************************************/
 
 return {
-// Literals
-    'trueLiteral': trueLiteral,
-    'falseLiteral': falseLiteral,
-    'booleanLiteral': booleanLiteral
+    'lf': lf,
+    'cr': cr,
+    'ls': ls,
+    'ps': ps,
+    'lineTerminator': lineTerminator,
+    'lineTerminatorSequence': lineTerminatorSequence
 };
 
 });

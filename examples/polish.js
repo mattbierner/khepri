@@ -1,4 +1,4 @@
-define(['parse', 'number'], function(parse, number){
+define(['parse', 'numberParser', 'whiteSpaceParser'], function(parse, number, whiteSpace){
     /*
      * An example of a two pass parser for Polish Notation.
      * 
@@ -26,16 +26,13 @@ define(['parse', 'number'], function(parse, number){
             Token.bind(undefined, 'op'));
         
         // Number
-        var num = parse.bind(number.numericLiteral, function(v) {
-            return Token('number', v);
-        });
+        var num = parse.bind(number.numericLiteral,
+            Token.bind(undefined, 'number'));
         
         // Tokens
-        var whiteSpace = parse.many1(parse.space());
-        
         var tok = parse.Parser(function(self) {
             return parse.choice(
-                parse.next(whiteSpace, self),
+                parse.next(parse.many1(whiteSpace.whiteSpace), self),
                 parse.attempt(num),
                 op
             );
@@ -51,6 +48,7 @@ define(['parse', 'number'], function(parse, number){
         var NumberNode = function(v) {
             return { 'value': v };
         };
+        
         var ExprNode = function(f, e1, e2) {
             return Object.create(Object.prototype, {
                 'value': {
@@ -61,20 +59,15 @@ define(['parse', 'number'], function(parse, number){
             });
         };
 
-        var op = parse.token(function(t){
-            return t.type === 'op';
-        });
-        
-        var num =parse.token(function(t) {
-            return t.type === 'number';
-        });
+        var op = parse.token(function(t) { return t.type === 'op'; });
+        var num = parse.token(function(t) { return t.type === 'number';});
         
         var expr = parse.Parser(function(self) {
             return parse.choice(
-                parse.bind(op, function(op) {
+                parse.bind(op, function(tok) {
                     return parse.bind(self, function(e1) {
                         return parse.bind(self, function(e2) {
-                            return parse.always(ExprNode(op.value, e1, e2));
+                            return parse.always(ExprNode(tok.value, e1, e2));
                         });
                     });
                 }),
@@ -89,7 +82,7 @@ define(['parse', 'number'], function(parse, number){
                     return parse.next(parse.eof(), parse.always(result.value));
         }));
     }());
-debugger;
+
     return {
         'lex': lex,
         'eval': eval

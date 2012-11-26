@@ -16,14 +16,19 @@
             paths: {
                 parse: '../resources/parse',
                 numberParser: '../examples/numberParser',
-                whiteSpaceParser: '../examples/whiteSpaceParser'
+                whiteSpaceParser: '../examples/whiteSpaceParser',
+                lineTerminatorParser: '../examples/lineTerminatorParser',
+                commentParser: '../examples/commentParser'
+                
             }
         });
         require(
-            ['parse', 'testNumber', 'testWhiteSpace'],
-            function(parse, testNumber, testWhiteSpace)
+            ['parse', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
+            'testComment'],
+            function(parse, testNumber, testWhiteSpace, testLineTerminator,
+            testComment)
             {
-                [testNumber, testWhiteSpace].forEach(function(m){
+                [testNumber, testWhiteSpace, testLineTerminator, testComment].forEach(function(m){
                     m.module && module(m.module);
                     m.tests && m.tests.forEach(function(e){ test.apply(this, e); });
                     m.asyncTests && m.asyncTests.forEach(function(e){ asyncTest.apply(this, e); });
