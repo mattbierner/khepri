@@ -10,17 +10,16 @@
     <div id="qunit"></div>
     
     <script src="resources/qunit-1.9.0.js"></script>
-    <script type="application/javascript" src="../resources/require.js"></script>
+    <script type="application/javascript" src="resources/require.js"></script>
     <script type="application/javascript">
         requirejs.config({
             paths: {
-                parse: '../resources/parse',
-                numberParser: '../examples/numberParser',
-                whiteSpaceParser: '../examples/whiteSpaceParser',
-                lineTerminatorParser: '../examples/lineTerminatorParser',
-                commentParser: '../examples/commentParser',
-                stringParser: '../examples/stringParser'
-                
+                parse: 'resources/parse',
+                numberParser: '../lib/numberParser',
+                whiteSpaceParser: '../lib/whiteSpaceParser',
+                lineTerminatorParser: '../lib/lineTerminatorParser',
+                commentParser: '../lib/commentParser',
+                stringParser: '../lib/stringParser'
             }
         });
         require(
