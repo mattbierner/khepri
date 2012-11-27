@@ -1,0 +1,20 @@
+{
+  "name": "parse-ecma",
+  "version": "0.0.0",
+  "description": "Javascript Generator Library",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mattbierner/parse-ecma.git"
+  },
+  "keywords": [
+    'parse', 
+    'parse.js',
+    'ecmascript'
+  ],
+  "author": "Matt Bierner",
+  "license": "MIT"
+}
