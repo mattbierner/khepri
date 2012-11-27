@@ -1,4 +1,4 @@
-define(['parse', 'numberParser', 'whiteSpaceParser'], function(parse, number, whiteSpace){
+define(['parse', 'numberParser', 'whiteSpaceParser', 'commentParser'], function(parse, number, whiteSpace, comment){
     /*
      * An example of a two pass parser for Polish Notation.
      * 
@@ -33,6 +33,7 @@ define(['parse', 'numberParser', 'whiteSpaceParser'], function(parse, number, wh
         var tok = parse.Parser(function(self) {
             return parse.choice(
                 parse.next(parse.many1(whiteSpace.whiteSpace), self),
+                comment.comment,
                 parse.attempt(num),
                 op
             );
@@ -77,9 +78,8 @@ define(['parse', 'numberParser', 'whiteSpaceParser'], function(parse, number, wh
             );
         });
         
-        return parse.run.bind(undefined,
-                parse.bind(expr, function(result) {
-                    return parse.next(parse.eof(), parse.always(result.value));
+        return parse.run.bind(undefined, parse.bind(expr, function(result) {
+            return parse.next(parse.eof(), parse.always(result.value));
         }));
     }());
 

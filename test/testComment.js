@@ -23,14 +23,13 @@ define(['parse', 'commentParser'], function(parse, commentParser){
             function(){
                 assert.deepEqual(parse.run(commentParser.multiLineComment, '/*abc*/'), 'abc');
                 assert.deepEqual(parse.run(commentParser.multiLineComment, '/*a b\nc*/'), 'a b\nc');
-               assert.deepEqual(parse.run(commentParser.multiLineComment, '/*abc*/fdsafsda'), 'abc');
-
+                assert.deepEqual(parse.run(commentParser.multiLineComment, '/*abc*/fdsafsda'), 'abc');
             }],
             ["Empty Multi line Comment",
             function(){
                 assert.deepEqual(parse.run(commentParser.multiLineComment, '/**/'), '');
                 assert.deepEqual(parse.run(commentParser.multiLineComment, '/**/\ndfasds'), '');
-               assert.deepEqual(parse.run(commentParser.multiLineComment, '/*\n*/'), '\n');
+                assert.deepEqual(parse.run(commentParser.multiLineComment, '/*\n*/'), '\n');
             }],
             ["Nested",
             function(){

@@ -18,17 +18,19 @@
                 numberParser: '../examples/numberParser',
                 whiteSpaceParser: '../examples/whiteSpaceParser',
                 lineTerminatorParser: '../examples/lineTerminatorParser',
-                commentParser: '../examples/commentParser'
+                commentParser: '../examples/commentParser',
+                stringParser: '../examples/stringParser'
                 
             }
         });
         require(
             ['parse', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
-            'testComment'],
+            'testComment', 'testString'],
             function(parse, testNumber, testWhiteSpace, testLineTerminator,
-            testComment)
+            testComment, testString)
             {
-                [testNumber, testWhiteSpace, testLineTerminator, testComment].forEach(function(m){
+                [testNumber, testWhiteSpace, testLineTerminator, testComment,
+                    testString].forEach(function(m){
                     m.module && module(m.module);
                     m.tests && m.tests.forEach(function(e){ test.apply(this, e); });
                     m.asyncTests && m.asyncTests.forEach(function(e){ asyncTest.apply(this, e); });
