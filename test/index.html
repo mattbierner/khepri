@@ -19,17 +19,21 @@
                 whiteSpaceParser: '../lib/whiteSpaceParser',
                 lineTerminatorParser: '../lib/lineTerminatorParser',
                 commentParser: '../lib/commentParser',
-                stringParser: '../lib/stringParser'
+                stringParser: '../lib/stringParser',
+                identifierParser: '../lib/identifierParser',
+                reservedWordParser: '../lib/reservedWordParser',
+                nullParser: '../lib/nullParser',
+                booleanParser: '../lib/booleanParser'
             }
         });
         require(
             ['parse', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
-            'testComment', 'testString'],
+            'testComment', 'testString', 'testIdentifier'],
             function(parse, testNumber, testWhiteSpace, testLineTerminator,
-            testComment, testString)
+            testComment, testString, testIdentifier)
             {
                 [testNumber, testWhiteSpace, testLineTerminator, testComment,
-                    testString].forEach(function(m){
+                    testString, testIdentifier].forEach(function(m){
                     m.module && module(m.module);
                     m.tests && m.tests.forEach(function(e){ test.apply(this, e); });
                     m.asyncTests && m.asyncTests.forEach(function(e){ asyncTest.apply(this, e); });
