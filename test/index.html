@@ -23,15 +23,18 @@
                 identifierParser: '../lib/identifierParser',
                 reservedWordParser: '../lib/reservedWordParser',
                 nullParser: '../lib/nullParser',
-                booleanParser: '../lib/booleanParser'
+                booleanParser: '../lib/booleanParser',
+                punctuatorParser: '../lib/punctuatorParser',
+                tokenize: '../lib/tokenize'
             }
         });
         require(
-            ['parse', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
+            ['parse', 'tokenize',  'testNumber', 'testWhiteSpace', 'testLineTerminator',
             'testComment', 'testString', 'testIdentifier'],
-            function(parse, testNumber, testWhiteSpace, testLineTerminator,
+            function(parse, tokenize, testNumber, testWhiteSpace, testLineTerminator,
             testComment, testString, testIdentifier)
             {
+                //parse.run(tokenize.token, 'while');
                 [testNumber, testWhiteSpace, testLineTerminator, testComment,
                     testString, testIdentifier].forEach(function(m){
                     m.module && module(m.module);
