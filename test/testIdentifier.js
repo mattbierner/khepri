@@ -16,11 +16,17 @@ define(['parse', 'identifierParser'], function(parse, identifierParser){
                 assert.deepEqual(parse.run(identifierParser.identifier, '$ab$c$'), '$ab$c$');
                 assert.deepEqual(parse.run(identifierParser.identifier, '_ab_c_'), '_ab_c_');
             }],
+            ["Unicode",
+            function(){
+                assert.deepEqual(parse.run(identifierParser.identifier, '\\u0041BC'), 'ABC');
+                assert.deepEqual(parse.run(identifierParser.identifier, 'A\\u0042\\u0043'), 'ABC');
+            }],
             ["Does not capture punctuation",
             function(){
                 assert.deepEqual(parse.run(identifierParser.identifier, 'a.c.d'), 'a');
                 assert.deepEqual(parse.run(identifierParser.identifier, 'a(c)'), 'a');
                 assert.deepEqual(parse.run(identifierParser.identifier, 'a+'), 'a');
+                assert.deepEqual(parse.run(identifierParser.identifier, 'a\\'), 'a');
             }],
             
         ],
