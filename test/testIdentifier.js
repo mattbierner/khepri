@@ -11,6 +11,12 @@ define(['parse', 'identifierParser'], function(parse, identifierParser){
             function(){
                 assert.throws(parse.run.bind(undefined, identifierParser.identifier, '0abc'));
             }],
+            ["Reserved Words",
+            function(){
+                assert.throws(parse.run.bind(undefined, identifierParser.identifier, 'while'));
+                parse.run(identifierParser.identifier, 'While');
+                parse.run(identifierParser.identifier, 'awhile');
+            }],
             ["Start Chars",
             function(){
                 assert.deepEqual(parse.run(identifierParser.identifier, '$ab$c$'), '$ab$c$');
