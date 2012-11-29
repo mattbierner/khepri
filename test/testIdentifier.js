@@ -14,8 +14,8 @@ define(['parse', 'identifierParser'], function(parse, identifierParser){
             ["Reserved Words",
             function(){
                 assert.throws(parse.run.bind(undefined, identifierParser.identifier, 'while'));
-                parse.run(identifierParser.identifier, 'While');
-                parse.run(identifierParser.identifier, 'awhile');
+                assert.deepEqual(parse.run(identifierParser.identifier, 'While'), 'While');
+                assert.deepEqual(parse.run(identifierParser.identifier, 'awhile'), 'awhile');
             }],
             ["Start Chars",
             function(){

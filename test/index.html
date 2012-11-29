@@ -9,12 +9,13 @@
 <body lang="en">
     <div id="qunit"></div>
     
-    <script src="resources/qunit-1.9.0.js"></script>
-    <script type="application/javascript" src="resources/require.js"></script>
+    <script type="application/javascript" src="../resources/require.js"></script>
+    <script type="application/javascript" src="resources/qunit-1.9.0.js"></script>
+   
     <script type="application/javascript">
         requirejs.config({
             paths: {
-                parse: 'resources/parse',
+                parse: '../resources/parse',
                 numberParser: '../lib/numberParser',
                 whiteSpaceParser: '../lib/whiteSpaceParser',
                 lineTerminatorParser: '../lib/lineTerminatorParser',
@@ -29,7 +30,7 @@
             }
         });
         require(
-            ['parse', 'tokenize',  'testNumber', 'testWhiteSpace', 'testLineTerminator',
+            ['parse', 'tokenize', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
             'testComment', 'testString', 'testIdentifier'],
             function(parse, tokenize, testNumber, testWhiteSpace, testLineTerminator,
             testComment, testString, testIdentifier)

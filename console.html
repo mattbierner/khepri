@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Parse ECMAScript Console</title>
+    <style>
+        .content > * {
+            width: 50%;
+            float: left;
+            position: relative;
+        }
+        
+        .content > * > * {
+            padding: 0 2em;
+            display: block;
+        }
+        
+        .console textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .output {
+        }
+        
+        span.token.Keyword {
+            color: red;
+        }
+        
+        span.token.Comment {
+            color: blue;
+        }
+        
+        span.token.String {
+            color: green;
+        }
+        
+        span.token.Punctuator {
+            color: pink;
+        };
+    </style>
+</head>
+
+<body lang="en">
+    <div class="content">
+        <div class='console'>
+            <h2>Input</h2>
+            <textarea rows='20'></textarea>
+            <button>Tokenize</button>
+        </div>
+        <div class='output'>
+            <h2>Ouput</h2>
+            <pre class='out'></pre>
+        </div>
+    </div>
+    
+    <script type="application/javascript" src="resources/require.js"></script>
+    <script src="resources/jquery-1.8.3.min.js"></script>
+    <script type="application/javascript">
+        requirejs.config({
+            paths: {
+                parse: 'resources/parse',
+                numberParser: 'lib/numberParser',
+                whiteSpaceParser: 'lib/whiteSpaceParser',
+                lineTerminatorParser: 'lib/lineTerminatorParser',
+                commentParser: 'lib/commentParser',
+                stringParser: 'lib/stringParser',
+                identifierParser: 'lib/identifierParser',
+                reservedWordParser: 'lib/reservedWordParser',
+                nullParser: 'lib/nullParser',
+                booleanParser: 'lib/booleanParser',
+                punctuatorParser: 'lib/punctuatorParser',
+                tokenize: 'lib/tokenize'
+            }
+        });
+        $(function(){
+            require(['parse', 'tokenize'], function(parse, tokenize)
+            {
+                var out = $('.out');
+                $('button').click(function() {
+                    out.children().remove();
+                    var input = $('textarea').val();
+                    
+                    out.append(tokenize.tokenize(input).map(function(e) {
+                        return $("<span class='token " + e.type + "'>" + e.value + "</span>");
+                    }));
+                });
+            });
+        });
+    </script>
+
+</body>
+    
+</html>
