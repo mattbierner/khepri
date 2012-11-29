@@ -81,7 +81,11 @@
                     out.children().remove();
                     var input = $('textarea').val();
                     
-                    out.append(tokenize.tokenize(input).map(function(e) {
+                    console.profile();
+                        var nodes = tokenize.tokenize(input);
+                    console.profileEnd();
+                    
+                    out.append(nodes.map(function(e) {
                         return $("<span class='token " + e.type + "'>" + e.value + "</span>");
                     }));
                 });
