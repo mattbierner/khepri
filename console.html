@@ -82,9 +82,13 @@
                     out.children().remove();
                     var input = $('textarea').val();
                     
-                    console.profile();
+                    var start = new Date().getTime();
+                    //console.profile();
                         var nodes = tokenize.tokenize(input);
-                    console.profileEnd();
+                    //console.profileEnd();
+                    
+                    var end = new Date().getTime();
+                    console.log(end - start);
                     
                     out.append(nodes.map(function(e) {
                         return $("<span class='token " + e.type + "'>" + e.value + "</span>");
