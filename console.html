@@ -37,7 +37,11 @@
         
         span.token.Punctuator {
             color: pink;
-        };
+        }
+        
+        span.token.RegularExpression {
+            color: orange;
+        }
     </style>
 </head>
 
@@ -71,7 +75,8 @@
                 nullParser: 'lib/nullParser',
                 booleanParser: 'lib/booleanParser',
                 punctuatorParser: 'lib/punctuatorParser',
-                tokenize: 'lib/tokenize'
+                tokenize: 'lib/tokenize',
+                regularExpressionParser: 'lib/regularExpressionParser'
             }
         });
         $(function(){

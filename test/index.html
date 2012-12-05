@@ -27,17 +27,19 @@
                 nullParser: '../lib/nullParser',
                 booleanParser: '../lib/booleanParser',
                 punctuatorParser: '../lib/punctuatorParser',
-                tokenize: '../lib/tokenize'
+                tokenize: '../lib/tokenize',
+                regularExpressionParser: '../lib/regularExpressionParser'
+                
             }
         });
         require(
             ['parse', 'tokenize', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
-            'testComment', 'testString', 'testIdentifier'],
+            'testComment', 'testString', 'testIdentifier', 'testRegex'],
             function(parse, tokenize, testNumber, testWhiteSpace, testLineTerminator,
-            testComment, testString, testIdentifier)
+            testComment, testString, testIdentifier, testRegex)
             {
                 [testNumber, testWhiteSpace, testLineTerminator, testComment,
-                    testString, testIdentifier].forEach(function(m){
+                    testString, testIdentifier, testRegex].forEach(function(m){
                     m.module && module(m.module);
                     m.tests && m.tests.forEach(function(e){ test.apply(this, e); });
                     m.asyncTests && m.asyncTests.forEach(function(e){ asyncTest.apply(this, e); });
