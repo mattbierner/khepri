@@ -65,22 +65,22 @@
             paths: {
                 parse: 'resources/parse',
                 parse_string: 'resources/parse_string',
-                numberParser: 'lib/numberParser',
-                whiteSpaceParser: 'lib/whiteSpaceParser',
-                lineTerminatorParser: 'lib/lineTerminatorParser',
-                commentParser: 'lib/commentParser',
-                stringParser: 'lib/stringParser',
-                identifierParser: 'lib/identifierParser',
-                reservedWordParser: 'lib/reservedWordParser',
-                nullParser: 'lib/nullParser',
-                booleanParser: 'lib/booleanParser',
-                punctuatorParser: 'lib/punctuatorParser',
-                tokenize: 'lib/tokenize',
-                regularExpressionParser: 'lib/regularExpressionParser'
+                numberLexer: 'lib/lex/numberLexer',
+                whiteSpaceLexer: 'lib/lex/whiteSpaceLexer',
+                lineTerminatorLexer: 'lib/lex/lineTerminatorLexer',
+                commentLexer: 'lib/lex/commentLexer',
+                stringLexer: 'lib/lex/stringLexer',
+                identifierLexer: 'lib/lex/identifierLexer',
+                reservedWordLexer: 'lib/lex/reservedWordLexer',
+                nullLexer: 'lib/lex/nullLexer',
+                booleanLexer: 'lib/lex/booleanLexer',
+                punctuatorLexer: 'lib/lex/punctuatorLexer',
+                lexer: 'lib/lex/lexer',
+                regularExpressionLexer: 'lib/lex/regularExpressionLexer'
             }
         });
         $(function(){
-            require(['parse', 'tokenize'], function(parse, tokenize)
+            require(['parse', 'lexer'], function(parse, lexer)
             {
                 var out = $('.out');
                 $('button').click(function() {
@@ -89,7 +89,7 @@
                     
                     var start = new Date().getTime();
                     //console.profile();
-                        var nodes = tokenize.tokenize(input);
+                        var nodes = lexer.lex(input);
                     //console.profileEnd();
                     
                     var end = new Date().getTime();

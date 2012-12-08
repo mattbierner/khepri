@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Parse Example Tests</title>
+    <title>Parse ECMA Tests</title>
     <link rel="stylesheet" href="resources/qunit-1.9.0.css">
 </head>
 
@@ -17,25 +17,25 @@
             paths: {
                 parse: '../resources/parse',
                 parse_string: '../resources/parse_string',
-                numberParser: '../lib/numberParser',
-                whiteSpaceParser: '../lib/whiteSpaceParser',
-                lineTerminatorParser: '../lib/lineTerminatorParser',
-                commentParser: '../lib/commentParser',
-                stringParser: '../lib/stringParser',
-                identifierParser: '../lib/identifierParser',
-                reservedWordParser: '../lib/reservedWordParser',
-                nullParser: '../lib/nullParser',
-                booleanParser: '../lib/booleanParser',
-                punctuatorParser: '../lib/punctuatorParser',
-                tokenize: '../lib/tokenize',
-                regularExpressionParser: '../lib/regularExpressionParser'
+                numberLexer: '../lib/lex/numberLexer',
+                whiteSpaceLexer: '../lib/lex/whiteSpaceLexer',
+                lineTerminatorLexer: '../lib/lex/lineTerminatorLexer',
+                commentLexer: '../lib/lex/commentLexer',
+                stringLexer: '../lib/lex/stringLexer',
+                identifierLexer: '../lib/lex/identifierLexer',
+                reservedWordLexer: '../lib/lex/reservedWordLexer',
+                nullLexer: '../lib/lex/nullLexer',
+                booleanLexer: '../lib/lex/booleanLexer',
+                punctuatorLexer: '../lib/lex/punctuatorLexer',
+                lexer: '../lib/lex/lexer',
+                regularExpressionLexer: '../lib/lex/regularExpressionLexer'
                 
             }
         });
         require(
-            ['parse', 'tokenize', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
+            ['parse', 'lexer', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
             'testComment', 'testString', 'testIdentifier', 'testRegex'],
-            function(parse, tokenize, testNumber, testWhiteSpace, testLineTerminator,
+            function(parse, lexer, testNumber, testWhiteSpace, testLineTerminator,
             testComment, testString, testIdentifier, testRegex)
             {
                 [testNumber, testWhiteSpace, testLineTerminator, testComment,
