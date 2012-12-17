@@ -1,4 +1,4 @@
-define(['parse', 'regularExpressionLexer'], function(parse, regularExpressionLexer){
+define(['parse', 'regular_expression_lexer'], function(parse, regular_expression_lexer){
     
     var reEq = function(x, y) {
         return assert.equal(x.toString(), y.toString());
@@ -9,26 +9,26 @@ define(['parse', 'regularExpressionLexer'], function(parse, regularExpressionLex
         'tests': [
             ["Basic Regex",
             function(){
-                reEq(parse.run(regularExpressionLexer.regularExpressionLiteral, "/abc/"), /abc/);
+                reEq(parse.run(regular_expression_lexer.regularExpressionLiteral, "/abc/"), /abc/);
                 
-                reEq(parse.run(regularExpressionLexer.regularExpressionLiteral, "/abc/i"), /abc/i);
+                reEq(parse.run(regular_expression_lexer.regularExpressionLiteral, "/abc/i"), /abc/i);
                 
-                reEq(parse.run(regularExpressionLexer.regularExpressionLiteral, "/abc/igm"), /abc/igm);
+                reEq(parse.run(regular_expression_lexer.regularExpressionLiteral, "/abc/igm"), /abc/igm);
             }],
             ["Simple Class",
             function(){
-                reEq(parse.run(regularExpressionLexer.regularExpressionLiteral, "/[abc]/"), /[abc]/);
+                reEq(parse.run(regular_expression_lexer.regularExpressionLiteral, "/[abc]/"), /[abc]/);
                 
-                reEq(parse.run(regularExpressionLexer.regularExpressionLiteral, "/[^*. 3][]/"), /[^*. 3][]/);
+                reEq(parse.run(regular_expression_lexer.regularExpressionLiteral, "/[^*. 3][]/"), /[^*. 3][]/);
             }],
             ["Escape Class",
             function(){
-                reEq(parse.run(regularExpressionLexer.regularExpressionLiteral, "/[\\]]/"), /[\]]/);
+                reEq(parse.run(regular_expression_lexer.regularExpressionLiteral, "/[\\]]/"), /[\]]/);
                 
             }],
             ["Escape Slash",
             function(){
-                reEq(parse.run(regularExpressionLexer.regularExpressionLiteral, "/\\/ab/"), /\/ab/);
+                reEq(parse.run(regular_expression_lexer.regularExpressionLiteral, "/\\/ab/"), /\/ab/);
                 
             }],
            
