@@ -1,4 +1,4 @@
-define(['parse', 'ecma/lex/identifier_lexer'], function(parse, identifier_lexer){
+define(['parse/parse', 'ecma/lex/identifier_lexer'], function(parse, identifier_lexer){
     return {
         'module': "Indentifier Tests",
         'tests': [

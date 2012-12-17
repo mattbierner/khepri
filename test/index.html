@@ -16,18 +16,8 @@
         requirejs.config({
             paths: {
                 parse: '../resources/parse',
-                parse_string: '../resources/parse_string',
-                
-                'test': '.',
-                
-                'ecma/lex': '../lib/lex',
-                'ecma/parse': '../lib/parse',
-                
-                expression: '../lib/parse/expression',
-                statement: '../lib/parse/statement',
-                program: '../lib/parse/program',
-                token: '../lib/parse/token',
-                ast: '../lib/parse/ast'
+                ecma: '../lib',
+                test: '.'
             }
         });
         require(

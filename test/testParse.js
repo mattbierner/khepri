@@ -1,4 +1,4 @@
-define(['parse', './parser/testStatement'],
+define(['parse/parse', './parser/testStatement'],
 function(parse, testStatement){
     
     return function(){

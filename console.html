@@ -66,20 +66,11 @@
         requirejs.config({
             paths: {
                 parse: 'resources/parse',
-                parse_string: 'resources/parse_string',
-
-                'ecma': 'lib',
-                
-                expression: 'lib/parse/expression',
-                statement: 'lib/parse/statement',
-                program: 'lib/parse/program',
-                token: 'lib/parse/token',
-                ast: 'lib/parse/ast'
-                
+                ecma: 'lib'
             }
         });
         $(function(){
-            require(['parse', 'lex/lexer', 'program'], function(parse, lexer, program)
+            require(['parse/parse', 'ecma/lex/lexer', 'ecma/parse/program'], function(parse, lexer, program)
             {
                 $('button').click(function() {
                     $('.LexOut').children().remove();

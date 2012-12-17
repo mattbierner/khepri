@@ -1,4 +1,4 @@
-define(['parse', 'ecma/lex/string_lexer'], function(parse, string_lexer){
+define(['parse/parse', 'ecma/lex/string_lexer'], function(parse, string_lexer){
     return {
         'module': "String Tests",
         'tests': [

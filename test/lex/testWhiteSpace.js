@@ -1,4 +1,4 @@
-define(['parse', 'ecma/lex/whitespace_lexer'], function(parse, white_space){
+define(['parse/parse', 'ecma/lex/whitespace_lexer'], function(parse, white_space){
     
     return {
         'module': "White Space Tests",
