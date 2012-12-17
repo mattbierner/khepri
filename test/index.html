@@ -27,24 +27,24 @@
                 nullLexer: '../lib/lex/nullLexer',
                 booleanLexer: '../lib/lex/booleanLexer',
                 punctuatorLexer: '../lib/lex/punctuatorLexer',
-                lexer: '../lib/lex/lexer',
-                regularExpressionLexer: '../lib/lex/regularExpressionLexer'
+                regularExpressionLexer: '../lib/lex/regularExpressionLexer',
                 
+                lexer: '../lib/lex/lexer',
+                
+                expression: '../lib/parse/expression',
+                statement: '../lib/parse/statement',
+                program: '../lib/parse/program',
+                token: '../lib/parse/token',
+                ast: '../lib/parse/ast'
             }
         });
         require(
-            ['parse', 'lexer', 'testNumber', 'testWhiteSpace', 'testLineTerminator',
-            'testComment', 'testString', 'testIdentifier', 'testRegex'],
-            function(parse, lexer, testNumber, testWhiteSpace, testLineTerminator,
-            testComment, testString, testIdentifier, testRegex)
+            ['parse', 'lexer', 'testLex', 'testParse'],
+            function(parse, lexer, testLex, testParse)
             {
-                [testNumber, testWhiteSpace, testLineTerminator, testComment,
-                    testString, testIdentifier, testRegex].forEach(function(m){
-                    m.module && module(m.module);
-                    m.tests && m.tests.forEach(function(e){ test.apply(this, e); });
-                    m.asyncTests && m.asyncTests.forEach(function(e){ asyncTest.apply(this, e); });
+                testLex();
+                testParse();
             });
-        });
     </script>
 
 </body>
