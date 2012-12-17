@@ -1,4 +1,4 @@
-define(['parse', 'comment_lexer'], function(parse, comment_lexer){
+define(['parse', 'ecma/lex/comment_lexer'], function(parse, comment_lexer){
     return {
         'module': "Comment Tests",
         'tests': [

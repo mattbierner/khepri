@@ -1,4 +1,4 @@
-define(['parse', 'line_terminator_lexer'], function(parse, line_terminator_lexer){
+define(['parse', 'ecma/lex/line_terminator_lexer'], function(parse, line_terminator_lexer){
     
     return {
         'module': "Line Terminator Tests",

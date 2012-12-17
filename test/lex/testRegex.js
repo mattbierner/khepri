@@ -1,4 +1,4 @@
-define(['parse', 'regular_expression_lexer'], function(parse, regular_expression_lexer){
+define(['parse', 'ecma/lex/regular_expression_lexer'], function(parse, regular_expression_lexer){
     
     var reEq = function(x, y) {
         return assert.equal(x.toString(), y.toString());

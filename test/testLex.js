@@ -1,5 +1,5 @@
-define(['parse', 'lex/testNumber', 'lex/testWhiteSpace', 'lex/testLineTerminator',
-'lex/testComment', 'lex/testString', 'lex/testIdentifier', 'lex/testRegex'],
+define(['parse', 'test/lex/testNumber', 'test/lex/testWhiteSpace', 'test/lex/testLineTerminator',
+'test/lex/testComment', 'test/lex/testString', 'test/lex/testIdentifier', 'test/lex/testRegex'],
 function(parse, testNumber, testWhiteSpace, testLineTerminator,
 testComment, testString, testIdentifier, testRegex){
     

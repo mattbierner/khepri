@@ -1,4 +1,4 @@
-define(['parse', 'lexer', 'statement'], function(parse, lexer, statement){
+define(['parse', 'ecma/lex/lexer', 'statement'], function(parse, lexer, statement){
     
     return {
         'module': "Statement Tests",

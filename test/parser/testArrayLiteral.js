@@ -1,4 +1,4 @@
-define(['parse', 'lexer', 'expression'], function(parse, lexer, expression){
+define(['parse', 'ecma/lex/lexer', 'expression'], function(parse, lexer, expression){
     return {
         'module': "Array Literal Tests",
         'tests': [

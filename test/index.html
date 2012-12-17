@@ -18,19 +18,10 @@
                 parse: '../resources/parse',
                 parse_string: '../resources/parse_string',
                 
-                number_lexer: '../lib/lex/number_lexer',
-                whitespace_lexer: '../lib/lex/whitespace_lexer',
-                line_terminator_lexer: '../lib/lex/line_terminator_lexer',
-                comment_lexer: '../lib/lex/comment_lexer',
-                string_lexer: '../lib/lex/string_lexer',
-                identifier_lexer: '../lib/lex/identifier_lexer',
-                reserved_word_lexer: '../lib/lex/reserved_word_lexer',
-                null_lexer: '../lib/lex/null_lexer',
-                boolean_lexer: '../lib/lex/boolean_lexer',
-                punctuator_lexer: '../lib/lex/punctuator_lexer',
-                regular_expression_lexer: '../lib/lex/regular_expression_lexer',
+                'test': '.',
                 
-                lexer: '../lib/lex/lexer',
+                'ecma/lex': '../lib/lex',
+                'ecma/parse': '../lib/parse',
                 
                 expression: '../lib/parse/expression',
                 statement: '../lib/parse/statement',
@@ -40,8 +31,8 @@
             }
         });
         require(
-            ['parse', 'lexer', 'testLex', 'testParse'],
-            function(parse, lexer, testLex, testParse)
+            ['testLex', 'testParse'],
+            function(testLex, testParse)
             {
                 testLex();
                 testParse();
