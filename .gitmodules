@@ -1,0 +1,3 @@
+[submodule "resources/parse"]
+	path = resources/parse
+	url = git@github.com:mattbierner/parse.js.git
