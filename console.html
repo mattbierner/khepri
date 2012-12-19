@@ -90,8 +90,10 @@
                         return $("<span class='token " + e.type + "'>" + e.value + "</span>");
                     }));
                     
-                    var ast = parse.run(program.program, lexer.lexLang(input));
-                    $('.ParseOut').text(ast);
+                    var end = parse.next(program.program, parse.examine());
+                    console.log(parse.run(end, lexer.lexLang(input)));
+                    //var ast = parse.run(, lexer.lexLang(input));
+                    //$('.ParseOut').text(ast);
                 });
             });
         });
