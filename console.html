@@ -89,11 +89,13 @@
                     $('.LexOut').append(nodes.map(function(e) {
                         return $("<span class='token " + e.type + "'>" + e.value + "</span>");
                     }));
+                   
+                    console.profile();
                     
-                    //var end = parse.next(program.program, parse.examine());
-                    //console.log(parse.run(end, lexer.lexLang(input)));
-                    //var ast = parse.run(, lexer.lexLang(input));
-                    //$('.ParseOut').text(ast);
+                    var ast = parse.run(program.program, lexer.lexLang(input));
+                    console.profileEnd();
+                    $('.ParseOut').text(ast);
+                    
                 });
             });
         });
