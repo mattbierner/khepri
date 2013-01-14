@@ -72,7 +72,8 @@
             }
         });
         $(function(){
-            require(['parse/parse', 'ecma/lex/lexer', 'ecma/parse/program'], function(parse, lexer, program)
+            require(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/program'],
+                function(parse, stream, lexer, program)
             {
                 $('button').click(function() {
                     $('.LexOut').children().remove();
@@ -81,20 +82,20 @@
                     var input = $('textarea').val();
                     
                     var start = new Date().getTime();
-                    //console.profile();
+                    console.profile();
                         var nodes = lexer.lex(input);
-                    //console.profileEnd();
+                    console.profileEnd();
                     
                     var end = new Date().getTime();
                     console.log(end - start);
                     
-                    $('.LexOut').append(nodes.map(function(e) {
+                    $('.LexOut').append(stream.toArray(nodes).map(function(e) {
                         return $("<span class='token " + e.type + "'>" + e.value + "</span>");
                     }));
                    
                     console.profile();
                     
-                    var ast = parse.run(program.program, lexer.lexLang(input));
+                    var ast = parse.runStream(program.program, lexer.lexLang(input));
                     console.profileEnd();
                     $('.ParseOut').text(ast);
                     
