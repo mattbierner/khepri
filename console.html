@@ -93,11 +93,11 @@
                         return $("<span class='token " + e.type + "'>" + e.value + "</span>");
                     }));
                    
-                    console.profile();
+                   // console.profile();
                     
-                  //  var ast = parse.runStream(program.program, lexer.lexLang(input));
-                 //   console.profileEnd();
-                 //   $('.ParseOut').text(ast);
+                    var ast = parse.runStream(program.program, lexer.lexLang(input));
+                    //console.profileEnd();
+                    $('.ParseOut').text(ast);
                     
                 });
             });
