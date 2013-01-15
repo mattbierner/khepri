@@ -1,45 +1,44 @@
-define(['parse/parse', 'ecma/lex/lexer', 'ecma/parse/statement'], function(parse, lexer, statement){
+define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/statement'], function(parse, stream, lexer, statement){
     
     return {
         'module': "Statement Tests",
         'tests': [
             ["Debugger",
             function(){
-                var result = parse.run(statement.debuggerStatement, lexer.lexLang("debugger;"))
-                assert.ok(result instanceof statement.DebuggerStatementNode);
+                var result = parse.runStream(statement.debuggerStatement, lexer.lexLang("debugger;"))
+                assert.equal(result.type, "DebuggerStatement");
             }],
-            
             ["Empty Block",
             function(){
-                var result = parse.run(statement.blockStatement, lexer.lexLang("{}"))
-                assert.ok(result instanceof statement.BlockStatementNode);
+                var result = parse.runStream(statement.blockStatement, lexer.lexLang("{}"))
+                assert.equal(result.type, "BlockStatement");
                 assert.ok(result.body.length === 0);
             }],
             ["Non Empty Block",
             function(){
-                var result = parse.run(statement.blockStatement, lexer.lexLang("{debugger;{}debugger;}"))
-                assert.ok(result instanceof statement.BlockStatementNode);
+                var result = parse.runStream(statement.blockStatement, lexer.lexLang("{debugger;{}debugger;}"))
+                assert.equal(result.type, "BlockStatement");
                 assert.ok(result.body.length === 3);
-                assert.ok(result.body[0] instanceof statement.DebuggerStatementNode);
-                assert.ok(result.body[1] instanceof statement.BlockStatementNode);
-                assert.ok(result.body[2] instanceof statement.DebuggerStatementNode);
+                assert.equal(result.body[0].type, "DebuggerStatement");
+                assert.equal(result.body[1].type, "BlockStatement");
+                assert.equal(result.body[2].type, "DebuggerStatement");
             }],
             
             ["Single Variable Statement",
             function(){
-                var result = parse.run(statement.variableStatement, lexer.lexLang("var a;"))
-                assert.ok(result instanceof statement.VariableStatementNode);
-                assert.deepEqual(result.list.length, 1);
-                assert.deepEqual(result.list[0].identifier.value, 'a');
-                assert.ok(!result.list[0].initialiser);
+                var result = parse.runStream(statement.variableStatement, lexer.lexLang("var a;"))
+                assert.equal(result.type, "VariableDeclaration");
+                assert.deepEqual(result.declarations.length, 1);
+                assert.deepEqual(result.declarations[0].id.value, 'a');
+                assert.ok(!result.declarations[0].init);
             }],
             ["Single Initilizer Variable Statement",
             function(){
-                var result = parse.run(statement.variableStatement, lexer.lexLang("var a = 1;"))
-                assert.ok(result instanceof statement.VariableStatementNode);
-                assert.deepEqual(result.list.length, 1);
-                assert.deepEqual(result.list[0].identifier.value, 'a');
-                assert.deepEqual(result.list[0].initialiser.value, 1);
+                var result = parse.runStream(statement.variableStatement, lexer.lexLang("var a = 1;"))
+                assert.equal(result.type, "VariableDeclaration");
+                assert.deepEqual(result.declarations.length, 1);
+                assert.deepEqual(result.declarations[0].id.value, 'a');
+                assert.deepEqual(result.declarations[0].init.value, 1);
             }],
         ],
     };
