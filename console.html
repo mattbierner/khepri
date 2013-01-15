@@ -93,10 +93,10 @@
                         return $("<span class='token " + e.type + "'>" + e.value + "</span>");
                     }));
                    
-                   // console.profile();
-                    
-                    var ast = parse.runStream(program.program, lexer.lexLang(input));
-                    //console.profileEnd();
+                    var s = lexer.lexLang(input);
+                    console.profile();
+                    var ast = parse.runStream(program.program, s);
+                    console.profileEnd();
                     $('.ParseOut').text(ast);
                     
                 });
