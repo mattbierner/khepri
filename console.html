@@ -76,23 +76,23 @@
                 function(parse, stream, lexer, program)
             {
                 $('button').click(function() {
-                    $('.LexOut').children().remove();
-                    $('.ParseOut').children().remove();
-                    
+                    var lexOut = $('.LexOut'); 
                     var input = $('textarea').val();
                     
+                    lexOut.children().remove();
+                    $('.ParseOut').children().remove();
+                    
                     var start = new Date().getTime();
-                  //  console.profile();
+                   // console.profile();
                         var nodes = lexer.lex(input);
                    // console.profileEnd();
-                    
-                   var end = new Date().getTime();
+                    var end = new Date().getTime();
                     console.log(end - start);
                     
-                    $('.LexOut').append(stream.toArray(nodes).map(function(e) {
-                        return $("<span class='token " + e.type + "'>" + e.value + "</span>");
-                    }));
-                   
+                    stream.forEach(nodes, function(v){
+                        lexOut.append($("<span class='token " + v.type + "'>" + v.value + "</span>"));
+                    });
+
                    // var s = lexer.lexLang(input);
                    // console.profile();
                   //  var ast = parse.runStream(program.program, s);
