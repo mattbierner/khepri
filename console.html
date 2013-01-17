@@ -43,6 +43,15 @@
         span.token.RegularExpression {
             color: orange;
         }
+        
+        span.token.WhiteSpace {
+            content: '\00B7';
+            width: 5px;
+        }
+        
+        .loc {
+            position: absolute;
+        };
     </style>
 </head>
 
@@ -75,6 +84,7 @@
             require(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/program'],
                 function(parse, stream, lexer, program)
             {
+            
                 $('button').click(function() {
                     var lexOut = $('.LexOut'); 
                     var input = $('textarea').val();
@@ -90,7 +100,7 @@
                     console.log(end - start);
                     
                     stream.forEach(nodes, function(v){
-                        lexOut.append($("<span class='token " + v.type + "'>" + v.value + "</span>"));
+                        lexOut.append($("<span class='token " + v.type + "' data-loc='"+ v.loc + "'>" + v.value + "</span>"));
                     });
 
                    // var s = lexer.lexLang(input);
