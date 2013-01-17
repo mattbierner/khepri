@@ -20,38 +20,73 @@
             box-sizing: border-box;
         }
         
+        .TokenInfo {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+        }
+        
+        .TokenInfo ul {
+            list-style: none;
+        }
+        .TokenInfo ul {
+        }
+        
+        .TokenInfo ul li {
+            padding-bottom: 1em;
+        }
+        
+        .TokenInfo .Key {
+            font-weight: bold;
+        }
+        
+        .TokenInfo .Key {
+            font-weight: bold;
+        }
+        
         .output pre {
             white-space: pre-wrap;
         }
         
-        span.token.Keyword {
+        span.Token.Keyword {
             color: red;
         }
+        span.Token:hover {
+            background: gray;
+        }
         
-        span.token.Comment {
+        span.Token.Comment {
             color: blue;
         }
         
-        span.token.String {
+        span.Token.String {
             color: green;
         }
         
-        span.token.Punctuator {
+        span.Token.Punctuator {
             color: pink;
         }
         
-        span.token.RegularExpression {
+        span.Token.RegularExpression {
             color: orange;
         }
         
-        span.token.WhiteSpace {
-            content: '\00B7';
-            width: 5px;
+        span.Token.WhiteSpace,
+        span.Token.LineTerminator {
+            color: rgb(215, 215, 215);
         }
         
-        .loc {
-            position: absolute;
-        };
+        span.Token.WhiteSpace {
+            display:inline-block;
+        }
+        
+        span.Token.WhiteSpace:after {
+            content: '\00B7';
+        }
+        
+        span.Token.LineTerminator:before {
+            content: '\00B6';
+        }
     </style>
 </head>
 
@@ -66,6 +101,24 @@
             <h2>Output</h2>
             <pre class='LexOut'></pre>
             <pre class='ParseOut'></pre>
+        </div>
+        
+        <div class='TokenInfo'>
+            <h3>Token Info</h3>
+            <ul>
+                <li class='TypeInfo'>
+                    <div class='Key'>Type</div>
+                    <div class='Value'></div>
+                </li>
+                <li class='LocationInfo'>
+                    <div class='Key'>Location</div>
+                    <div class='Value'></div>
+                </li>
+                <li class='ValueInfo'>
+                    <div class='Key'>Value</div>
+                    <pre class='Value'></pre>
+                </li>
+            </ul>
         </div>
     </div>
     
@@ -85,6 +138,12 @@
                 function(parse, stream, lexer, program)
             {
             
+                $('.Token').live('hover', function() {
+                    $('.TokenInfo .TypeInfo .Value').text($(this).data('type'));
+                    $('.TokenInfo .ValueInfo .Value').text($(this).data('value'));
+                    $('.TokenInfo .LocationInfo .Value').text($(this).data('location'));
+                });
+            
                 $('button').click(function() {
                     var lexOut = $('.LexOut'); 
                     var input = $('textarea').val();
@@ -92,15 +151,23 @@
                     lexOut.children().remove();
                     $('.ParseOut').children().remove();
                     
+                    
                     var start = new Date().getTime();
-                   // console.profile();
-                        var nodes = lexer.lex(input);
-                   // console.profileEnd();
+                    // console.profile();
+                        var nodes = stream.toArray(lexer.lex(input));
+                    // console.profileEnd();
                     var end = new Date().getTime();
                     console.log(end - start);
                     
-                    stream.forEach(nodes, function(v){
-                        lexOut.append($("<span class='token " + v.type + "' data-loc='"+ v.loc + "'>" + v.value + "</span>"));
+                    nodes.forEach(function(v) {
+                        var type =  v.type;
+                        var value = (type === 'WhiteSpace' ? '' : v.value);
+                        var location = v.loc;
+                        lexOut.append($("<span class='Token " + type + "'>" + value + "</span>").data({
+                            'type': type,
+                            'value': value,
+                            'location': location
+                        }));
                     });
 
                    // var s = lexer.lexLang(input);
