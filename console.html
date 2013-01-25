@@ -152,10 +152,10 @@
                     $('.ParseOut').children().remove();
                     
                     
-                  /*  var start = new Date().getTime();
-                    // console.profile();
+                    var start = new Date().getTime();
+                     console.profile();
                         var nodes = stream.toArray(lexer.lex(input));
-                    // console.profileEnd();
+                     console.profileEnd();
                     var end = new Date().getTime();
                     console.log(end - start);
                     
@@ -168,11 +168,11 @@
                             'value': value,
                             'location': location
                         }));
-                    });*/
+                    });
 
-                    var s = lexer.lexLang(input);
+                    var s = stream.toArray(lexer.lexLang(input));
                     console.profile();
-                    var ast = parser.parseStream(s);
+                    var ast = parser.parse(s);
                     console.profileEnd();
                     $('.ParseOut').text(ast);
                     
