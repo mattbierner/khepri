@@ -134,8 +134,8 @@
             }
         });
         $(function(){
-            require(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/program'],
-                function(parse, stream, lexer, program)
+            require(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser'],
+                function(parse, stream, lexer, parser)
             {
             
                 $('.Token').live('hover', function() {
@@ -152,7 +152,7 @@
                     $('.ParseOut').children().remove();
                     
                     
-                    var start = new Date().getTime();
+                  /*  var start = new Date().getTime();
                     // console.profile();
                         var nodes = stream.toArray(lexer.lex(input));
                     // console.profileEnd();
@@ -168,13 +168,13 @@
                             'value': value,
                             'location': location
                         }));
-                    });
+                    });*/
 
-                   // var s = lexer.lexLang(input);
-                   // console.profile();
-                  //  var ast = parse.runStream(program.program, s);
-                  //  console.profileEnd();
-                   // $('.ParseOut').text(ast);
+                    var s = lexer.lexLang(input);
+                    console.profile();
+                    var ast = parser.parseStream(s);
+                    console.profileEnd();
+                    $('.ParseOut').text(ast);
                     
                 });
             });
