@@ -137,32 +137,31 @@
             require(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser'],
                 function(parse, stream, lexer, parser)
             {
-            
+                var lexOut = $('.LexOut');
+                
                 $('.Token').live('hover', function() {
                     $('.TokenInfo .TypeInfo .Value').text($(this).data('type'));
                     $('.TokenInfo .ValueInfo .Value').text($(this).data('value'));
                     $('.TokenInfo .LocationInfo .Value').text($(this).data('location'));
                 });
-            
+                
                 $('button').click(function() {
-                    var lexOut = $('.LexOut'); 
                     var input = $('textarea').val();
                     
                     lexOut.children().remove();
                     $('.ParseOut').children().remove();
                     
-                    
                     var start = new Date().getTime();
-                     console.profile();
+                   //  console.profile();
                         var nodes = stream.toArray(lexer.lex(input));
-                     console.profileEnd();
+                   //  console.profileEnd();
                     var end = new Date().getTime();
                     console.log(end - start);
                     
                     nodes.forEach(function(v) {
-                        var type =  v.type;
-                        var value = (type === 'WhiteSpace' ? '' : v.value);
-                        var location = v.loc;
+                        var type =  v.type,
+                            value = (type === 'WhiteSpace' ? '' : v.value),
+                            location = v.loc;
                         lexOut.append($("<span class='Token " + type + "'>" + value + "</span>").data({
                             'type': type,
                             'value': value,
@@ -170,10 +169,9 @@
                         }));
                     });
 
-                    var s = stream.toArray(lexer.lexLang(input));
-                    console.profile();
-                    var ast = parser.parse(s);
-                    console.profileEnd();
+                  //  console.profile();
+                    var ast = parser.parse(nodes);
+                    //console.profileEnd();
                     $('.ParseOut').text(ast);
                     
                 });
