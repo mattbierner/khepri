@@ -153,12 +153,12 @@
                     
                     var start = new Date().getTime();
                    //  console.profile();
-                        var nodes = stream.toArray(lexer.lex(input));
+                        var nodes = lexer.lex(input);
                    //  console.profileEnd();
                     var end = new Date().getTime();
                     console.log(end - start);
                     
-                    nodes.forEach(function(v) {
+                    stream.forEach(nodes, function(v) {
                         var type =  v.type,
                             value = (type === 'WhiteSpace' ? '' : v.value),
                             location = v.loc;
@@ -170,7 +170,7 @@
                     });
 
                     console.profile();
-                    var ast = parser.parse(nodes);
+                    var ast = parser.parseStream(nodes);
                     console.profileEnd();
                     $('.ParseOut').text(ast);
                     
