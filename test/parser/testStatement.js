@@ -1,23 +1,23 @@
-define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/statement'], function(parse, stream, lexer, statement){
+define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/parse/statement'], function(parse, stream, lexer, parser, statement){
     
     return {
         'module': "Statement Tests",
         'tests': [
             ["Debugger",
             function(){
-                var result = parse.runStream(statement.debuggerStatement, lexer.lexLang("debugger;"))
+                var result = parse.runStream(statement.debuggerStatement, lexer.lex("debugger;"));
                 assert.equal(result.type, "DebuggerStatement");
             }],
             
             ["Empty Block",
             function(){
-                var result = parse.runStream(statement.blockStatement, lexer.lexLang("{}"))
+                var result = parse.runStream(statement.blockStatement, lexer.lex("{}"));
                 assert.equal(result.type, "BlockStatement");
                 assert.ok(result.body.length === 0);
             }],
             ["Non Empty Block",
             function(){
-                var result = parse.runStream(statement.blockStatement, lexer.lexLang("{debugger;{}debugger;}"))
+                var result = parse.runStream(statement.blockStatement, lexer.lex("{debugger;{}debugger;}"));
                 assert.equal(result.type, "BlockStatement");
                 assert.ok(result.body.length === 3);
                 assert.equal(result.body[0].type, "DebuggerStatement");
@@ -27,7 +27,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/statement'], func
             
             ["Single Variable Statement",
             function(){
-                var result = parse.runStream(statement.variableStatement, lexer.lexLang("var a;"))
+                var result = parse.runStream(statement.variableStatement, parser.parserStream(lexer.lex("var a;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 1);
                 assert.deepEqual(result.declarations[0].id.value, 'a');
@@ -35,7 +35,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/statement'], func
             }],
             ["Single Initilizer Variable Statement",
             function(){
-                var result = parse.runStream(statement.variableStatement, lexer.lexLang("var a = 1;"))
+                var result = parse.runStream(statement.variableStatement,  parser.parserStream(lexer.lex("var a = 1;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 1);
                 assert.deepEqual(result.declarations[0].id.value, 'a');
@@ -43,7 +43,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/statement'], func
             }],
             ["Multi Variable Statement",
             function(){
-                var result = parse.runStream(statement.variableStatement, lexer.lexLang("var a = 1, b;"))
+                var result = parse.runStream(statement.variableStatement,  parser.parserStream(lexer.lex("var a = 1, b;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 2);
                 assert.deepEqual(result.declarations[0].id.value, 'a');
