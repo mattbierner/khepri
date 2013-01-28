@@ -151,13 +151,9 @@
                     lexOut.children().remove();
                     $('.ParseOut').children().remove();
                     
-                    var start = new Date().getTime();
-                   //  console.profile();
-                        var nodes = lexer.lex(input);
-                   //  console.profileEnd();
-                    var end = new Date().getTime();
-                    console.log(end - start);
                     
+                    var nodes = lexer.lex(input);
+
                     stream.forEach(nodes, function(v) {
                         var type =  v.type,
                             value = (type === 'WhiteSpace' ? '' : v.value),
@@ -168,10 +164,16 @@
                             'location': location
                         }));
                     });
-
-                    console.profile();
+                    
+                    var start = new Date().getTime();
+                   // console.profile();
+                   
                     var ast = parser.parseStream(nodes);
-                    console.profileEnd();
+                    
+                   // console.profileEnd();
+                    var end = new Date().getTime();
+                    console.log(end - start);
+                    
                     $('.ParseOut').text(ast);
                     
                 });
