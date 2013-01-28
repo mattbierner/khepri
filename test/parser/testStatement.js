@@ -30,7 +30,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
                 var result = parse.runStream(statement.variableStatement, parser.parserStream(lexer.lex("var a;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 1);
-                assert.deepEqual(result.declarations[0].id.value, 'a');
+                assert.deepEqual(result.declarations[0].id.name, 'a');
                 assert.ok(!result.declarations[0].init);
             }],
             ["Single Initilizer Variable Statement",
@@ -38,7 +38,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
                 var result = parse.runStream(statement.variableStatement,  parser.parserStream(lexer.lex("var a = 1;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 1);
-                assert.deepEqual(result.declarations[0].id.value, 'a');
+                assert.deepEqual(result.declarations[0].id.name, 'a');
                 assert.deepEqual(result.declarations[0].init.value, 1);
             }],
             ["Multi Variable Statement",
@@ -46,9 +46,9 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
                 var result = parse.runStream(statement.variableStatement,  parser.parserStream(lexer.lex("var a = 1, b;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 2);
-                assert.deepEqual(result.declarations[0].id.value, 'a');
+                assert.deepEqual(result.declarations[0].id.name, 'a');
                 assert.deepEqual(result.declarations[0].init.value, 1);
-                assert.deepEqual(result.declarations[1].id.value, 'b');
+                assert.deepEqual(result.declarations[1].id.name, 'b');
                 assert.ok(!result.declarations[1].init);
             }],
             
@@ -56,7 +56,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
             function(){
                 var result = parse.runStream(statement.ifStatement, parser.parserStream(lexer.lex("if (a) debugger;")));
                 assert.equal(result.type, "IfStatement");
-                assert.equal(result.test.value, 'a');
+                assert.equal(result.test.name, 'a');
                 assert.equal(result.consequent.type, 'DebuggerStatement');
                 assert.ok(!result.alternate);
             }],
@@ -64,7 +64,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
             function(){
                 var result = parse.runStream(statement.ifStatement, parser.parserStream(lexer.lex("if (a) debugger; else ;")));
                 assert.equal(result.type, "IfStatement");
-                assert.equal(result.test.value, 'a');
+                assert.equal(result.test.name, 'a');
                 assert.equal(result.consequent.type, 'DebuggerStatement');
                 assert.equal(result.alternate.type, 'EmptyStatement');
             }],
