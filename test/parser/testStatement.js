@@ -51,6 +51,23 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
                 assert.deepEqual(result.declarations[1].id.value, 'b');
                 assert.ok(!result.declarations[1].init);
             }],
+            
+            ["Simple if Statement",
+            function(){
+                var result = parse.runStream(statement.ifStatement, parser.parserStream(lexer.lex("if (a) debugger;")));
+                assert.equal(result.type, "IfStatement");
+                assert.equal(result.test.value, 'a');
+                assert.equal(result.consequent.type, 'DebuggerStatement');
+                assert.ok(!result.alternate);
+            }],
+            ["Simple if else Statement",
+            function(){
+                var result = parse.runStream(statement.ifStatement, parser.parserStream(lexer.lex("if (a) debugger; else ;")));
+                assert.equal(result.type, "IfStatement");
+                assert.equal(result.test.value, 'a');
+                assert.equal(result.consequent.type, 'DebuggerStatement');
+                assert.equal(result.alternate.type, 'EmptyStatement');
+            }],
         ],
     };
 });
