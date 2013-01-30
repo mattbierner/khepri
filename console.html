@@ -88,7 +88,7 @@
             content: '\00B6';
         }
         
-        .Error {
+        .ParseError {
             color: red;
         }
     </style>
@@ -104,6 +104,7 @@
         <div class='output'>
             <h2>Output</h2>
             <pre class='LexOut'></pre>
+            <span class='ParseError'></span>
             <pre class='ParseOut'></pre>
         </div>
         
@@ -173,19 +174,19 @@
                     try
                     {
                         var start = new Date().getTime();
-                        //console.profile();
+                        console.profile();
                        
                         var ast = parser.parseStream(nodes);
                         
-                        //console.profileEnd();
+                        console.profileEnd();
                         var end = new Date().getTime();
                         console.log(end - start);
                         
+                        $('.ParseError').text('');
                         $('.ParseOut').text(ast);
                     } catch (e) {
-                        $('.ParseOut').append($('<span class="Error">' + e + '</span>'));
+                        $('.ParseError').text(e);
                     }
-                    
                 });
             });
         });
