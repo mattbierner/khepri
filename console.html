@@ -71,16 +71,16 @@
             color: orange;
         }
         
-        span.Token.WhiteSpace,
+        span.Token.Whitespace,
         span.Token.LineTerminator {
             color: rgb(215, 215, 215);
         }
         
-        span.Token.WhiteSpace {
+        span.Token.Whitespace {
             display:inline-block;
         }
         
-        span.Token.WhiteSpace:after {
+        span.Token.Whitespace:after {
             content: '\00B7';
         }
         
@@ -161,7 +161,7 @@
 
                     stream.forEach(nodes, function(v) {
                         var type =  v.type,
-                            value = (type === 'WhiteSpace' ? '' : v.value),
+                            value = (type === 'Whitespace' ? '' : v.value),
                             location = v.loc;
                         lexOut.append($("<span class='Token " + type + "'>" + value + "</span>").data({
                             'type': type,
