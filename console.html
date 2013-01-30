@@ -87,6 +87,10 @@
         span.Token.LineTerminator:before {
             content: '\00B6';
         }
+        
+        .Error {
+            color: red;
+        }
     </style>
 </head>
 
@@ -164,16 +168,22 @@
                         }));
                     });
                     
-                    //var start = new Date().getTime();
-                    console.profile();
-                   
-                    var ast = parser.parseStream(nodes);
                     
-                    console.profileEnd();
-                   // var end = new Date().getTime();
-                    //console.log(end - start);
-                    
-                    $('.ParseOut').text(ast);
+                    try
+                    {
+                        var start = new Date().getTime();
+                        //console.profile();
+                       
+                        var ast = parser.parseStream(nodes);
+                        
+                        //console.profileEnd();
+                        var end = new Date().getTime();
+                        console.log(end - start);
+                        
+                        $('.ParseOut').text(ast);
+                    } catch (e) {
+                        $('.ParseOut').append($('<span class="Error">' + e + '</span>'));
+                    }
                     
                 });
             });
