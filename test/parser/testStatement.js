@@ -1,23 +1,28 @@
 define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/parse/statement'], function(parse, stream, lexer, parser, statement){
     
+    var testParser = function(stream) {
+        var result = parser.parseStream(stream);
+        return result.body[0];
+    };
+    
     return {
         'module': "Statement Tests",
         'tests': [
             ["Debugger",
             function(){
-                var result = parse.runStream(statement.debuggerStatement, lexer.lex("debugger;"));
+                var result = testParser(lexer.lex("debugger;"));
                 assert.equal(result.type, "DebuggerStatement");
             }],
             
             ["Empty Block",
             function(){
-                var result = parse.runStream(statement.blockStatement, lexer.lex("{}"));
+                var result = testParser(lexer.lex("{}"));
                 assert.equal(result.type, "BlockStatement");
                 assert.ok(result.body.length === 0);
             }],
             ["Non Empty Block",
             function(){
-                var result = parse.runStream(statement.blockStatement, lexer.lex("{debugger;{}debugger;}"));
+                var result = testParser(lexer.lex("{debugger;{}debugger;}"));
                 assert.equal(result.type, "BlockStatement");
                 assert.ok(result.body.length === 3);
                 assert.equal(result.body[0].type, "DebuggerStatement");
@@ -27,7 +32,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
             
             ["Single Variable Statement",
             function(){
-                var result = parse.runStream(statement.variableStatement, parser.parserStream(lexer.lex("var a;")));
+                var result = testParser(parser.parserStream(lexer.lex("var a;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 1);
                 assert.deepEqual(result.declarations[0].id.name, 'a');
@@ -35,7 +40,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
             }],
             ["Single Initilizer Variable Statement",
             function(){
-                var result = parse.runStream(statement.variableStatement,  parser.parserStream(lexer.lex("var a = 1;")));
+                var result = testParser(parser.parserStream(lexer.lex("var a = 1;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 1);
                 assert.deepEqual(result.declarations[0].id.name, 'a');
@@ -43,7 +48,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
             }],
             ["Multi Variable Statement",
             function(){
-                var result = parse.runStream(statement.variableStatement,  parser.parserStream(lexer.lex("var a = 1, b;")));
+                var result = testParser(parser.parserStream(lexer.lex("var a = 1, b;")));
                 assert.equal(result.type, "VariableDeclaration");
                 assert.deepEqual(result.declarations.length, 2);
                 assert.deepEqual(result.declarations[0].id.name, 'a');
@@ -54,7 +59,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
             
             ["Simple if Statement",
             function(){
-                var result = parse.runStream(statement.ifStatement, parser.parserStream(lexer.lex("if (a) debugger;")));
+                var result = testParser(parser.parserStream(lexer.lex("if (a) debugger;")));
                 assert.equal(result.type, "IfStatement");
                 assert.equal(result.test.name, 'a');
                 assert.equal(result.consequent.type, 'DebuggerStatement');
@@ -62,7 +67,7 @@ define(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/pa
             }],
             ["Simple if else Statement",
             function(){
-                var result = parse.runStream(statement.ifStatement, parser.parserStream(lexer.lex("if (a) debugger; else ;")));
+                var result = testParser(parser.parserStream(lexer.lex("if (a) debugger; else ;")));
                 assert.equal(result.type, "IfStatement");
                 assert.equal(result.test.name, 'a');
                 assert.equal(result.consequent.type, 'DebuggerStatement');
