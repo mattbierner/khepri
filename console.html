@@ -133,13 +133,13 @@
         requirejs.config({
             paths: {
                 parse: 'dependencies/parse/lib',
-                stream: 'dependencies/parse/dependencies/stream/lib/stream',
+                stream: 'dependencies/stream/lib',
                 
                 ecma: 'lib'
             }
         });
         $(function(){
-            require(['parse/parse', 'stream', 'ecma/lex/lexer', 'ecma/parse/parser'],
+            require(['parse/parse', 'stream/stream', 'ecma/lex/lexer', 'ecma/parse/parser'],
                 function(parse, stream, lexer, parser)
             {
                 var lexOut = $('.LexOut');
