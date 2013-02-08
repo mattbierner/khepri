@@ -4,3 +4,6 @@
 [submodule "dependencies/stream"]
 	path = dependencies/stream
 	url = https://github.com/mattbierner/stream.js.git
+[submodule "dependencies/ecma-unparse"]
+	path = dependencies/ecma-unparse
+	url = https://github.com/mattbierner/ecma-unparse.git
