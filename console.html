@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECMA Unparse</title>
+    <style>
+        .content > * {
+            width: 100%;
+            position: relative;
+        }
+        
+        .content > * > * {
+            padding: 0 2em;
+            display: block;
+        }
+        
+        .console textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .ParseError {
+            color: red;
+        }
+        
+        .node .bg {
+            fill: #D4D9B4;
+            stroke-width: 2px;
+            stroke: rgba(255, 255, 255, .25);
+        }
+        
+        .node.InnerNode .bg {
+            stroke: rgba(0, 0, 0, .5);
+        }
+        
+       .node.InnerNode:hover .bg {
+            opacity: .65;
+        }
+        
+        .node.Collapsed text {
+            font-weight: bold;
+        }
+        
+        .node.Statement .bg {
+            fill: #C0974E;
+        }
+        
+        .node.Expression .bg {
+            fill: #7A9FA2;
+        }
+        
+        .node.Identifier .bg {
+            fill: #A7AE61;
+        }
+        
+        .node.Literal .bg {
+            fill: #86575A;
+        }
+        
+        #text_out {
+            border: 1px solid black;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body lang="en">
+    <div class="content">
+        <div class='console'>
+            <h2>Input</h2>
+            <div>
+                <textarea rows='20'></textarea>
+                <button>Tokenize</button>
+            </div>
+        </div>
+        <div class='output'>
+            <h2>Output</h2>
+            <span class="ParseError"></span>
+            <p>
+                <span id='parse_out'></span>
+            </p>
+            <pre id='text_out'></pre>
+        </div>
+    </div>
+    
+    <script type="application/javascript" src="resources/require.js"></script>
+    <script type="application/javascript" src="resources/jquery-1.8.3.min.js"></script>
+    
+    <script type="application/javascript">
+        requirejs.config({
+            paths: {
+                'parse': 'dependencies/parse/lib',
+                'stream': 'dependencies/stream/lib',
+                'ecma': 'lib',
+                'ecma_unparse': 'dependencies/ecma-unparse/lib'
+            }
+        });
+
+        $(function () {
+            require(['parse/parse',
+               'stream/stream',
+               'ecma/lex/lexer', 'ecma/parse/parser',
+               'ecma_unparse/unparse', 'ecma_unparse/print'],
+            function(parse,
+                    stream,
+                 lexer, parser,
+                    unparse, unparse_print) {
+                    
+                $('button').click(function () {
+                    var input = $('textarea').val();
+                    var ast;
+                  //  try {
+                        var lex = lexer.lex(input);
+                        ast = parser.parseStream(lex);
+                        var unparsed = unparse.unparse(ast);
+                        $('.ParseError').text('');
+                        
+                        var s = unparse_print.print(unparsed);
+                        var out = stream.reduce(s, function(p, c){ return p + '' + c; }, '');
+                        
+                        $('#text_out').text(out);
+                  //  } catch (e) {
+                     //   ast = {};
+                      //  $('.ParseError').text(e);
+                      //  $('#parse_out').text('');
+                  //  }
+                    
+                });
+            });
+        });
+    </script>
+
+</body>
+    
+</html>
