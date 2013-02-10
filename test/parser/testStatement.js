@@ -264,6 +264,94 @@ define(['parse/parse', 'stream/stream', 'ecma/lex/lexer', 'ecma/parse/parser', '
                 assert.equal(result.type, "BreakStatement");
                 assert.ok(!result.label);
             }],
+            
+            ["Simple Return Statement",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("return;")));
+                assert.equal(result.type, "ReturnStatement");
+                assert.ok(!result.argument);
+            }],
+            ["Simple Return Statement With Value",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("return 3;")));
+                assert.equal(result.type, "ReturnStatement");
+                assert.equal(result.argument.value, 3);
+            }],
+            [" Return Statement With Sequence Expression",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("return 3, 4, 5;")));
+                assert.equal(result.type, "ReturnStatement");
+                assert.equal(result.argument.expressions[2].value, 5);
+            }],
+            ["Return Statement With SemiColon Insertion",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("return 3")));
+                assert.equal(result.type, "ReturnStatement");
+                
+                var result2 = testParser(parser.parserStream(lexer.lex("return 3\n debugger;")));
+                assert.equal(result2.type, "ReturnStatement");
+            }],
+            ["Return Statement With Newline SemiColon Insertion",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("return\n 3")));
+                assert.equal(result.type, "ReturnStatement");
+                assert.ok(!result.type.argument);
+            }],
+            
+            ["Simple With Statement",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("with (a) debugger;")));
+                assert.equal(result.type, "WithStatement");
+                assert.equal(result.object.name, 'a');
+                assert.equal(result.body.type, 'DebuggerStatement');
+            }],
+            ["With Statement Expression",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("with (a = 3) debugger;")));
+                assert.equal(result.type, "WithStatement");
+                assert.equal(result.object.type, 'AssignmentExpression');
+                assert.equal(result.body.type, 'DebuggerStatement');
+            }],
+            ["With Statement Correct Grouping",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("with (a) with (b) debugger; ")));
+                assert.equal(result.type, "WithStatement");
+                assert.equal(result.object.name, 'a');
+                assert.equal(result.body.type, 'WithStatement');
+            }],
+            
+            ["Simple Switch Statement",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("switch (a) {}")));
+                assert.equal(result.type, "SwitchStatement");
+                assert.equal(result.discriminant.name, 'a');
+                assert.deepEqual(result.cases, []);
+            }],
+            ["Switch Statement With Cases",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("switch (a) { case x: break; case y: debugger; break; }")));
+                assert.equal(result.type, "SwitchStatement");
+                assert.equal(result.discriminant.name, 'a');
+                assert.equal(result.cases.length, 2);
+                assert.equal(result.cases[0].test.name, 'x');
+                assert.equal(result.cases[0].consequent[0].type, 'BreakStatement');
+                assert.equal(result.cases[1].test.name, 'y');
+                assert.equal(result.cases[1].consequent[0].type, 'DebuggerStatement');
+                assert.equal(result.cases[1].consequent[1].type, 'BreakStatement');
+            }],
+            ["Switch Statement With Default",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("switch (a) { case x: break; default: break; case y: debugger; break; }")));
+                assert.equal(result.type, "SwitchStatement");
+                assert.equal(result.discriminant.name, 'a');
+                assert.equal(result.cases.length, 3);
+                assert.equal(result.cases[0].test.name, 'x');
+                assert.equal(result.cases[0].consequent[0].type, 'BreakStatement');
+                assert.ok(!result.cases[1].test);
+                assert.equal(result.cases[2].test.name, 'y');
+                assert.equal(result.cases[2].consequent[0].type, 'DebuggerStatement');
+                assert.equal(result.cases[2].consequent[1].type, 'BreakStatement');
+            }],
         ],
     };
 });
