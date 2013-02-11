@@ -6,7 +6,7 @@ ECMAScript and also introduces some syntax changes.
 
 Unlike most other *script languages, Khepri's goal is not to replace Javascript
 by introducing new language features, but to make writing Javascript more fun.
-Its specific focus is functional programming in Javascript.
+Its specific focus is functional style programming in Javascript.
  
 
 ## To clone ##
@@ -44,7 +44,7 @@ Available syntaxes, along with translations, are shown here:
         ++x;
         --y;
         return x + y;
-    }
+    };
     function(x, y) {
         ++x; 
         --y;
@@ -62,35 +62,42 @@ Available syntaxes, along with translations, are shown here:
     x -> y -> x + y;
     function(x) { return function(y) { return x + y; }};
 
-All scoping remains the same as in the translated version.
+All scoping remains the same as in the translated version. 
 
 
 ## Modified ##
 
 ### Switch Default Clause ###
-Optional, but must come last.
+The default clause in a switch statement remains optional, but must be the last
+clause in the switch statement.
 
 ### Object Literal Keys ###
-Must always be a string, not a number or identifier.
-Bracket accessors still support expressions.
+Like JSON, object literal keys must be strings. ECMAScript normally allows
+number and identifier key values as well.
 
+### 'get' and 'set' keywords ###
+In ECMAScript 5.1, 'get' and 'set' are identifiers. This is confusing as they
+have a special meaning in object literals.
 
 ## Removed ##
 
 ### Function Declarations ###
-Use function expressions instead.
+Function declarations are not necessary. Use function expressions instead.
 
 ### Comma Separated Expressions ###
-Expressions must be a single expression, not a sequence of expressions.
+Comma separated sequences of expressions are not allowed. An expressions must be 
+single expression. Such sequence expressions are usually not clear and make the
+language more complex than it should be. 
 
 ### With Statement ###
-
+With statements are not valid in strict mode ECMAScript and have been removed.
 
 ### Labeled Statements ###
 Make language more ambiguous.
 
 ### Semicolon Insertion and Significant Whitespace ###
-Always use real semicolons. Also, whitespace no longer matters.
+Semicolon insertion is not supported and whitespace is no longer significant.
+Real semicolons must always be used.
 
     // Khepri will ignore whitespace and not insert semicolons
     (x, y) -> {
@@ -101,18 +108,21 @@ Always use real semicolons. Also, whitespace no longer matters.
     function(x, y) { return x + y; };
 
 ### Empty Array Literal Elements ###
-Use explicit undefined instead.
+Array literals do not support empty elements or a trailing comma.
+Use an explicit undefined value instead.
+
+### Object Literal Trailing Comma ###
+Object literals may not have trailing comma.
 
 ### In Operator ###
-Still reserved keyword.
+The in operator is not supported, but 'in' remains a reserved word. 
 
 ### For In Statement ###
-Because in operator removed.
+Since the 'in' operator is not supported, for in statements are also not supported.
+Other solutions usually exist, such as 'forEach'.
 
 
- 
- 
- 
+
  [parsejs]: https://github.com/mattbierner/parse.js
  [parseecma]: https://github.com/mattbierner/parse-ecma
  [ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm

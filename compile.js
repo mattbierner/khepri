@@ -34,13 +34,14 @@ function(parse,
     
     var inFile = argv._[0];
     var outFile = argv['o'];
-
+    var header = (argv['header'] ? argv['header'] + '\n' : '');
+    
     fs.readFile(inFile, 'utf8', function (err, data) {
         if (err) {
             throw err;
         }
         
-        var out = stream.reduce(compile(data), function(p, c){ return p + '' + c; }, '');
+        var out = header + stream.reduce(compile(data), function(p, c){ return p + '' + c; }, '');
         
         if (outFile) {
             fs.writeFile(outFile, out, 'utf8', function(err) {
