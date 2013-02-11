@@ -7,6 +7,19 @@ ECMAScript and also uses an different syntax.
 Unlike most other *script languages, Khepri's goal is not to replace Javascript
 by introducing new language features, but to make writing Javascript more fun.
 Its specific focus is functional programming in Javascript.
+ 
+
+## To clone ##
+    git clone https://github.com/mattbierner/khepri khepri
+    cd khepri
+    git submodule update --init --recursive
+
+
+# Using Khepri #
+
+## Dependencies ##
+* [parse.js][parsejs]
+* [stream.js][stream]
 
 
 # Changes #
@@ -43,7 +56,7 @@ Available syntaxes, along with translations, are shown here:
     // Return empty object literal
     () -> ({});
     
-    // Left associativity
+    // Right associativity
     x -> y -> x + y;
     function(x) { return function(y) { return x + y; }};
 
@@ -94,3 +107,11 @@ Still reserved keyword.
 ### For In Statement ###
 Because in operator removed.
 
+
+ 
+ 
+ 
+ [parsejs]: https://github.com/mattbierner/parse.js
+ [ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
+ [parseapi]: https://developer.mozilla.org/en-US/docs/SpiderMonkey/Parser_API
+ [stream]: https://github.com/mattbierner/stream.js

@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "description": "Khepri Programming Language",
   "main": "",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git@github.com:mattbierner/parse-ecma.git"
@@ -13,7 +10,10 @@
   "keywords": [
     'parse', 
     'parse.js',
-    'ecmascript'
+    'ecmascript',
+    'languge',
+    'programming language',
+    'Khepri'
   ],
   "author": "Matt Bierner",
   "license": "MIT"
