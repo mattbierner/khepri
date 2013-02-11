@@ -20,7 +20,9 @@ Its specific focus is functional programming in Javascript.
 ## Dependencies ##
 * [parse.js][parsejs]
 * [stream.js][stream]
+* [parse-ecma][parseecma]
 * [ecma-unparse][ecmaunparse]
+
 
 # Changes #
 
@@ -112,6 +114,7 @@ Because in operator removed.
  
  
  [parsejs]: https://github.com/mattbierner/parse.js
+ [parseecma]: https://github.com/mattbierner/parse-ecma
  [ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
  [stream]: https://github.com/mattbierner/stream.js
  [ecmaunparse]: https://github.com/mattbierner/ecma-unparse
