@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>ECMA Unparse</title>
+    <title>Khepri Console</title>
     <style>
         .content > * {
             width: 100%;
@@ -92,7 +92,8 @@
             paths: {
                 'parse': 'dependencies/parse/lib',
                 'stream': 'dependencies/stream/lib',
-                'ecma': 'lib',
+                'khepri': 'lib',
+                'ecma': 'dependencies/parse-ecma/lib',
                 'ecma_unparse': 'dependencies/ecma-unparse/lib'
             }
         });
@@ -100,7 +101,7 @@
         $(function () {
             require(['parse/parse',
                'stream/stream',
-               'ecma/lex/lexer', 'ecma/parse/parser',
+               'khepri/lex/lexer', 'khepri/parse/parser',
                'ecma_unparse/unparse', 'ecma_unparse/print'],
             function(parse,
                     stream,

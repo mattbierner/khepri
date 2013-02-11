@@ -1,4 +1,4 @@
-define(['parse/parse', 'stream/stream', 'ecma/lex/lexer', 'ecma/parse/parser', 'ecma/parse/statement_parser'], function(parse, stream, lexer, parser, statement){
+define(['parse/parse', 'stream/stream', 'khepri/lex/lexer', 'khepri/parse/parser', 'khepri/parse/statement_parser'], function(parse, stream, lexer, parser, statement){
     
     var testParser = function(stream) {
         var result = parser.parseStream(stream);

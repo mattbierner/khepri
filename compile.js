@@ -7,14 +7,15 @@ requirejs.config({
     paths: {
         'parse': 'dependencies/parse/lib',
         'stream': 'dependencies/stream/lib',
-        'ecma': 'lib',
-        'ecma_unparse': 'dependencies/ecma-unparse/lib'
+        'ecma_unparse': 'dependencies/ecma-unparse/lib',
+        'khepri': 'lib',
+        'ecma': 'dependencies/parse-ecma/lib'
     }
 });
 
 requirejs(['parse/parse',
            'stream/stream',
-           'ecma/lex/lexer', 'ecma/parse/parser',
+           'khepri/lex/lexer', 'khepri/parse/parser',
            'ecma_unparse/unparse', 'ecma_unparse/print'],
 function(parse,
         stream,
@@ -31,14 +32,26 @@ function(parse,
         }
     };
     
-    var file = argv._[0];
-    
-    fs.readFile(file, 'utf8', function (err, data) {
+    var inFile = argv._[0];
+    var outFile = argv['o'];
+
+    fs.readFile(inFile, 'utf8', function (err, data) {
         if (err) {
             throw err;
         }
-        var s = compile(data);
-        var out = stream.reduce(s, function(p, c){ return p + '' + c; }, '');
-        process.stdout.write(out);
+        
+        var out = stream.reduce(compile(data), function(p, c){ return p + '' + c; }, '');
+        
+        if (outFile) {
+            fs.writeFile(outFile, out, 'utf8', function(err) {
+                if (err) {
+                    throw err;
+                }
+                console.log("Compiled '" + inFile + "' to '" + outFile + "'");
+            });
+        } else {
+            process.stdout.write(out);
+            console.log("Compiled '" + inFile + "' to stdout");
+        }
     });
 });

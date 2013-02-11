@@ -1,4 +1,4 @@
-define(['parse/parse', 'ecma/lex/line_terminator_lexer'], function(parse, line_terminator_lexer){
+define(['parse/parse', 'khepri/lex/line_terminator_lexer'], function(parse, line_terminator_lexer){
     
     return {
         'module': "Line Terminator Tests",

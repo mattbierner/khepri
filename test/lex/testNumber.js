@@ -1,4 +1,4 @@
-define(['parse/parse', 'ecma/lex/number_lexer'], function(parse, number_lexer){
+define(['parse/parse', 'khepri/lex/number_lexer'], function(parse, number_lexer){
     return {
         'module': "Number Tests",
         'tests': [

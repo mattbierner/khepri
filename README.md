@@ -2,7 +2,7 @@
 
 ## About ##
 Khepri is a programming language that is a subset of ECMAScript. It restricts
-ECMAScript and also uses an different syntax.
+ECMAScript and also introduces some syntax changes.
 
 Unlike most other *script languages, Khepri's goal is not to replace Javascript
 by introducing new language features, but to make writing Javascript more fun.
@@ -20,7 +20,7 @@ Its specific focus is functional programming in Javascript.
 ## Dependencies ##
 * [parse.js][parsejs]
 * [stream.js][stream]
-
+* [ecma-unparse][ecmaunparse]
 
 # Changes #
 
@@ -113,5 +113,5 @@ Because in operator removed.
  
  [parsejs]: https://github.com/mattbierner/parse.js
  [ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
- [parseapi]: https://developer.mozilla.org/en-US/docs/SpiderMonkey/Parser_API
  [stream]: https://github.com/mattbierner/stream.js
+ [ecmaunparse]: https://github.com/mattbierner/ecma-unparse

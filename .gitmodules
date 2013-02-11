@@ -7,3 +7,6 @@
 [submodule "dependencies/ecma-unparse"]
 	path = dependencies/ecma-unparse
 	url = https://github.com/mattbierner/ecma-unparse.git
+[submodule "dependencies/parse-ecma"]
+	path = dependencies/parse-ecma
+	url = https://github.com/mattbierner/parse-ecma.git
