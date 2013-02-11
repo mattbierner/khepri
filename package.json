@@ -1,7 +1,7 @@
 {
-  "name": "parse-ecma",
+  "name": "Khepri",
   "version": "0.0.0",
-  "description": "Javascript Generator Library",
+  "description": "Khepri Programming Language",
   "main": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
