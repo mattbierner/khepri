@@ -352,6 +352,70 @@ define(['parse/parse', 'stream/stream', 'ecma/lex/lexer', 'ecma/parse/parser', '
                 assert.equal(result.cases[2].consequent[0].type, 'DebuggerStatement');
                 assert.equal(result.cases[2].consequent[1].type, 'BreakStatement');
             }],
+            ["Switch Statement With Fallthrough Cases",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("switch (a) { case x: case y: debugger; break; }")));
+                assert.equal(result.type, "SwitchStatement");
+                assert.equal(result.discriminant.name, 'a');
+                assert.equal(result.cases.length, 2);
+                assert.equal(result.cases[0].test.name, 'x');
+                assert.ok(!result.cases[0].consequent[0]);
+                assert.equal(result.cases[1].test.name, 'y');
+                assert.equal(result.cases[1].consequent[0].type, 'DebuggerStatement');
+                assert.equal(result.cases[1].consequent[1].type, 'BreakStatement');
+            }],
+            
+            ["Simple Throw Statement",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("throw a;")));
+                assert.equal(result.type, "ThrowStatement");
+                assert.equal(result.argument.name, 'a');
+            }],
+            ["Semicolon Insertion Labeled Throw Statement",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("throw a")));
+                assert.equal(result.type, "ThrowStatement");
+                assert.equal(result.argument.name, 'a');
+                
+                var result2 = testParser(parser.parserStream(lexer.lex("throw a\n debugger;")));
+                assert.equal(result2.type, "ThrowStatement");
+                assert.equal(result2.argument.name, 'a');
+            }],
+            ["Breakline Throw Statement",
+            function(){
+                assert.throws(
+                    testParser.bind(undefined, parser.parserStream(lexer.lex("throw \n a;"))));
+            }],
+            
+            ["Simple Try Statement ",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("try {debugger;}")));
+                assert.equal(result.type, "TryStatement");
+                assert.equal(result.block.body.length, 1);
+                assert.equal(result.block.body[0].type, "DebuggerStatement");
+            }],
+            ["Simple Try Statement With Finally",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("try {} finally { debugger; }")));
+                assert.equal(result.type, "TryStatement");
+                assert.equal(result.block.body.length, 0);
+                assert.equal(result.finalizer.body[0].type, "DebuggerStatement");
+            }],
+             ["Simple Try Statement With Catch",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("try {} catch (a) { debugger; }")));
+                assert.equal(result.type, "TryStatement");
+                assert.equal(result.block.body.length, 0);
+                assert.equal(result.handler.param.name, "a");
+                assert.equal(result.handler.body.body[0].type, "DebuggerStatement");
+            }],
+            ["Simple Try Statement With Catch and Finally",
+            function(){
+                var result = testParser(parser.parserStream(lexer.lex("try {} finally { debugger; }")));
+                assert.equal(result.type, "TryStatement");
+                assert.equal(result.block.body.length, 0);
+                assert.equal(result.finalizer.body[0].type, "DebuggerStatement");
+            }],
         ],
     };
 });
