@@ -12,7 +12,7 @@ Its specific focus is functional style programming in Javascript.
 ## To clone ##
     git clone https://github.com/mattbierner/khepri khepri
     cd khepri
-    git submodule update --init --recursive
+    git submodule update --init
 
 
 # Using Khepri #
