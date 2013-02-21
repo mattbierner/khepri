@@ -112,13 +112,12 @@ var propertyAssignment = parse.choice(
             propertyName,
             token.punctuator(':'),
             assignmentExpression),
-        function(name, _, value) {
-            return parse.always({
+        (name, _, value) ->
+            parse.always({
                 'key': name,
                 'kind': 'init',
                 'value': value
-            });
-        })),
+            }))),
     parse.next(token.keyword('get'),
         parse.binda(
             parse.sequence(
@@ -162,19 +161,20 @@ var objectLiteral = parse.Parser('Object Literal',
             parse.sequence(
                 propertyNameAndValueList,
                 parse.optional(token.punctuator(','))),
-            function(properties, _) {
-                return parse.always(new astExpression.ObjectExpression(properties));
-            }))));
+            properties -> parse.always(
+                new astExpression.ObjectExpression(properties))))));
+
+// This Expression
+////////////////////////////////////////
+var thisExpression = ecma_parse.astNode(
+    parse.bind(token.keyword('this'), () ->
+        parse.always(new astExpression.ThisExpression())));
 
 // Primary Expression
 ////////////////////////////////////////
 var primaryExpression = parse.Parser('Primary Expression',
     parse.choice(
-        ecma_parse.astNode(parse.bind(
-            token.keyword('this'),
-            function() {
-                return parse.always(new astExpression.ThisExpression());
-            })),
+        thisExpression,
         parse.attempt(value.identifier),
         value.literal,
         arrayLiteral,
@@ -193,22 +193,18 @@ var args = parse.between(token.punctuator('('), token.punctuator(')'),
 var dotAccessor = parse.bind(
     parse.next(token.punctuator('.'),
         value.identifier),
-    function(x) {
-        return parse.always({
-            'property': x,
-            'computed': false
-        });
-    });
+    x -> parse.always({
+        'property': x,
+        'computed': false
+    }));
 
 var bracketAccessor = parse.bind(
     parse.between(token.punctuator('['), token.punctuator(']'),
         expression),
-    function(x) {
-        return parse.always({
-            'property': x,
-            'computed': true
-        });
-    });
+    x -> parse.always({
+        'property': x,
+        'computed': true
+    }));
 
 var accessor = parse.either(
     parse.attempt(dotAccessor),
@@ -218,9 +214,8 @@ var accessor = parse.either(
  * 
  */
 var memberExpression = (function(){
-    var reducer = function(p, c){
-        return new astExpression.MemberExpression(p, c.property, c.computed);
-    };
+    var reducer = (p, c) -> 
+        new astExpression.MemberExpression(p, c.property, c.computed);
     
     return parse.RecParser('Member Expression', function(self) {
         return parse.binda(
