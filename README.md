@@ -121,6 +121,9 @@ The in operator is not supported, but 'in' remains a reserved word.
 Since the 'in' operator is not supported, for in statements are also not supported.
 Other solutions usually exist, such as 'forEach'.
 
+### Increment and Decrement Operators ###
+Where mutable state must be used, make it more explicit.
+
 
 
  [parsejs]: https://github.com/mattbierner/parse.js

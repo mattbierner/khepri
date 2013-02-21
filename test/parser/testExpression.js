@@ -132,23 +132,6 @@ function(parse,
                 assert.equal(expr.argument.operator, '!');
                 assert.equal(expr.argument.argument.name, 'a');
             }],
-            
-            ["Simple Prefix Update Expression",
-            function(){
-                var expr = testParser(lexer.lex("++a;"));
-                assert.equal(expr.type, 'UpdateExpression');
-                assert.equal(expr.operator, '++');
-                assert.equal(expr.prefix, true);
-                assert.equal(expr.argument.name, 'a');
-            }],
-            ["Simple Postfix Update Expression",
-            function(){
-                var expr = testParser(lexer.lex("a++;"));
-                assert.equal(expr.type, 'UpdateExpression');
-                assert.equal(expr.operator, '++');
-                assert.equal(expr.prefix, false);
-                assert.equal(expr.argument.name, 'a');
-            }],
            
             ["Simple New Expression",
             function(){

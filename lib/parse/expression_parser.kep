@@ -226,9 +226,8 @@ var memberExpression = (function(){
                                 parse.sequence(
                                     self,
                                     args),
-                                function(expression, a) {
-                                    return parse.always(new astExpression.NewExpression(expression, a));
-                                }))),
+                                (expression, a) -> parse.always(
+                                    new astExpression.NewExpression(expression, a))))),
                         parse.attempt(functionExpression),
                         primaryExpression),
                     parse.many(accessor)),
@@ -245,11 +244,9 @@ var memberExpression = (function(){
  * 
  */
 var callExpression = (function(){
-    var reducer = function(p, c) {
-        return (c.hasOwnProperty('property') ?
-             new astExpression.MemberExpression(p, c.property, c.computed) :
-             new astExpression.CallExpression(p, c));
-    };
+    var reducer = (p, c) -> (c.hasOwnProperty('property') ?
+         new astExpression.MemberExpression(p, c.property, c.computed) :
+         new astExpression.CallExpression(p, c));
     
     return parse.Parser('Call Expression',
         parse.binda(
@@ -274,9 +271,8 @@ var newExpression = parse.RecParser('New Expression', function(self) {
     return parse.either(
         parse.attempt(parse.memo(memberExpression)),
         parse.next(token.keyword('new'),
-            parse.bind(self, function(v) {
-                return parse.always(new astExpression.NewExpression(v, []));
-            })));
+            parse.bind(self, x -> parse.always(
+                new astExpression.NewExpression(x, [])))));
 });
 
 // Left Hand Side Expression
@@ -289,33 +285,12 @@ var leftHandSideExpression = parse.Parser('Left Hand Side Expression',
         parse.attempt(callExpression),
         newExpression));
 
-// Postfix Expression
-////////////////////////////////////////
-var postfixOperator = parse.either(
-    token.punctuator('++'),
-    token.punctuator('--'));
-
-/**
- * 
- */
-var postfixExpression = parse.binda(
-    parse.sequence(
-        parse.memo(leftHandSideExpression),
-        parse.optional(postfixOperator)),
-    function(argument, op) {
-        return parse.always(op ?
-            new astExpression.UpdateExpression(op.value, argument, false) :
-            argument);
-    });
-
 // Unary Expression
 ////////////////////////////////////////
 var unaryOperator = parse.choice(
     token.keyword('delete'),
     token.keyword('void'),
     token.keyword('typeof'),
-    token.punctuator('++'),
-    token.punctuator('--'),
     token.punctuator('+'),
     token.punctuator('-'),
     token.punctuator('~'),
@@ -325,19 +300,15 @@ var unaryOperator = parse.choice(
  * 
  */
 var unaryExpression = (function(){
-    var reducer = function(argument, op) {
-        return (op.value === '++' || op.value === '--' ?
-            new astExpression.UpdateExpression(op.value, argument, true) :
-            new astExpression.UnaryExpression(op.value, argument));
-    };
+    var reducer = (argument, op) -> 
+        new astExpression.UnaryExpression(op.value, argument);
     
     return parse.binda(
         parse.sequence(
             parse.many(unaryOperator),
-            postfixExpression),
-        function(ops, expression) {
-            return parse.always(stream.reduceRight(ops, reducer, expression));
-        });
+            leftHandSideExpression),
+        (ops, expression) -> parse.always(
+            stream.reduceRight(ops, reducer, expression)));
 }());
 
 // Binary Expressions
