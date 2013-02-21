@@ -31,28 +31,36 @@ function(parse,
             throw e;
         }
     };
-    
     var inFile = argv._[0];
     var outFile = argv['o'];
     var header = (argv['header'] ? argv['header'] + '\n' : '');
-    
-    fs.readFile(inFile, 'utf8', function (err, data) {
+
+    fs.realpath(inFile, function(err, resolvedPath) {
         if (err) {
             throw err;
         }
-        
-        var out = header + stream.reduce(compile(data), function(p, c){ return p + '' + c; }, '');
-        
-        if (outFile) {
-            fs.writeFile(outFile, out, 'utf8', function(err) {
-                if (err) {
-                    throw err;
-                }
-                console.log("Compiled '" + inFile + "' to '" + outFile + "'");
-            });
-        } else {
-            process.stdout.write(out);
-            console.log("Compiled '" + inFile + "' to stdout");
-        }
+        fs.readFile(resolvedPath, 'utf8', function (err, data) {
+            if (err) {
+                throw err;
+            }
+            var out = header + stream.reduce(compile(data), function(p, c){ return p + '' + c; }, '');
+            
+            if (outFile) {
+                fs.realpath(outFile, function(err, resolvedOutPath) {
+                    if (err) {
+                        throw err;
+                    }
+                    fs.writeFile(resolvedOutPath, out, 'utf8', function(err) {
+                        if (err) {
+                            throw err;
+                        }
+                        console.log("Compiled '" + inFile + "' to '" + outFile + "'");
+                    });
+                });
+            } else {
+                process.stdout.write(out);
+                console.log("Compiled '" + inFile + "' to stdout");
+            }
+        });
     });
 });
