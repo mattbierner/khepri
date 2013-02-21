@@ -123,6 +123,8 @@ Other solutions usually exist, such as 'forEach'.
 
 ### Increment and Decrement Operators ###
 Where mutable state must be used, make it more explicit.
+Additionally, '++' and '--' are no longer valid punctuators and will be lexed
+to '+' '+' and '-' '-'.
 
 
 # Code #
