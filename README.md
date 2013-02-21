@@ -125,6 +125,13 @@ Other solutions usually exist, such as 'forEach'.
 Where mutable state must be used, make it more explicit.
 
 
+# Code #
+Khepri is written in Javascript / Khepri.
+
+For now, both the .js and .kep versions of source code will be kept in 'lib/',
+but only Khepri sources will be developed and Javascript files will be
+generated from it.
+
 
  [parsejs]: https://github.com/mattbierner/parse.js
  [parseecma]: https://github.com/mattbierner/parse-ecma
