@@ -34,7 +34,7 @@ function(parse,
     var inFile = argv._[0];
     var outFile = argv['o'];
     var header = (argv['header'] ? argv['header'] + '\n' : '');
-
+	console.log(inFile)
 
     fs.realpath(inFile, function(err, resolvedPath) {
         if (err) {
