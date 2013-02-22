@@ -35,10 +35,12 @@ function(parse,
     var outFile = argv['o'];
     var header = (argv['header'] ? argv['header'] + '\n' : '');
 
+
     fs.realpath(inFile, function(err, resolvedPath) {
         if (err) {
             throw err;
         }
+
         fs.readFile(resolvedPath, 'utf8', function (err, data) {
             if (err) {
                 throw err;
@@ -46,16 +48,11 @@ function(parse,
             var out = header + stream.reduce(compile(data), function(p, c){ return p + '' + c; }, '');
             
             if (outFile) {
-                fs.realpath(outFile, function(err, resolvedOutPath) {
+                fs.writeFile(outFile, out, 'utf8', function(err) {
                     if (err) {
                         throw err;
                     }
-                    fs.writeFile(resolvedOutPath, out, 'utf8', function(err) {
-                        if (err) {
-                            throw err;
-                        }
-                        console.log("Compiled '" + inFile + "' to '" + outFile + "'");
-                    });
+                    console.log("Compiled '" + inFile + "' to '" + outFile + "'");
                 });
             } else {
                 process.stdout.write(out);
