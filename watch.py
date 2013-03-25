@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 import logging
 from os.path import splitext
@@ -7,7 +8,7 @@ from watchdog.observers.kqueue import KqueueObserver as Observer
 from watchdog.events import FileSystemEventHandler
 
 
-KHEPRI = "node compile.js"
+KHEPRI = "node %s" % os.path.join(os.path.dirname(os.path.realpath(__file__)), "compile.js")
 
 class KhepriMatchingEventHandler(FileSystemEventHandler):
     def __init__(self):
