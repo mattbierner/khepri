@@ -1,0 +1,84 @@
+/**
+ * @fileOverview
+ */
+define(['parse/parse',
+        'stream/stream',
+        'ecma/lex/token',
+        'ecma/position',
+        'ecma/parse/parser',
+        'khepri/parse/program_parser'],
+function(parse,
+        stream,
+        lexToken,
+        position,
+        parser,
+        program){
+"use strict";
+
+/* Streams
+ ******************************************************************************/
+/**
+ * Maps a lex stream to a parse stream.
+ * 
+ * @param s Stream of tokens.
+ * 
+ * @return Stream suitable for parsing.
+ */
+var parserStream = (function(){
+    var langElementFilter = x -> {
+        switch (x.type) {
+        case 'Whitespace':
+        case 'LineTerminator':
+        case 'Comment':
+            return false;
+        default:
+            return true;
+        }
+    };
+    return s ->
+        stream.filter(s, langElementFilter);
+}());
+
+/* Running
+ ******************************************************************************/
+/**
+ * Parses a lex stream into an AST.
+ * 
+ * May throw any parse errors.
+ * 
+ * @param s Stream of tokens.
+ * 
+ * @return AST.
+ */
+var parseStream = s ->
+    parse.runState(
+        program.program,
+        new parser.ParserState(
+            parserStream(s),
+            new parser.ParserPosition(
+                new parse.Position(0),
+                new position.SourcePosition(0, 0)),
+            new position.SourcePosition(0, 0)));
+
+/**
+ * Parses a lex array into an AST.
+ * 
+ * May throw any parse errors.
+ * 
+ * @param input Array like object of tokens.
+ * 
+ * @return AST.
+ */
+var parseInput = (input, ast) ->
+    parseStream(stream.from(input), ast);
+
+/* Export
+ ******************************************************************************/
+return {
+    'parserStream': parserStream,
+    
+    'parse': parseInput,
+    'parseStream': parseStream
+};
+
+});
