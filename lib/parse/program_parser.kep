@@ -113,11 +113,14 @@ sourceElements = parse_eager.many(sourceElement);
 /**
  * Parser for an ECMAScript 5.1 program.
  */
-var program = ecma_parse.astNode(
+var program = parse.Parser('Program',
     ecma_parse.astNode(parse.bind(
-        sourceElements,
-        elements -> 
-            parse.always(new astProgram.Program(elements)))));
+        parse.rec(self ->
+            parse.either(
+                parse.next(parse.eof(), parse.always(stream.end)),
+                parse.consParser(sourceElement, self))),
+        elements ->
+            parse.always(new astProgram.Program(stream.toArray(elements))))));
 
 /* Export
  ******************************************************************************/
