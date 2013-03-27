@@ -257,11 +257,11 @@ define(['parse/parse', 'stream/stream', 'khepri/lex/lexer', 'khepri/parse/parser
             }],
              ["Simple Try Statement With Catch",
             function(){
-                var result = testParser(parser.parserStream(lexer.lex("try {} catch (a) { debugger; }")));
-                assert.equal(result.type, "TryStatement");
-                assert.equal(result.block.body.length, 0);
-                assert.equal(result.handler.param.name, "a");
-                assert.equal(result.handler.body.body[0].type, "DebuggerStatement");
+                var stmt = testParser(parser.parserStream(lexer.lex("try {} catch (a) { debugger; }")));
+                assert.equal(stmt.type, "TryStatement");
+                assert.equal(stmt.block.body.length, 0);
+                assert.equal(stmt.handler.param.name, "a");
+                assert.equal(stmt.handler.body.body[0].type, "DebuggerStatement");
             }],
             ["Simple Try Statement With Catch and Finally",
             function(){

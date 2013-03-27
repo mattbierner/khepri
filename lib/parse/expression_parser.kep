@@ -5,13 +5,15 @@ define(['require',
         'parse/parse', 'parse/parse_eager',
         'stream/stream', 
         'khepri/parse/_common',
-        'khepri/parse/program_parser', 'khepri/parse/token_parser', 'khepri/parse/value_parser',
+        'khepri/parse/program_parser', 'khepri/parse/value_parser',
+         'ecma/parse/token_parser',
         'ecma/ast/node', 'ecma/ast/expression', 'ecma/ast/value'],
 function(require,
         parse, parse_eager,
         stream,
         ecma_parse,
-        program, token, value,
+        program, value,
+        token,
         astNode, astExpression, astValue){
 "use strict";
 
@@ -217,24 +219,22 @@ var memberExpression = (function(){
     var reducer = (p, c) -> 
         new astExpression.MemberExpression(p, c.property, c.computed);
     
-    return parse.RecParser('Member Expression', function(self) {
-        return parse.binda(
-                parse.sequence(
-                    parse.choice(
-                        parse.attempt(parse.next(token.keyword('new'),
-                            parse.binda(
-                                parse.sequence(
-                                    self,
-                                    args),
-                                (expression, a) -> parse.always(
-                                    new astExpression.NewExpression(expression, a))))),
-                        parse.attempt(functionExpression),
-                        primaryExpression),
-                    parse.many(accessor)),
-                function(expression, props) {
-                    return parse.always(stream.reduce(props, reducer, expression));
-                });
-    });
+    return parse.RecParser('Member Expression', self ->
+         parse.binda(
+            parse.sequence(
+                parse.choice(
+                    parse.attempt(parse.next(token.keyword('new'),
+                        parse.binda(
+                            parse.sequence(
+                                self,
+                                args),
+                            (expression, a) ->
+                                parse.always(new astExpression.NewExpression(expression, a))))),
+                    parse.attempt(functionExpression),
+                    primaryExpression),
+                parse.many(accessor)),
+            (expression, props) ->
+                parse.always(stream.reduce(props, reducer, expression))));
 }());
 
 
@@ -244,9 +244,10 @@ var memberExpression = (function(){
  * 
  */
 var callExpression = (function(){
-    var reducer = (p, c) -> (c.hasOwnProperty('property') ?
-         new astExpression.MemberExpression(p, c.property, c.computed) :
-         new astExpression.CallExpression(p, c));
+    var reducer = (p, c) ->
+        (c.hasOwnProperty('property') ?
+             new astExpression.MemberExpression(p, c.property, c.computed) :
+             new astExpression.CallExpression(p, c));
     
     return parse.Parser('Call Expression',
         parse.binda(
@@ -256,9 +257,8 @@ var callExpression = (function(){
                 parse.many(parse.either(
                     parse.attempt(args),
                     accessor))),
-            function(member, a, accessors) {
-                return parse.always(stream.reduce(accessors, reducer, new astExpression.CallExpression(member, a)));
-            }));
+            (member, a, accessors) ->
+                parse.always(stream.reduce(accessors, reducer, new astExpression.CallExpression(member, a)))));
 }());
 
 
@@ -267,13 +267,14 @@ var callExpression = (function(){
 /**
  * 
  */
-var newExpression = parse.RecParser('New Expression', function(self) {
-    return parse.either(
+var newExpression = parse.RecParser('New Expression', self ->
+    parse.either(
         parse.attempt(parse.memo(memberExpression)),
         parse.next(token.keyword('new'),
-            parse.bind(self, x -> parse.always(
-                new astExpression.NewExpression(x, [])))));
-});
+            parse.bind(
+                self,
+                x ->
+                    parse.always(new astExpression.NewExpression(x, []))))));
 
 // Left Hand Side Expression
 ////////////////////////////////////////
@@ -420,9 +421,8 @@ var conditionalExpression = parse.Parser('Conditional Expression',
                 assignmentExpression,
                 token.punctuator(':'),
                 assignmentExpression),
-            function(test, _0, consequent, _1, alternate) {
-                return parse.always(new astExpression.ConditionalExpression(test, consequent, alternate));
-            })),
+            (test, _0, consequent, _1, alternate) ->
+                parse.always(new astExpression.ConditionalExpression(test, consequent, alternate)))),
         parse.memo(binExpression))));
 
 // Assignment Expression
@@ -442,18 +442,16 @@ var assignmentOperator = parse.choice(
     token.punctuator('^='),
     token.punctuator('|='));
 
-var assignmentExpression = parse.rec(function(self) {
-    return parse.backtrack(parse.either(
+var assignmentExpression = parse.rec(self ->
+    parse.backtrack(parse.either(
         parse.attempt(parse.binda(
             parse.sequence(
                 parse.memo(leftHandSideExpression),
                 assignmentOperator,
                 self),
-            function(left, operator, right) {
-                return parse.always(new astExpression.AssignmentExpression(operator.value, left, right));
-            })),
-        conditionalExpression));
-});
+            (left, operator, right) ->
+                parse.always(new astExpression.AssignmentExpression(operator.value, left, right)))),
+        conditionalExpression)));
 
 // Expression
 ////////////////////////////////////////
