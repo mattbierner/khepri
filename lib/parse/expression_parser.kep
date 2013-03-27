@@ -195,29 +195,33 @@ var args = parse.between(token.punctuator('('), token.punctuator(')'),
 var dotAccessor = parse.bind(
     parse.next(token.punctuator('.'),
         value.identifier),
-    x -> parse.always({
+    x -> parse.always([{
         'property': x,
         'computed': false
-    }));
+    }]));
 
 var bracketAccessor = parse.bind(
     parse.between(token.punctuator('['), token.punctuator(']'),
-        expression),
-    x -> parse.always({
+        parse_eager.sepBy1(token.punctuator(','),
+            expression)),
+    accessor -> parse.always(accessor.map(x -> ({
         'property': x,
         'computed': true
-    }));
+    }))));
 
 var accessor = parse.either(
-    parse.attempt(dotAccessor),
+    dotAccessor,
     bracketAccessor);
 
 /**
  * 
  */
 var memberExpression = (function(){
-    var reducer = (p, c) -> 
+    var accessorReducer = (p, c) -> 
         new astExpression.MemberExpression(p, c.property, c.computed);
+    
+    var reducer = (p, c) ->
+        c.reduce(accessorReducer, p);
     
     return parse.RecParser('Member Expression', self ->
          parse.binda(

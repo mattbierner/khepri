@@ -64,6 +64,19 @@ Available syntaxes, along with translations, are shown here:
 
 All scoping remains the same as in the translated version. 
 
+### Multiple value bracket accessor ###
+Bracket accessors support multiple expressions separated by commas for traversing
+hierarchical  paths. Single expressions are still supported.
+
+Available syntaxes, along with translations, are shown here: 
+
+    // Single argument
+    a[b];
+    a[b];
+    
+    // Multiple arguments
+    a[b, c];
+    a[b][c]
 
 ## Modified ##
 
