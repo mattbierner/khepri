@@ -213,18 +213,18 @@ var accessor = parse.either(
     dotAccessor,
     bracketAccessor);
 
+var accessorReducer = (p, c) -> 
+    new astExpression.MemberExpression(p, c.property, c.computed);
+    
 /**
  * 
  */
 var memberExpression = (function(){
-    var accessorReducer = (p, c) -> 
-        new astExpression.MemberExpression(p, c.property, c.computed);
-    
     var reducer = (p, c) ->
         c.reduce(accessorReducer, p);
-    
+        
     return parse.RecParser('Member Expression', self ->
-         parse.binda(
+        parse.binda(
             parse.sequence(
                 parse.choice(
                     parse.attempt(parse.next(token.keyword('new'),
@@ -249,8 +249,8 @@ var memberExpression = (function(){
  */
 var callExpression = (function(){
     var reducer = (p, c) ->
-        (c.hasOwnProperty('property') ?
-             new astExpression.MemberExpression(p, c.property, c.computed) :
+        (Array.isArray(c) && c[0].hasOwnProperty('property') ?
+             c.reduce(accessorReducer, p) :
              new astExpression.CallExpression(p, c));
     
     return parse.Parser('Call Expression',
