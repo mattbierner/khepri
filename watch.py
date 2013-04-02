@@ -16,7 +16,7 @@ class KhepriMatchingEventHandler(FileSystemEventHandler):
     
     def _compile(self, path):
         out_path = "%s.js" % splitext(path)[0]
-        header = "/*\n * THIS FILE IS AUTO GENERATED from '%s'\n * DO NOT EDIT\n*/" % path
+        header = "/*\n * THIS FILE IS AUTO GENERATED from '%s'\n * DO NOT EDIT\n*/" % os.path.relpath(path)
         call('%s --header "%s" -o %s %s' % (KHEPRI, header, out_path, path), shell=True)
     
     def on_any_event(self, event):

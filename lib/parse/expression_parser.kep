@@ -249,7 +249,7 @@ var memberExpression = (function(){
  */
 var callExpression = (function(){
     var reducer = (p, c) ->
-        (Array.isArray(c) && c[0].hasOwnProperty('property') ?
+        (Array.isArray(c) && c.length > 0 && c[0].hasOwnProperty('property') ?
              c.reduce(accessorReducer, p) :
              new astExpression.CallExpression(p, c));
     
@@ -417,17 +417,24 @@ var binExpression = parse.Parser('Binary Expression',
  * 
  */
 var conditionalExpression = parse.Parser('Conditional Expression',
-    parse.backtrack(parse.either(
-        parse.attempt(parse.binda(
-            parse.sequence(
-                parse.memo(binExpression),
-                token.punctuator('?'),
-                assignmentExpression,
-                token.punctuator(':'),
-                assignmentExpression),
-            (test, _0, consequent, _1, alternate) ->
-                parse.always(new astExpression.ConditionalExpression(test, consequent, alternate)))),
-        parse.memo(binExpression))));
+    (function(){
+        var conditionalBody = parse.sequence(
+            token.punctuator('?'),
+            assignmentExpression,
+            token.punctuator(':'),
+            assignmentExpression);
+        
+        return parse.bind(binExpression, bin -> 
+            parse.either(
+                    parse.binda(
+                        conditionalBody,
+                        (_0, consequent, _1, alternate) ->
+                            parse.always(new astExpression.ConditionalExpression(
+                                bin,
+                                consequent,
+                                alternate))),
+                parse.always(bin)));
+    }()));
 
 // Assignment Expression
 ////////////////////////////////////////
@@ -446,6 +453,9 @@ var assignmentOperator = parse.choice(
     token.punctuator('^='),
     token.punctuator('|='));
 
+/**
+ * 
+ */
 var assignmentExpression = parse.rec(self ->
     parse.backtrack(parse.either(
         parse.attempt(parse.binda(

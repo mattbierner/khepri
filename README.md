@@ -66,7 +66,7 @@ All scoping remains the same as in the translated version.
 
 ### Multiple value bracket accessor ###
 Bracket accessors support multiple expressions separated by commas for traversing
-hierarchical  paths. Single expressions are still supported.
+hierarchical paths. Single expressions are still supported.
 
 Available syntaxes, along with translations, are shown here: 
 
@@ -76,7 +76,10 @@ Available syntaxes, along with translations, are shown here:
     
     // Multiple arguments
     a[b, c];
-    a[b][c]
+    a[b][c];
+    
+    a[5 + 10, (x -> x.y)({'y': 7})];
+    a[b][function(x) { return x.y; }({'y': 7})];
 
 ## Modified ##
 
