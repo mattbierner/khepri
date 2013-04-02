@@ -2,7 +2,7 @@
  * @fileOverview
  */
 define(['parse/parse',
-        'stream/stream',
+        'nu/stream',
         'ecma/lex/token',
         'ecma/position',
         'ecma/parse/parser',

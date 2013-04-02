@@ -6,7 +6,7 @@ requirejs.config({
     nodeRequire: require,
     paths: {
         'parse': 'dependencies/parse/lib',
-        'stream': 'dependencies/stream/lib',
+        'nu': 'dependencies/nu/lib',
         'ecma_unparse': 'dependencies/ecma-unparse/lib',
         'khepri': 'lib',
         'ecma': 'dependencies/parse-ecma/lib'
@@ -14,7 +14,7 @@ requirejs.config({
 });
 
 requirejs(['parse/parse',
-           'stream/stream',
+           'nu/stream',
            'khepri/lex/lexer', 'khepri/parse/parser',
            'ecma_unparse/unparse', 'ecma_unparse/print'],
 function(parse,

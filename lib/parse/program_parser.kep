@@ -3,7 +3,7 @@
  */
 define(['require',
         'parse/parse', 'parse/parse_eager',
-        'stream/stream',
+        'nu/stream',
         'khepri/parse/_common',
         'khepri/parse/expression_parser', 'khepri/parse/statement_parser',
         'khepri/parse/value_parser',
