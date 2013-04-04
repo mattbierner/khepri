@@ -238,7 +238,7 @@ var memberExpression = (function(){
                     primaryExpression),
                 parse.many(accessor)),
             (expression, props) ->
-                parse.always(stream.reduce(props, reducer, expression))));
+                parse.always(stream.foldl(reducer, expression, props))));
 }());
 
 
@@ -262,7 +262,7 @@ var callExpression = (function(){
                     parse.attempt(args),
                     accessor))),
             (member, a, accessors) ->
-                parse.always(stream.reduce(accessors, reducer, new astExpression.CallExpression(member, a)))));
+                parse.always(stream.foldl(reducer, new astExpression.CallExpression(member, a), accessors))));
 }());
 
 
@@ -312,8 +312,8 @@ var unaryExpression = (function(){
         parse.sequence(
             parse.many(unaryOperator),
             leftHandSideExpression),
-        (ops, expression) -> parse.always(
-            stream.reduceRight(ops, reducer, expression)));
+        (ops, expression) ->
+            parse.always(stream.foldr(reducer, expression, ops)));
 }());
 
 // Binary Expressions

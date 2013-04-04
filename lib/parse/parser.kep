@@ -36,7 +36,7 @@ var parserStream = (function(){
         }
     };
     return s ->
-        stream.filter(s, langElementFilter);
+        stream.filter(langElementFilter, s);
 }());
 
 /* Running

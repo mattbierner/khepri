@@ -21,6 +21,7 @@ function(parse,
         stream,
         lexer, parser,
         unparse, unparse_print) {
+    
     var compile = function(input) {
         try {
             var lex = lexer.lex(input);
@@ -28,9 +29,11 @@ function(parse,
             var unparsed = unparse.unparse(ast);
             return unparse_print.print(unparsed);
         } catch (e) {
-            throw e;
+            console.error(e.message);
+            process.exit(1);
         }
     };
+    
     var inFile = argv._[0];
     var outFile = argv['o'];
     var header = (argv['header'] ? argv['header'] + '\n' : '');
@@ -41,11 +44,11 @@ function(parse,
             throw err;
         }
 
-        fs.readFile(resolvedPath, 'utf8', function (err, data) {
+        fs.readFile(resolvedPath, 'utf8', function(err, data) {
             if (err) {
                 throw err;
             }
-            var out = header + stream.reduce(compile(data), function(p, c){ return p + '' + c; }, '');
+            var out = header + stream.foldl(function(p, c) { return p + '' + c; }, '', compile(data));
             
             if (outFile) {
                 fs.writeFile(outFile, out, 'utf8', function(err) {
