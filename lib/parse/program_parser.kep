@@ -74,7 +74,7 @@ var lambdaBody = parse.either(
     parse.between(token.punctuator('{'), token.punctuator('}'),
         functionBody),
     parse.bind(expressionParser, x ->
-        parse.always(new astStatement.BlockStatement(new astStatement.ReturnStatement(x)))));
+        parse.always(new astStatement.BlockStatement([new astStatement.ReturnStatement(x)]))));
 
 var lambdaFunctionExpression = parse.binda(
     parse.sequence(

@@ -119,7 +119,7 @@
                         var unparsed = unparse.unparse(ast);
                         
                         var s = unparse_print.print(unparsed);
-                        var out = stream.reduce(s, function(p, c){ return p + '' + c; }, '');
+                        var out = stream.foldl(function(p, c){ return p + '' + c; }, '', s);
                         
                         $('#text_out').text(out);
                     } catch (e) {
