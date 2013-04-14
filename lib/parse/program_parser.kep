@@ -118,7 +118,7 @@ var program = parse.Parser('Program',
         parse.rec(self ->
             parse.either(
                 parse.next(parse.eof(), parse.always(stream.end)),
-                parse.consParser(sourceElement, self))),
+                parse.cons(sourceElement, self))),
         elements ->
             parse.always(new astProgram.Program(stream.toArray(elements))))));
 

@@ -46,8 +46,8 @@ var precedence = function(p, table) {
     
     return parse.bind(
         parse.rec(function(self) {
-            return parse.consParser(p,
-                parse.optional(parse.consParser(sep, self), stream.end));
+            return parse.cons(p,
+                parse.optional(parse.cons(sep, self), stream.end));
             }),
         function(x) {
             var list = stream.toArray(x);
