@@ -50,7 +50,7 @@ var variableDeclaration = ecma_parse.astNode(parse.binda(
         return parse.always(new astDeclaration.VariableDeclarator(identifier, initialiser));
     }));
 
-var variableDeclarationList = parse_eager.sepBy(token.punctuator(','),
+var variableDeclarationList = parse_eager.sepBy1(token.punctuator(','),
     variableDeclaration);
 
 /**
@@ -169,10 +169,10 @@ var forStatement = parse.Parser('For Statement',
             }))));
 
 var iterationStatement = parse.Parser('Iteration Statement',
-    parse.backtrack(parse.choice(
+    parse.choice(
         doWhileStatement,
         whileStatement,
-        forStatement)));
+        forStatement));
 
 // Continue
 ////////////////////////////////////////
@@ -331,7 +331,7 @@ statement = parse.Parser('Statement',
         throwStatement,
         tryStatement,
         debuggerStatement,
-        expressionStatement));
+        parse.next(parse.always(null), expressionStatement)));
 
 /* Export
  ******************************************************************************/

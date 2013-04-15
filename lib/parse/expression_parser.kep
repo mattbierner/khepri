@@ -233,10 +233,10 @@ var thisExpression = ecma_parse.astNode(
 var primaryExpression = parse.Parser('Primary Expression',
     parse.choice(
         thisExpression,
-        parse.attempt(value.identifier),
+        value.identifier,
         value.literal,
         arrayLiteral,
-        parse.attempt(objectLiteral),
+        objectLiteral,
         parse.between(token.punctuator('('), token.punctuator(')'),
             expression)));
 
@@ -271,7 +271,7 @@ var accessor = parse.either(
 
 var accessorReducer = (p, c) -> 
     new astExpression.MemberExpression(p, c.property, c.computed);
-    
+
 /**
  * 
  */
@@ -287,7 +287,7 @@ var memberExpression = (function(){
                         parse.binda(
                             parse.sequence(
                                 self,
-                                args),
+                                parse.optional(args, [])),
                             (expression, a) ->
                                 parse.always(new astExpression.NewExpression(expression, a))))),
                     parse.attempt(functionExpression),
@@ -315,26 +315,11 @@ var callExpression = (function(){
                 parse.memo(memberExpression),
                 args,
                 parse.many(parse.either(
-                    parse.attempt(args),
+                    args,
                     accessor))),
             (member, a, accessors) ->
                 parse.always(stream.foldl(reducer, new astExpression.CallExpression(member, a), accessors))));
 }());
-
-
-// New Expression
-////////////////////////////////////////
-/**
- * 
- */
-var newExpression = parse.RecParser('New Expression', self ->
-    parse.either(
-        parse.attempt(parse.memo(memberExpression)),
-        parse.next(token.keyword('new'),
-            parse.bind(
-                self,
-                x ->
-                    parse.always(new astExpression.NewExpression(x, []))))));
 
 // Left Hand Side Expression
 ////////////////////////////////////////
@@ -344,7 +329,7 @@ var newExpression = parse.RecParser('New Expression', self ->
 var leftHandSideExpression = parse.Parser('Left Hand Side Expression',
     parse.either(
         parse.attempt(callExpression),
-        newExpression));
+        parse.memo(memberExpression)));
 
 // Unary Expression
 ////////////////////////////////////////
