@@ -82,7 +82,6 @@ var precedence = function(p, table) {
             
             return parse.always(out.pop());
         });
-
 };
 
 /* Parsers
