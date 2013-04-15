@@ -23,13 +23,10 @@ var assignmentExpression = function() { return assignmentExpression.apply(undefi
 
 var expression = function() { return expression.apply(undefined, arguments); };
 
-var functionExpression = function() {
-    return require('khepri/parse/program_parser').functionExpression.apply(undefined, arguments);
+var sourceElements = function() {
+    return require('khepri/parse/program_parser').sourceElements.apply(undefined, arguments);
 };
 
-var functionBody = function() {
-    return require('khepri/parse/program_parser').functionBody.apply(undefined, arguments);
-};
 
 /* Helpers 
  ******************************************************************************/
@@ -83,6 +80,14 @@ var precedence = function(p, table) {
             return parse.always(out.pop());
         });
 };
+
+/**
+ * Parser for the body of a function.
+ */
+var functionBody = parse.bind(
+    sourceElements,
+    body ->
+        parse.always(new astStatement.BlockStatement(body)));
 
 /* Parsers
  ******************************************************************************/
@@ -164,6 +169,58 @@ var objectLiteral = parse.Parser('Object Literal',
                 parse.optional(token.punctuator(','))),
             properties -> parse.always(
                 new astExpression.ObjectExpression(properties))))));
+
+// Function Expression
+////////////////////////////////////////
+/**
+ * Parser for a function's parameters.
+ */
+var formalParameterList = parse_eager.sepBy(token.punctuator(','),
+    value.identifier);
+
+var ecmaFunctionExpression = parse.next(token.keyword('function'),
+    parse.binda(
+        parse.sequence(
+            parse.optional(value.identifier),
+            parse.between(token.punctuator('('), token.punctuator(')'), 
+                formalParameterList),
+            parse.between(token.punctuator('{'), token.punctuator('}'),
+                functionBody)),
+        (id, parameters, body) ->
+            parse.always(new astExpression.FunctionExpression(
+                id,
+                parameters,
+                body))));
+
+var lambdaFormalParameterList = parse.either(
+    parse.between(token.punctuator('('), token.punctuator(')'), 
+        formalParameterList),
+    parse.bind(value.identifier, x -> 
+        parse.always([x])));
+
+var lambdaBody = parse.either(
+    parse.between(token.punctuator('{'), token.punctuator('}'),
+        functionBody),
+    parse.bind(expression, x ->
+        parse.always(new astStatement.BlockStatement([new astStatement.ReturnStatement(x)]))));
+
+var lambdaFunctionExpression = parse.binda(
+    parse.sequence(
+        lambdaFormalParameterList,
+        token.punctuator('->'),
+        lambdaBody),
+    (parameters, _, body) ->
+        parse.always(new astExpression.FunctionExpression(null, parameters, body)));
+
+/**
+ * Parser for an function expression.
+ * 
+ * May be named or anon.
+ */
+var functionExpression = parse.Parser('Function Expression',
+    ecma_parse.astNode(parse.choice(
+        ecmaFunctionExpression,
+        lambdaFunctionExpression)));
 
 // This Expression
 ////////////////////////////////////////

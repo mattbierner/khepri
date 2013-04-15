@@ -5,17 +5,16 @@ define(['require',
         'parse/parse', 'parse/parse_eager',
         'nu/stream',
         'khepri/parse/_common',
-        'khepri/parse/expression_parser', 'khepri/parse/statement_parser',
-        'khepri/parse/value_parser',
+        'khepri/parse/statement_parser',
         'ecma/parse/token_parser',
-        'ecma/ast/declaration', 'ecma/ast/expression', 'ecma/ast/program', 'ecma/ast/statement'],
+         'ecma/ast/program'],
 function(require,
         parse, parse_eager,
         stream,
         ecma_parse,
-        expression, statement, value,
+        statement,
         token,
-        astDeclaration, astExpression, astProgram, astStatement){
+        astProgram){
 "use strict";
 
 /* Circular
@@ -24,76 +23,8 @@ var statementParser = function() {
     return require('khepri/parse/statement_parser').statement.apply(undefined, arguments);
 };
 
-var expressionParser = function() {
-    return require('khepri/parse/expression_parser').expression.apply(undefined, arguments);
-};
-
-/* Forward declarations
- ******************************************************************************/
-var sourceElements = function() {
-    return sourceElements.apply(undefined, arguments);
-};
-
 /* Parsers
  ******************************************************************************/
-// Function Expression
-////////////////////////////////////////
-/**
- * Parser for the body of a function.
- */
-var functionBody = parse.bind(sourceElements, body ->
-    parse.always(new astStatement.BlockStatement(body)));
-
-/**
- * Parser for a function's parameters.
- */
-var formalParameterList = parse_eager.sepBy(token.punctuator(','),
-    value.identifier);
-
-var ecmaFunctionExpression = parse.next(token.keyword('function'),
-    parse.binda(
-        parse.sequence(
-            parse.optional(value.identifier),
-            parse.between(token.punctuator('('), token.punctuator(')'), 
-                formalParameterList),
-            parse.between(token.punctuator('{'), token.punctuator('}'),
-                functionBody)),
-        (id, parameters, body) ->
-            parse.always(new astExpression.FunctionExpression(
-                id,
-                parameters,
-                body))));
-
-var lambdaFormalParameterList = parse.either(
-    parse.between(token.punctuator('('), token.punctuator(')'), 
-        formalParameterList),
-    parse.bind(value.identifier, x -> 
-        parse.always([x])));
-
-var lambdaBody = parse.either(
-    parse.between(token.punctuator('{'), token.punctuator('}'),
-        functionBody),
-    parse.bind(expressionParser, x ->
-        parse.always(new astStatement.BlockStatement([new astStatement.ReturnStatement(x)]))));
-
-var lambdaFunctionExpression = parse.binda(
-    parse.sequence(
-        lambdaFormalParameterList,
-        token.punctuator('->'),
-        lambdaBody),
-    (parameters, _, body) ->
-        parse.always(new astExpression.FunctionExpression(null, parameters, body)));
-
-/**
- * Parser for an function expression.
- * 
- * May be named or anon.
- */
-var functionExpression = parse.Parser('Function Expression',
-    ecma_parse.astNode(parse.choice(
-        ecmaFunctionExpression,
-        lambdaFunctionExpression)));
-
 // Source Elements
 ////////////////////////////////////////
 /**
@@ -106,7 +37,7 @@ var sourceElement = statementParser;
 /**
  * Parser for a sequence of zero or more source elements.
  */
-sourceElements = parse_eager.many(sourceElement);
+var sourceElements = parse_eager.many(sourceElement);
 
 // Program
 ////////////////////////////////////////
@@ -125,9 +56,6 @@ var program = parse.Parser('Program',
 /* Export
  ******************************************************************************/
 return {
-    'functionExpression': functionExpression,
-    'functionBody': functionBody,
-    
     'sourceElement': sourceElement,
     'sourceElements': sourceElements,
     
