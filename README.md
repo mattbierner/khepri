@@ -81,6 +81,31 @@ Available syntaxes, along with translations, are shown here:
     a[5 + 10, (x -> x.y)({'y': 7})];
     a[b][function(x) { return x.y; }({'y': 7})];
 
+### Let Expression ###
+Let expression allow variables to declared in expressions.
+
+    // Id Let Expression
+    let a = 3 in a;
+    (a -> a)(3);
+
+Let expressions have higher precedence than conditional expressions and are 
+right associative.
+
+    // Multiple let expressions
+    let a = 3 in let b = 4 in a + b;
+    (a -> (b -> a + b)(4))(3);
+
+The bound value will only be evaluated once no matter how many times it is used.
+Bindings hide existing bindings for the duration of the expression and let 
+expressions bindings can hide one another. Use of let expression bindings outside
+of the expression is not valid.
+
+    // Hiding let expressions
+    // Here the bound value for the inner a is resolved against the existing binding
+    // for a, 3 in this case.
+    let a = 3 in let a = a in a * a;
+    (a -> (a -> a * a)(a))(3);
+
 ## Modified ##
 
 ### Switch Default Clause ###
@@ -131,7 +156,8 @@ Use an explicit undefined value instead.
 Object literals may not have trailing comma.
 
 ### In Operator ###
-The in operator is not supported, but 'in' remains a reserved word. 
+The in operator is not supported, but 'in' remains a reserved word and is used
+in let expressions
 
 ### For In Statement ###
 Since the 'in' operator is not supported, for in statements are also not supported.
