@@ -4,7 +4,7 @@
 define(['require',
         'parse/parse', 'parse/parse_eager',
         'nu/stream',
-        'khepri/parse/_common',
+        'ecma/parse/common',
         'khepri/parse/statement_parser',
         'ecma/parse/token_parser',
          'ecma/ast/program'],
@@ -45,13 +45,13 @@ var sourceElements = parse_eager.many(sourceElement);
  * Parser for an ECMAScript 5.1 program.
  */
 var program = parse.Parser('Program',
-    ecma_parse.astNode(parse.bind(
+    ecma_parse.node(
         parse.rec(self ->
             parse.either(
                 parse.next(parse.eof(), parse.always(stream.end)),
                 parse.cons(sourceElement, self))),
-        elements ->
-            parse.always(new astProgram.Program(stream.toArray(elements))))));
+        (loc, elements) ->
+            new astProgram.Program(loc, stream.toArray(elements))));
 
 /* Export
  ******************************************************************************/

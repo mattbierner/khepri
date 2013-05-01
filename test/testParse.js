@@ -1,16 +1,12 @@
-define(['parse/parse',
-        './parser/testStatement',
+define(['./parser/testStatement',
         './parser/testArrayLiteral',
         './parser/testObjectLiteral',
-        './parser/testExpression'],
-function(parse,
-        testStatement,
-        testArrayLiteral,
-        testObjectLiteral,
-        testExpression){
-    
+        './parser/testExpression',
+        './parser/testFunction'],
+function(/*...*/){
+    var tests = arguments;
     return function(){
-        [testStatement, testArrayLiteral, testObjectLiteral, testExpression].forEach(function(m){
+        [].forEach.call(tests, function(m){
             m.module && module(m.module);
             m.tests && m.tests.forEach(function(e){ test.apply(this, e); });
             m.asyncTests && m.asyncTests.forEach(function(e){ asyncTest.apply(this, e); });
