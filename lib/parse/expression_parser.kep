@@ -268,6 +268,7 @@ var args = parse.Parser('Arguments',
             argumentList),
         (loc, args) -> {
             args.loc = loc;
+            args.argument = true;
             return args;
         }));
 
@@ -355,10 +356,12 @@ var newExpression = parse.Parser('New Expression',
  * Parser for a left hand side expression.
  */
 var leftHandSideExpression = (function(){
-    var reducer = (p, c) ->
-        (Array.isArray(c) && c.length > 0 && c[0].hasOwnProperty('property') ?
-             c.reduce(accessorReducer, p) :
-             new astExpression.CallExpression(position.SourceLocation.merge(p.loc, c.loc), p, c));
+    var reducer = (p, c) -> {
+        console.log(c);
+        return (c && c.hasOwnProperty('argument') ?
+             new astExpression.CallExpression(position.SourceLocation.merge(p.loc, c.loc), p, c) :
+             c.reduce(accessorReducer, p));
+    };
     
     return parse.Parser('Left Hand Side Expression',
         parse.binda(
