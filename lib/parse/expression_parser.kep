@@ -539,7 +539,7 @@ var letExpression = parse.RecParser('Let Expression', self ->
                     self)),
                 (loc, id, _1, val, _2, expr) ->
                     new astExpression.CallExpression(loc, 
-                        new astExpression.FunctionExpression(null, null, [id], new astStatement.BlockStatement(null, [new astStatement.ReturnStatement(expr)])),
+                        new astExpression.FunctionExpression(null, null, [id], new astStatement.BlockStatement(null, [new astStatement.ReturnStatement(null, expr)])),
                         [val])),
         conditionalExpression));
 
