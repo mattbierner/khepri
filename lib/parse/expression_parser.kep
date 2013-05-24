@@ -31,6 +31,8 @@ var assignmentExpression = function() { return assignmentExpression.apply(undefi
 
 var expression = function() { return expression.apply(undefined, arguments); };
 
+var conditionalExpression = function() { return conditionalExpression.apply(undefined, arguments); };
+
 var newExpression = function() { return newExpression.apply(undefined, arguments); };
 
 /* Parsers
@@ -229,11 +231,37 @@ var thisExpression = ecma_parse.node(
     token.keyword('this'),
     loc -> new astExpression.ThisExpression(loc));
 
+// Let Expression
+////////////////////////////////////////
+/**
+ * 
+ */
+var letExpression = parse.Parser('Let Expression',
+    ecma_parse.nodea(
+        parse.next(
+            token.keyword('let'),
+            parse.sequence(
+                parse_lang.sepBy1(token.punctuator(','),
+                    parse.eager(parse.sequence(
+                        parse_lang.then(value.identifier,
+                            token.punctuator('=')),
+                        conditionalExpression))),
+                token.keyword('in'),
+                conditionalExpression)),
+            (loc, vals, _2, expr) ->
+                stream.foldr((p, c) ->
+                    new astExpression.CallExpression(loc, 
+                        new astExpression.FunctionExpression(null, null, [c[0]], new astStatement.BlockStatement(null, [p])),
+                        [c[1]]),
+                    new astStatement.ReturnStatement(null, expr),
+                    vals)));
+
 // Primary Expression
 ////////////////////////////////////////
 var primaryExpression = parse.Parser('Primary Expression',
     parse.choice(
         thisExpression,
+        letExpression,
         parse.attempt(parse.bind(
             parse.either(
                 value.identifier,
@@ -500,7 +528,7 @@ var binaryExpression = parse.Parser('Binary Expression',
 /**
  * 
  */
-var conditionalExpression = (function(){
+conditionalExpression = (function(){
       var conditionalBody = parse.next(
           token.punctuator('?'),
           parse.sequence(
@@ -517,28 +545,6 @@ var conditionalExpression = (function(){
                 parse.always(bin)));
     
 }());
-
-// Let Expression
-////////////////////////////////////////
-/**
- * 
- */
-var letExpression = parse.RecParser('Let Expression', self ->
-    parse.either(
-        ecma_parse.nodea(
-            parse.next(
-                token.keyword('let'),
-                parse.sequence(
-                    value.identifier,
-                    token.punctuator('='),
-                    conditionalExpression,
-                    token.keyword('in'),
-                    self)),
-                (loc, id, _1, val, _2, expr) ->
-                    new astExpression.CallExpression(loc, 
-                        new astExpression.FunctionExpression(null, null, [id], new astStatement.BlockStatement(null, [new astStatement.ReturnStatement(null, expr)])),
-                        [val])),
-        conditionalExpression));
 
 // Assignment Expression
 ////////////////////////////////////////
@@ -578,7 +584,7 @@ assignmentExpression = parse.RecParser('Assignment Expression', self ->
                             right));
                 });
             }),
-        letExpression)));
+        conditionalExpression)));
 
 // Expression
 ////////////////////////////////////////

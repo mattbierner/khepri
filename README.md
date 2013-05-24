@@ -82,18 +82,74 @@ Available syntaxes, along with translations, are shown here:
     a[b][function(x) { return x.y; }({'y': 7})];
 
 ### Let Expression ###
-Let expression allow variables to declared in expressions.
+Let expression allow variables to bound in expressions.
 
     // Id Let Expression
     let a = 3 in a;
     (a -> a)(3);
 
 Let expressions have higher precedence than conditional expressions and are 
-right associative.
+right associative:
 
     // Multiple let expressions
     let a = 3 in let b = 4 in a + b;
     (a -> (b -> a + b)(4))(3);
+
+Multiple values can be bound in a single let expression. Bound values are 
+evaluated left to right and previously bound values can be used in the current
+binding:
+
+    // These are the same
+    let a = 3, b = 5 in a + b;
+    let a = 3 in let b = 5 in a + b;
+    
+    // Using a existing binding.
+    let a = 3, b = a + 10 in a + b;
+    let a = 3 in let b = a + 10 in a + b;
+
+Let expressions capture as much as possible to their right. This can be limited
+by wrapping the entire expression in parentheses:
+
+    // Capturing everything to right 
+    4 * let a = 2 in a + 3;
+    4 * (let a = 2 in a + 3); // 20
+    4 * (2 + 3); 
+    
+    // Limiting capture
+    4 * (let a = 2 in a) + 3;
+    4 * 2 + 3; // 11
+
+Let expressions have lower precedence than assignment expressions. They always
+result in a value, not a member reference even on the left hand side. Assignment
+is usually a bad idea but it is supported in let expressions if you really need it.
+
+    // Assign left let result
+    // Grammatically valid but semantically not.
+    let a = 3 in a = 10;
+    (let a = 3 in a) = 10;
+    3 = 10; // a is always a value.
+    
+    // Using assign in let body
+    // Grammatically valid but semantically not.
+    let a = 3 in (a = 10);
+    3 = 10; // however a may be a reference here
+    
+    // Using assign in let binding
+    // a is bound to result of b = 10 while the body is evaluated after the bindings.
+    let a = (b = 10) in a + b;
+    10 + b; // b = 10
+    
+    // Result by value
+    // Grammatically valid but semantically not.
+    let a = [1, 2, 3] in a[0] = 10;
+    (let a = [1, 2, 3] in a[0]) = 10;
+    ([1, 2, 3][0]) = 10; // left side evaluated to value.
+    1 = 10;
+    
+    // Member reference inside let body is valid
+    let a = [1, 2, 3] in (a[0] = 10);
+    ([1, 2, 3][0]) = 10; // left side evaluated to reference.
+    10; // with array = [10, 2, 3]
 
 The bound value will only be evaluated once no matter how many times it is used.
 Bindings hide existing bindings for the duration of the expression and let 
