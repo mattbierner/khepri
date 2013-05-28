@@ -28,7 +28,7 @@ Its specific focus is functional style programming in Javascript.
 
 ## Added ##
 
-### Lambda Function Expression Syntax ###
+### Lambda Function Expression Syntax
 Available syntaxes, along with translations, are shown here: 
 
     // single argument
@@ -64,7 +64,7 @@ Available syntaxes, along with translations, are shown here:
 
 All scoping remains the same as in the translated version. 
 
-### Multiple value bracket accessor ###
+### Multiple value bracket accessor
 Bracket accessors support multiple expressions separated by commas for traversing
 hierarchical paths. Single expressions are still supported.
 
@@ -81,7 +81,7 @@ Available syntaxes, along with translations, are shown here:
     a[5 + 10, (x -> x.y)({'y': 7})];
     a[b][function(x) { return x.y; }({'y': 7})];
 
-### Let Expression ###
+### Let Expression
 Let expression allow variables to bound in expressions.
 
     // Id Let Expression
@@ -165,35 +165,40 @@ of the expression is not valid.
 
 ## Modified ##
 
-### Switch Default Clause ###
+### Switch Default Clause
 The default clause in a switch statement remains optional, but must be the last
 clause in the switch statement.
 
-### Object Literal Keys ###
+### Object Literal Keys
 Like JSON, object literal keys must be strings. ECMAScript normally allows
 number and identifier key values as well.
 
-### 'get' and 'set' keywords ###
+### 'get' and 'set' keywords
 In ECMAScript 5.1, 'get' and 'set' are identifiers. This is confusing as they
 have a special meaning in object literals.
 
+### Regular Expression Literal Syntax
+Backticks are used to mark the start and the end of regular expressions instead
+of slashes. This eliminates the need for having two top level elements in the 
+grammar.
+
 ## Removed ##
 
-### Function Declarations ###
+### Function Declarations
 Function declarations are not necessary. Use function expressions instead.
 
-### Comma Separated Expressions ###
+### Comma Separated Expressions
 Comma separated sequences of expressions are not allowed. An expressions must be 
 single expression. Such sequence expressions are usually not clear and make the
 language more complex than it should be. 
 
-### With Statement ###
+### With Statement
 With statements are not valid in strict mode ECMAScript and have been removed.
 
-### Labeled Statements ###
+### Labeled Statements
 Make language more ambiguous.
 
-### Semicolon Insertion and Significant Whitespace ###
+### Semicolon Insertion and Significant Whitespace
 Semicolon insertion is not supported and whitespace is no longer significant.
 Real semicolons must always be used.
 
@@ -205,22 +210,22 @@ Real semicolons must always be used.
     };
     function(x, y) { return x + y; };
 
-### Empty Array Literal Elements ###
+### Empty Array Literal Elements
 Array literals do not support empty elements or a trailing comma.
 Use an explicit undefined value instead.
 
-### Object Literal Trailing Comma ###
+### Object Literal Trailing Comma
 Object literals may not have trailing comma.
 
-### In Operator ###
+### In Operator
 The in operator is not supported, but 'in' remains a reserved word and is used
 in let expressions
 
-### For In Statement ###
+### For In Statement
 Since the 'in' operator is not supported, for in statements are also not supported.
 Other solutions usually exist, such as 'forEach'.
 
-### Increment and Decrement Operators ###
+### Increment and Decrement Operators
 Where mutable state must be used, make it more explicit.
 Additionally, '++' and '--' are no longer valid punctuators and will be lexed
 to '+' '+' and '-' '-'.

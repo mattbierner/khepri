@@ -345,20 +345,17 @@ var accessorReducer = (p, c) ->
 /**
  * 
  */
-var memberExpression = (function(){
-    var reducer = (p, c) ->
-        c.reduce(accessorReducer, p);
-        
-    return parse.Parser('Member Expression',
-        parse.binds(
-            parse.sequence(
-                parse.either(
-                    newExpression,
-                    primaryExpression),
-                parse.many(accessor)),
-            (expression, props) ->
-                 parse.always(stream.foldl(reducer, expression, props))));
-}());
+var memberExpression =
+    let reducer = (p, c) -> c.reduce(accessorReducer, p) in
+        parse.Parser('Member Expression',
+            parse.binds(
+                parse.sequence(
+                    parse.either(
+                        newExpression,
+                        primaryExpression),
+                    parse.many(accessor)),
+                (expression, props) ->
+                     parse.always(stream.foldl(reducer, expression, props))));
 
 // New Expression
 ////////////////////////////////////////
@@ -380,22 +377,21 @@ var newExpression = parse.Parser('New Expression',
 /**
  * Parser for a left hand side expression.
  */
-var leftHandSideExpression = (function(){
-    var reducer = (p, c) ->
+var leftHandSideExpression = let
+    reducer = (p, c) ->
         (c && c.hasOwnProperty('argument') ?
              new astExpression.CallExpression(position.SourceLocation.merge(p.loc, c.loc), p, c) :
-             c.reduce(accessorReducer, p));
-    
-    return parse.Parser('Left Hand Side Expression',
-        parse.binds(
-            parse.sequence(
-                parse.memo(memberExpression),
-                parse.many(parse.either(
-                    args,
-                    accessor))),
-            (member, accessors) ->
-                parse.always(stream.foldl(reducer, member, accessors))));
-}());
+             c.reduce(accessorReducer, p))
+    in
+        parse.Parser('Left Hand Side Expression',
+            parse.binds(
+                parse.sequence(
+                    parse.memo(memberExpression),
+                    parse.many(parse.either(
+                        args,
+                        accessor))),
+                (member, accessors) ->
+                    parse.always(stream.foldl(reducer, member, accessors))));
 
 // Unary Expression
 ////////////////////////////////////////
@@ -412,21 +408,20 @@ var unaryOperator = parse.Parser('Unary Operator',
 /**
  * 
  */
-var unaryExpression = (function(){
-    var reducer = (argument, op) -> 
+var unaryExpression = let
+    reducer = (argument, op) -> 
         new astExpression.UnaryExpression(
             position.SourceLocation.merge(op.loc, argument.loc),
             op.value,
-            argument);
-    
-    return parse.Parser('Unary Expression',
-        parse.binds(
-            parse.sequence(
-                parse.many(unaryOperator),
-                parse.expected('left hand side expression', leftHandSideExpression)),
-            (ops, expression) ->
-                parse.always(stream.foldr(reducer, expression, ops))));
-}());
+            argument)
+    in
+        parse.Parser('Unary Expression',
+            parse.binds(
+                parse.sequence(
+                    parse.many(unaryOperator),
+                    parse.expected('left hand side expression', leftHandSideExpression)),
+                (ops, expression) ->
+                    parse.always(stream.foldr(reducer, expression, ops))));
 
 // Binary Expressions
 ////////////////////////////////////////
@@ -573,17 +568,15 @@ assignmentExpression = parse.RecParser('Assignment Expression', self ->
             parse.attempt(parse.sequence(
                 parse.memo(leftHandSideExpression),
                 assignmentOperator)),
-            function(left, operator) {
-                return parse.bind(
+            (left, operator) ->
+                parse.bind(
                     parse.expected("assignment expression", self),
-                    function(right) {
-                        return parse.always(new astExpression.AssignmentExpression(
+                    right ->
+                        parse.always(new astExpression.AssignmentExpression(
                             position.SourceLocation.merge(left.loc, right.loc),
                             operator.value,
                             left,
-                            right));
-                });
-            }),
+                            right)))),
         conditionalExpression)));
 
 // Expression
