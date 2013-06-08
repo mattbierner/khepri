@@ -270,7 +270,7 @@ var catchBlock = ecma_parse.nodea(
                 value.identifier),
             blockStatement)),
     (loc, param, body) ->
-        new astClause.CatchClause(loc, param, null, body));
+        new astClause.CatchClause(loc, param, body));
 
 var finallyBlock = parse.next(
     token.keyword('finally'),
@@ -340,7 +340,7 @@ return {
     'tryStatement': tryStatement,
     'debuggerStatement': debuggerStatement,
     
-    'statement': statement,
+    'statement': statement
 };
 
 });
