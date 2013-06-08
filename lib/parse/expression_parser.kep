@@ -197,7 +197,7 @@ var ecmaFunctionExpression = ecma_parse.nodea(
 var lambdaFormalParameterList = parse.either(
     parse_lang.between(token.punctuator('('), token.punctuator(')'), 
         formalParameterList),
-    parse.bind(value.identifier, x -> parse.always([x])));
+    formalParameterList);
 
 var lambdaBody = parse.either(
     parse_lang.between(token.punctuator('{'), token.punctuator('}'),
@@ -208,10 +208,12 @@ var lambdaBody = parse.either(
             new astStatement.BlockStatement(loc, [new astStatement.ReturnStatement(loc, x)])));
 
 var lambdaFunctionExpression = ecma_parse.nodea(
-    parse.sequence(
-        lambdaFormalParameterList,
-        token.punctuator('->'),
-        lambdaBody),
+    parse.next(
+        token.punctuator('\\'),
+        parse.sequence(
+            lambdaFormalParameterList,
+            token.punctuator('->'),
+            lambdaBody)),
     (loc, parameters, _, body) ->
         new astExpression.FunctionExpression(loc, null, parameters, body));
 
@@ -262,14 +264,9 @@ var primaryExpression = parse.Parser('Primary Expression',
     parse.choice(
         thisExpression,
         letExpression,
-        parse.attempt(parse.bind(
-            parse.either(
-                value.identifier,
-                parse_lang.between(token.punctuator('('), token.punctuator(')'),
-                    expression)),
-            x -> parse.either(
-                parse.next(token.punctuator('->'), parse.never()),
-                parse.always(x)))),
+        value.identifier,
+        parse_lang.between(token.punctuator('('), token.punctuator(')'),
+            expression),
         value.literal,
         arrayLiteral,
         objectLiteral,

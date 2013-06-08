@@ -29,18 +29,20 @@ Its specific focus is functional style programming in Javascript.
 ## Added ##
 
 ### Lambda Function Expression Syntax
-Available syntaxes, along with translations, are shown here: 
+Available syntaxes, along with translations as last item, are shown here: 
 
     // single argument
-    x -> x + 3;
+    \x -> x + 3;
+    \(x) -> x + 3;
     function(x) { return x + 3; };
     
     // multiple arguments
-    (x y) -> x + y; 
+    \x, y -> x + y;
+    \(x, y) -> x + y; 
     function(x, y) { return x + y; };
     
     // function body
-    (x y) -> {
+    \x, y -> {
         ++x;
         --y;
         return x + y;
@@ -52,14 +54,15 @@ Available syntaxes, along with translations, are shown here:
     };
     
     // No Arguments
-    () -> 3;
+    \ -> 3;
+    \() -> 3;
     function() { return 3; };
     
     // Return empty object literal
-    () -> ({});
+    \() -> ({});
     
     // Right associativity
-    x -> y -> x + y;
+    \x -> \y -> x + y;
     function(x) { return function(y) { return x + y; }};
 
 All scoping remains the same as in the translated version. 
@@ -78,7 +81,7 @@ Available syntaxes, along with translations, are shown here:
     a[b, c];
     a[b][c];
     
-    a[5 + 10, (x -> x.y)({'y': 7})];
+    a[5 + 10, (\x -> x.y)({'y': 7})];
     a[b][function(x) { return x.y; }({'y': 7})];
 
 ### Let Expression
@@ -86,14 +89,14 @@ Let expression allow variables to bound in expressions.
 
     // Id Let Expression
     let a = 3 in a;
-    (a -> a)(3);
+    (\a -> a)(3);
 
 Let expressions have higher precedence than conditional expressions and are 
 right associative:
 
     // Multiple let expressions
     let a = 3 in let b = 4 in a + b;
-    (a -> (b -> a + b)(4))(3);
+    (\a -> (\b -> a + b)(4))(3);
 
 Multiple values can be bound in a single let expression. Bound values are 
 evaluated left to right and previously bound values can be used in the current
@@ -160,7 +163,7 @@ of the expression is not valid.
     // Here the bound value for the inner a is resolved against the existing binding
     // for a, 3 in this case.
     let a = 3 in let a = a in a * a;
-    (a -> (a -> a * a)(a))(3);
+    (\a -> (\a -> a * a)(a))(3);
 
 
 ## Modified ##
@@ -203,7 +206,7 @@ Semicolon insertion is not supported and whitespace is no longer significant.
 Real semicolons must always be used.
 
     // Khepri will ignore whitespace and not insert semicolons
-    (x, y) -> {
+    (\x, y) -> {
         return
         
                  x + y;
