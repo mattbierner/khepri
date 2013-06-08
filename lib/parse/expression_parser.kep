@@ -42,7 +42,7 @@ var newExpression = function() { return newExpression.apply(undefined, arguments
  */
 var functionBody = ecma_parse.node(
     sourceElements,
-    (loc, body) ->
+    \(loc, body) ->
         new astStatement.BlockStatement(loc, body));
 
 // Array Literal
@@ -71,7 +71,7 @@ var arrayLiteral = parse.Parser('Array Literal',
     ecma_parse.node(
         parse_lang.between(token.punctuator('['), token.punctuator(']'),
             arrayElements),
-        (loc, elements) ->
+        \(loc, elements) ->
             new astExpression.ArrayExpression(loc, elements)));
 
 // Object Literal
@@ -85,7 +85,7 @@ var propertyName = parse.Parser('Property Name',
 /**
  * Parser for the argument list of a object set initializer property.
  */
-var propertySetParameterList = parse.bind(value.identifier, x ->
+var propertySetParameterList = parse.bind(value.identifier, \x ->
     parse.always([x]));
 
 
@@ -98,7 +98,7 @@ var propertyValueInitializer = parse.Parser('Property Value Initializer',
             propertyName,
             token.punctuator(':'),
             assignmentExpression),
-        (loc, name, _, value) -> ({
+        \(loc, name, _, value) -> ({
             'loc': loc,
             'key': name,
             'kind': 'init',
@@ -118,7 +118,7 @@ var propertyGetInitializer = parse.Parser('Property Get Initializer',
                 token.punctuator(')'),
                 parse_lang.between(token.punctuator('{'), token.punctuator('}'),
                     functionBody))),
-        (loc, name, _0, _1, body) -> ({
+        \(loc, name, _0, _1, body) -> ({
             'loc': loc,
             'key': name,
             'kind': 'get',
@@ -138,7 +138,7 @@ var propertySetInitializer = parse.Parser('Property Set Initializer',
                     propertySetParameterList),
                 parse_lang.between(token.punctuator('{'), token.punctuator('}'),
                     functionBody))),
-        (loc, name, parameters, body) -> ({
+        \(loc, name, parameters, body) -> ({
                 'loc': loc,
                 'key': name,
                 'kind': 'set',
@@ -161,7 +161,7 @@ var objectProperties = parse.Parser('Object Properties',
     parse.bind(
         parse_lang.sepBy(token.punctuator(','),
             propertyInitializer),
-        props ->
+        \props ->
             parse.always(stream.toArray(props))));
 
 /**
@@ -171,7 +171,7 @@ var objectLiteral = parse.Parser('Object Literal',
     ecma_parse.node(
         parse_lang.between(token.punctuator('{'), token.punctuator('}'),
             objectProperties),
-        (loc, properties) ->
+        \(loc, properties) ->
             new astExpression.ObjectExpression(loc, properties)));
 
 // Function Expression
@@ -191,7 +191,7 @@ var ecmaFunctionExpression = ecma_parse.nodea(
                 formalParameterList),
             parse_lang.between(token.punctuator('{'), token.punctuator('}'),
                 functionBody))),
-    (loc, id, parameters, body) ->
+    \(loc, id, parameters, body) ->
         new astExpression.FunctionExpression(loc, id, parameters, body));
 
 var lambdaFormalParameterList = parse.either(
@@ -204,7 +204,7 @@ var lambdaBody = parse.either(
         functionBody),
     ecma_parse.node(
         expression,
-        (loc, x) ->
+        \(loc, x) ->
             new astStatement.BlockStatement(loc, [new astStatement.ReturnStatement(loc, x)])));
 
 var lambdaFunctionExpression = ecma_parse.nodea(
@@ -214,7 +214,7 @@ var lambdaFunctionExpression = ecma_parse.nodea(
             lambdaFormalParameterList,
             token.punctuator('->'),
             lambdaBody)),
-    (loc, parameters, _, body) ->
+    \(loc, parameters, _, body) ->
         new astExpression.FunctionExpression(loc, null, parameters, body));
 
 /**
@@ -231,7 +231,7 @@ var functionExpression = parse.Parser('Function Expression',
 ////////////////////////////////////////
 var thisExpression = ecma_parse.node(
     token.keyword('this'),
-    loc -> new astExpression.ThisExpression(loc));
+    \loc -> new astExpression.ThisExpression(loc));
 
 // Let Expression
 ////////////////////////////////////////
@@ -250,8 +250,8 @@ var letExpression = parse.Parser('Let Expression',
                         conditionalExpression))),
                 token.keyword('in'),
                 conditionalExpression)),
-            (loc, vals, _2, expr) ->
-                stream.foldr((p, c) ->
+            \(loc, vals, _2, expr) ->
+                stream.foldr(\(p, c) ->
                     new astExpression.CallExpression(loc, 
                         new astExpression.FunctionExpression(null, null, [c[0]], new astStatement.BlockStatement(null, [p])),
                         [c[1]]),
@@ -288,7 +288,7 @@ var args = parse.Parser('Arguments',
     ecma_parse.node(
         parse_lang.between(token.punctuator('('), token.punctuator(')'),
             argumentList),
-        (loc, args) -> {
+        \(loc, args) -> {
             args.loc = loc;
             args.argument = true;
             return args;
@@ -304,7 +304,7 @@ var dotAccessor = parse.Parser('Dot Accessor',
         parse.next(
             token.punctuator('.'),
             value.identifier),
-        (loc, x) -> [{
+        \(loc, x) -> [{
             'loc': loc,
             'property': x,
             'computed': false
@@ -318,7 +318,7 @@ var bracketAccessor = parse.Parser('Bracket Accessor',
         parse_lang.between(token.punctuator('['), token.punctuator(']'),
             parse.eager(parse_lang.sepBy1(token.punctuator(','),
                 expression))),
-        accessor -> parse.always(accessor.map(x -> ({
+        \accessor -> parse.always(accessor.map(\x -> ({
             'loc': x.loc,
             'property': x,
             'computed': true
@@ -332,7 +332,7 @@ var accessor = parse.Parser('Accessor',
         dotAccessor,
         bracketAccessor));
 
-var accessorReducer = (p, c) -> 
+var accessorReducer = \(p, c) -> 
     new astExpression.MemberExpression(
         position.SourceLocation.merge(p.loc, c.loc),
         p,
@@ -343,7 +343,7 @@ var accessorReducer = (p, c) ->
  * 
  */
 var memberExpression =
-    let reducer = (p, c) -> c.reduce(accessorReducer, p) in
+    let reducer = \(p, c) -> c.reduce(accessorReducer, p) in
         parse.Parser('Member Expression',
             parse.binds(
                 parse.sequence(
@@ -351,7 +351,7 @@ var memberExpression =
                         newExpression,
                         primaryExpression),
                     parse.many(accessor)),
-                (expression, props) ->
+                \(expression, props) ->
                      parse.always(stream.foldl(reducer, expression, props))));
 
 // New Expression
@@ -366,7 +366,7 @@ var newExpression = parse.Parser('New Expression',
             parse.sequence(
                 parse.expected("member expression", memberExpression),
                 parse.optional([], args))),
-        (loc, expression, a) ->
+        \(loc, expression, a) ->
             new astExpression.NewExpression(loc, expression, a)));
 
 // Left Hand Side Expression
@@ -375,7 +375,7 @@ var newExpression = parse.Parser('New Expression',
  * Parser for a left hand side expression.
  */
 var leftHandSideExpression = let
-    reducer = (p, c) ->
+    reducer = \(p, c) ->
         (c && c.hasOwnProperty('argument') ?
              new astExpression.CallExpression(position.SourceLocation.merge(p.loc, c.loc), p, c) :
              c.reduce(accessorReducer, p))
@@ -387,7 +387,7 @@ var leftHandSideExpression = let
                     parse.many(parse.either(
                         args,
                         accessor))),
-                (member, accessors) ->
+                \(member, accessors) ->
                     parse.always(stream.foldl(reducer, member, accessors))));
 
 // Unary Expression
@@ -406,7 +406,7 @@ var unaryOperator = parse.Parser('Unary Operator',
  * 
  */
 var unaryExpression = let
-    reducer = (argument, op) -> 
+    reducer = \(argument, op) -> 
         new astExpression.UnaryExpression(
             position.SourceLocation.merge(op.loc, argument.loc),
             op.value,
@@ -417,7 +417,7 @@ var unaryExpression = let
                 parse.sequence(
                     parse.many(unaryOperator),
                     parse.expected('left hand side expression', leftHandSideExpression)),
-                (ops, expression) ->
+                \(ops, expression) ->
                     parse.always(stream.foldr(reducer, expression, ops))));
 
 // Binary Expressions
@@ -528,11 +528,11 @@ conditionalExpression = (function(){
               token.punctuator(':'),
               parse.expected("assignment expression", assignmentExpression)));
         
-        return parse.bind(binaryExpression, bin -> 
+        return parse.bind(binaryExpression, \bin -> 
             parse.either(
                 ecma_parse.nodea(
                     conditionalBody,
-                    (loc, consequent, _1, alternate) ->
+                    \(loc, consequent, _1, alternate) ->
                         new astExpression.ConditionalExpression(loc, bin,consequent, alternate)),
                 parse.always(bin)));
     
@@ -559,16 +559,16 @@ var assignmentOperator = parse.Parser('Assignment Operator',
 /**
  * 
  */
-assignmentExpression = parse.RecParser('Assignment Expression', self ->
+assignmentExpression = parse.RecParser('Assignment Expression', \self ->
     parse.backtrack(parse.either(
         parse.binds(
             parse.attempt(parse.sequence(
                 parse.memo(leftHandSideExpression),
                 assignmentOperator)),
-            (left, operator) ->
+            \(left, operator) ->
                 parse.bind(
                     parse.expected("assignment expression", self),
-                    right ->
+                    \right ->
                         parse.always(new astExpression.AssignmentExpression(
                             position.SourceLocation.merge(left.loc, right.loc),
                             operator.value,

@@ -46,11 +46,11 @@ var sourceElements = parse.eager(parse.many(sourceElement));
  */
 var program = parse.Parser('Program',
     ecma_parse.node(
-        parse.rec(self ->
+        parse.rec(\self ->
             parse.either(
                 parse.next(parse.eof(), parse.always(stream.end)),
                 parse.cons(sourceElement, self))),
-        (loc, elements) ->
+        \(loc, elements) ->
             new astProgram.Program(loc, stream.toArray(elements))));
 
 /* Export

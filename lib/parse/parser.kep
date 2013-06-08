@@ -25,7 +25,7 @@ function(parse,
  * @return Stream suitable for parsing.
  */
 var parserStream = (function(){
-    var langElementFilter = x -> {
+    var langElementFilter = \x -> {
         switch (x.type) {
         case 'Whitespace':
         case 'LineTerminator':
@@ -35,8 +35,7 @@ var parserStream = (function(){
             return true;
         }
     };
-    return s ->
-        stream.filter(langElementFilter, s);
+    return \s -> stream.filter(langElementFilter, s);
 }());
 
 /* Running
@@ -50,15 +49,15 @@ var parserStream = (function(){
  * 
  * @return AST.
  */
-var parseStream = s ->
+var parseStream = \s ->
     parse.runState(
         program.program,
         new parser.ParserState(
             parserStream(s),
             new parser.ParserPosition(
-                new parse.Position(0),
-                new position.SourcePosition(0, 0)),
-            new position.SourcePosition(0, 0)));
+                parse.Position.initial,
+                position.SourcePosition.initial),
+            position.SourcePosition.initial));
 
 /**
  * Parses a lex array into an AST.
@@ -69,7 +68,7 @@ var parseStream = s ->
  * 
  * @return AST.
  */
-var parseInput = (input, ast) ->
+var parseInput = \(input, ast) ->
     parseStream(stream.from(input), ast);
 
 /* Export
