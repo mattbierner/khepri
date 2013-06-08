@@ -253,9 +253,9 @@ var letExpression = parse.Parser('Let Expression',
             \(loc, vals, _2, expr) ->
                 stream.foldr(\(p, c) ->
                     new astExpression.CallExpression(loc, 
-                        new astExpression.FunctionExpression(null, null, [c[0]], new astStatement.BlockStatement(null, [p])),
+                        new astExpression.FunctionExpression(null, null, [c[0]], new astStatement.BlockStatement(null, [ new astStatement.ReturnStatement(null, p)])),
                         [c[1]]),
-                    new astStatement.ReturnStatement(null, expr),
+                    expr,
                     vals)));
 
 // Primary Expression
