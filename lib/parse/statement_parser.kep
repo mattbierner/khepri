@@ -5,13 +5,13 @@ define(['parse/parse', 'parse/parse_lang',
         'ecma/parse/statement_parser',
         'ecma/parse/token_parser',
         'ecma/parse/common',
-        'khepri/parse/expression_parser', 'khepri/parse/value_parser',
+        'khepri/parse/expression_parser', 'khepri/parse/value_parser', 'khepri/ast/khepri',
         'ecma/ast/clause', 'ecma/ast/declaration', 'ecma/ast/statement'],
 function(parse, parse_lang,
         ecma_statement,
         token,
         ecma_parse,
-        expression, value,
+        expression, value, astKhepri,
         astClause, astDeclaration, astStatement){
 "use strict";
 
@@ -34,13 +34,32 @@ var blockStatement = parse.Parser('Block Statement',
     ecma_parse.node(
         parse_lang.between(token.punctuator('{'), token.punctuator('}'), 
             statementList),
-        \(loc, body) ->
-            new astStatement.BlockStatement(loc, body)));
+        \(loc, body) -> new astStatement.BlockStatement(loc, body)));
+
+// Static Statement
+////////////////////////////////////////
+var staticDeclaration = ecma_parse.node(
+    value.identifier,
+    \(loc, identifier) ->
+        new astDeclaration.VariableDeclarator(loc, identifier, null));
+
+var staticDeclarationList = parse.eager(parse_lang.sepBy1(token.punctuator(','),
+    staticDeclaration));
+
+/**
+ * Parser for a static statement that declares one or more global variables.
+ */
+var staticStatement = parse.Parser('Static Statement',
+     ecma_parse.node(
+        parse_lang.between(token.keyword('static'), logicalSemiColon,
+            staticDeclarationList),
+        \(loc, declarations) -> 
+            new astKhepri.StaticDeclaration(loc, declarations)));
 
 // Variable Statement
 ////////////////////////////////////////
 var initialiser = parse.next(token.punctuator('='),
-    expression.assignmentExpression);
+    expression.expression);
 
 var variableDeclaration = ecma_parse.nodea(
     parse.sequence(
@@ -60,8 +79,38 @@ var variableStatement = parse.Parser('Variable Statement',
     ecma_parse.node(
         parse_lang.between(token.keyword('var'), logicalSemiColon,
             variableDeclarationList),
-        \(loc, declarations) -> 
-            new astDeclaration.VariableDeclaration(loc, declarations)));
+        \(loc, declarations) -> new astDeclaration.VariableDeclaration(loc, declarations)));
+
+// Assignment Statement
+////////////////////////////////////////
+var assignmentOperator = parse.Parser('Assignment Operator',
+    parse.choice(
+        token.punctuator('='),
+        token.punctuator('*='),
+        token.punctuator('*='),
+        token.punctuator('/='),
+        token.punctuator('%='),
+        token.punctuator('+='),
+        token.punctuator('-='),
+        token.punctuator('<<='),
+        token.punctuator('>>='),
+        token.punctuator('>>>='),
+        token.punctuator('&='),
+        token.punctuator('^='),
+        token.punctuator('|=')));
+
+/**
+ * 
+ */
+var assignmentStatement = parse.Parser('Assignment Statement',
+    ecma_parse.nodea(
+        parse.sequence(
+            expression.leftHandReferenceExpression,
+            assignmentOperator,
+            parse.expected('expression', expression.expression),
+            logicalSemiColon),
+        \loc, left, op, right ->
+            new astKhepri.AssignmentStatement(loc, op.value, left, right)));
 
 // Empty Statement
 ////////////////////////////////////////
@@ -310,6 +359,7 @@ var debuggerStatement = parse.Parser('Debugger Statement',
 statement = parse.Parser('Statement',
     parse.expected("statement", parse.choice(
         blockStatement,
+        staticStatement,
         variableStatement,
         emptyStatement,
         ifStatement,
@@ -321,13 +371,16 @@ statement = parse.Parser('Statement',
         throwStatement,
         tryStatement,
         debuggerStatement,
+        parse.attempt(assignmentStatement),
         expressionStatement)));
 
 /* Export
  ******************************************************************************/
 return {
     'blockStatement': blockStatement,
+    'staticStatement': staticStatement,
     'variableStatement': variableStatement,
+    'assignmentStatement': assignmentStatement,
     'emptyStatement': emptyStatement,
     'expressionStatement': expressionStatement,
     'ifStatement': ifStatement,

@@ -23,11 +23,12 @@
             }
         });
         require(
-            ['testLex', 'testParse'],
-            function(testLex, testParse)
+            ['testLex', 'testParse', 'testCompile'],
+            function(testLex, testParse, testCompile)
             {
                 testLex();
                 testParse();
+                testCompile();
             });
     </script>
 

@@ -21,18 +21,6 @@ function(parse,
                 assert.equal(expr.type, 'ThisExpression');
             }],
             
-            ["Assignment Expression",
-            function(){
-                var expr = testParser(lexer.lex("a = b = c;"));
-                assert.equal(expr.type, 'AssignmentExpression');
-                
-                // Check Associativity
-                assert.equal(expr.left.name, 'a');
-                assert.equal(expr.right.type, 'AssignmentExpression');
-                assert.equal(expr.right.left.name, 'b');
-                assert.equal(expr.right.right.name, 'c');
-            }],
-            
             ["Simple Conditional Expression",
             function(){
                 var expr = testParser(lexer.lex("a ? b : c;"));

@@ -57,6 +57,18 @@ define(['parse/parse', 'nu/stream', 'khepri/lex/lexer', 'khepri/parse/parser', '
                 assert.ok(!result.declarations[1].init);
             }],
             
+            ["Assignment Statement",
+            function(){
+                var expr = testParser(lexer.lex("a = b + 3;"));
+                assert.equal(expr.type, 'AssignmentStatement');
+                
+                // Check Associativity
+                assert.equal(expr.left.name, 'a');
+                assert.equal(expr.right.type, 'BinaryExpression');
+                assert.equal(expr.right.left.name, 'b');
+                assert.equal(expr.right.right.value, '3');
+            }],
+            
             ["Simple if Statement",
             function(){
                 var result = testParser(parser.parserStream(lexer.lex("if (a) debugger;")));

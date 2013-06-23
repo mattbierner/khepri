@@ -15,18 +15,18 @@ requirejs.config({
 
 requirejs(['parse/parse',
            'nu/stream',
-           'khepri/lex/lexer', 'khepri/parse/parser',
+           'khepri/lex/lexer', 'khepri/parse/parser', 'khepri/compile/transform',
            'ecma_unparse/unparse', 'ecma_unparse/print'],
 function(parse,
         stream,
-        lexer, parser,
+        lexer, parser, transform,
         unparse, unparse_print) {
     
     var compile = function(input) {
         try {
             var lex = lexer.lex(input);
             var ast = parser.parseStream(lex);
-            var unparsed = unparse.unparse(ast);
+            var unparsed = unparse.unparse(transform.transform(ast));
             return unparse_print.print(unparsed);
         } catch (e) {
             console.error(e.message);

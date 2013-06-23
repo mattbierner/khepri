@@ -101,11 +101,14 @@
         $(function () {
             require(['parse/parse',
                'nu/stream',
-               'khepri/lex/lexer', 'khepri/parse/parser',
+               'khepri/lex/lexer',
+               'khepri/parse/parser',
+               'khepri/compile/transform',
+               'khepri/compile/check',
                'ecma_unparse/unparse', 'ecma_unparse/print'],
             function(parse,
                     stream,
-                    lexer, parser,
+                    lexer, parser, transform, check,
                     unparse, unparse_print) {
                     
                 $('button').click(function () {
@@ -116,7 +119,9 @@
                     try {
                         var lex = lexer.lex(input);
                         var ast = parser.parseStream(lex);
-                        var unparsed = unparse.unparse(ast);
+                        check.check(ast);
+                        var ecam_ast = transform.transform(ast);
+                        var unparsed = unparse.unparse(ecam_ast);
                         
                         var s = unparse_print.print(unparsed);
                         var out = stream.foldl(function(p, c){ return p + '' + c; }, '', s);

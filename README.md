@@ -19,7 +19,7 @@ Its specific focus is functional style programming in Javascript.
 
 ## Dependencies ##
 * [parse.js][parsejs]
-* [stream.js][stream]
+* [nu][nu]
 * [parse-ecma][parseecma]
 * [ecma-unparse][ecmaunparse]
 
@@ -122,38 +122,6 @@ by wrapping the entire expression in parentheses:
     4 * (let a = 2 in a) + 3;
     4 * 2 + 3; // 11
 
-Let expressions have lower precedence than assignment expressions. They always
-result in a value, not a member reference even on the left hand side. Assignment
-is usually a bad idea but it is supported in let expressions if you really need it.
-
-    // Assign left let result
-    // Grammatically valid but semantically not.
-    let a = 3 in a = 10;
-    (let a = 3 in a) = 10;
-    3 = 10; // a is always a value.
-    
-    // Using assign in let body
-    // Grammatically valid but semantically not.
-    let a = 3 in (a = 10);
-    3 = 10; // however a may be a reference here
-    
-    // Using assign in let binding
-    // a is bound to result of b = 10 while the body is evaluated after the bindings.
-    let a = (b = 10) in a + b;
-    10 + b; // b = 10
-    
-    // Result by value
-    // Grammatically valid but semantically not.
-    let a = [1, 2, 3] in a[0] = 10;
-    (let a = [1, 2, 3] in a[0]) = 10;
-    ([1, 2, 3][0]) = 10; // left side evaluated to value.
-    1 = 10;
-    
-    // Member reference inside let body is valid
-    let a = [1, 2, 3] in (a[0] = 10);
-    ([1, 2, 3][0]) = 10; // left side evaluated to reference.
-    10; // with array = [10, 2, 3]
-
 The bound value will only be evaluated once no matter how many times it is used.
 Bindings hide existing bindings for the duration of the expression and let 
 expressions bindings can hide one another. Use of let expression bindings outside
@@ -165,8 +133,21 @@ of the expression is not valid.
     let a = 3 in let a = a in a * a;
     (\a -> (\a -> a * a)(a))(3);
 
-
 ## Modified ##
+
+# Restrict Assignment Expressions
+Assignment is generally dangerous and allowing arbitrary assignments in expressions
+can make code difficult to reason about. However, without fundamental changes to
+the entire language, we need assignment. Therefore, Khepri restricts assignment
+to top level statements and it is disallowed in expressions. The left hand side
+of an assignment statement must be either an identifier or a member expression.
+
+    var a = {'x': 4};
+    a.x = 34; // valid since used as statement
+    a = {}; // also valid
+    if (a = {}) // error, assignment used in expression
+    b = a = 4; // error, assignment used in expression
+    3 = 4; // error, as lhs not identifier or member expression
 
 ### Switch Default Clause
 The default clause in a switch statement remains optional, but must be the last
@@ -185,6 +166,71 @@ Backticks are used to mark the start and the end of regular expressions instead
 of slashes. This eliminates the need for having two top level elements in the 
 grammar.
 
+### Lexical Scoping, Redefinition, and Globals
+Javascript's scoping rules are inconsistent with its C inspired syntax. Some
+programmers advocate making this inconsistancy clear by explicitly declaring
+variables at the start of their scope. Another issue is Javascript's handling of
+globals and undeclared variables.
+
+Khepri introduces static checks that enforce lexical scoping based on blocks
+and function bodies. Further, checks also enforce that all variables are declared 
+before use and any global variables must be explicitly listed before use. And
+further restrictions are imposed to disallow duplicate symbol definition in the
+same scope or top level assignment of immutable values.
+
+Three elements introduce new a new scope: the program, the function body, a block
+statement. Variables are only valid inside the scope in which they are declared
+as well as any enclosed scopes. A variables with the same name as one in the
+outer scopes hides the outer on.
+
+    // Annotated to show which variables are in scope
+    // a, b
+    var a = 10;
+    var b;
+    if (a > 0)
+    { // a, b, g, f
+        var g = 100;
+        var f -> \a -> { var z = 13; return a - g; } // a, b, g, f, a, z
+        b = f(3);
+    }
+
+Variables declarations are evaluated in order and only previously declared 
+variables can be used. This differs from Javascript where 
+declarations are evaluated first and variables bound to undefined before statements
+are evaluated:
+
+    var h = "hello";
+    var message = h + " " + w; // error, w used before declared.
+    var w = "world";
+
+Implicit blocks also introduce a new scope, such as if or for statements without
+brackets:
+
+    var h = "hello";
+    if (h)
+        var w = "world";
+    var message = h + " " + w; // error, w used outside of implicit if block.
+
+Globals can be used by declaring them with the 'static' keyword. 'static' is
+already a reserved work in ECMAScript 5.1. By default, builtin object globals
+are already declared. This does not include any DOM objects.
+This only suppresses checks on the global variables, it does not effect the 
+behavior of the program. 
+
+    static define; // expect a global called 'define'
+    define([], function() {
+        var props = {'x': {'value': 3}};
+        return Object.keys({}, props); // 'Object' builtin ok even without explicit static.
+    });
+
+ Use of a global can also be restricted to a block. This may help make intent
+ clearer but again, does not change the meaning of the actual program
+
+    var a = \x -> {
+        static $;
+        return $('<div></div>');
+    };
+    
 ## Removed ##
 
 ### Function Declarations
@@ -192,7 +238,7 @@ Function declarations are not necessary. Use function expressions instead.
 
 ### Comma Separated Expressions
 Comma separated sequences of expressions are not allowed. An expressions must be 
-single expression. Such sequence expressions are usually not clear and make the
+a single expression. Such sequence expressions are usually not clear and make the
 language more complex than it should be. 
 
 ### With Statement
@@ -218,7 +264,7 @@ Array literals do not support empty elements or a trailing comma.
 Use an explicit undefined value instead.
 
 ### Object Literal Trailing Comma
-Object literals may not have trailing comma.
+Object literals may not have a trailing comma.
 
 ### In Operator
 The in operator is not supported, but 'in' remains a reserved word and is used
@@ -245,5 +291,5 @@ generated from it.
  [parsejs]: https://github.com/mattbierner/parse.js
  [parseecma]: https://github.com/mattbierner/parse-ecma
  [ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
- [stream]: https://github.com/mattbierner/stream.js
+ [nu]: http://mattbierner.github.io/nu/
  [ecmaunparse]: https://github.com/mattbierner/ecma-unparse

@@ -1,0 +1,289 @@
+/**
+ * @fileOverview
+ */
+define(['ecma/ast/node'],
+function(ast_node){
+//"use strict";
+    
+/* 
+ ******************************************************************************/
+var map = Function.prototype.call.bind(Array.prototype.map);
+var reduce = Function.prototype.call.bind(Array.prototype.reduce);
+var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
+
+var copy = function(obj) {
+    return Object.keys(obj).reduce(\p, c -> {
+        p[c] = obj[c];
+        return p;
+    }, new obj.constructor());
+};
+
+var defineProperty = \obj, prop, descriptor ->
+    Object.defineProperty(copy(obj), prop, descriptor);
+
+/*
+ ******************************************************************************/
+var Scope = function(record, outer, mapping) {
+    this.record = record;
+    this.outer = outer;
+    this.mapping = mapping;
+};
+
+Scope.prototype.hasOwnBinding = \id ->
+    this.record.hasOwnProperty(id);
+
+Scope.prototype.hasBinding = \id ->
+    this.hasOwnBinding(id) || (this.outer && this.outer.hasBinding(id));
+
+Scope.prototype.getBinding = \id ->
+    this.hasOwnBinding(id) ?
+        this.record[id] :
+        (this.outer ? this.outer.getBinding(id) : null);
+
+Scope.prototype.addBinding = \id, val ->
+    new Scope(defineProperty(this.record, id, {'value': val, 'enumerable': true}), this.outer, this.mapping);
+
+Scope.prototype.addMutableBinding = \id, loc ->
+    this.addBinding(id, { 'mutable': true, 'loc': loc });
+
+Scope.prototype.addImmutableBinding = \id, loc ->
+    this.addBinding(id, { 'mutable': false, 'loc': loc });
+
+Scope.prototype.hasMapping = \id ->
+    this.mapping.hasOwnProperty(id);
+
+Scope.prototype.getMapping = \id ->
+    this.mapping[id];
+
+Scope.prototype.addMapping = \from, to ->
+    new Scope(this.record, this.outer, defineProperty(this.mapping, from, {'value': to, 'enumerable': true}));
+
+Scope.prototype.getUnusedId = \id -> {
+    for (var i = 0; ; i = i + 1) {
+        if (!this.hasBinding(id + i))
+            return id + i;
+    }
+};
+
+/*
+ ******************************************************************************/
+var ok = \x -> \s, ok, err -> ok(x, s);
+
+var error = \x -> \s, ok, err -> err(x, s);
+
+var bind = \p, f -> \s, ok, err -> p(s, \x, s -> f(x)(s, ok, err), err);
+
+var next = \p, n -> bind(p, \() -> n);
+
+var seq = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
+
+var extract = \s, ok, err -> ok(s, s);
+
+var examine = \f -> bind(extract, f);
+
+var modify = \f -> \scope, ok, err -> let s = f(scope) in ok(s, s);
+
+var setScope = \s -> modify(\() -> s);
+
+var block = \body ->
+    examine(\s ->
+        seq([
+            modify(\s -> new Scope({}, s, s.mapping)),
+            body,
+            modify(\s-> s.outer)]));
+
+var addMutableBinding = \id, loc -> seq([
+    examine(\s -> s.hasOwnBinding(id) ?
+        error("Binding for:'" + id + "' at:" + loc + " already exists in scope") : ok()),
+    examine(\s -> s.hasBinding(id) ?
+        let new_id = s.getUnusedId(id) in
+            next(setScope(s.addMapping(id, new_id)), modify(\s -> s.addMutableBinding(new_id, loc))) :
+        modify(\s -> s.addMutableBinding(id, loc)))]);
+
+var addImmutableBinding = \id, loc -> seq([
+    examine(\s -> s.hasOwnBinding(id) ?
+        error("Binding for:'" + id + "' at:" + loc + " already exists in scope") : ok()),
+    examine(\s -> s.hasBinding(id) ?
+        let new_id = s.getUnusedId(id) in
+            next(setScope(s.addMapping(id, new_id)), modify(\s -> s.addImmutableBinding(new_id, loc))) :
+        modify(\s -> s.addImmutableBinding(id, loc)))]);
+
+var hasBinding = \id, loc -> examine(\s -> s.hasBinding(id) ?
+    ok() :
+    error("Undeclared identifier:'" + id + "' at:" + loc));
+
+/*
+ ******************************************************************************/
+var _check = function(node) {
+    if (!node || !(node instanceof ast_node.Node))
+        return ok();
+    
+    switch (node.type)
+    {
+// Statement
+    case 'BlockStatement':
+        return block(seq(map(node.body, _check)));
+    
+    case 'AssignmentStatement':
+        return seq([
+            _check(node.left),
+            (node.left.type === 'Identifier' ?
+                examine(\s -> (s.hasBinding(node.left.name) ?
+                    let b = s.getBinding(node.left.name) in
+                        b.mutable ? ok() : error("Assigning immutable variable:'" + node.left.name + "' at:"+ node.left.loc.start) :
+                    ok())) :
+                ok()),
+            _check(node.right)]);
+    
+    case 'ExpressionStatement':
+        return _check(node.expression);
+    
+    case 'IfStatement':
+        return seq([
+            _check(node.test),
+            block(_check(node.consequent)),
+            block(_check(node.alternate))]);
+
+    case 'SwitchStatement':
+        return seq([
+            _check(node.discriminant),
+            block(seq(map(node.cases, _check)))]);
+    
+    case'ReturnStatement':
+        return _check(node.argument);
+    
+    case 'ThrowStatement':
+        return _check(node.argument);
+    
+    case 'TryStatement':
+        return seq([
+            _check(node.block),
+            block(_check(node.handler)),
+            block(_check(node.finalizer))]);
+    
+    case 'WhileStatement':
+        return seq([
+            _check(node.test),
+            block(_check(node.body))]);
+    
+    case 'DoWhileStatement':
+        return seq([
+            block(_check(node.body)),
+            block(_check(node.test))]);
+    
+    case 'ForStatement':
+        return block(seq([
+            _check(node.init),
+            _check(node.test),
+            _check(node.update),
+            block(_check(node.body))]));
+    
+// Expression
+    case 'UnaryExpression':
+        return _check(node.argument);
+    
+    case 'LogicalExpression':
+    case 'BinaryExpression':
+        return seq([
+            _check(node.left),
+            _check(node.right)]);
+    
+    case 'ConditionalExpression':
+        return seq([
+            _check(node.test),
+            _check(node.consequent),
+            _check(node.alternate)]);
+    
+    case 'CallExpression':
+    case 'NewExpression':
+        return seq([
+            _check(node.callee),
+            seq(map(node.args, _check))]);
+    
+    case 'MemberExpression':
+        return seq([
+            _check(node.object),
+            (node.computed ? _check(node.property) : ok())]);
+        
+    case 'ArrayExpression':
+        return seq(map(node.elements, _check));
+    
+    case 'ObjectExpression':
+        return seq(map(node.properties, \x -> _check(x.value)));
+    
+    case 'LetExpression':
+        return block(
+            next(
+                seq(node.bindings.map(\x -> addImmutableBinding(x.id.name))),
+                _check(node.body)));
+
+// Function
+    case 'FunctionExpression':
+        return seq([
+            (node.id ? examine(\s -> s.hasOwnBinding(node.id.name) ?
+                error("Binding for:'" + node.id. name + "' at:" + node.loc.start + " already exists in scope") :
+                addImmutableBinding(node.id.name, node.loc)) : ok()),
+            block(
+                seq([
+                     seq(map(node.params, \x -> addImmutableBinding(x.name))),
+                     seq(map(node.body.body, _check))]))]);
+
+// Program
+    case 'Program':
+        return seq(map(node.body, _check));
+    
+// Clause
+    case 'CatchClause':
+        return block(
+            next(
+                addImmutableBinding(node.param.name, node.param.loc),
+                seq(map(node.body.body, _check))));
+    
+// Declarations
+    case 'StaticDeclaration':
+    case 'VariableDeclaration':
+        return seq(map(node.declarations, _check));
+    
+    case 'StaticVariableDeclarator':
+        return examine(\s -> s.hasOwnBinding(node.id.name) ?
+            error("Binding for:'" + node.id. name + "' at:" + node.loc.start + " already exists in scope") :
+            addImmutableBinding(node.id.name, node.loc));
+        
+    case 'VariableDeclarator':
+        return seq([
+            _check(node.init),
+            addMutableBinding(node.id.name, node.loc.start),
+            examine(\s -> {
+                if (s.hasMapping(node.id.name)) {
+                    node.id.name = s.getMapping(node.id.name);
+                }
+                return ok();
+            })]);
+    
+    // Value
+    case 'Identifier':
+        return examine(\s -> {
+            if (s.hasMapping(node.name)) {
+                node.name = s.getMapping(node.name);
+            }
+            return hasBinding(node.name);
+        });
+    }
+    
+    return ok();
+};
+
+var check = function(root, globals) {
+    if (globals) {
+        
+    }
+    return _check(root)(new Scope({}, null, {}), \s -> s, \err, s -> { throw err; });
+};
+
+/* Export
+ ******************************************************************************/
+return {
+    'check': check
+};
+
+});

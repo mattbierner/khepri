@@ -9,11 +9,11 @@ function(parse,
     
     var testParser = function(stream) {
         var result = parser.parseStream(stream);
-        return result.body[0].expression;
+        return result.body[0];
     };
     
     return {
-        'module': "Function Expression Tests",
+        'module': "Function Expression",
         'tests': [
             ["Empty Function Expression",
             function(){
