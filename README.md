@@ -141,13 +141,17 @@ of the expression is not valid.
 Assignment is generally dangerous and allowing arbitrary assignments in expressions
 can make code difficult to reason about. However, without fundamental changes to
 the entire language, we need assignment. Therefore, Khepri restricts assignment
-to top level statements and it is disallowed in expressions. The left hand side
+to top level statements and it is disallowed inside of expressions. The left hand side
 of an assignment statement must be either an identifier or a member expression.
+
+For statements, anywhere any expression can appear either an assignment expression
+or a normal expression can be used. This is the only place assignment expressions
+are valid.
 
     var a = {'x': 4};
     a.x = 34; // valid since used as statement
     a = {}; // also valid
-    if (a = {}) // error, assignment used in expression
+    if (a = {}) {}// also valid
     b = a = 4; // error, assignment used in expression
     3 = 4; // error, as lhs not identifier or member expression
 

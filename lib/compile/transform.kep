@@ -45,13 +45,6 @@ var transform = function(node) {
         return new astStatement.BlockStatement(node.loc,
             map(node.body, transform));
     
-    case 'AssignmentStatement':
-        return new astStatement.ExpressionStatement(node.loc,
-            new astExpression.AssignmentExpression(node.loc,
-                node.operator,
-                transform(node.left),
-                transform(node.right)));
-    
     case 'ExpressionStatement':
         return new astStatement.ExpressionStatement(node.loc,
             transform(node.expression));
@@ -99,6 +92,12 @@ var transform = function(node) {
             transform(node.body));
     
 // Expression
+    case 'AssignmentExpression':
+        return new astExpression.AssignmentExpression(node.loc,
+            node.operator,
+            transform(node.left),
+            transform(node.right));
+    
     case 'UnaryExpression':
         return new astExpression.UnaryExpression(node.loc,
             node.operator,

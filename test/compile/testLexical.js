@@ -1,10 +1,10 @@
 define(['parse/parse',
-        'khepri/compile/check',
+        'khepri/compile/lexical',
         'khepri/lex/lexer',
         'khepri/parse/parser',
         'khepri/parse/expression_parser'],
 function(parse,
-        check,
+        lexical,
         lexer,
         parser,
         expression){
@@ -18,41 +18,41 @@ function(parse,
         'tests': [
             ["Simple Lexical",
             function(){
-                var result = check.check(testParser(lexer.lex("var a; a; { a; };")));
+                var result = lexical.check(testParser(lexer.lex("var a; a; { a; };")));
                 assert.ok(true);
             }],
             ["Simple undefined var Lexical",
             function(){
                 assert.throws(function(){
-                    check.check(testParser(lexer.lex("b; c;")));
+                    lexical.check(testParser(lexer.lex("b; c;")));
                 });
             }],
             ["Order",
             function(){
                 assert.throws(function(){
-                    check.check(testParser(lexer.lex("b; var b;")));
+                    lexical.check(testParser(lexer.lex("b; var b;")));
                 });
             }],
             ["Outside of block",
             function(){
                 assert.throws(function(){
-                    check.check(testParser(lexer.lex("{ var b; }; b;")));
+                    lexical.check(testParser(lexer.lex("{ var b; }; b;")));
                 });
             }],
             ["If body",
             function(){
                 assert.throws(function(){
-                    check.check(testParser(lexer.lex(" if (true) var b; b;")));
+                    lexical.check(testParser(lexer.lex(" if (true) var b; b;")));
                 });
             }],
             ["Multiple in same scope",
             function(){
                 assert.throws(function(){
-                    check.check(testParser(lexer.lex("var a; var c; var a;")));
+                    lexical.check(testParser(lexer.lex("var a; var c; var a;")));
                 });
                 
-                var result = check.check(testParser(lexer.lex("var a; { var a; }")));
-                assert.ok();
+                var result = lexical.check(testParser(lexer.lex("var a; { var a; }")));
+                assert.ok(true);
             }],
         ],
     };

@@ -551,27 +551,55 @@ var binaryExpression = parse.Parser('Binary Expression',
  * 
  */
 conditionalExpression = (function(){
-      var conditionalBody = parse.next(
-          token.punctuator('?'),
-          parse.sequence(
-              parse.expected("expression", expression),
-              token.punctuator(':'),
-              parse.expected("expression", expression)));
-        
-        return parse.bind(binaryExpression, \bin -> 
-            parse.either(
-                ecma_parse.nodea(
-                    conditionalBody,
-                    \(loc, consequent, _1, alternate) ->
-                        new astExpression.ConditionalExpression(loc, bin,consequent, alternate)),
-                parse.always(bin)));
+  var conditionalBody = parse.next(
+      token.punctuator('?'),
+      parse.sequence(
+          parse.expected("expression", expression),
+          token.punctuator(':'),
+          parse.expected("expression", expression)));
     
+    return parse.bind(binaryExpression, \bin -> 
+        parse.either(
+            ecma_parse.nodea(
+                conditionalBody,
+                \(loc, consequent, _1, alternate) ->
+                    new astExpression.ConditionalExpression(loc, bin,consequent, alternate)),
+            parse.always(bin)));
 }());
+
+// Assignment Statement
+////////////////////////////////////////
+var assignmentOperator = parse.Parser('Assignment Operator',
+    parse.choice(
+        token.punctuator('='),
+        token.punctuator('*='),
+        token.punctuator('*='),
+        token.punctuator('/='),
+        token.punctuator('%='),
+        token.punctuator('+='),
+        token.punctuator('-='),
+        token.punctuator('<<='),
+        token.punctuator('>>='),
+        token.punctuator('>>>='),
+        token.punctuator('&='),
+        token.punctuator('^='),
+        token.punctuator('|=')));
+
+/**
+ * 
+ */
+var assignmentExpression = parse.Parser('Assignment Expression',
+    ecma_parse.nodea(
+        parse.sequence(
+            leftHandReferenceExpression,
+            assignmentOperator,
+            parse.expected('expression', expression)),
+        \loc, left, op, right ->
+            new astExpression.AssignmentExpression(loc, op.value, left, right)));
 
 // Expression
 ////////////////////////////////////////
 expression = conditionalExpression;
-
 
 /* Export
  ******************************************************************************/
@@ -625,6 +653,9 @@ return {
 
 // Let Expression
     'letExpression': letExpression,
+
+// Assignment
+    'assignmentExpression': assignmentExpression,
     
 // Expression
     'expression': expression

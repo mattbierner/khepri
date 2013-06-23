@@ -9,7 +9,7 @@ function(parse,
     
     var testParser = function(stream) {
         var result = parser.parseStream(stream);
-        return result.body[0];
+        return result.body[0].expression;
     };
     
     return {

@@ -249,14 +249,6 @@ var _check = function(node) {
     case 'BlockStatement':
         return block(seq(map(node.body, _check)));
     
-    case 'AssignmentStatement':
-        return seq([
-            _check(node.left),
-            (node.left.type === 'Identifier' ?
-                checkCanAssign(node.left.name, node.left.loc.start) :
-                ok()),
-            _check(node.right)]);
-    
     case 'ExpressionStatement':
         return _check(node.expression);
     
@@ -301,8 +293,17 @@ var _check = function(node) {
             block(_check(node.body))]));
     
 // Expression
+        
     case 'UnaryExpression':
         return _check(node.argument);
+    
+     case 'AssignmentExpression':
+        return seq([
+            _check(node.left),
+            (node.left.type === 'Identifier' ?
+                checkCanAssign(node.left.name, node.left.loc.start) :
+                ok()),
+            _check(node.right)]);
     
     case 'LogicalExpression':
     case 'BinaryExpression':
@@ -388,7 +389,7 @@ var _check = function(node) {
             if (s.hasMapping(node.name)) {
                 node.name = s.getMapping(node.name);
             }
-            return hasBinding(node.name);
+            return hasBinding(node.name, node.loc.start);
         });
     }
     
