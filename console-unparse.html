@@ -104,11 +104,11 @@
                'khepri/lex/lexer',
                'khepri/parse/parser',
                'khepri/compile/transform',
-               'khepri/compile/check',
+               'khepri/compile/lexical',
                'ecma_unparse/unparse', 'ecma_unparse/print'],
             function(parse,
                     stream,
-                    lexer, parser, transform, check,
+                    lexer, parser, transform, lexical,
                     unparse, unparse_print) {
                     
                 $('button').click(function () {
@@ -119,7 +119,7 @@
                     try {
                         var lex = lexer.lex(input);
                         var ast = parser.parseStream(lex);
-                        check.check(ast);
+                        lexical.check(ast);
                         var ecam_ast = transform.transform(ast);
                         var unparsed = unparse.unparse(ecam_ast);
                         
