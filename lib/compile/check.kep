@@ -4,7 +4,7 @@
 define(['ecma/ast/node'],
 function(ast_node){
 //"use strict";
-    
+
 /* 
  ******************************************************************************/
 var map = Function.prototype.call.bind(Array.prototype.map);
@@ -21,49 +21,124 @@ var copy = function(obj) {
 var defineProperty = \obj, prop, descriptor ->
     Object.defineProperty(copy(obj), prop, descriptor);
 
-/*
+/* Scope
  ******************************************************************************/
+/**
+ * Holds information about a lexical scope.
+ * 
+ * @param record Maps identifiers to binding information for this scope.
+ * @param outer Parent scope.
+ * @param mappin Maps identifiers to their actual names in this scope.
+ */
 var Scope = function(record, outer, mapping) {
     this.record = record;
     this.outer = outer;
     this.mapping = mapping;
 };
 
+/**
+ * Does this scope have a given binding?
+ */
 Scope.prototype.hasOwnBinding = \id ->
     this.record.hasOwnProperty(id);
 
+/**
+ * Does this scope or its parents have a given binding?
+ */
 Scope.prototype.hasBinding = \id ->
     this.hasOwnBinding(id) || (this.outer && this.outer.hasBinding(id));
 
+/**
+ * Get information for a given binding. Returns null if binding does not exist.
+ */
 Scope.prototype.getBinding = \id ->
     this.hasOwnBinding(id) ?
         this.record[id] :
         (this.outer ? this.outer.getBinding(id) : null);
 
-Scope.prototype.addBinding = \id, val ->
-    new Scope(defineProperty(this.record, id, {'value': val, 'enumerable': true}), this.outer, this.mapping);
-
-Scope.prototype.addMutableBinding = \id, loc ->
-    this.addBinding(id, { 'mutable': true, 'loc': loc });
-
-Scope.prototype.addImmutableBinding = \id, loc ->
-    this.addBinding(id, { 'mutable': false, 'loc': loc });
-
+/**
+ * Does this scope have a mapping for a given identifier.
+ */
 Scope.prototype.hasMapping = \id ->
     this.mapping.hasOwnProperty(id);
 
+/**
+ * Get the mapped value for a given identifier.
+ */
 Scope.prototype.getMapping = \id ->
     this.mapping[id];
 
-Scope.prototype.addMapping = \from, to ->
-    new Scope(this.record, this.outer, defineProperty(this.mapping, from, {'value': to, 'enumerable': true}));
-
+/**
+ * Get an unused identifier in this scope.
+ */
 Scope.prototype.getUnusedId = \id -> {
     for (var i = 0; ; i = i + 1) {
         if (!this.hasBinding(id + i))
             return id + i;
     }
 };
+
+/**
+ * Create a new modified scope with a given binding.
+ * 
+ * @param s Scope.
+ * @param id Identifier for new binding.
+ * @param info Binding information.
+ */
+Scope.addBinding = \s, id, info ->
+    new Scope(
+        defineProperty(s.record, id, {
+            'value': info,
+            'enumerable': true,
+            'writable': true,
+            'configurable': true
+        }),
+        s.outer,
+        s.mapping);
+
+/**
+ * Create a new modified scope with a new mutable binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addMutableBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': true,
+        'loc': loc
+    });
+
+/**
+ * Create a new modified scope with a new immutable binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addImmutableBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': false,
+        'loc': loc
+    });
+
+/**
+ * Create a new modified scope with a new mapping
+ * 
+ * @s Scope
+ * @param from Key value.
+ * @param to Value to map to.
+ */
+Scope.addMapping = \s, from, to ->
+    new Scope(
+        s.record,
+        s.outer,
+        defineProperty(s.mapping, from, {
+            'value': to,
+            'enumerable': true,
+            'writable': true,
+            'configurable': true
+        }));
 
 /*
  ******************************************************************************/
@@ -85,32 +160,82 @@ var modify = \f -> \scope, ok, err -> let s = f(scope) in ok(s, s);
 
 var setScope = \s -> modify(\() -> s);
 
+/* Operations
+ ******************************************************************************/
+/**
+ * Create a new lexical block for body.
+ */
 var block = \body ->
     examine(\s ->
         seq([
-            modify(\s -> new Scope({}, s, s.mapping)),
+            setScope(new Scope({}, s, s.mapping)),
             body,
-            modify(\s-> s.outer)]));
+            setScope(s)]));
 
-var addMutableBinding = \id, loc -> seq([
+/**
+ * Test to see if the current scope already contains a binding for id.
+ */
+var checkCanAddOwnBinding = \id, loc -> 
     examine(\s -> s.hasOwnBinding(id) ?
-        error("Binding for:'" + id + "' at:" + loc + " already exists in scope") : ok()),
-    examine(\s -> s.hasBinding(id) ?
-        let new_id = s.getUnusedId(id) in
-            next(setScope(s.addMapping(id, new_id)), modify(\s -> s.addMutableBinding(new_id, loc))) :
-        modify(\s -> s.addMutableBinding(id, loc)))]);
-
-var addImmutableBinding = \id, loc -> seq([
-    examine(\s -> s.hasOwnBinding(id) ?
-        error("Binding for:'" + id + "' at:" + loc + " already exists in scope") : ok()),
-    examine(\s -> s.hasBinding(id) ?
-        let new_id = s.getUnusedId(id) in
-            next(setScope(s.addMapping(id, new_id)), modify(\s -> s.addImmutableBinding(new_id, loc))) :
-        modify(\s -> s.addImmutableBinding(id, loc)))]);
+        error("'" + id + "' at:" + loc + " already bound for scope from:" + s.getBinding(id).loc) :
+        ok());
 
 var hasBinding = \id, loc -> examine(\s -> s.hasBinding(id) ?
     ok() :
     error("Undeclared identifier:'" + id + "' at:" + loc));
+
+/**
+ * 
+ */
+var checkCanAssign = \id, loc -> 
+    examine(\s -> s.hasBinding(id) ?
+        let b = s.getBinding(id) in
+            b.mutable ? ok() : error("Assign to immutable variable:'" + id + "' at:"+ loc) :
+        ok());
+
+/**
+ * Adds a new mutable binding in the current scope. Does not perform any checks.
+ */
+var addMutableBinding = \id, loc -> 
+    modify(\s -> Scope.addMapping(Scope.addMutableBinding(s, id, loc), id, id));
+
+/**
+ * Adds a new immutable binding in the current scope. Does not perform any checks.
+ */
+var addImmutableBinding = \id, loc -> 
+    modify(\s -> Scope.addMapping(Scope.addMutableBinding(id, loc), id, id));
+
+/**
+ * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
+ */
+var addUniqueMutableBinding = \id, loc ->
+    examine(\s -> s.hasBinding(id) ?
+        let new_id = s.getUnusedId(id) in seq([
+             addMutableBinding(new_id, loc),
+             setScope(Scope.addMapping(s, id, new_id))]) :
+        addMutableBinding(id, loc));
+
+/**
+ * 
+ */
+var tryAddMutableBinding = \id, loc -> seq([
+    checkCanAddOwnBinding(id, loc),
+    addUniqueMutableBinding(id, loc)]);
+
+var addImmutableBindingInRealBlock = \id, loc -> seq([
+    checkCanAddOwnBinding(id, loc),
+    examine(\s ->
+        next(
+            setScope(Scope.addMapping(s, id, id)),
+            modify(\s -> Scope.addImmutableBinding(s, id, loc))))]);
+
+var addImmutableBinding = \id, loc -> seq([
+    checkCanAddOwnBinding(id, loc),
+    examine(\s -> s.hasBinding(id) ?
+        let new_id = s.getUnusedId(id) in
+            next(setScope(Scope.addMapping(s, id, new_id)), modify(\s -> Scope.addImmutableBinding(s, new_id, loc))) :
+        addImmutableBindingInRealBlock(id, loc))]);
+
 
 /*
  ******************************************************************************/
@@ -128,10 +253,7 @@ var _check = function(node) {
         return seq([
             _check(node.left),
             (node.left.type === 'Identifier' ?
-                examine(\s -> (s.hasBinding(node.left.name) ?
-                    let b = s.getBinding(node.left.name) in
-                        b.mutable ? ok() : error("Assigning immutable variable:'" + node.left.name + "' at:"+ node.left.loc.start) :
-                    ok())) :
+                checkCanAssign(node.left.name, node.left.loc.start) :
                 ok()),
             _check(node.right)]);
     
@@ -225,7 +347,7 @@ var _check = function(node) {
                 addImmutableBinding(node.id.name, node.loc)) : ok()),
             block(
                 seq([
-                     seq(map(node.params, \x -> addImmutableBinding(x.name))),
+                     seq(map(node.params, \x -> addImmutableBindingInRealBlock(x.name))),
                      seq(map(node.body.body, _check))]))]);
 
 // Program
@@ -236,7 +358,7 @@ var _check = function(node) {
     case 'CatchClause':
         return block(
             next(
-                addImmutableBinding(node.param.name, node.param.loc),
+                addImmutableBindingInRealBlock(node.param.name, node.param.loc),
                 seq(map(node.body.body, _check))));
     
 // Declarations
@@ -251,8 +373,8 @@ var _check = function(node) {
         
     case 'VariableDeclarator':
         return seq([
+            tryAddMutableBinding(node.id.name, node.loc.start),
             _check(node.init),
-            addMutableBinding(node.id.name, node.loc.start),
             examine(\s -> {
                 if (s.hasMapping(node.id.name)) {
                     node.id.name = s.getMapping(node.id.name);
@@ -273,11 +395,43 @@ var _check = function(node) {
     return ok();
 };
 
+var builtins = [
+    'Array',
+    'Boolean',
+    'Date',
+    'decodeURI',
+    'decodeURIComponent',
+    'encodeURI',
+    'encodeURIComponent',
+    'Error',
+    'eval',
+    'EvalError',
+    'Function',
+    'Infinity',
+    'isFinite',
+    'isNaN',
+    'JSON',
+    'Math',
+    'NaN',
+    'Number',
+    'Object',
+    'parseInt',
+    'parseFloat',
+    'RangeError',
+    'ReferenceError',
+    'RegExp',
+    'String',
+    'SyntaxError',
+    'TypeError',
+    'undefined',
+    'URIError'];
+
 var check = function(root, globals) {
-    if (globals) {
-        
+    if (!globals) {
+        globals = builtins;
     }
-    return _check(root)(new Scope({}, null, {}), \s -> s, \err, s -> { throw err; });
+    var scope = globals.reduce(\p, c -> Scope.addImmutableBinding(p, c, null), new Scope({}, null, {}));
+    return _check(root)(scope, \s -> s, \err, s -> { throw err; });
 };
 
 /* Export

@@ -1,13 +1,14 @@
-# Khepri - ECMAScript Language #
+# Khepri
 
-## About ##
-Khepri is a programming language that is a subset of ECMAScript. It restricts
-ECMAScript and also introduces some syntax changes.
+## About
+Khepri is a duck typed programming language derived from ECMAScript. It both
+restricts ECMAScript and introduces new features to make the language more concise 
+and consistent.
 
 Unlike most other *script languages, Khepri's goal is not to replace Javascript
-by introducing new language features, but to make writing Javascript more fun.
-Its specific focus is functional style programming in Javascript.
- 
+by introducing new heavy weight language features, but to make writing Javascript
+more fun, with a focus on functional style programming. 
+
 
 ## To clone ##
     git clone https://github.com/mattbierner/khepri khepri
@@ -24,9 +25,9 @@ Its specific focus is functional style programming in Javascript.
 * [ecma-unparse][ecmaunparse]
 
 
-# Changes #
+# Differences with ECMAScript 
 
-## Added ##
+## Additions
 
 ### Lambda Function Expression Syntax
 Available syntaxes, along with translations as last item, are shown here: 
@@ -85,7 +86,7 @@ Available syntaxes, along with translations, are shown here:
     a[b][function(x) { return x.y; }({'y': 7})];
 
 ### Let Expression
-Let expression allow variables to bound in expressions.
+Let expression allow variables to be bound in expressions:
 
     // Id Let Expression
     let a = 3 in a;
@@ -106,7 +107,7 @@ binding:
     let a = 3, b = 5 in a + b;
     let a = 3 in let b = 5 in a + b;
     
-    // Using a existing binding.
+    // Using an existing binding.
     let a = 3, b = a + 10 in a + b;
     let a = 3 in let b = a + 10 in a + b;
 
@@ -132,6 +133,7 @@ of the expression is not valid.
     // for a, 3 in this case.
     let a = 3 in let a = a in a * a;
     (\a -> (\a -> a * a)(a))(3);
+
 
 ## Modified ##
 
@@ -168,20 +170,21 @@ grammar.
 
 ### Lexical Scoping, Redefinition, and Globals
 Javascript's scoping rules are inconsistent with its C inspired syntax. Some
-programmers advocate making this inconsistancy clear by explicitly declaring
+programmers advocate making this inconsistency clear by explicitly declaring
 variables at the start of their scope. Another issue is Javascript's handling of
 globals and undeclared variables.
 
 Khepri introduces static checks that enforce lexical scoping based on blocks
-and function bodies. Further, checks also enforce that all variables are declared 
-before use and any global variables must be explicitly listed before use. And
-further restrictions are imposed to disallow duplicate symbol definition in the
-same scope or top level assignment of immutable values.
+and functions. Further checks also enforce that all variables are declared 
+before use and that global variables are be explicitly listed before use. Khepri
+also disallows duplicate symbol definition in the same scope. The concept of an
+immutable binding is also added for values that cannot be directly assigned.
+All bindings except those from variable declarations are immutable.
 
 Three elements introduce new a new scope: the program, the function body, a block
 statement. Variables are only valid inside the scope in which they are declared
-as well as any enclosed scopes. A variables with the same name as one in the
-outer scopes hides the outer on.
+as well as any enclosed scopes. A variable with the same name as one in an
+outer scopes hides the outer one.
 
     // Annotated to show which variables are in scope
     // a, b
@@ -194,9 +197,9 @@ outer scopes hides the outer on.
         b = f(3);
     }
 
-Variables declarations are evaluated in order and only previously declared 
-variables can be used. This differs from Javascript where 
-declarations are evaluated first and variables bound to undefined before statements
+Variables declarations are evaluated in order, and only previously declared 
+variables can be used. This is a restriction of Javascript where declarations are
+evaluated first and variables bound to undefined before statements
 are evaluated:
 
     var h = "hello";
@@ -211,7 +214,26 @@ brackets:
         var w = "world";
     var message = h + " " + w; // error, w used outside of implicit if block.
 
-Globals can be used by declaring them with the 'static' keyword. 'static' is
+Duplicate variables in the same scope are disallowed:
+
+    var b = 3;
+    var c = b;
+    var b = c; // Error, b already declared.
+
+Only variables from variable declarations has mutable bindings, meaning they can
+be reassigned. Those from static declarations, catch clauses, function parameters,
+and let bindings are immutable cannot be reassigned.
+
+    var a = 4;
+    a = 10; // ok;
+    
+    static g;
+    g = 323; // Error, g is immutable
+    
+    var f = \x -> { var x = 3; return x + 1; }; // error, x is immutable in scope
+    var f = \x -> { { var x = 3; return x + 1; } }; // ok, new scope 
+
+Globals are used by declaring them with the 'static' keyword. 'static' is
 already a reserved work in ECMAScript 5.1. By default, builtin object globals
 are already declared. This does not include any DOM objects.
 This only suppresses checks on the global variables, it does not effect the 
@@ -230,7 +252,8 @@ behavior of the program.
         static $;
         return $('<div></div>');
     };
-    
+
+
 ## Removed ##
 
 ### Function Declarations

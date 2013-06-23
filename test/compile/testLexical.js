@@ -45,6 +45,15 @@ function(parse,
                     check.check(testParser(lexer.lex(" if (true) var b; b;")));
                 });
             }],
+            ["Multiple in same scope",
+            function(){
+                assert.throws(function(){
+                    check.check(testParser(lexer.lex("var a; var c; var a;")));
+                });
+                
+                var result = check.check(testParser(lexer.lex("var a; { var a; }")));
+                assert.ok();
+            }],
         ],
     };
 });
