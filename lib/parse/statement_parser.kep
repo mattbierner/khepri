@@ -45,7 +45,7 @@ var blockStatement = parse.Parser('Block Statement',
 var staticDeclaration = ecma_parse.node(
     value.identifier,
     \(loc, identifier) ->
-        new astDeclaration.VariableDeclarator(loc, identifier, null));
+        new astKhepri.StaticDeclarator(loc, identifier, null));
 
 var staticDeclarationList = parse.eager(parse_lang.sepBy1(token.punctuator(','),
     staticDeclaration));

@@ -1,5 +1,7 @@
 /**
  * @fileOverview
+ * 
+ * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 define(['ecma/ast/node'],
 function(ast_node){
@@ -212,7 +214,7 @@ var addUniqueMutableBinding = \id, loc ->
     examine(\s -> s.hasBinding(id) ?
         let new_id = s.getUnusedId(id) in seq([
              addMutableBinding(new_id, loc),
-             setScope(Scope.addMapping(s, id, new_id))]) :
+             modify(\s -> Scope.addMapping(s, id, new_id))]) :
         addMutableBinding(id, loc));
 
 /**
@@ -235,7 +237,6 @@ var addImmutableBinding = \id, loc -> seq([
         let new_id = s.getUnusedId(id) in
             next(setScope(Scope.addMapping(s, id, new_id)), modify(\s -> Scope.addImmutableBinding(s, new_id, loc))) :
         addImmutableBindingInRealBlock(id, loc))]);
-
 
 /*
  ******************************************************************************/
@@ -337,7 +338,7 @@ var _check = function(node) {
     case 'LetExpression':
         return block(
             next(
-                seq(node.bindings.map(\x -> addImmutableBinding(x.id.name))),
+                seq(node.bindings.map(\x -> addImmutableBinding(x.id.name, x.id.loc.start))),
                 _check(node.body)));
 
 // Function
@@ -367,7 +368,7 @@ var _check = function(node) {
     case 'VariableDeclaration':
         return seq(map(node.declarations, _check));
     
-    case 'StaticVariableDeclarator':
+    case 'StaticDeclarator':
         return examine(\s -> s.hasOwnBinding(node.id.name) ?
             error("Binding for:'" + node.id. name + "' at:" + node.loc.start + " already exists in scope") :
             addImmutableBinding(node.id.name, node.loc));
@@ -431,7 +432,7 @@ var check = function(root, globals) {
     if (!globals) {
         globals = builtins;
     }
-    var scope = globals.reduce(\p, c -> Scope.addImmutableBinding(p, c, null), new Scope({}, null, {}));
+    var scope = globals.reduce(Scope.addImmutableBinding, new Scope({}, null, {}));
     return _check(root)(scope, \s -> s, \err, s -> { throw err; });
 };
 

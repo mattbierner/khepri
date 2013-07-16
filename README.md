@@ -151,7 +151,7 @@ are valid.
     var a = {'x': 4};
     a.x = 34; // valid since used as statement
     a = {}; // also valid
-    if (a = {}) {}// also valid
+    if (a = {}) {} // also valid
     b = a = 4; // error, assignment used in expression
     3 = 4; // error, as lhs not identifier or member expression
 
