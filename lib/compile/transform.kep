@@ -150,7 +150,6 @@ var transform = function(node) {
             })));
     
     case 'LetExpression':
-        console.log(node.bindings);
         return node.bindings.reduceRight(\p, c ->
             new astExpression.CallExpression(null,
                 new astExpression.FunctionExpression(null,
