@@ -134,6 +134,14 @@ of the expression is not valid.
     let a = 3 in let a = a in a * a;
     (\a -> (\a -> a * a)(a))(3);
 
+Anonymous functions bound in let expressions can access themselves by bound
+name in the function body:
+
+    let fib = \x -> (x < 2 ? x : fib(n - 1) + fib(n - 2)) in
+        fib(10);
+
+Named functions can access themselves by name. In both cases, the scope of the
+function name is limited to the evaluation of the bound value.
 
 ## Modified ##
 

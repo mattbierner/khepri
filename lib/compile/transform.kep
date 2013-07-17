@@ -150,13 +150,19 @@ var transform = function(node) {
             })));
     
     case 'LetExpression':
+        console.log(node.bindings);
         return node.bindings.reduceRight(\p, c ->
             new astExpression.CallExpression(null,
                 new astExpression.FunctionExpression(null,
                     null,
                     [c.id],
                     new astStatement.BlockStatement(null, [new astStatement.ReturnStatement(null, p)])),
-                [c.init]),
+                [(c.init.type === 'FunctionExpression' ?
+                    new astExpression.FunctionExpression(null,
+                        (c.init.id || c.id),
+                        c.init.params,
+                        c.init.body) :
+                    c.init)]),
             transform(node.body));
 
 // Function
