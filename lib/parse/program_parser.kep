@@ -1,6 +1,7 @@
 /**
  * @fileOverview Parser for ECMAScript 5.1 Functions and Programs.
  */
+static define;
 define(['require',
         'parse/parse',
         'nu/stream',
@@ -46,12 +47,12 @@ var sourceElements = parse.eager(parse.many(sourceElement));
  */
 var program = parse.Parser('Program',
     ecma_parse.node(
-        parse.rec(\self ->
+        parse.eager(parse.rec(\self ->
             parse.either(
                 parse.next(parse.eof(), parse.always(stream.end)),
-                parse.cons(sourceElement, self))),
+                parse.cons(sourceElement, self)))),
         \(loc, elements) ->
-            new astProgram.Program(loc, stream.toArray(elements))));
+            new astProgram.Program(loc, elements)));
 
 /* Export
  ******************************************************************************/

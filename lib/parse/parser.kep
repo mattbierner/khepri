@@ -1,6 +1,7 @@
 /**
  * @fileOverview
  */
+static define;
 define(['parse/parse',
         'nu/stream',
         'ecma/lex/token',
@@ -24,19 +25,20 @@ function(parse,
  * 
  * @return Stream suitable for parsing.
  */
-var parserStream = (function(){
-    var langElementFilter = \x -> {
-        switch (x.type) {
-        case 'Whitespace':
-        case 'LineTerminator':
-        case 'Comment':
-            return false;
-        default:
-            return true;
+var parserStream =
+    let 
+        langElementFilter = \x -> {
+            switch (x.type) {
+            case 'Whitespace':
+            case 'LineTerminator':
+            case 'Comment':
+                return false;
+            default:
+                return true;
+            }
         }
-    };
-    return \s -> stream.filter(langElementFilter, s);
-}());
+    in
+        \s -> stream.filter(langElementFilter, s);
 
 /* Running
  ******************************************************************************/
@@ -68,7 +70,7 @@ var parseStream = \s ->
  * 
  * @return AST.
  */
-var parseInput = \(input, ast) ->
+var parseInput = \input, ast ->
     parseStream(stream.from(input), ast);
 
 /* Export

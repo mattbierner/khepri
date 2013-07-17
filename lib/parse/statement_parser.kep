@@ -1,18 +1,29 @@
 /**
  * @fileOverview Parser for ECMAScript 5.1 statements.
  */
-define(['parse/parse', 'parse/parse_lang',
+static define;
+define(['parse/parse',
+        'parse/parse_lang',
         'ecma/parse/statement_parser',
         'ecma/parse/token_parser',
         'ecma/parse/common',
-        'khepri/parse/expression_parser', 'khepri/parse/value_parser', 'khepri/ast/khepri',
-        'ecma/ast/clause', 'ecma/ast/declaration', 'ecma/ast/statement'],
-function(parse, parse_lang,
+        'khepri/parse/expression_parser',
+        'khepri/parse/value_parser',
+        'khepri/ast/khepri',
+        'ecma/ast/clause',
+        'ecma/ast/declaration',
+        'ecma/ast/statement'],
+function(parse,
+        parse_lang,
         ecma_statement,
         token,
         ecma_parse,
-        expression, value, astKhepri,
-        astClause, astDeclaration, astStatement){
+        expression,
+        value,
+        astKhepri,
+        astClause,
+        astDeclaration,
+        astStatement){
 "use strict";
 
 /* Forward declarations

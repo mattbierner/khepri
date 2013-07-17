@@ -1,6 +1,7 @@
 /**
  * @fileOverview Parser for ECMAScript 5.1 expression.
  */
+static define;
 define(['require',
         'parse/parse',
         'parse/parse_lang',
@@ -31,7 +32,7 @@ function(require,
         astKhepri){
 "use strict";
 
-/* Circular Declarations
+/* Circular Declarations 
  ******************************************************************************/
 var sourceElements = function() {
     return require('khepri/parse/program_parser').sourceElements.apply(undefined, arguments);
@@ -372,7 +373,7 @@ var memberExpression =
 /**
  * Parser for a new expression
  */
-var newExpression = parse.Parser('New Expression',
+newExpression = parse.Parser('New Expression',
     ecma_parse.nodea(
         parse.next(
             token.keyword('new'),
@@ -436,7 +437,7 @@ var unaryOperator = parse.Parser('Unary Operator',
  * 
  */
 var unaryExpression = let
-    reducer = \(argument, op) -> 
+    reducer = \argument, op -> 
         new astExpression.UnaryExpression(
             position.SourceLocation.merge(op.loc, argument.loc),
             op.value,
