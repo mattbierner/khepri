@@ -8,8 +8,6 @@ define(['ecma/ast/node'],
 function(ast_node){
 //"use strict";
 
-/* 
- ******************************************************************************/
 var map = Function.prototype.call.bind(Array.prototype.map);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
@@ -357,9 +355,14 @@ var _check = function(node) {
         return block(
             seq([
                  (node.id ? addImmutableBindingInRealBlock(node.id.name, node.loc) : ok()),
-                 seq(map(node.params, \x -> addImmutableBindingInRealBlock(x.name))),
+                 seq(map(node.params.patterns, _check)),
                  seq(map(node.body.body, _check))]));
-
+// Pattern
+    case 'IdentifierPattern':
+        return addImmutableBindingInRealBlock(node.name);
+        
+    case 'EllipsisPattern':
+        return ok;
 // Program
     case 'Program':
         return seq(map(node.body, _check));

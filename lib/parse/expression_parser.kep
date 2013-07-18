@@ -6,30 +6,30 @@ define(['require',
         'parse/parse',
         'parse/parse_lang',
         'nu/stream', 
-        'ecma/parse/common',
         'ecma/position',
+        'ecma/parse/common',
         'ecma/parse/token_parser',
-        'ecma/ast/node',
         'ecma/ast/expression',
         'ecma/ast/statement',
-        'ecma/ast/value',
         'khepri/parse/program_parser',
         'khepri/parse/value_parser',
-        'khepri/ast/khepri'],
+        'khepri/parse/pattern_parser',
+        'khepri/ast/khepri',
+        'khepri/ast/pattern'],
 function(require,
         parse,
         parse_lang,
         stream,
-        ecma_parse,
         position,
+        ecma_parse,
         token,
-        node,
         astExpression,
         astStatement,
-        astValue,
         program,
         value,
-        astKhepri){
+        pattern,
+        astKhepri,
+        astPattern){
 "use strict";
 
 /* Circular Declarations 
@@ -169,11 +169,9 @@ var propertyInitializer = parse.Parser('Property Initializer',
  * Parser for a set or more properties in an object literal.
  */
 var objectProperties = parse.Parser('Object Properties',
-    parse.bind(
+    parse.eager(
         parse_lang.sepBy(token.punctuator(','),
-            propertyInitializer),
-        \props ->
-            parse.always(stream.toArray(props))));
+            propertyInitializer)));
 
 /**
  * Parser for an ECMAScript object literal.
@@ -187,11 +185,15 @@ var objectLiteral = parse.Parser('Object Literal',
 
 // Function Expression
 ////////////////////////////////////////
+var parameter = parse.expected("Any pattern", pattern.pattern);
+
 /**
  * Parser for a function's parameters.
  */
-var formalParameterList = parse.eager(parse_lang.sepBy(token.punctuator(','),
-    value.identifier));
+var formalParameterList = ecma_parse.node(
+    parse.eager(parse_lang.sepBy(token.punctuator(','),
+        parameter)),
+    \loc, parameters -> new astPattern.ParameterList(loc, parameters));
 
 var ecmaFunctionExpression = ecma_parse.nodea(
     parse.next(

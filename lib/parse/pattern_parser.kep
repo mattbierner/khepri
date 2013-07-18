@@ -1,0 +1,46 @@
+/**
+ * @fileOverview Khepri patterns parsers.
+ */
+static define;
+define(['parse/parse',
+        'parse/parse_lang',
+        'ecma/parse/token_parser',
+        'khepri/ast/pattern'],
+function(parse,
+        parse_lang,
+        token,
+        astPattern){
+"use strict";
+
+/* Parsers
+ ******************************************************************************/
+var identifier = parse.Parser('Identifier Pattern',
+    parse.bind(
+        token.anyIdentifier,
+        \x -> parse.always(new astPattern.Identifier(x.loc, x.value))));
+
+/**
+ * 
+ */
+var ellipsis = parse.Parser('Ellipsis Pattern',
+    parse.bind(
+        token.punctuator('...'),
+        \x -> parse.always(new astPattern.Ellipsis(x.loc))));
+
+/**
+ */
+var pattern = parse.Parser('Pattern',
+    parse.choice(
+        identifier,
+        ellipsis));
+
+/* Export
+ ******************************************************************************/
+return {
+    'pattern': pattern,
+    
+    'identifier': identifier,
+    'ellipsis': ellipsis
+};
+
+});

@@ -1,5 +1,7 @@
 /**
  * @fileOverview
+ * 
+ * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 static define;
 define(['ecma/ast/clause',
@@ -17,8 +19,7 @@ function(astClause,
         astValue,
         astKhepri){
 //"use strict";
-/* 
- ******************************************************************************/
+
 var map = Function.prototype.call.bind(Array.prototype.map);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
@@ -167,11 +168,24 @@ var transform = function(node) {
 
 // Function
     case 'FunctionExpression':
+        debugger;
         return new astExpression.FunctionExpression(node.loc,
-            node.id,
-            map(node.params, transform),
+            transform(node.id),
+            transform(node.params),
             transform(node.body));
-
+    
+// Patterns
+    case 'ParameterList':
+        return map(reduce(node.patterns, \p, c -> {
+            if (c.type === 'EllipsisPattern') {
+                return p;
+            }
+            return p.concat([c]);
+        } ,[]), transform);
+        
+    case 'IdentifierPattern':
+        return new astValue.Identifier(node.loc, node.name);
+    
 // Program
     case 'Program':
         return new astProgram.Program(node.loc,

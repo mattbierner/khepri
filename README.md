@@ -143,6 +143,24 @@ name in the function body:
 Named functions can access themselves by name. In both cases, the scope of the
 function name is limited to the evaluation of the bound value.
 
+### Patterns
+Function parameter lists are patterns instead of identifiers. These patterns
+effect the behavior of the generated function and have nothing to do with pattern
+matching. All effects happen at runtime.
+
+#### Identifier Pattern
+Same as ECMAScript. Binds argument at position to name for function body.
+
+    (\a, b, c -> [a, b, c])(1, 2); // [1,2,undefined]
+
+#### Ellipsis Pattern
+Currently used only for annotation to represent a variable number of arguments.
+It should only be used as the last pattern in a parameter list.
+Future use of Ellipsis may change but will not effect the current use.
+
+    var l = \a, ... -> [a, arguments];
+
+
 ## Modified ##
 
 # Restrict Assignment Expressions
