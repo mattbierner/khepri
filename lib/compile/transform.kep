@@ -1,6 +1,7 @@
 /**
  * @fileOverview
  */
+static define;
 define(['ecma/ast/clause',
         'ecma/ast/declaration',
         'ecma/ast/expression',
