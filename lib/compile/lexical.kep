@@ -3,6 +3,7 @@
  * 
  * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
+static define;
 define(['ecma/ast/node'],
 function(ast_node){
 //"use strict";
@@ -218,12 +219,6 @@ var addMutableBinding = \id, loc ->
     modify(\s -> Scope.addMapping(Scope.addMutableBinding(s, id, loc), id, id));
 
 /**
- * Adds a new immutable binding in the current scope. Does not perform any checks.
- */
-var addImmutableBinding = \id, loc -> 
-    modify(\s -> Scope.addMapping(Scope.addMutableBinding(id, loc), id, id));
-
-/**
  * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
  */
 var addUniqueMutableBinding = \id, loc ->
@@ -359,14 +354,11 @@ var _check = function(node) {
 
 // Function
     case 'FunctionExpression':
-        return seq([
-            (node.id ? examine(\s -> s.hasOwnBinding(node.id.name) ?
-                error("Binding for:'" + node.id. name + "' at:" + node.loc.start + " already exists in scope") :
-                addImmutableBinding(node.id.name, node.loc)) : ok()),
-            block(
-                seq([
-                     seq(map(node.params, \x -> addImmutableBindingInRealBlock(x.name))),
-                     seq(map(node.body.body, _check))]))]);
+        return block(
+            seq([
+                 (node.id ? addImmutableBinding(node.id.name, node.loc) : ok()),
+                 seq(map(node.params, \x -> addImmutableBindingInRealBlock(x.name))),
+                 seq(map(node.body.body, _check))]));
 
 // Program
     case 'Program':
@@ -446,10 +438,8 @@ var builtins = [
     'URIError'];
 
 var check = function(root, globals) {
-    if (!globals) {
-        globals = builtins;
-    }
-    var scope = globals.reduce(Scope.addImmutableBinding, new Scope({}, null, {}));
+    var g = globals || builtins;
+    var scope = g.reduce(Scope.addImmutableBinding, new Scope({}, null, {}));
     return trampoline(_check(root)(scope, \s -> s, \err, s -> { throw err; }));
 };
 

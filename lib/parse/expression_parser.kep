@@ -1,5 +1,5 @@
 /**
- * @fileOverview Parser for ECMAScript 5.1 expression.
+ * @fileOverview Khepri expression parsers.
  */
 static define;
 define(['require',
