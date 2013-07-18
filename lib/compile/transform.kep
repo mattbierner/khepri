@@ -168,7 +168,6 @@ var transform = function(node) {
 
 // Function
     case 'FunctionExpression':
-        debugger;
         return new astExpression.FunctionExpression(node.loc,
             transform(node.id),
             transform(node.params),
