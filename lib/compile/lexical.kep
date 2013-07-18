@@ -356,7 +356,7 @@ var _check = function(node) {
     case 'FunctionExpression':
         return block(
             seq([
-                 (node.id ? addImmutableBinding(node.id.name, node.loc) : ok()),
+                 (node.id ? addImmutableBindingInRealBlock(node.id.name, node.loc) : ok()),
                  seq(map(node.params, \x -> addImmutableBindingInRealBlock(x.name))),
                  seq(map(node.body.body, _check))]));
 
