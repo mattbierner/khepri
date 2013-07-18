@@ -161,9 +161,9 @@ var transform = function(node) {
                 [(c.init.type === 'FunctionExpression' ?
                     new astExpression.FunctionExpression(null,
                         (c.init.id || c.id),
-                        c.init.params,
-                        c.init.body) :
-                    c.init)]),
+                        transform(c.init.params),
+                        transform(c.init.body)) :
+                    transform(c.init))]),
             transform(node.body));
 
 // Function
