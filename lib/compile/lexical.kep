@@ -347,7 +347,7 @@ var _check = function(node) {
     case 'LetExpression':
         return block(
             next(
-                seq(node.bindings.map(\x -> addImmutableBinding(x.id.name, x.id.loc.start))),
+                seq(node.bindings.map(\x -> addImmutableBindingInRealBlock(x.id.name, x.id.loc.start))),
                 _check(node.body)));
 
 // Function
@@ -363,6 +363,7 @@ var _check = function(node) {
         
     case 'EllipsisPattern':
         return ok;
+    
 // Program
     case 'Program':
         return seq(map(node.body, _check));
@@ -398,9 +399,9 @@ var _check = function(node) {
     // Value
     case 'Identifier':
         return examine(\s -> {
-            if (s.hasMapping(node.name)) {
+            if (s.hasMapping(node.name))
                 node.name = s.getMapping(node.name);
-            }
+            
             return hasBinding(node.name, node.loc.start);
         });
     }
