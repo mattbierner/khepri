@@ -54,6 +54,17 @@ function(parse,
                 var result = lexical.check(testParser(lexer.lex("var a; { var a; }")));
                 assert.ok(true);
             }],
+            
+            ["Multiple parameter same name",
+            function(){
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("(\\x, x -> x*x)(2)")));
+                });
+                
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("(\\x, a, b, x -> x*x)(2)")));
+                });
+            }],
         ],
     };
 });
