@@ -45,14 +45,13 @@ var blockStatement = parse.Parser('Block Statement',
     ecma_parse.node(
         parse_lang.between(token.punctuator('{'), token.punctuator('}'), 
             statementList),
-        \(loc, body) -> new ast_statement.BlockStatement(loc, body)));
+        ast_statement.BlockStatement.create));
 
 // Static Statement
 ////////////////////////////////////////
 var staticDeclaration = ecma_parse.node(
     value.identifier,
-    \(loc, identifier) ->
-        new ast_declaration.StaticDeclarator(loc, identifier, null));
+    ast_declaration.StaticDeclarator.create);
 
 var staticDeclarationList = parse.eager(parse_lang.sepBy1(token.punctuator(','),
     staticDeclaration));
@@ -64,8 +63,7 @@ var staticStatement = parse.Parser('Static Statement',
      ecma_parse.node(
         parse_lang.between(token.keyword('static'), logicalSemiColon,
             staticDeclarationList),
-        \(loc, declarations) -> 
-            new ast_declaration.StaticDeclaration(loc, declarations)));
+        ast_declaration.StaticDeclaration.create));
 
 // Variable Statement
 ////////////////////////////////////////
@@ -252,7 +250,7 @@ var defaultClause = ecma_parse.node(
         parse.next(
             token.punctuator(':'),
             statementList)),
-    \(loc, consequent) -> new ast_clause.SwitchCase(loc, null, consequent));
+    \(loc, consequent) -> ast_clause.SwitchCase.create(loc, null, consequent));
 
 var caseClauses = parse.eager(parse.many(caseClause));
 

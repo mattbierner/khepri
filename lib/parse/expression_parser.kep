@@ -435,7 +435,7 @@ var unaryOperator = parse.Parser('Unary Operator',
  */
 var unaryExpression = let
     reducer = \argument, op -> 
-        new ast_expression.UnaryExpression(
+        ast_expression.UnaryExpression.create(
             position.SourceLocation.merge(op.loc, argument.loc),
             op.value,
             argument)
@@ -557,12 +557,11 @@ conditionalExpression = (function(){
           parse.expected("expression", expression)));
     
     return parse.bind(binaryExpression, \bin -> 
-        parse.either(
+        parse.optional(bin,
             ecma_parse.nodea(
                 conditionalBody,
                 \(loc, consequent, _1, alternate) ->
-                    new ast_expression.ConditionalExpression(loc, bin, consequent, alternate)),
-            parse.always(bin)));
+                    new ast_expression.ConditionalExpression(loc, bin, consequent, alternate))));
 }());
 
 // Assignment Statement
