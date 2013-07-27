@@ -13,3 +13,6 @@
 [submodule "dependencies/khepri-ast"]
 	path = dependencies/khepri-ast
 	url = git://github.com/mattbierner/khepri-ast.git
+[submodule "dependencies/ecma-ast"]
+	path = dependencies/ecma-ast
+	url = git://github.com/mattbierner/ecma-ast.git

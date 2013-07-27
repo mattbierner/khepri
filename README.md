@@ -23,6 +23,9 @@ more fun, with a focus on functional style programming.
 * [nu][nu]
 * [parse-ecma][parseecma]
 * [ecma-unparse][ecmaunparse]
+* [khepri-ast][khepriast]
+* [ecma-ast][ecmaast]
+
 
 
 # Differences with ECMAScript 
@@ -341,8 +344,10 @@ but only Khepri sources will be developed and Javascript files will be
 generated from it.
 
 
- [parsejs]: https://github.com/mattbierner/parse.js
- [parseecma]: https://github.com/mattbierner/parse-ecma
- [ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
- [nu]: http://mattbierner.github.io/nu/
- [ecmaunparse]: https://github.com/mattbierner/ecma-unparse
+[parsejs]: https://github.com/mattbierner/parse.js
+[parseecma]: https://github.com/mattbierner/parse-ecma
+[ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
+[nu]: http://mattbierner.github.io/nu/
+[ecmaunparse]: https://github.com/mattbierner/ecma-unparse
+[ecma-ast]: https://github.com/mattbierner/ecma-ast
+[khepri-ast]: https://github.com/mattbierner/khepri-ast

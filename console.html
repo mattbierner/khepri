@@ -189,11 +189,14 @@
                 'parse': 'dependencies/parse/lib',
                 'nu': 'dependencies/nu/lib',
                 'ecma': 'dependencies/parse-ecma/lib',
+                'ecma_unparse': 'dependencies/ecma-unparse/lib',
+                'ecma_ast': 'dependencies/ecma-ast/lib',
+                'khepri_ast': 'dependencies/khepri-ast/lib',
                 'khepri': 'lib'
             }
         });
         $(function(){
-            require(['parse/parse', 'nu/stream', 'khepri/lex/lexer', 'khepri/parse/parser', 'ecma/ast/node'],
+            require(['parse/parse', 'nu/stream', 'khepri/lex/lexer', 'khepri/parse/parser', 'khepri_ast/node'],
                 function(parse, stream, lexer, parser, node)
             {
                 var lexOut = $('.LexOut');
