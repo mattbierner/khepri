@@ -1,21 +1,21 @@
 /**
- * @fileOverview Parser for ECMAScript 5.1 Functions and Programs.
+ * @fileOverview Khepri program parsers.
  */
 static define;
 define(['require',
         'parse/parse',
         'nu/stream',
         'ecma/parse/common',
-        'khepri/parse/statement_parser',
         'ecma/parse/token_parser',
-         'ecma/ast/program'],
+        'khepri_ast/program',
+        'khepri/parse/statement_parser'],
 function(require,
         parse,
         stream,
         ecma_parse,
-        statement,
         token,
-        astProgram){
+        ast_program,
+        statement){
 "use strict";
 
 /* Circular
@@ -51,8 +51,7 @@ var program = parse.Parser('Program',
             parse.either(
                 parse.next(parse.eof(), parse.always(stream.end)),
                 parse.cons(sourceElement, self)))),
-        \(loc, elements) ->
-            new astProgram.Program(loc, elements)));
+        ast_program.Program.create));
 
 /* Export
  ******************************************************************************/

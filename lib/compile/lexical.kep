@@ -4,7 +4,7 @@
  * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 static define;
-define(['ecma/ast/node'],
+define(['khepri_ast/node'],
 function(ast_node){
 //"use strict";
 

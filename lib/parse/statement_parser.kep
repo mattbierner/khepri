@@ -4,26 +4,22 @@
 static define;
 define(['parse/parse',
         'parse/parse_lang',
-        'ecma/parse/statement_parser',
         'ecma/parse/token_parser',
         'ecma/parse/common',
+        'khepri_ast/clause',
+        'khepri_ast/declaration',
+        'khepri_ast/statement',
         'khepri/parse/expression_parser',
-        'khepri/parse/value_parser',
-        'khepri/ast/khepri',
-        'ecma/ast/clause',
-        'ecma/ast/declaration',
-        'ecma/ast/statement'],
+        'khepri/parse/value_parser'],
 function(parse,
         parse_lang,
-        ecma_statement,
         token,
         ecma_parse,
+        ast_clause,
+        ast_declaration,
+        ast_statement,
         expression,
-        value,
-        astKhepri,
-        astClause,
-        astDeclaration,
-        astStatement){
+        value){
 "use strict";
 
 /* Forward declarations
@@ -49,14 +45,14 @@ var blockStatement = parse.Parser('Block Statement',
     ecma_parse.node(
         parse_lang.between(token.punctuator('{'), token.punctuator('}'), 
             statementList),
-        \(loc, body) -> new astStatement.BlockStatement(loc, body)));
+        \(loc, body) -> new ast_statement.BlockStatement(loc, body)));
 
 // Static Statement
 ////////////////////////////////////////
 var staticDeclaration = ecma_parse.node(
     value.identifier,
     \(loc, identifier) ->
-        new astKhepri.StaticDeclarator(loc, identifier, null));
+        new ast_declaration.StaticDeclarator(loc, identifier, null));
 
 var staticDeclarationList = parse.eager(parse_lang.sepBy1(token.punctuator(','),
     staticDeclaration));
@@ -69,7 +65,7 @@ var staticStatement = parse.Parser('Static Statement',
         parse_lang.between(token.keyword('static'), logicalSemiColon,
             staticDeclarationList),
         \(loc, declarations) -> 
-            new astKhepri.StaticDeclaration(loc, declarations)));
+            new ast_declaration.StaticDeclaration(loc, declarations)));
 
 // Variable Statement
 ////////////////////////////////////////
@@ -80,8 +76,7 @@ var variableDeclaration = ecma_parse.nodea(
     parse.sequence(
         value.identifier,
         parse.optional(null, initialiser)),
-    \(loc, identifier, initialiser) ->
-        new astDeclaration.VariableDeclarator(loc, identifier, initialiser));
+    ast_declaration.VariableDeclarator.create);
 
 var variableDeclarationList = parse.eager(parse_lang.sepBy1(token.punctuator(','),
     variableDeclaration));
@@ -94,7 +89,7 @@ var variableStatement = parse.Parser('Variable Statement',
     ecma_parse.node(
         parse_lang.between(token.keyword('var'), logicalSemiColon,
             variableDeclarationList),
-        \(loc, declarations) -> new astDeclaration.VariableDeclaration(loc, declarations)));
+        ast_declaration.VariableDeclaration.create));
 
 
 // Empty Statement
@@ -105,8 +100,7 @@ var variableStatement = parse.Parser('Variable Statement',
 var emptyStatement = parse.Parser('Empty Statement',
     ecma_parse.node(
         token.punctuator(';'),
-        \loc ->
-            new astStatement.EmptyStatement(loc)));
+        ast_statement.EmptyStatement.create));
 
 // Expression
 ////////////////////////////////////////
@@ -117,8 +111,7 @@ var expressionStatement = parse.Parser('Expression Statement',
         parse_lang.then(
             topLevelExpression,
             logicalSemiColon),
-        \(loc, expression) ->
-            new astStatement.ExpressionStatement(loc, expression)));
+        ast_statement.ExpressionStatement.create));
 
 // If
 ////////////////////////////////////////
@@ -135,8 +128,7 @@ var ifStatement =  parse.Parser('If Statement',
                 statement,
                 parse.optional(null, parse.next(token.keyword('else'),
                     statement)))),
-        \(loc, test, consequent, alternate) ->
-            new astStatement.IfStatement(loc, test, consequent, alternate)));
+        ast_statement.IfStatement.create));
 
 // Iteration
 ////////////////////////////////////////
@@ -151,8 +143,7 @@ var whileStatement = parse.Parser('While Statement',
                 parse_lang.between(token.punctuator('('), token.punctuator(')'),
                     topLevelExpression),
                 statement)),
-        \(loc, test, body) -> 
-            new astStatement.WhileStatement(loc, test, body)));
+        ast_statement.WhileStatement.create));
 
 /**
  * 
@@ -168,7 +159,7 @@ var doWhileStatement = parse.Parser('Do While Statement',
                     topLevelExpression),
                 token.punctuator(';'))),
         \(loc, body, _0, test) ->
-            new astStatement.DoWhileStatement(loc, body, test)));
+            new ast_statement.DoWhileStatement(loc, body, test)));
 
 var forInitExpression =  parse.optional(null, 
     parse.either(
@@ -176,8 +167,7 @@ var forInitExpression =  parse.optional(null,
             parse.next(
                 token.keyword('var'),
                 parse.memo(variableDeclarationList)),
-            \(loc, declarations) ->
-                new astDeclaration.VariableDeclaration(loc, declarations)),
+            ast_declaration.VariableDeclaration.create),
         topLevelExpression));
 
 var forTestExpression = parse.optional(null, topLevelExpression);
@@ -204,7 +194,7 @@ var forStatement = parse.Parser('For Statement',
                 token.punctuator(')'),
                 statement)),
             \(loc, _1, init, _2, test, _3, update, _4, body) ->
-                 new astStatement.ForStatement(loc, init, test, update, body)));
+                 new ast_statement.ForStatement(loc, init, test, update, body)));
 
 var iterationStatement = parse.Parser('Iteration Statement',
     parse.choice(
@@ -221,7 +211,7 @@ var continueStatement = parse.Parser('Continue Statement',
         parse.next(
             token.keyword('continue'),
             logicalSemiColon),
-        \loc -> new astStatement.ContinueStatement(loc)));
+        ast_statement.ContinueStatement.create));
 
 // Break
 ////////////////////////////////////////
@@ -232,7 +222,7 @@ var breakStatement = parse.Parser('Break Statement',
         parse.next(
             token.keyword('break'),
             logicalSemiColon),
-        \loc -> new astStatement.BreakStatement(loc)));
+        ast_statement.BreakStatement.create));
 
 // Return
 ////////////////////////////////////////
@@ -242,8 +232,7 @@ var returnStatement = parse.Parser('Return Statement',
     ecma_parse.node(
         parse_lang.between(token.keyword('return'), logicalSemiColon,
             parse.optional(null, topLevelExpression)),
-        \(loc, argument) ->
-            new astStatement.ReturnStatement(loc, argument)));
+        ast_statement.ReturnStatement.create));
 
 // Switch
 ////////////////////////////////////////
@@ -251,11 +240,11 @@ var caseClause = ecma_parse.nodea(
     parse.next(
         token.keyword('case'),
         parse.sequence(
-            topLevelExpression,
-            token.punctuator(':'),
+            parse_lang.then(
+                topLevelExpression,
+                token.punctuator(':')),
             statementList)),
-    \(loc, test, _, consequent) ->
-        new astClause.SwitchCase(loc, test, consequent));
+    ast_clause.SwitchCase.create);
 
 var defaultClause = ecma_parse.node(
     parse.next(
@@ -263,7 +252,7 @@ var defaultClause = ecma_parse.node(
         parse.next(
             token.punctuator(':'),
             statementList)),
-    \(loc, consequent) -> new astClause.SwitchCase(loc, null, consequent));
+    \(loc, consequent) -> new ast_clause.SwitchCase(loc, null, consequent));
 
 var caseClauses = parse.eager(parse.many(caseClause));
 
@@ -272,7 +261,7 @@ var caseBlock = parse_lang.between(token.punctuator('{'), token.punctuator('}'),
         parse.sequence(
             parse.optional([], caseClauses),
             parse.optional(null, defaultClause)),
-        \(first, defaultClause) ->
+        \first, defaultClause ->
             parse.always(defaultClause ?
                 first.concat([defaultClause]) :
                 first)));
@@ -288,8 +277,7 @@ var switchStatement = parse.Parser('Switch Statement',
                 parse_lang.between(token.punctuator('('), token.punctuator(')'),
                     topLevelExpression),
                 caseBlock)),
-        \(loc, discriminant, cases) ->
-             new astStatement.SwitchStatement(loc, discriminant, cases)));
+        ast_statement.SwitchStatement.create));
 
 // Throw
 ////////////////////////////////////////
@@ -300,7 +288,7 @@ var throwStatement = parse.Parser('Throw Statement',
     ecma_parse.node(
         parse_lang.between(token.keyword('throw'), logicalSemiColon,
             topLevelExpression),
-        \(loc, argument) -> new astStatement.ThrowStatement(loc, argument)));
+        ast_statement.ThrowStatement.create));
 
 // Try
 ////////////////////////////////////////
@@ -311,8 +299,7 @@ var catchBlock = ecma_parse.nodea(
             parse_lang.between(token.punctuator('('), token.punctuator(')'),
                 value.identifier),
             blockStatement)),
-    \(loc, param, body) ->
-        new astClause.CatchClause(loc, param, body));
+    ast_clause.CatchClause.create);
 
 var finallyBlock = parse.next(
     token.keyword('finally'),
@@ -329,8 +316,7 @@ var tryStatement = parse.Parser('Try Statement',
                 blockStatement,
                 parse.optional(null, catchBlock),
                 parse.optional(null, finallyBlock))),
-        \(loc, block, handler, finalizer) ->
-            new astStatement.TryStatement(loc, block, handler, finalizer)));
+        ast_statement.TryStatement.create));
 
 // Debugger
 ////////////////////////////////////////
@@ -342,7 +328,7 @@ var debuggerStatement = parse.Parser('Debugger Statement',
         parse.next(
             token.keyword('debugger'),
             token.punctuator(';')),
-        \loc -> new astStatement.DebuggerStatement(loc)));
+        ast_statement.DebuggerStatement.create));
 
 // statement
 ////////////////////////////////////////
