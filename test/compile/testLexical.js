@@ -65,6 +65,19 @@ function(parse,
                     lexical.check(testParser(lexer.lex("(\\x, a, b, x -> x*x)(2)")));
                 });
             }],
+            ["Let bindings with same name",
+            function(){
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("let x = 3, x = 5 in x;")));
+                });
+                
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("let x=1,y=3,x=4 in x;")));
+                });
+                
+                var result = lexical.check(testParser(lexer.lex("let x=3 in let x=5 in x;")));
+                assert.ok(true);
+            }],
         ],
     };
 });
