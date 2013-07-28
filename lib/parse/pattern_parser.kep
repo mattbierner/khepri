@@ -6,12 +6,14 @@ define(['parse/parse',
         'parse/parse_lang',
         'ecma/parse/common',
         'ecma/parse/token_parser',
-        'khepri_ast/pattern'],
+        'khepri_ast/pattern',
+        'khepri/parse/value_parser'],
 function(parse,
         parse_lang,
         ecma,
         token,
-        ast_pattern){
+        ast_pattern,
+        value){
 "use strict";
 
 /* Forward
@@ -46,10 +48,36 @@ var arrayPattern = parse.Parser('Array Pattern',
         ast_pattern.ArrayPattern.create));
 
 /**
+ * 
+ */
+var objectKeyPattern = parse.binds(
+    parse.sequence(
+        parse_lang.then(
+            value.stringLiteral,
+            token.punctuator(':')),
+        pattern),
+    \key, value -> parse.always({
+        'key': key,
+        'value': value
+    }));
+
+/**
+ * 
+ */
+var objectPattern = parse.Parser('Object Pattern',
+    ecma.nodea(
+        parse.sequence(
+            parse.optional(null, identifier),
+            parse_lang.between(token.punctuator('{'), token.punctuator('}'),
+                parse.eager(parse_lang.sepBy1(token.punctuator(','), objectKeyPattern)))),
+        ast_pattern.ObjectPattern.create));
+
+/**
  */
 pattern = parse.Parser('Pattern',
     parse.choice(
         parse.attempt(arrayPattern),
+        parse.attempt(objectPattern),
         identifier,
         ellipsis));
 
@@ -60,7 +88,8 @@ return {
     
     'identifier': identifier,
     'ellipsis': ellipsis,
-    'arrayPattern': arrayPattern
+    'arrayPattern': arrayPattern,
+    'objectPattern': objectPattern
 };
 
 });

@@ -4,8 +4,10 @@
  * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 static define;
-define(['khepri_ast/node'],
-function(ast_node){
+define(['khepri_ast/node',
+        'khepri_ast/value'],
+function(ast_node,
+        ast_value){
 //"use strict";
 
 var map = Function.prototype.call.bind(Array.prototype.map);
@@ -87,6 +89,8 @@ Scope.prototype.getMapping = \id ->
  * Get an unused identifier in this scope.
  */
 Scope.prototype.getUnusedId = \id -> {
+    if (!this.hasBinding(id))
+        return id;
     for (var i = 0; ; i = i + 1)
         if (!this.hasBinding(id + i))
             return id + i;
@@ -360,11 +364,26 @@ var _check = function(node) {
         
     case 'ArrayPattern':
         return examine(\s -> {
-             var id = (node.id ? node.id.name : s.getUnusedId('__a'));
-             node.name = id;
-             return seq([
-                 addImmutableBindingInRealBlock(id, node.loc),
-                 seq(map(node.elements, _check))]);
+            if (!node.id) {
+                var id = ast_value.Identifier.create(null, s.getUnusedId('__a'));
+                id.gen = true;
+                node.id = id;
+            }
+            return seq([
+                addImmutableBindingInRealBlock(node.id.name, node.loc),
+                seq(map(node.elements, _check))]);
+        });
+    
+    case 'ObjectPattern':
+        return examine(\s -> {
+            if (!node.id) {
+                var id = ast_value.Identifier.create(null, s.getUnusedId('__a'));
+                id.gen = true;
+                node.id = id;
+            }
+            return seq([
+                addImmutableBindingInRealBlock(node.id.name, node.loc),
+                seq(map(node.elements, \x -> _check(x.value)))]);
         });
     
     case 'EllipsisPattern':
