@@ -4,13 +4,20 @@
 static define;
 define(['parse/parse',
         'parse/parse_lang',
+        'ecma/parse/common',
         'ecma/parse/token_parser',
         'khepri_ast/pattern'],
 function(parse,
         parse_lang,
+        ecma,
         token,
         ast_pattern){
 "use strict";
+
+/* Forward
+ ******************************************************************************/
+var pattern = \... -> pattern.apply(undefined, arguments);
+
 
 /* Parsers
  ******************************************************************************/
@@ -28,9 +35,21 @@ var ellipsis = parse.Parser('Ellipsis Pattern',
         \x -> parse.always(ast_pattern.Ellipsis.create(x.loc))));
 
 /**
+ * 
  */
-var pattern = parse.Parser('Pattern',
+var arrayPattern = parse.Parser('Array Pattern',
+    ecma.nodea(
+        parse.sequence(
+            parse.optional(null, identifier),
+            parse_lang.between(token.punctuator('['), token.punctuator(']'),
+                parse.eager(parse_lang.sepBy1(token.punctuator(','), pattern)))),
+        ast_pattern.ArrayPattern.create));
+
+/**
+ */
+pattern = parse.Parser('Pattern',
     parse.choice(
+        parse.attempt(arrayPattern),
         identifier,
         ellipsis));
 
@@ -40,7 +59,8 @@ return {
     'pattern': pattern,
     
     'identifier': identifier,
-    'ellipsis': ellipsis
+    'ellipsis': ellipsis,
+    'arrayPattern': arrayPattern
 };
 
 });

@@ -158,11 +158,56 @@ Same as ECMAScript. Binds argument at position to name for function body.
 
 #### Ellipsis Pattern
 Currently used only for annotation to represent a variable number of arguments.
-It should only be used as the last pattern in a parameter list.
-Future use of Ellipsis may change but will not effect the current use.
+It should only be used as the last pattern in a parameter list as
+future use of Ellipsis may change but will not effect this current use.
 
     var l = \a, ... -> [a, arguments];
 
+#### Array Pattern
+Performs a runtime unpacking of a parameter. Identifiers are bound to the unpacked
+value of the paramter a the given index. 
+
+    var first = \[x] -> x;
+    var first = \arr -> arr[0];
+    
+    var add = \[x, y] -> x + y;
+    var add = \arr -> arr[0] + arr[1];
+    
+No type checks are performed so it is possible to pass in array like objects or
+invalid objects:
+
+    var first = \[x] -> x;
+    first("abc"); // a
+    first({'0': 10, '1': 2}); // 10
+    first(null); // error, accessing null[0]
+
+Array patterns can be anonymous, as shown above, or named. Named array patterns allow the base
+object to be accessed along with the unpacked values:
+
+    var dup = \arr[x, ...] -> [x, arr];
+    dup([1, [2]]); //[1, [1, [2]]];
+
+Patterns can be arbitrarily nested:
+
+    var dot2 = \[[a, b], [x, y]] -> a * x + b * y;
+    dot2([[1, 2], [3, 4]]); // 11
+    
+    //translation
+    var dot2 = \arr -> arr[0][0] + arr[1][0] + arr[0][1] + arr[1][1];
+    
+#### Object Pattern
+A generalization of the array pattern for use with any string keys. Identifiers
+are bound to the unpacked value of the paramter's member the given name at runtime.
+
+    var swapAB =  \{'a': a, 'b': b} -> ({'a': b, 'b': a});
+    var swapAB =  \obj -> ({'a': obj['b'], 'b': obj['a']});
+    swapAB({'a': 3, 'b': 5}); // {'a': 5, 'b': 3};
+
+Like array patterns, object patterns can also be anonymous or named.
+
+Object patterns can be nested:
+
+    var nested = \{'c': [x, {'value': y}]} -> x + y;
 
 ## Modified ##
 

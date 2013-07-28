@@ -18,10 +18,27 @@ function(ast_clause,
         ast_value){
 //"use strict";
 
+var concat = Function.prototype.call.bind(Array.prototype.concat);
 var map = Function.prototype.call.bind(Array.prototype.map);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
-/* 
+/* Pattern
+ ******************************************************************************/
+
+var arrayPattern = \base, pattern, index -> {
+    switch (pattern.type){
+    case 'IdentifierPattern':
+        return ast_declaration.VariableDeclarator.create(null,
+            ast_value.Identifier.create(null, pattern.name),
+            ast_expression.MemberExpression.create(null, base, ast_value.Literal.create(null, 'number', index), true));
+    case 'ArrayPattern':
+        return null;
+    default:
+        return null;
+    }
+};
+
+/* Transform
  ******************************************************************************/
 var transform = function(node) {
     if (!node)
@@ -166,22 +183,41 @@ var transform = function(node) {
 
 // Function
     case 'FunctionExpression':
-        return new ast_expression.FunctionExpression(node.loc,
+        var params = transform(node.params);
+        var prefix = reduce(node.params.patterns, \p, c -> {
+            if (c.type === 'ArrayPattern') {
+                var base = ast_value.Identifier.create(null, c.name);
+                return concat(p, ast_declaration.VariableDeclaration.create(null,
+                    reduce(c.elements, \p, c, i ->
+                        let val = arrayPattern(base, c, i) in (val ? concat(p, val) : p),
+                        [])));
+            }
+            return p;
+        }, []);
+        
+        params = reduce(params, \p, c -> {
+            if (c.type === 'EllipsisPattern')
+                return p;
+            return p.concat([c]);
+        }, []);
+        
+        return ast_expression.FunctionExpression.create(node.loc,
             transform(node.id),
-            transform(node.params),
-            transform(node.body));
+            params,
+            transform(new ast_statement.BlockStatement(node.body.loc, concat(prefix, node.body.body))));
     
 // Patterns
     case 'ParameterList':
-        return map(reduce(node.patterns, \p, c -> {
-            if (c.type === 'EllipsisPattern') {
-                return p;
-            }
-            return p.concat([c]);
-        } ,[]), transform);
+        return map(node.patterns, transform);
         
     case 'IdentifierPattern':
         return new ast_value.Identifier(node.loc, node.name);
+    
+    case 'ArrayPattern':
+        return new ast_value.Identifier(node.loc, node.name);
+        
+    case 'EllipsisPattern':
+        return null;
     
 // Program
     case 'Program':

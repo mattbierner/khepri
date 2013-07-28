@@ -77,6 +77,8 @@ function(parse,
                 
                 var result = lexical.check(testParser(lexer.lex("let x=3 in let x=5 in x;")));
                 assert.ok(true);
+                var result = lexical.check(testParser(lexer.lex("\\x -> (let x=3 in x) + (let x=5 in x);")));
+                assert.ok(true);
             }],
         ],
     };

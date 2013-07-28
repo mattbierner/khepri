@@ -354,8 +354,9 @@ var accessorReducer = \p, c ->
 /**
  * 
  */
-var memberExpression =
-    let reducer = \(p, c) -> c.reduce(accessorReducer, p) in
+var memberExpression = let
+    reducer = \(p, c) -> c.reduce(accessorReducer, p)
+in
         parse.Parser('Member Expression',
             parse.binds(
                 parse.sequence(
@@ -386,20 +387,20 @@ newExpression = parse.Parser('New Expression',
  * Parser for a left hand side expression.
  */
 var leftHandSideExpression = let
-    reducer = \p, c ->
-        (c && c.hasOwnProperty('argument') ?
-             ast_expression.CallExpression.create(position.SourceLocation.merge(p.loc, c.loc), p, c) :
-             c.reduce(accessorReducer, p))
-    in
-        parse.Parser('Left Hand Side Expression',
-            parse.binds(
-                parse.sequence(
-                    parse.memo(memberExpression),
-                    parse.many(parse.either(
-                        args,
-                        accessor))),
-                \(member, accessors) ->
-                    parse.always(stream.foldl(reducer, member, accessors))));
+reducer = \p, c ->
+    (c && c.hasOwnProperty('argument') ?
+         ast_expression.CallExpression.create(position.SourceLocation.merge(p.loc, c.loc), p, c) :
+         c.reduce(accessorReducer, p))
+in
+    parse.Parser('Left Hand Side Expression',
+        parse.binds(
+            parse.sequence(
+                parse.memo(memberExpression),
+                parse.many(parse.either(
+                    args,
+                    accessor))),
+            \(member, accessors) ->
+                parse.always(stream.foldl(reducer, member, accessors))));
 
 // Left Hand Side Expression
 ////////////////////////////////////////
@@ -434,19 +435,19 @@ var unaryOperator = parse.Parser('Unary Operator',
  * 
  */
 var unaryExpression = let
-    reducer = \argument, op -> 
-        ast_expression.UnaryExpression.create(
-            position.SourceLocation.merge(op.loc, argument.loc),
-            op.value,
-            argument)
-    in
-        parse.Parser('Unary Expression',
-            parse.binds(
-                parse.sequence(
-                    parse.many(unaryOperator),
-                    parse.expected('left hand side expression', leftHandSideExpression)),
-                \(ops, expression) ->
-                    parse.always(stream.foldr(reducer, expression, ops))));
+reducer = \argument, op -> 
+    ast_expression.UnaryExpression.create(
+        position.SourceLocation.merge(op.loc, argument.loc),
+        op.value,
+        argument)
+in
+    parse.Parser('Unary Expression',
+        parse.binds(
+            parse.sequence(
+                parse.many(unaryOperator),
+                parse.expected('left hand side expression', leftHandSideExpression)),
+            \(ops, expression) ->
+                parse.always(stream.foldr(reducer, expression, ops))));
 
 // Binary Expressions
 ////////////////////////////////////////
@@ -548,21 +549,20 @@ var binaryExpression = parse.Parser('Binary Expression',
 /**
  * 
  */
-conditionalExpression = (function(){
-  var conditionalBody = parse.next(
-      token.punctuator('?'),
-      parse.sequence(
-          parse.expected("expression", expression),
-          token.punctuator(':'),
-          parse.expected("expression", expression)));
-    
-    return parse.bind(binaryExpression, \bin -> 
+conditionalExpression = let
+    conditionalBody = parse.next(
+        token.punctuator('?'),
+        parse.sequence(
+            parse.expected("expression", expression),
+            token.punctuator(':'),
+            parse.expected("expression", expression)))
+in
+    parse.bind(binaryExpression, \bin -> 
         parse.optional(bin,
             ecma_parse.nodea(
                 conditionalBody,
-                \(loc, consequent, _1, alternate) ->
-                    new ast_expression.ConditionalExpression(loc, bin, consequent, alternate))));
-}());
+                \loc, consequent, _1, alternate ->
+                    ast_expression.ConditionalExpression.create(loc, bin, consequent, alternate))));
 
 // Assignment Statement
 ////////////////////////////////////////
