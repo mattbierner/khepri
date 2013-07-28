@@ -48,14 +48,12 @@ Available syntaxes, along with translations as last item, are shown here:
     
     // function body
     \x, y -> {
-        ++x;
-        --y;
-        return x + y;
+        var z = x + 10;
+        return z + y;
     };
     function(x, y) {
-        ++x; 
-        --y;
-        return x + y;
+        var z = x + 10
+        return z + y;
     };
     
     // No Arguments
@@ -407,5 +405,5 @@ generated from it.
 [ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
 [nu]: http://mattbierner.github.io/nu/
 [ecmaunparse]: https://github.com/mattbierner/ecma-unparse
-[ecma-ast]: https://github.com/mattbierner/ecma-ast
-[khepri-ast]: https://github.com/mattbierner/khepri-ast
+[ecmaast]: https://github.com/mattbierner/ecma-ast
+[khepriast]: https://github.com/mattbierner/khepri-ast
