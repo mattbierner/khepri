@@ -1,14 +1,15 @@
 # Khepri
 
 ## About
-Khepri is a duck typed programming language derived from ECMAScript. It both
-restricts ECMAScript and introduces new features to make the language more concise 
-and consistent.
+Khepri is an ECMAScript derived programming language that both restricts
+ECMAScript and introduces new features to make the language more concise 
+and consistent. Khepri compiles to plain old Javascript and does not require
+any runtime libraries and Khepri and Javascript can also be freely mixed in a
+project.
 
 Unlike most other *script languages, Khepri's goal is not to replace Javascript
 by introducing new heavy weight language features, but to make writing Javascript
 more fun, with a focus on functional style programming. 
-
 
 ## To clone ##
     git clone https://github.com/mattbierner/khepri khepri
@@ -28,7 +29,7 @@ more fun, with a focus on functional style programming.
 
 
 
-# Differences with ECMAScript 
+# Differences with ECMAScript
 
 ## Additions
 
@@ -69,7 +70,7 @@ Available syntaxes, along with translations as last item, are shown here:
     \x -> \y -> x + y;
     function(x) { return function(y) { return x + y; }};
 
-All scoping remains the same as in the translated version. 
+All scoping remains the same as in the translated version.
 
 ### Multiple value bracket accessor
 Bracket accessors support multiple expressions separated by commas for traversing
@@ -143,8 +144,11 @@ name in the function body:
     let fib = \x -> (x < 2 ? x : fib(n - 1) + fib(n - 2)) in
         fib(10);
 
-Named functions can access themselves by name. In both cases, the scope of the
+Named functions can access themselves by funciton name. In both cases, the scope of the
 function name is limited to the evaluation of the bound value.
+
+    let fib = function impl(x) { return (x < 2 ? x : impl(n - 1) + impl(n - 2)); } in
+        fib(10);
 
 ### Patterns
 Function parameter lists are patterns instead of identifiers. These patterns
@@ -159,7 +163,7 @@ Same as ECMAScript. Binds argument at position to name for function body.
 #### Ellipsis Pattern
 Currently used only for annotation to represent a variable number of arguments.
 It should only be used as the last pattern in a parameter list as
-future use of Ellipsis may change but will not effect this current use.
+future use of Ellipsis may change but will not effect this use.
 
     var l = \a, ... -> [a, arguments];
 
@@ -181,8 +185,8 @@ invalid objects:
     first({'0': 10, '1': 2}); // 10
     first(null); // error, accessing null[0]
 
-Array patterns can be anonymous, as shown above, or named. Named array patterns allow the base
-object to be accessed along with the unpacked values:
+Array patterns can be anonymous, as shown above, or named. Named array patterns
+allow the base object to be accessed along with the unpacked values:
 
     var dup = \arr[x, ...] -> [x, arr];
     dup([1, [2]]); //[1, [1, [2]]];
@@ -196,14 +200,16 @@ Patterns can be arbitrarily nested:
     var dot2 = \arr -> arr[0][0] + arr[1][0] + arr[0][1] + arr[1][1];
     
 #### Object Pattern
-A generalization of the array pattern for use with any string keys. Identifiers
-are bound to the unpacked value of the paramter's member the given name at runtime.
+Object patterns generalize array pattern for use with any string keys. Identifiers
+are bound to the unpacked value of the paramter's member given name at runtime.
 
     var swapAB =  \{'a': a, 'b': b} -> ({'a': b, 'b': a});
     var swapAB =  \obj -> ({'a': obj['b'], 'b': obj['a']});
     swapAB({'a': 3, 'b': 5}); // {'a': 5, 'b': 3};
 
 Like array patterns, object patterns can also be anonymous or named.
+
+    \obj{'x': x} -> [x, obj];
 
 Object patterns can be nested:
 
@@ -254,15 +260,15 @@ globals and undeclared variables.
 
 Khepri introduces static checks that enforce lexical scoping based on blocks
 and functions. Further checks also enforce that all variables are declared 
-before use and that global variables are be explicitly listed before use. Khepri
-also disallows duplicate symbol definition in the same scope. The concept of an
-immutable binding is also added for values that cannot be directly assigned.
-All bindings except those from variable declarations are immutable.
+before use and that global variables are explicitly listed before use. Khepri
+also disallows symbol redefinition. The concept of an immutable binding is
+added for values that cannot be directly assigned. All bindings except those
+from variable declarations are immutable.
 
-Three elements introduce new a new scope: the program, the function body, a block
-statement. Variables are only valid inside the scope in which they are declared
+Three elements introduce new a new scope: the program, the function body, and
+the block statement. Variables are only valid inside the scope in which they are declared
 as well as any enclosed scopes. A variable with the same name as one in an
-outer scopes hides the outer one.
+outer scope hides the outer bindings.
 
     // Annotated to show which variables are in scope
     // a, b
@@ -275,7 +281,7 @@ outer scopes hides the outer one.
         b = f(3);
     }
 
-Variables declarations are evaluated in order, and only previously declared 
+Variables declarations are evaluated in order, and only previously declared
 variables can be used. This is a restriction of Javascript where declarations are
 evaluated first and variables bound to undefined before statements
 are evaluated:
@@ -298,6 +304,12 @@ Duplicate variables in the same scope are disallowed:
     var c = b;
     var b = c; // Error, b already declared.
 
+Similarly, duplicate paramter names and let bindings in the same scope are disallowed:
+
+    \x, y, x -> x + y; // error, x defined twice.
+    
+    let x = 3, y = x + 10, x = y - 3 in x; // error, x defined twice.
+
 Only variables from variable declarations has mutable bindings, meaning they can
 be reassigned. Those from static declarations, catch clauses, function parameters,
 and let bindings are immutable cannot be reassigned.
@@ -311,20 +323,20 @@ and let bindings are immutable cannot be reassigned.
     var f = \x -> { var x = 3; return x + 1; }; // error, x is immutable in scope
     var f = \x -> { { var x = 3; return x + 1; } }; // ok, new scope 
 
-Globals are used by declaring them with the 'static' keyword. 'static' is
+Globals can used by declaring them with the 'static' keyword. 'static' is
 already a reserved work in ECMAScript 5.1. By default, builtin object globals
-are already declared. This does not include any DOM objects.
-This only suppresses checks on the global variables, it does not effect the 
+are already declared, but this does not include any DOM objects.
+'static' only suppresses checks on the global variables, it does not effect the 
 behavior of the program. 
 
-    static define; // expect a global called 'define'
+    static define; // tell the interpreter to expect a global called 'define'
     define([], function() {
         var props = {'x': {'value': 3}};
         return Object.keys({}, props); // 'Object' builtin ok even without explicit static.
     });
 
- Use of a global can also be restricted to a block. This may help make intent
- clearer but again, does not change the meaning of the actual program
+Use of a global can also be restricted to a block. This may help make intent
+clearer but does not change the meaning of the actual program
 
     var a = \x -> {
         static $;
@@ -344,6 +356,7 @@ language more complex than it should be.
 
 ### With Statement
 With statements are not valid in strict mode ECMAScript and have been removed.
+With remains a reserved word.
 
 ### Labeled Statements
 Make language more ambiguous.
@@ -353,12 +366,12 @@ Semicolon insertion is not supported and whitespace is no longer significant.
 Real semicolons must always be used.
 
     // Khepri will ignore whitespace and not insert semicolons
-    (\x, y) -> {
+    var z = \x, y -> {
         return
         
                  x + y;
     };
-    function(x, y) { return x + y; };
+    var z = function(x, y) { return x + y; };
 
 ### Empty Array Literal Elements
 Array literals do not support empty elements or a trailing comma.
@@ -381,7 +394,7 @@ Additionally, '++' and '--' are no longer valid punctuators and will be lexed
 to '+' '+' and '-' '-'.
 
 
-# Code #
+# Code
 Khepri is written in Javascript / Khepri.
 
 For now, both the .js and .kep versions of source code will be kept in 'lib/',
