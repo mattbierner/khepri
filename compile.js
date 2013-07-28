@@ -7,9 +7,11 @@ requirejs.config({
     paths: {
         'parse': 'dependencies/parse/lib',
         'nu': 'dependencies/nu/lib',
+        'ecma': 'dependencies/parse-ecma/lib',
         'ecma_unparse': 'dependencies/ecma-unparse/lib',
-        'khepri': 'lib',
-        'ecma': 'dependencies/parse-ecma/lib'
+        'ecma_ast': 'dependencies/ecma-ast/lib',
+        'khepri_ast': 'dependencies/khepri-ast/lib',
+        'khepri': 'lib'
     }
 });
 

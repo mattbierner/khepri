@@ -28,6 +28,9 @@ var reduce = Function.prototype.call.bind(Array.prototype.reduce);
  * Generate the prefix for an array pattern.
  */
 var objectPattern = \base, pattern, key -> {
+    if (!pattern)
+        return null;
+    
     var innerBase = ast_expression.MemberExpression.create(null, base, key, true);
     
     switch (pattern.type){
@@ -226,7 +229,7 @@ var transform = function(node) {
         }, []);
         
         params = reduce(params, \p, c -> {
-            if (c.type === 'EllipsisPattern')
+            if (!c || c.type === 'EllipsisPattern')
                 return p;
             return p.concat([c]);
         }, []);
