@@ -5,7 +5,6 @@ static define;
 define(['parse/parse',
         'nu/stream',
         'ecma/position',
-        'ecma/parse/parser',
         'khepri_ast/token',
         'khepri/parse/program_parser'],
 function(parse,
@@ -25,20 +24,19 @@ function(parse,
  * 
  * @return Stream suitable for parsing.
  */
-var parserStream =
-    let 
-        langElementFilter = \x -> {
-            switch (x.type) {
-            case 'Whitespace':
-            case 'LineTerminator':
-            case 'Comment':
-                return false;
-            default:
-                return true;
-            }
+var parserStream = let 
+    langElementFilter = \x -> {
+        switch (x.type) {
+        case 'Whitespace':
+        case 'LineTerminator':
+        case 'Comment':
+            return false;
+        default:
+            return true;
         }
-    in
-        \s -> stream.filter(langElementFilter, s);
+    }
+in
+    \s -> stream.filter(langElementFilter, s);
 
 /* Running
  ******************************************************************************/

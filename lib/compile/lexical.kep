@@ -304,7 +304,6 @@ var _check = function(node) {
             block(_check(node.body))]));
     
 // Expression
-        
     case 'UnaryExpression':
         return _check(node.argument);
     
