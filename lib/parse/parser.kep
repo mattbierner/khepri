@@ -5,6 +5,7 @@ static define;
 define(['parse/parse',
         'nu/stream',
         'ecma/position',
+        'ecma/parse/parser',
         'khepri_ast/token',
         'khepri/parse/program_parser'],
 function(parse,
