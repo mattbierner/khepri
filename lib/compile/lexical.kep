@@ -347,7 +347,7 @@ var _check = function(node) {
     case 'LetExpression':
         return block(
             next(
-                seq(node.bindings.map(\x -> addImmutableBindingInRealBlock(x.id.name, x.id.loc.start))),
+                seq(node.bindings.map(_check)),
                 _check(node.body)));
 
 // Function
@@ -418,7 +418,12 @@ var _check = function(node) {
                     node.id.name = s.getMapping(node.id.name);
                 return ok();
             })]);
-    
+        
+    case 'LetBinding': 
+        return seq([
+            addImmutableBindingInRealBlock(node.id.name, node.id.loc.start),
+            _check(node.init)]);
+            
     // Value
     case 'Identifier':
         return examine(\s -> {

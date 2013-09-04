@@ -196,8 +196,8 @@
             }
         });
         $(function(){
-            require(['parse/parse', 'nu/stream', 'khepri/lex/lexer', 'khepri/parse/parser', 'khepri_ast/node'],
-                function(parse, stream, lexer, parser, node)
+            require(['parse/parse', 'nu/stream', 'khepri/compile/lexical', 'khepri/lex/lexer', 'khepri/parse/parser', 'khepri_ast/node'],
+                function(parse, stream,lexical, lexer, parser, node)
             {
                 var lexOut = $('.LexOut');
                 
@@ -290,7 +290,7 @@
                         //console.profile();
                        
                         var ast = parser.parseStream(nodes);
-                        
+                        lexical.check(ast);
                         //console.profileEnd();
                         var end = new Date().getTime();
                         console.log(end - start);
