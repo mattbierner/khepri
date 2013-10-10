@@ -421,7 +421,7 @@ var _check = function(node) {
         
     case 'LetBinding': 
         return seq([
-            addImmutableBindingInRealBlock(node.id.name, node.id.loc.start),
+            _check(node.id),
             _check(node.init)]);
             
     // Value

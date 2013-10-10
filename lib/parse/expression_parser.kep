@@ -243,6 +243,8 @@ var thisExpression = ecma_parse.node(
 
 // Let Expression
 ////////////////////////////////////////
+var letIdentifier = parse.expected("Any pattern", pattern.pattern);
+
 /**
  * Parser for a let binding.
  */
@@ -250,7 +252,7 @@ var letBinding =  parse.Parser('Let Binding',
     ecma_parse.nodea(
         parse.sequence(
             parse_lang.then(
-                value.identifier,
+                letIdentifier,
                 token.punctuator('=')),
             conditionalExpression),
        ast_declaration.LetBinding.create));
