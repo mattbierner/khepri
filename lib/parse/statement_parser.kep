@@ -71,7 +71,7 @@ var initialiser = parse.next(token.punctuator('='),
     topLevelExpression);
 
 var variableDeclaration = ecma_parse.nodea(
-    parse.sequence(
+    parse.enumeration(
         value.identifier,
         parse.optional(null, initialiser)),
     ast_declaration.VariableDeclarator.create);
@@ -120,7 +120,7 @@ var ifStatement =  parse.Parser('If Statement',
     ecma_parse.nodea(
         parse.next(
             token.keyword('if'),
-            parse.sequence(
+            parse.enumeration(
                 parse_lang.between(token.punctuator('('), token.punctuator(')'),
                     topLevelExpression),
                 statement,
@@ -137,7 +137,7 @@ var whileStatement = parse.Parser('While Statement',
     ecma_parse.nodea(
         parse.next(
             token.keyword('while'),
-            parse.sequence(
+            parse.enumeration(
                 parse_lang.between(token.punctuator('('), token.punctuator(')'),
                     topLevelExpression),
                 statement)),
@@ -150,7 +150,7 @@ var doWhileStatement = parse.Parser('Do While Statement',
     ecma_parse.nodea(
         parse.next(
             token.keyword('do'),
-            parse.sequence(
+            parse.enumeration(
                 statement,
                 token.keyword('while'),
                 parse_lang.between(token.punctuator('('), token.punctuator(')'),
@@ -182,7 +182,7 @@ var forStatement = parse.Parser('For Statement',
     ecma_parse.nodea(
         parse.next(
             token.keyword('for'),
-            parse.sequence(
+            parse.enumeration(
                 token.punctuator('('),
                 forInitExpression,
                 token.punctuator(';'),
@@ -237,7 +237,7 @@ var returnStatement = parse.Parser('Return Statement',
 var caseClause = ecma_parse.nodea(
     parse.next(
         token.keyword('case'),
-        parse.sequence(
+        parse.enumeration(
             parse_lang.then(
                 topLevelExpression,
                 token.punctuator(':')),
@@ -256,7 +256,7 @@ var caseClauses = parse.eager(parse.many(caseClause));
 
 var caseBlock = parse_lang.between(token.punctuator('{'), token.punctuator('}'),
     parse.binds(
-        parse.sequence(
+        parse.enumeration(
             parse.optional([], caseClauses),
             parse.optional(null, defaultClause)),
         \first, defaultClause ->
@@ -271,7 +271,7 @@ var switchStatement = parse.Parser('Switch Statement',
     ecma_parse.nodea(
         parse.next(
             token.keyword('switch'),
-            parse.sequence(
+            parse.enumeration(
                 parse_lang.between(token.punctuator('('), token.punctuator(')'),
                     topLevelExpression),
                 caseBlock)),
@@ -293,7 +293,7 @@ var throwStatement = parse.Parser('Throw Statement',
 var catchBlock = ecma_parse.nodea(
     parse.next(
         token.keyword('catch'),
-        parse.sequence(
+        parse.enumeration(
             parse_lang.between(token.punctuator('('), token.punctuator(')'),
                 value.identifier),
             blockStatement)),
@@ -310,7 +310,7 @@ var tryStatement = parse.Parser('Try Statement',
     ecma_parse.nodea(
         parse.next(
             token.keyword('try'),
-            parse.sequence(
+            parse.enumeration(
                 blockStatement,
                 parse.optional(null, catchBlock),
                 parse.optional(null, finallyBlock))),

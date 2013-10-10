@@ -41,7 +41,7 @@ var ellipsis = parse.Parser('Ellipsis Pattern',
  */
 var arrayPattern = parse.Parser('Array Pattern',
     ecma.nodea(
-        parse.sequence(
+        parse.enumeration(
             parse.optional(null, identifier),
             parse_lang.between(token.punctuator('['), token.punctuator(']'),
                 parse.eager(parse_lang.sepBy1(token.punctuator(','), pattern)))),
@@ -51,7 +51,7 @@ var arrayPattern = parse.Parser('Array Pattern',
  * 
  */
 var objectKeyPattern = parse.binds(
-    parse.sequence(
+    parse.enumeration(
         parse_lang.then(
             value.stringLiteral,
             token.punctuator(':')),
@@ -66,7 +66,7 @@ var objectKeyPattern = parse.binds(
  */
 var objectPattern = parse.Parser('Object Pattern',
     ecma.nodea(
-        parse.sequence(
+        parse.enumeration(
             parse.optional(null, identifier),
             parse_lang.between(token.punctuator('{'), token.punctuator('}'),
                 parse.eager(parse_lang.sepBy1(token.punctuator(','), objectKeyPattern)))),

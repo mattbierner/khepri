@@ -16,3 +16,6 @@
 [submodule "dependencies/ecma-ast"]
 	path = dependencies/ecma-ast
 	url = git://github.com/mattbierner/ecma-ast.git
+[submodule "dependencies/seshat"]
+	path = dependencies/seshat
+	url = git://github.com/mattbierner/seshat

@@ -39,6 +39,29 @@ var parserStream = let
 in
     \s -> stream.filter(langElementFilter, s);
 
+/* State
+ ******************************************************************************/
+var ParserState = function(stream, pos, prevEnd) {
+    parse.InputState.call(this, stream, pos);
+    this._prevEnd = prevEnd;
+};
+ParserState.prototype = new parse.InputState;
+
+ParserState.prototype.next = \tok -> {
+    var rest = stream.rest(this.input);
+    var end = (stream.isEmpty(rest) ? tok.loc.end : stream.first(rest).loc.start);
+    if (!this._next)
+        this._next = new ParserState(rest, this.pos.increment(tok, end), this.loc.end);
+    return this._next;
+};
+
+Object.defineProperty(ParserState.prototype, 'loc', {
+    'get': \() ->
+        (stream.isEmpty(this.input) ?
+            new position.SourceLocation(this._prevEnd, this._prevEnd) :
+            stream.first(this.input).loc)
+});
+
 /* Running
  ******************************************************************************/
 /**
@@ -53,7 +76,7 @@ in
 var parseStream = \s ->
     parse.runState(
         program.program,
-        new parser.ParserState(
+        new ParserState(
             parserStream(s),
             new parser.ParserPosition(
                 parse.Position.initial,

@@ -36,7 +36,7 @@ var statementParser = function() {
 var sourceElement = statementParser;
 
 /**
- * Parser for a sequence of zero or more source elements.
+ * Parser for a enumeration of zero or more source elements.
  */
 var sourceElements = parse.eager(parse.many(sourceElement));
 

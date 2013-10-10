@@ -102,7 +102,7 @@ var propertySetParameterList = parse.bind(value.identifier, \x ->
  */
 var propertyValueInitializer = parse.Parser('Property Value Initializer',
     ecma_parse.nodea(
-        parse.sequence(
+        parse.enumeration(
             propertyName,
             token.punctuator(':'),
             expression),
@@ -120,7 +120,7 @@ var propertyGetInitializer = parse.Parser('Property Get Initializer',
     ecma_parse.nodea(
         parse.next(
             token.keyword('get'),
-            parse.sequence(
+            parse.enumeration(
                 propertyName,
                 token.punctuator('('),
                 token.punctuator(')'),
@@ -140,7 +140,7 @@ var propertySetInitializer = parse.Parser('Property Set Initializer',
     ecma_parse.nodea(
         parse.next(
             token.keyword('set'),
-            parse.sequence(
+            parse.enumeration(
                 propertyName,
                 parse_lang.between(token.punctuator('('), token.punctuator(')'),
                     propertySetParameterList),
@@ -194,7 +194,7 @@ var formalParameterList = ecma_parse.node(
 var ecmaFunctionExpression = ecma_parse.nodea(
     parse.next(
         token.keyword('function'),
-        parse.sequence(
+        parse.enumeration(
             parse.optional(null, value.identifier),
             parse_lang.between(token.punctuator('('), token.punctuator(')'), 
                 formalParameterList),
@@ -218,7 +218,7 @@ var lambdaBody = parse.either(
 var lambdaFunctionExpression = ecma_parse.nodea(
     parse.next(
         token.punctuator('\\'),
-        parse.sequence(
+        parse.enumeration(
             lambdaFormalParameterList,
             token.punctuator('->'),
             lambdaBody)),
@@ -250,7 +250,7 @@ var letIdentifier = parse.expected("Any pattern", pattern.pattern);
  */
 var letBinding =  parse.Parser('Let Binding',
     ecma_parse.nodea(
-        parse.sequence(
+        parse.enumeration(
             parse_lang.then(
                 letIdentifier,
                 token.punctuator('=')),
@@ -264,7 +264,7 @@ var letExpression = parse.Parser('Let Expression',
     ecma_parse.nodea(
         parse.next(
             token.keyword('let'),
-            parse.sequence(
+            parse.enumeration(
                 parse.eager(parse_lang.sepBy1(token.punctuator(','),
                     letBinding)),
                 parse.next(
@@ -361,7 +361,7 @@ var memberExpression = let
 in
         parse.Parser('Member Expression',
             parse.binds(
-                parse.sequence(
+                parse.enumeration(
                     parse.either(
                         newExpression,
                         primaryExpression),
@@ -378,7 +378,7 @@ newExpression = parse.Parser('New Expression',
     ecma_parse.nodea(
         parse.next(
             token.keyword('new'),
-            parse.sequence(
+            parse.enumeration(
                 parse.expected("member expression", memberExpression),
                 parse.optional([], args))),
         ast_expression.NewExpression.create));
@@ -396,7 +396,7 @@ reducer = \p, c ->
 in
     parse.Parser('Left Hand Side Expression',
         parse.binds(
-            parse.sequence(
+            parse.enumeration(
                 parse.memo(memberExpression),
                 parse.many(parse.either(
                     args,
@@ -413,7 +413,7 @@ var leftHandReferenceExpression =
     let reducer = \(p, c) -> c.reduce(accessorReducer, p) in
         parse.Parser('Left Hand Reference Expression',
             parse.binds(
-                parse.sequence(
+                parse.enumeration(
                     parse.choice(
                         thisExpression,
                         value.identifier),
@@ -445,7 +445,7 @@ reducer = \argument, op ->
 in
     parse.Parser('Unary Expression',
         parse.binds(
-            parse.sequence(
+            parse.enumeration(
                 parse.many(unaryOperator),
                 parse.expected('left hand side expression', leftHandSideExpression)),
             \(ops, expression) ->
@@ -554,7 +554,7 @@ var binaryExpression = parse.Parser('Binary Expression',
 conditionalExpression = let
     conditionalBody = parse.next(
         token.punctuator('?'),
-        parse.sequence(
+        parse.enumeration(
             parse.expected("expression", expression),
             token.punctuator(':'),
             parse.expected("expression", expression)))
@@ -589,7 +589,7 @@ var assignmentOperator = parse.Parser('Assignment Operator',
  */
 var assignmentExpression = parse.Parser('Assignment Expression',
     ecma_parse.nodea(
-        parse.sequence(
+        parse.enumeration(
             leftHandReferenceExpression,
             assignmentOperator,
             parse.expected('expression', expression)),
