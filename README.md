@@ -263,9 +263,9 @@ members. `str` on the other hand does not name its package but imports two
 symbols, `match` and `search`. The package cannot be directly accessed but
 these two values can be.
 
-Imported names are immutable bindings in the package body. All packages also
+Imported names are immutable bindings in the package body. All packages
 reserve the names `require`, `exports`, `module` as immutable bindings before
-any of the package is evaluated.
+any of the package is evaluated. All packages also use strict mode.
 
 
 ## Multiple value bracket accessor
