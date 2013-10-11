@@ -8,14 +8,16 @@ define(['require',
         'ecma/parse/common',
         'ecma/parse/token_parser',
         'khepri_ast/program',
-        'khepri/parse/statement_parser'],
+        'khepri/parse/statement_parser',
+        'khepri/parse/package_parser'],
 function(require,
         parse,
         stream,
         ecma_parse,
         token,
         ast_program,
-        statement){
+        statement,
+        package_parser){
 "use strict";
 
 /* Circular
@@ -47,10 +49,12 @@ var sourceElements = parse.eager(parse.many(sourceElement));
  */
 var program = parse.Parser('Program',
     ecma_parse.node(
-        parse.eager(parse.rec(\self ->
-            parse.either(
-                parse.next(parse.eof, parse.always(stream.end)),
-                parse.cons(sourceElement, self)))),
+       // parse.either(
+            parse.eager(parse.rec(\self ->
+                parse.either(
+                    parse.next(parse.eof, parse.always(stream.end)),
+                    parse.cons(sourceElement, self)))),
+              //  package_parser.khepriPackage),
         ast_program.Program.create));
 
 /* Export

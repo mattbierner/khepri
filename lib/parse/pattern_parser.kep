@@ -52,10 +52,10 @@ var arrayPattern = parse.Parser('Array Pattern',
  */
 var objectKeyPattern = parse.binds(
     parse.enumeration(
-        parse_lang.then(
-            value.stringLiteral,
-            token.punctuator(':')),
-        pattern),
+        value.stringLiteral,
+        parse.optional(null, parse.next(
+            token.punctuator(':'),
+            pattern))),
     \key, value -> parse.always({
         'key': key,
         'value': value
