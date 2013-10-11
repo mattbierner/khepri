@@ -49,7 +49,7 @@ var program = parse.Parser('Program',
     ecma_parse.node(
         parse.eager(parse.rec(\self ->
             parse.either(
-                parse.next(parse.eof(), parse.always(stream.end)),
+                parse.next(parse.eof, parse.always(stream.end)),
                 parse.cons(sourceElement, self)))),
         ast_program.Program.create));
 

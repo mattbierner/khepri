@@ -4,7 +4,7 @@
 static define;
 define(['require',
         'parse/parse',
-        'parse/parse_lang',
+        'parse/lang',
         'nu/stream', 
         'ecma/position',
         'ecma/parse/common',

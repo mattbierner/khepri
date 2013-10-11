@@ -3,7 +3,7 @@
  */
 static define;
 define(['parse/parse',
-        'parse/parse_lang',
+        'parse/lang',
         'ecma/parse/token_parser',
         'ecma/parse/common',
         'khepri_ast/clause',
