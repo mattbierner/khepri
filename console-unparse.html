@@ -126,11 +126,9 @@
                         lexical.check(ast);
                         var ecam_ast = transform.transform(ast);
                         var unparsed = unparse.unparse(ecam_ast);
-                        
                         var s = unparse_print.print(unparsed);
-                        var out = stream.foldl(function(p, c){ return p + '' + c; }, '', s);
                         
-                        $('#text_out').text(out);
+                        $('#text_out').text(s);
                     } catch (e) {
                         $('.ParseError').text(e);
                     }

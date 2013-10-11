@@ -60,7 +60,7 @@ function(stream,
             if (err) {
                 throw err;
             }
-            var out = header + stream.foldl(function(p, c) { return p + '' + c; }, '', compile(data));
+            var out = header + compile(data);
             
             if (outFile) {
                 fs.writeFile(outFile, out, 'utf8', function(err) {

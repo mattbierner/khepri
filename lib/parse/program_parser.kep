@@ -4,6 +4,7 @@
 static define;
 define(['require',
         'parse/parse',
+        'parse/lang',
         'nu/stream',
         'ecma/parse/common',
         'ecma/parse/token_parser',
@@ -12,6 +13,7 @@ define(['require',
         'khepri/parse/package_parser'],
 function(require,
         parse,
+        parse_lang,
         stream,
         ecma_parse,
         token,
@@ -50,7 +52,7 @@ var sourceElements = parse.eager(parse.many(sourceElement));
 var program = parse.Parser('Program',
     ecma_parse.node(
         parse.either(
-            package_parser.khepriPackage,
+            parse_lang.then(package_parser.khepriPackage, parse.eof),
             parse.eager(parse.rec(\self ->
                 parse.either(
                     parse.next(parse.eof, parse.always(stream.end)),

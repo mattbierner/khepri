@@ -54,7 +54,9 @@ var packageImport = parse.Parser('Package Import',
         ecma_parse.nodea(
             parse.enumeration(
                 value.stringLiteral,
-                pattern.objectPattern),
+                parse.either(
+                    parse.attempt(pattern.objectPattern),
+                    pattern.identifier)),
             ast_package.PackageImport.create)));
 
 /**
