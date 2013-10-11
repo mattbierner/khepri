@@ -6,6 +6,7 @@ requirejs.config({
     nodeRequire: require,
     paths: {
         'parse': 'dependencies/parse/lib',
+        'seshat': 'dependencies/seshat/lib/seshat',
         'nu': 'dependencies/nu/lib',
         'ecma': 'dependencies/parse-ecma/lib',
         'ecma_unparse': 'dependencies/ecma-unparse/lib',

@@ -46,11 +46,15 @@ var reduce = Function.prototype.call.bind(Array.prototype.reduce);
  * Generate the prefix for an array pattern.
  */
 var objectPattern = \base, pattern, key -> {
-    var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
+    var k = (key.type === 'IdentifierPattern' ?
+        khepri_value.Literal.create(null, 'string', key.name) :
+        key);
+    
+    var innerBase = khepri_expression.MemberExpression.create(null, base, k, true);
 
     if (!pattern)
         return khepri_declaration.VariableDeclarator.create(null,
-            khepri_value.Identifier.create(null, key.value),
+            khepri_value.Identifier.create(null, k.value),
             innerBase);
     
     
@@ -68,7 +72,11 @@ var objectPattern = \base, pattern, key -> {
                 elements));
     
     case 'ObjectPattern':
-        var elements = map(pattern.elements, \x, i -> objectPattern(innerBase, x, i));
+        var elements = reduce(
+            pattern.elements,
+            \p, c ->
+                let val = objectPattern(innerBase, c.value, c.key) in (val ? concat(p, val) : p),
+            []);
         return (pattern.id.gen ? elements : 
             concat(
                 [khepri_declaration.VariableDeclarator.create(null, pattern.id, innerBase)],

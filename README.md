@@ -213,6 +213,19 @@ Object patterns can be nested:
 
     var nested = \{'c': [x, {'value': y}]} -> x + y;
 
+As shorthand, properties that have names that are valid identifiers can be
+unpacked directly by using the identifier as the key to unpack:
+
+    \{x, y}-> x + y;
+    
+    var swapAB =  \{a, b} -> ({'a': b, 'b': a});
+
+Object patterns in object patterns still require an key so they know which property
+to unpack.
+
+    \{x, 'y':{z}}-> x + z;
+
+
 ## Modified ##
 
 # Restrict Assignment Expressions

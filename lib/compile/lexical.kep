@@ -385,7 +385,7 @@ var _check = function(node) {
                 seq(map(node.elements,
                     \x -> x.value ?
                         _check(x.value) :
-                        addImmutableBindingInRealBlock(x.key.value, null)))]);
+                        addImmutableBindingInRealBlock(x.key.name, null)))]);
         });
     
     case 'EllipsisPattern':

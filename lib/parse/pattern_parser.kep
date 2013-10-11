@@ -50,16 +50,20 @@ var arrayPattern = parse.Parser('Array Pattern',
 /**
  * 
  */
-var objectKeyPattern = parse.binds(
-    parse.enumeration(
-        value.stringLiteral,
-        parse.optional(null, parse.next(
-            token.punctuator(':'),
-            pattern))),
-    \key, value -> parse.always({
-        'key': key,
-        'value': value
-    }));
+var objectKeyPattern = parse.either(
+    parse.bind(identifier, \key -> parse.always({
+        'key': key
+    })),
+    parse.binds(
+        parse.enumeration(
+            value.stringLiteral,
+            parse.next(
+                token.punctuator(':'),
+                pattern)),
+        \key, value -> parse.always({
+            'key': key,
+            'value': value
+        })));
 
 /**
  * 
