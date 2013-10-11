@@ -8,8 +8,8 @@ define(['require',
         'ecma/parse/common',
         'ecma/parse/token_parser',
         'khepri_ast/program',
-        'khepri/parse/statement_parser'],
-        //'khepri/parse/package_parser'],
+        'khepri/parse/statement_parser',
+        'khepri/parse/package_parser'],
 function(require,
         parse,
         stream,
@@ -49,12 +49,12 @@ var sourceElements = parse.eager(parse.many(sourceElement));
  */
 var program = parse.Parser('Program',
     ecma_parse.node(
-       // parse.either(
+        parse.either(
+            package_parser.khepriPackage,
             parse.eager(parse.rec(\self ->
                 parse.either(
                     parse.next(parse.eof, parse.always(stream.end)),
-                    parse.cons(sourceElement, self)))),
-              //  package_parser.khepriPackage),
+                    parse.cons(sourceElement, self))))),
         ast_program.Program.create));
 
 /* Export

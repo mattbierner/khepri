@@ -31,9 +31,7 @@ more fun, with a focus on functional style programming.
 
 # Differences with ECMAScript
 
-## Additions
-
-### Lambda Function Expression Syntax
+## Lambda Function Expression Syntax
 Available syntaxes, along with translations as last item, are shown here: 
 
     // single argument
@@ -70,85 +68,7 @@ Available syntaxes, along with translations as last item, are shown here:
 
 All scoping remains the same as in the translated version.
 
-### Multiple value bracket accessor
-Bracket accessors support multiple expressions separated by commas for traversing
-hierarchical paths. Single expressions are still supported.
-
-Available syntaxes, along with translations, are shown here: 
-
-    // Single argument
-    a[b];
-    a[b];
-    
-    // Multiple arguments
-    a[b, c];
-    a[b][c];
-    
-    a[5 + 10, (\x -> x.y)({'y': 7})];
-    a[b][function(x) { return x.y; }({'y': 7})];
-
-### Let Expression
-Let expression allow variables to be bound in expressions:
-
-    // Id Let Expression
-    let a = 3 in a;
-    (\a -> a)(3);
-
-Let expressions have higher precedence than conditional expressions and are 
-right associative:
-
-    // Multiple let expressions
-    let a = 3 in let b = 4 in a + b;
-    (\a -> (\b -> a + b)(4))(3);
-
-Multiple values can be bound in a single let expression. Bound values are 
-evaluated left to right and previously bound values can be used in the current
-binding:
-
-    // These are the same
-    let a = 3, b = 5 in a + b;
-    let a = 3 in let b = 5 in a + b;
-    
-    // Using an existing binding.
-    let a = 3, b = a + 10 in a + b;
-    let a = 3 in let b = a + 10 in a + b;
-
-Let expressions capture as much as possible to their right. This can be limited
-by wrapping the entire expression in parentheses:
-
-    // Capturing everything to right 
-    4 * let a = 2 in a + 3;
-    4 * (let a = 2 in a + 3); // 20
-    4 * (2 + 3); 
-    
-    // Limiting capture
-    4 * (let a = 2 in a) + 3;
-    4 * 2 + 3; // 11
-
-The bound value will only be evaluated once no matter how many times it is used.
-Bindings hide existing bindings for the duration of the expression and let 
-expressions bindings can hide one another. Use of let expression bindings outside
-of the expression is not valid.
-
-    // Hiding let expressions
-    // Here the bound value for the inner a is resolved against the existing binding
-    // for a, 3 in this case.
-    let a = 3 in let a = a in a * a;
-    (\a -> (\a -> a * a)(a))(3);
-
-Anonymous functions bound in let expressions can access themselves by bound
-name in the function body:
-
-    let fib = \x -> (x < 2 ? x : fib(n - 1) + fib(n - 2)) in
-        fib(10);
-
-Named functions can access themselves by funciton name. In both cases, the scope of the
-function name is limited to the evaluation of the bound value.
-
-    let fib = function impl(x) { return (x < 2 ? x : impl(n - 1) + impl(n - 2)); } in
-        fib(10);
-
-### Patterns
+## Patterns
 Function parameter lists are patterns instead of identifiers. These patterns
 effect the behavior of the generated function and have nothing to do with pattern
 matching. All effects happen at runtime.
@@ -224,6 +144,144 @@ Object patterns in object patterns still require an key so they know which prope
 to unpack.
 
     \{x, 'y':{z}}-> x + z;
+
+## Let Expression
+Let expression allow variables to be bound in expressions:
+
+    // Id Let Expression
+    let a = 3 in a;
+    (\a -> a)(3);
+
+Let expressions have higher precedence than conditional expressions and are 
+right associative:
+
+    // Multiple let expressions
+    let a = 3 in let b = 4 in a + b;
+    (\a -> (\b -> a + b)(4))(3);
+
+Multiple values can be bound in a single let expression. Bound values are 
+evaluated left to right and previously bound values can be used in the current
+binding:
+
+    // These are the same
+    let a = 3, b = 5 in a + b;
+    let a = 3 in let b = 5 in a + b;
+    
+    // Using an existing binding.
+    let a = 3, b = a + 10 in a + b;
+    let a = 3 in let b = a + 10 in a + b;
+
+Let expressions capture as much as possible to their right. This can be limited
+by wrapping the entire expression in parentheses:
+
+    // Capturing everything to right 
+    4 * let a = 2 in a + 3;
+    4 * (let a = 2 in a + 3); // 20
+    4 * (2 + 3); 
+    
+    // Limiting capture
+    4 * (let a = 2 in a) + 3;
+    4 * 2 + 3; // 11
+
+The bound value will only be evaluated once no matter how many times it is used.
+Bindings hide existing bindings for the duration of the expression and let 
+expressions bindings can hide one another. Use of let expression bindings outside
+of the expression is not valid.
+
+    // Hiding let expressions
+    // Here the bound value for the inner a is resolved against the existing binding
+    // for a, 3 in this case.
+    let a = 3 in let a = a in a * a;
+    (\a -> (\a -> a * a)(a))(3);
+
+Anonymous functions bound in let expressions can access themselves by bound
+name in the function body:
+
+    let fib = \x -> (x < 2 ? x : fib(n - 1) + fib(n - 2)) in
+        fib(10);
+
+Named functions can access themselves by funciton name. In both cases, the scope of the
+function name is limited to the evaluation of the bound value.
+
+    let fib = function impl(x) { return (x < 2 ? x : impl(n - 1) + impl(n - 2)); } in
+        fib(10);
+
+let expressions may also use any pattern on their left hand side:
+
+    let
+        o{x, y} = {'a': 3, 'x': 6, 'z': 5, 'y': 8},
+        [first] = [1,2, 3]
+    in
+       first + y + x + o.a; // 18
+
+## Package Syntax
+Khepri introduces a syntax for packages. Code for different package management
+systems may be generated from the base package syntax.
+
+A program may either be a regular program or a package. New packages are simple
+declared:
+
+    package (EXPORTS) { BODY }
+
+EXPORTS is a list of symbols the package exports from BODY. For a math package,
+exporting two symbols `min` and `max`:
+
+    package (min, max)
+    {
+        min = \x, y -> (x < y ? x : y);
+        max = \x, y -> (x < y ? y : x);
+    }
+
+The export name is the name other packages use to access the symbol. Order of
+exports does not matter, but the exports must be unique. Exports create local
+variables for that export in the package body. The value for the exported
+symbol is taken from the symbols value at the end of the package body.
+
+Packages may also import other packages.
+
+    package () with
+        import PATH OBJECT_PATTERN
+    {
+    }
+
+The path is a string path to the module to import. OBJECT_PATTERN is an object
+pattern used to unpack the import locally. This can unpack just specific symbols or
+bind the entire import to a name.
+
+For example, importing two packages:
+
+    package () with
+        import 'lib/math' math{min, max},
+        import 'lib/str' {match, search}
+    {
+    }
+
+Inside the package body, `math` is bound the entire math package. `min` and `max`
+are bound to the min and max exports of the math package. Because we named the entire
+math package as `math`, we could also write `math.min` or `math.abs` to access
+members. `str` on the other hand does not name its package but imports two
+symbols, `match` and `search`. The package cannot be directly accessed but
+these two values can be.
+
+Imported names are immutable bindings in the package body.
+
+
+## Multiple value bracket accessor
+Bracket accessors support multiple expressions separated by commas for traversing
+hierarchical paths. Single expressions are still supported.
+
+Available syntaxes, along with translations, are shown here: 
+
+    // Single argument
+    a[b];
+    a[b];
+    
+    // Multiple arguments
+    a[b, c];
+    a[b][c];
+    
+    a[5 + 10, (\x -> x.y)({'y': 7})];
+    a[b][function(x) { return x.y; }({'y': 7})];
 
 
 ## Modified ##
