@@ -3,12 +3,12 @@
  * 
  * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
-static define;
-define(['khepri_ast/node',
-        'khepri_ast/value'],
-function(ast_node,
-        ast_value){
-//"use strict";
+package (
+    check)
+with
+    import 'khepri_ast/node' ast_node,
+    import 'khepri_ast/value' ast_value
+{
 
 var map = Function.prototype.call.bind(Array.prototype.map);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
@@ -499,16 +499,10 @@ var builtins = [
     'undefined',
     'URIError'];
 
-var check = function(root, globals) {
+check = function(root, globals) {
     var g = globals || builtins;
     var scope = g.reduce(Scope.addImmutableBinding, new Scope({}, null, {}));
     return trampoline(_check(root)(scope, \s -> s, \err, s -> { throw err; }));
 };
 
-/* Export
- ******************************************************************************/
-return {
-    'check': check
-};
-
-});
+}

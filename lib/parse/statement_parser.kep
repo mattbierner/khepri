@@ -1,93 +1,134 @@
 /**
  * @fileOverview Parser for ECMAScript 5.1 statements.
  */
-static define;
-define(['parse/parse',
-        'parse/lang',
-        'ecma/parse/token_parser',
-        'ecma/parse/common',
-        'khepri_ast/clause',
-        'khepri_ast/declaration',
-        'khepri_ast/statement',
-        'khepri/parse/expression_parser',
-        'khepri/parse/value_parser'],
-function(parse,
-        parse_lang,
-        token,
-        ecma_parse,
-        ast_clause,
-        ast_declaration,
-        ast_statement,
-        expression,
-        value){
-"use strict";
+package (
+    blockStatement,
+    staticStatement,
+    variableStatement,
+    emptyStatement,
+    expressionStatement,
+    ifStatement,
+    iterationStatement,
+    continueStatement,
+    breakStatement,
+    returnStatement,
+    switchStatement,
+    throwStatement,
+    tryStatement,
+    debuggerStatement,
+    statement)
+with
+    import 'parse/parse' parse {
+        always,
+        attempt,
+        binds,
+        choice,
+        eager,
+        either,
+        enumeration,
+        expected,
+        many,
+        memo,
+        next,
+        optional,
+        Parser},
+    import 'parse/lang' {between, sepBy1, then},
+    import 'ecma/parse/token_parser' {keyword, punctuator},
+    import 'ecma/parse/common' {node, nodea},
+    import 'khepri_ast/clause' {CatchClause, SwitchCase},
+    import 'khepri_ast/declaration' {
+        StaticDeclarator,
+        StaticDeclaration,
+        VariableDeclarator,
+        VariableDeclaration},
+    import 'khepri_ast/statement' {
+        BlockStatement,
+        BreakStatement,
+        ContinueStatement,
+        DebuggerStatement,
+        DoWhileStatement,
+        EmptyStatement,
+        ExpressionStatement,
+        LabeledStatement,
+        ForStatement,
+        ForInStatement,
+        IfStatement,
+        ReturnStatement,
+        SwitchStatement,
+        ThrowStatement,
+        TryStatement,
+        WhileStatement},
+    import 'khepri/parse/expression_parser' {assignmentExpression, expression},
+    import 'khepri/parse/value_parser' {identifier}
+{
 
 /* Forward declarations
  ******************************************************************************/
-var statement = function(){ return statement.apply(undefined, arguments); };
+statement = \... -> statement.apply(undefined, arguments);
 
 /* Statement Parsers
  ******************************************************************************/
-var logicalSemiColon = token.punctuator(';');
+var logicalSemiColon = punctuator(';');
 
-var statementList = parse.eager(parse.many(statement));
+var statementList = eager(many(statement));
 
-var topLevelExpression = parse.either(
-    parse.attempt(expression.assignmentExpression),
-    expression.expression);
+var topLevelExpression = either(
+    attempt(assignmentExpression),
+    expression);
 
 // Block
 ////////////////////////////////////////
 /**
  * 
  */
-var blockStatement = parse.Parser('Block Statement',
-    ecma_parse.node(
-        parse_lang.between(token.punctuator('{'), token.punctuator('}'), 
+blockStatement = Parser('Block Statement',
+    node(
+        between(punctuator('{'), punctuator('}'), 
             statementList),
-        ast_statement.BlockStatement.create));
+        BlockStatement.create));
 
 // Static Statement
 ////////////////////////////////////////
-var staticDeclaration = ecma_parse.node(
-    value.identifier,
-    ast_declaration.StaticDeclarator.create);
+var staticDeclaration = node(
+    identifier,
+    StaticDeclarator.create);
 
-var staticDeclarationList = parse.eager(parse_lang.sepBy1(token.punctuator(','),
+var staticDeclarationList = eager(sepBy1(punctuator(','),
     staticDeclaration));
 
 /**
  * Parser for a static statement that declares one or more global variables.
  */
-var staticStatement = parse.Parser('Static Statement',
-     ecma_parse.node(
-        parse_lang.between(token.keyword('static'), logicalSemiColon,
+staticStatement = Parser('Static Statement',
+     node(
+        between(keyword('static'), logicalSemiColon,
             staticDeclarationList),
-        ast_declaration.StaticDeclaration.create));
+        StaticDeclaration.create));
 
 // Variable Statement
 ////////////////////////////////////////
-var initialiser = parse.next(token.punctuator('='),
+var initialiser = next(
+    punctuator('='),
     topLevelExpression);
 
-var variableDeclaration = ecma_parse.nodea(
-    parse.enumeration(
-        value.identifier,
-        parse.optional(null, initialiser)),
-    ast_declaration.VariableDeclarator.create);
+var variableDeclaration = nodea(
+    enumeration(
+        identifier,
+        optional(null, initialiser)),
+    VariableDeclarator.create);
 
-var variableDeclarationList = parse.eager(parse_lang.sepBy1(token.punctuator(','),
+var variableDeclarationList = eager(sepBy1(punctuator(','),
     variableDeclaration));
 
 /**
  * Parser for a variable statement which declares one or more variables with
  * optional initializer values.
  */
-var variableStatement = parse.Parser('Variable Statement', 
-    ecma_parse.node(
-        parse_lang.between(token.keyword('var'), logicalSemiColon,
+variableStatement = Parser('Variable Statement', 
+    node(
+        between(keyword('var'), logicalSemiColon,
             variableDeclarationList),
-        ast_declaration.VariableDeclaration.create));
+        VariableDeclaration.create));
 
 
 // Empty Statement
@@ -95,107 +136,110 @@ var variableStatement = parse.Parser('Variable Statement',
 /**
  * 
  */
-var emptyStatement = parse.Parser('Empty Statement',
-    ecma_parse.node(
-        token.punctuator(';'),
-        ast_statement.EmptyStatement.create));
+emptyStatement = Parser('Empty Statement',
+    node(
+        punctuator(';'),
+        EmptyStatement.create));
 
 // Expression
 ////////////////////////////////////////
 /**
  */
-var expressionStatement = parse.Parser('Expression Statement',
-    ecma_parse.node(
-        parse_lang.then(
+expressionStatement = Parser('Expression Statement',
+    node(
+        then(
             topLevelExpression,
             logicalSemiColon),
-        ast_statement.ExpressionStatement.create));
+        ExpressionStatement.create));
 
 // If
 ////////////////////////////////////////
 /**
  * 
  */
-var ifStatement =  parse.Parser('If Statement',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('if'),
-            parse.enumeration(
-                parse_lang.between(token.punctuator('('), token.punctuator(')'),
+ifStatement =  Parser('If Statement',
+    nodea(
+        next(
+            keyword('if'),
+            enumeration(
+                between(punctuator('('), punctuator(')'),
                     topLevelExpression),
                 statement,
-                parse.optional(null, parse.next(token.keyword('else'),
+                optional(null, next(keyword('else'),
                     statement)))),
-        ast_statement.IfStatement.create));
+        IfStatement.create));
 
 // Iteration
 ////////////////////////////////////////
 /**
  * 
  */
-var whileStatement = parse.Parser('While Statement',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('while'),
-            parse.enumeration(
-                parse_lang.between(token.punctuator('('), token.punctuator(')'),
+var whileStatement = Parser('While Statement',
+    nodea(
+        next(
+            keyword('while'),
+            enumeration(
+                between(punctuator('('), punctuator(')'),
                     topLevelExpression),
                 statement)),
-        ast_statement.WhileStatement.create));
+        WhileStatement.create));
 
 /**
  * 
  */
-var doWhileStatement = parse.Parser('Do While Statement',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('do'),
-            parse.enumeration(
-                statement,
-                token.keyword('while'),
-                parse_lang.between(token.punctuator('('), token.punctuator(')'),
+var doWhileStatement = Parser('Do While Statement',
+    nodea(
+        next(
+            keyword('do'),
+            enumeration(
+                then(
+                    statement,
+                    keyword('while')),
+                between(punctuator('('), punctuator(')'),
                     topLevelExpression),
-                token.punctuator(';'))),
-        \(loc, body, _0, test) ->
-            new ast_statement.DoWhileStatement(loc, body, test)));
+                punctuator(';'))),
+        DoWhileStatement.create));
 
-var forInitExpression =  parse.optional(null, 
-    parse.either(
-        ecma_parse.node(
-            parse.next(
-                token.keyword('var'),
-                parse.memo(variableDeclarationList)),
-            ast_declaration.VariableDeclaration.create),
+var forInitExpression =  optional(null, 
+    either(
+        node(
+            next(
+                keyword('var'),
+                memo(variableDeclarationList)),
+            VariableDeclaration.create),
         topLevelExpression));
 
-var forTestExpression = parse.optional(null, topLevelExpression);
+var forTestExpression = optional(null, topLevelExpression);
 
-var forUpdateExpression = parse.optional(null,
-    parse.either(
-        parse.attempt(expression.assignmentExpression),
+var forUpdateExpression = optional(null,
+    either(
+        attempt(assignmentExpression),
         topLevelExpression));
 
 /**
  * 
  */
-var forStatement = parse.Parser('For Statement',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('for'),
-            parse.enumeration(
-                token.punctuator('('),
-                forInitExpression,
-                token.punctuator(';'),
-                forTestExpression,
-                token.punctuator(';'),
-                forUpdateExpression,
-                token.punctuator(')'),
-                statement)),
-            \(loc, _1, init, _2, test, _3, update, _4, body) ->
-                 new ast_statement.ForStatement(loc, init, test, update, body)));
+var forStatement = Parser('For Statement',
+    nodea(
+        next(
+            keyword('for'),
+            enumeration(
+                next(
+                    punctuator('('),
+                    forInitExpression),
+                next(
+                    punctuator(';'),
+                    forTestExpression),
+                next(
+                    punctuator(';'),
+                    forUpdateExpression),
+                next(
+                    punctuator(')'),
+                    statement))),
+        ForStatement.create));
 
-var iterationStatement = parse.Parser('Iteration Statement',
-    parse.choice(
+iterationStatement = Parser('Iteration Statement',
+    choice(
         doWhileStatement,
         whileStatement,
         forStatement));
@@ -204,137 +248,137 @@ var iterationStatement = parse.Parser('Iteration Statement',
 ////////////////////////////////////////
 /**
  */
-var continueStatement = parse.Parser('Continue Statement',
-    ecma_parse.node(
-        parse.next(
-            token.keyword('continue'),
+continueStatement = Parser('Continue Statement',
+    node(
+        next(
+            keyword('continue'),
             logicalSemiColon),
-        ast_statement.ContinueStatement.create));
+        ContinueStatement.create));
 
 // Break
 ////////////////////////////////////////
 /**
  */
-var breakStatement = parse.Parser('Break Statement',
-    ecma_parse.node(
-        parse.next(
-            token.keyword('break'),
+breakStatement = Parser('Break Statement',
+    node(
+        next(
+            keyword('break'),
             logicalSemiColon),
-        ast_statement.BreakStatement.create));
+        BreakStatement.create));
 
 // Return
 ////////////////////////////////////////
 /**
  */
-var returnStatement = parse.Parser('Return Statement',
-    ecma_parse.node(
-        parse_lang.between(token.keyword('return'), logicalSemiColon,
-            parse.optional(null, topLevelExpression)),
-        ast_statement.ReturnStatement.create));
+returnStatement = Parser('Return Statement',
+    node(
+        between(keyword('return'), logicalSemiColon,
+            optional(null, topLevelExpression)),
+        ReturnStatement.create));
 
 // Switch
 ////////////////////////////////////////
-var caseClause = ecma_parse.nodea(
-    parse.next(
-        token.keyword('case'),
-        parse.enumeration(
-            parse_lang.then(
+var caseClause = nodea(
+    next(
+        keyword('case'),
+        enumeration(
+            then(
                 topLevelExpression,
-                token.punctuator(':')),
+                punctuator(':')),
             statementList)),
-    ast_clause.SwitchCase.create);
+    SwitchCase.create);
 
-var defaultClause = ecma_parse.node(
-    parse.next(
-        token.keyword('default'),
-        parse.next(
-            token.punctuator(':'),
+var defaultClause = node(
+    next(
+        keyword('default'),
+        next(
+            punctuator(':'),
             statementList)),
-    \(loc, consequent) -> ast_clause.SwitchCase.create(loc, null, consequent));
+    \(loc, consequent) -> SwitchCase.create(loc, null, consequent));
 
-var caseClauses = parse.eager(parse.many(caseClause));
+var caseClauses = eager(many(caseClause));
 
-var caseBlock = parse_lang.between(token.punctuator('{'), token.punctuator('}'),
-    parse.binds(
-        parse.enumeration(
-            parse.optional([], caseClauses),
-            parse.optional(null, defaultClause)),
+var caseBlock = between(punctuator('{'), punctuator('}'),
+    binds(
+        enumeration(
+            optional([], caseClauses),
+            optional(null, defaultClause)),
         \first, defaultClause ->
-            parse.always(defaultClause ?
+            always(defaultClause ?
                 first.concat([defaultClause]) :
                 first)));
 
 /**
  * 
  */
-var switchStatement = parse.Parser('Switch Statement',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('switch'),
-            parse.enumeration(
-                parse_lang.between(token.punctuator('('), token.punctuator(')'),
+switchStatement = Parser('Switch Statement',
+    nodea(
+        next(
+            keyword('switch'),
+            enumeration(
+                between(punctuator('('), punctuator(')'),
                     topLevelExpression),
                 caseBlock)),
-        ast_statement.SwitchStatement.create));
+        SwitchStatement.create));
 
 // Throw
 ////////////////////////////////////////
 /**
  * 
  */
-var throwStatement = parse.Parser('Throw Statement',
-    ecma_parse.node(
-        parse_lang.between(token.keyword('throw'), logicalSemiColon,
+throwStatement = Parser('Throw Statement',
+    node(
+        between(keyword('throw'), logicalSemiColon,
             topLevelExpression),
-        ast_statement.ThrowStatement.create));
+        ThrowStatement.create));
 
 // Try
 ////////////////////////////////////////
-var catchBlock = ecma_parse.nodea(
-    parse.next(
-        token.keyword('catch'),
-        parse.enumeration(
-            parse_lang.between(token.punctuator('('), token.punctuator(')'),
-                value.identifier),
+var catchBlock = nodea(
+    next(
+        keyword('catch'),
+        enumeration(
+            between(punctuator('('), punctuator(')'),
+                identifier),
             blockStatement)),
-    ast_clause.CatchClause.create);
+    CatchClause.create);
 
-var finallyBlock = parse.next(
-    token.keyword('finally'),
+var finallyBlock = next(
+    keyword('finally'),
     blockStatement);
 
 /**
  * 
  */
-var tryStatement = parse.Parser('Try Statement',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('try'),
-            parse.enumeration(
+tryStatement = Parser('Try Statement',
+    nodea(
+        next(
+            keyword('try'),
+            enumeration(
                 blockStatement,
-                parse.optional(null, catchBlock),
-                parse.optional(null, finallyBlock))),
-        ast_statement.TryStatement.create));
+                optional(null, catchBlock),
+                optional(null, finallyBlock))),
+        TryStatement.create));
 
 // Debugger
 ////////////////////////////////////////
 /**
  * Parser for a debugger statement.
  */
-var debuggerStatement = parse.Parser('Debugger Statement',
-    ecma_parse.node(
-        parse.next(
-            token.keyword('debugger'),
-            token.punctuator(';')),
-        ast_statement.DebuggerStatement.create));
+debuggerStatement = Parser('Debugger Statement',
+    node(
+        next(
+            keyword('debugger'),
+            punctuator(';')),
+        DebuggerStatement.create));
 
 // statement
 ////////////////////////////////////////
 /**
  * 
  */
-statement = parse.Parser('Statement',
-    parse.expected("statement", parse.choice(
+statement = Parser('Statement',
+    expected("statement", choice(
         blockStatement,
         staticStatement,
         variableStatement,
@@ -350,25 +394,4 @@ statement = parse.Parser('Statement',
         debuggerStatement,
         expressionStatement)));
 
-/* Export
- ******************************************************************************/
-return {
-    'blockStatement': blockStatement,
-    'staticStatement': staticStatement,
-    'variableStatement': variableStatement,
-    'emptyStatement': emptyStatement,
-    'expressionStatement': expressionStatement,
-    'ifStatement': ifStatement,
-    'iterationStatement': iterationStatement,
-    'continueStatement': continueStatement,
-    'breakStatement': breakStatement,
-    'returnStatement': returnStatement,
-    'switchStatement': switchStatement,
-    'throwStatement': throwStatement,
-    'tryStatement': tryStatement,
-    'debuggerStatement': debuggerStatement,
-    
-    'statement': statement
-};
-
-});
+}

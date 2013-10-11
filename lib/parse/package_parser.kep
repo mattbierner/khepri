@@ -1,101 +1,86 @@
 /**
  * @fileOverview Khepri package parsers.
  */
-static define;
-define(['require',
-        'parse/parse',
-        'parse/lang',
-        'ecma/parse/common',
-        'ecma/parse/token_parser',
-        'khepri_ast/package',
-        'khepri/parse/value_parser',
-        'khepri/parse/pattern_parser'],
-function(require,
-        parse,
-        parse_lang,
-        ecma_parse,
-        token,
-        ast_package,
-        value,
-        pattern){
-//"use strict";
-
+package (
+    khepriPackage)
+with
+    import 'parse/parse' {attempt, eager, either, enumeration, next, optional, Parser},
+    import 'parse/lang' {between, sepBy},
+    import 'ecma/parse/common' {node, nodea},
+    import 'ecma/parse/token_parser' {keyword, punctuator},
+    import 'khepri_ast/package' ast_package,
+    import 'khepri/parse/value_parser' {identifier, stringLiteral},
+    import 'khepri/parse/pattern_parser' {objectPattern, 'identifier': identifierPattern}
+{
+    
 /* Circular Declarations 
  ******************************************************************************/
-var sourceElements = function() {
-    return require('khepri/parse/program_parser').sourceElements.apply(undefined, arguments);
-};
+var sourceElements = \... ->
+    require('khepri/parse/program_parser').sourceElements.apply(undefined, arguments);
 
 /* Parsers
  ******************************************************************************/
 /**
  * Package Export
  */
-var packageExport = parse.Parser('Package Export',
-    ecma_parse.node(
-        value.identifier,
+var packageExport = Parser('Package Export',
+    node(
+        identifier,
         ast_package.PackageExport.create));
 
 /**
  * Package Exports
  */
-var packageExports = parse.Parser('Package Exports',
-    ecma_parse.node(
-        parse_lang.between(token.punctuator('('), token.punctuator(')'), 
-            parse.eager(parse_lang.sepBy(token.punctuator(','), packageExport))),
+var packageExports = Parser('Package Exports',
+    node(
+        between(punctuator('('), punctuator(')'), 
+            eager(sepBy(punctuator(','), packageExport))),
         ast_package.PackageExports.create));
 
 /**
  * Package Import
  */
-var packageImport = parse.Parser('Package Import',
-    parse.next(
-        token.keyword('import'),
-        ecma_parse.nodea(
-            parse.enumeration(
-                value.stringLiteral,
-                parse.either(
-                    parse.attempt(pattern.objectPattern),
-                    pattern.identifier)),
+var packageImport = Parser('Package Import',
+    next(
+        keyword('import'),
+        nodea(
+            enumeration(
+                stringLiteral,
+                either(
+                    attempt(objectPattern),
+                    identifierPattern)),
             ast_package.PackageImport.create)));
 
 /**
  * Package Imports
  */
-var packageImports = parse.Parser('Package Imports',
-    parse.next(
-        token.keyword('with'),
-        ecma_parse.node(
-            parse.eager(parse_lang.sepBy(token.punctuator(','), packageImport)),
+var packageImports = Parser('Package Imports',
+    next(
+        keyword('with'),
+        node(
+            eager(sepBy(punctuator(','), packageImport)),
             ast_package.PackageImports.create)));
 
 /**
  * Package Body
  */
-var packageBody = parse.Parser('Package Body',
-    ecma_parse.node(
-        parse_lang.between(token.punctuator('{'), token.punctuator('}'), 
+var packageBody = Parser('Package Body',
+    node(
+        between(punctuator('{'), punctuator('}'), 
             sourceElements),
         ast_package.PackageBody.create));
 
 /**
  * Package
  */
-var khepriPackage = parse.Parser('Package',
-    parse.next(
-        token.keyword('package'),
-        ecma_parse.nodea(
-            parse.enumeration(
+khepriPackage = Parser('Package',
+    next(
+        keyword('package'),
+        nodea(
+            enumeration(
                 packageExports,
-                parse.optional(null, packageImports),
+                optional(null, packageImports),
                 packageBody),
             ast_package.Package.create)));
 
-/* Export
- ******************************************************************************/
-return {
-    'khepriPackage': khepriPackage
-    
-};
-
-});
+}
