@@ -8,6 +8,7 @@ package (
     emptyStatement,
     expressionStatement,
     ifStatement,
+    withStatement,
     iterationStatement,
     continueStatement,
     breakStatement,
@@ -37,6 +38,7 @@ with
     import 'ecma/parse/common' {node, nodea},
     import 'khepri_ast/clause' {CatchClause, SwitchCase},
     import 'khepri_ast/declaration' {
+        Binding,
         StaticDeclarator,
         StaticDeclaration,
         VariableDeclarator,
@@ -57,8 +59,10 @@ with
         SwitchStatement,
         ThrowStatement,
         TryStatement,
+        WithStatement,
         WhileStatement},
     import 'khepri/parse/expression_parser' {assignmentExpression, expression},
+    import 'khepri/parse/pattern_parser' {pattern},
     import 'khepri/parse/value_parser' {identifier}
 {
 
@@ -93,8 +97,9 @@ var staticDeclaration = node(
     identifier,
     StaticDeclarator.create);
 
-var staticDeclarationList = eager(sepBy1(punctuator(','),
-    staticDeclaration));
+var staticDeclarationList = eager(
+    sepBy1(punctuator(','),
+        staticDeclaration));
 
 /**
  * Parser for a static statement that declares one or more global variables.
@@ -157,7 +162,7 @@ expressionStatement = Parser('Expression Statement',
 /**
  * 
  */
-ifStatement =  Parser('If Statement',
+ifStatement = Parser('If Statement',
     nodea(
         next(
             keyword('if'),
@@ -168,6 +173,36 @@ ifStatement =  Parser('If Statement',
                 optional(null, next(keyword('else'),
                     statement)))),
         IfStatement.create));
+
+// With
+////////////////////////////////////////
+var withIdentifier = expected("Any pattern", pattern);
+
+/**
+ */
+var withBinding =  parse.Parser('With Binding',
+    nodea(
+        enumeration(
+            then(
+                withIdentifier,
+                punctuator('=')),
+            expression),
+        Binding.create));
+
+/**
+ * 
+ */
+withStatement = Parser('With Statement',
+    nodea(
+        next(
+            keyword('with'),
+            enumeration(
+                eager(sepBy1(punctuator(','),
+                    withBinding)),
+                next(
+                    keyword('in'),
+                    blockStatement))),
+        WithStatement.create));
 
 // Iteration
 ////////////////////////////////////////
@@ -384,6 +419,7 @@ statement = Parser('Statement',
         variableStatement,
         emptyStatement,
         ifStatement,
+        withStatement,
         iterationStatement,
         continueStatement,
         breakStatement,

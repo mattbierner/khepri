@@ -268,7 +268,13 @@ var _check = function(node) {
             _check(node.test),
             block(_check(node.consequent)),
             block(_check(node.alternate))]);
-
+        
+    case 'WithStatement':
+        return block(
+            next(
+                seq(node.bindings.map(_check)),
+                _check(node.body)));
+        
     case 'SwitchStatement':
         return seq([
             _check(node.discriminant),
@@ -360,8 +366,15 @@ var _check = function(node) {
     
 // Pattern
     case 'IdentifierPattern':
-        return addImmutableBindingInRealBlock(node.name, node.loc);
-        
+        return seq([
+            tryAddMutableBinding(node.name, node.loc),
+            _check(node.init),
+            examine(\s -> {
+                if (s.hasMapping(node.name))
+                    node.name = s.getMapping(node.name);
+                return ok();
+            })]);
+    
     case 'ArrayPattern':
         return examine(\s -> {
             if (!node.id) {
@@ -450,11 +463,11 @@ var _check = function(node) {
                 return ok();
             })]);
         
-    case 'LetBinding': 
+    case 'Binding': 
         return seq([
-            _check(node.id),
-            _check(node.init)]);
-            
+            _check(node.pattern),
+            _check(node.value)]);
+    
     // Value
     case 'Identifier':
         return examine(\s -> {

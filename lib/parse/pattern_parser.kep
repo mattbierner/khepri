@@ -26,7 +26,7 @@ var pattern = \... -> pattern.apply(undefined, arguments);
 var identifier = parse.Parser('Identifier Pattern',
     parse.bind(
         token.anyIdentifier,
-        \x -> parse.always(ast_pattern.Identifier.create(x.loc, x.value))));
+        \x -> parse.always(ast_pattern.IdentifierPattern.create(x.loc, x.value))));
 
 /**
  * 
@@ -34,7 +34,7 @@ var identifier = parse.Parser('Identifier Pattern',
 var ellipsis = parse.Parser('Ellipsis Pattern',
     parse.bind(
         token.punctuator('...'),
-        \x -> parse.always(ast_pattern.Ellipsis.create(x.loc))));
+        \x -> parse.always(ast_pattern.EllipsisPattern.create(x.loc))));
 
 /**
  * 

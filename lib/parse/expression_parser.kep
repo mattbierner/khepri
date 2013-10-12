@@ -255,7 +255,7 @@ var letBinding =  parse.Parser('Let Binding',
                 letIdentifier,
                 token.punctuator('=')),
             conditionalExpression),
-       ast_declaration.LetBinding.create));
+       ast_declaration.Binding.create));
 
 /**
  * Parser for a let expression.
