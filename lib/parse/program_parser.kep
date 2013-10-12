@@ -1,23 +1,34 @@
 /**
  * @fileOverview Khepri program parsers.
  */
-package (
-    sourceElement,
-    sourceElements,
-    program)
-with
-    import 'parse/parse' {always, cons, eager, either, eof, many, next, Parser, rec},
-    import 'parse/lang' {then},
-    import 'nu/stream' {'end': NIL},
-    import 'ecma/parse/common' {node},
-    import 'khepri_ast/program' ast_program,
-    import 'khepri/parse/statement_parser' statement,
-    import 'khepri/parse/package_parser' {khepriPackage}
-{
+static define;
+define(['require',
+        'parse/parse',
+        'parse/lang',
+        'nu/stream',
+        'ecma/parse/common',
+        'ecma/parse/token_parser',
+        'khepri_ast/program',
+        'khepri/parse/statement_parser',
+        'khepri/parse/package_parser'],
+function(require,
+        parse,
+        parse_lang,
+        stream,
+        ecma,
+        token,
+        ast_program,
+        statement_parser,
+        package_parser){
+"use strict";
+
 /* Circular
  ******************************************************************************/
 var statementParser = \... ->
     require('khepri/parse/statement_parser').statement.apply(undefined, arguments);
+
+var khepriPackage = \... ->
+    require('khepri/parse/package_parser').khepriPackage.apply(undefined, arguments);
 
 /* Parsers
  ******************************************************************************/
@@ -28,26 +39,32 @@ var statementParser = \... ->
  * 
  * Source Elements are top level nodes that makes up a program.
  */
-sourceElement = statementParser;
+var sourceElement = statementParser;
 
 /**
  * Parser for a enumeration of zero or more source elements.
  */
-sourceElements = eager(many(sourceElement));
+var sourceElements = parse.eager(parse.many(sourceElement));
 
 // Program
 ////////////////////////////////////////
 /**
  * Parser for an ECMAScript 5.1 program.
  */
-program = Parser('Program',
-    node(
-        either(
-            then(khepriPackage, eof),
-            eager(rec(\self ->
-                either(
-                    next(eof, always(NIL)),
-                    cons(sourceElement, self))))),
+var program = parse.Parser('Program',
+    ecma.node(
+        parse.either(
+            parse_lang.then(khepriPackage, parse.eof),
+            parse.eager(parse.rec(\self ->
+                parse.either(
+                    parse.next(parse.eof, parse.always(stream.end)),
+                    parse.cons(sourceElement, self))))),
         ast_program.Program.create));
 
-}
+return {
+    'sourceElement': sourceElement,
+    'sourceElements': sourceElements,
+    'program': program
+};
+
+});

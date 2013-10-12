@@ -62,7 +62,7 @@ with
         WithStatement,
         WhileStatement},
     import 'khepri/parse/expression_parser' {assignmentExpression, expression},
-    import 'khepri/parse/pattern_parser' {pattern},
+    import 'khepri/parse/pattern_parser' {importPattern, pattern},
     import 'khepri/parse/value_parser' {identifier}
 {
 
@@ -180,14 +180,16 @@ var withIdentifier = expected("Any pattern", pattern);
 
 /**
  */
-var withBinding =  parse.Parser('With Binding',
-    nodea(
-        enumeration(
-            then(
-                withIdentifier,
-                punctuator('=')),
-            expression),
-        Binding.create));
+var withBinding = parse.Parser('With Binding',
+    either(
+        importPattern,
+        nodea(
+            enumeration(
+                then(
+                    withIdentifier,
+                    punctuator('=')),
+                expression),
+            Binding.create)));
 
 /**
  * 

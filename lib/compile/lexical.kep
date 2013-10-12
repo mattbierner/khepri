@@ -441,7 +441,6 @@ var _check = function(node) {
             addImmutableBindingInRealBlock('exports', null),
             addImmutableBindingInRealBlock('module', null),
             _check(node.exports),
-            _check(node.imports),
             _check(node.body)]);
         
     case 'PackageExports':
@@ -449,15 +448,6 @@ var _check = function(node) {
     
     case 'PackageExport':
         return addMutableBinding(node.id.name, node.loc);
-    
-    case 'PackageImports':
-        return seq(map(node.imports, _check));
-    
-    case 'PackageImport':
-        return _check(node.pattern);
-        
-    case 'PackageBody':
-        return seq(map(node.body, _check));
 
 // Clause
     case 'CatchClause':
@@ -489,6 +479,9 @@ var _check = function(node) {
             _check(node.value)]);
     
 // Pattern
+    case 'ImportPattern':
+        return _check(node.pattern);
+    
     case 'IdentifierPattern':
         return seq([
             addUniqueImmutableBinding(node.name, node.loc),

@@ -77,13 +77,28 @@ var objectPattern = parse.Parser('Object Pattern',
         ast_pattern.ObjectPattern.create));
 
 /**
+ * Package Import
+ */
+var importPattern = parse.Parser('Import Pattern',
+    parse.next(
+        token.keyword('import'),
+        ecma.nodea(
+            parse.enumeration(
+                value.stringLiteral,
+                parse.either(
+                    parse.attempt(objectPattern),
+                    identifier)),
+            ast_pattern.ImportPattern.create)));
+
+/**
  */
 pattern = parse.Parser('Pattern',
     parse.choice(
+        ellipsis,
         parse.attempt(arrayPattern),
         parse.attempt(objectPattern),
-        identifier,
-        ellipsis));
+        identifier));
+
 
 /* Export
  ******************************************************************************/
@@ -92,6 +107,7 @@ return {
     
     'identifier': identifier,
     'ellipsis': ellipsis,
+    'importPattern': importPattern,
     'arrayPattern': arrayPattern,
     'objectPattern': objectPattern
 };
