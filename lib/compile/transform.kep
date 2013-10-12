@@ -107,7 +107,7 @@ in
  * Generate the prefix for an array pattern.
  */
 var arrayPattern = \base, pattern, index -> {
-    return objectPattern(base, pattern, khepri_value.Literal.create(null, 'number', index));
+    return objectDeclPattern(base, pattern, khepri_value.Literal.create(null, 'number', index));
 };
 
 /* Transform
@@ -154,7 +154,7 @@ var transform = function(node) {
                         transform(imp.pattern),
                         base)]);
              case 'ObjectPattern':
-                 var b = khepri_value.Identifier.create(null, imp.from.name);
+                 var b = khepri_value.Identifier.create(null, imp.pattern.id.name);
                  return ecma_declaration.VariableDeclaration.create(null,
                      concat(
                         ecma_declaration.VariableDeclarator.create(null, transform(imp.pattern.id), base),

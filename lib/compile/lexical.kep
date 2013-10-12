@@ -7,6 +7,7 @@ package (
     check)
 with
     import 'khepri_ast/node' ast_node,
+    import 'khepri_ast/pattern' ast_pattern,
     import 'khepri_ast/value' ast_value
 {
 
@@ -37,6 +38,53 @@ var trampoline = \f -> {
         value = value[0].apply(undefined, value[1]);
     return value;
 };
+
+/* State
+ ******************************************************************************/
+var State = function(realScope, scope) {
+    this.realScope = realScope;
+    this.scope = scope;
+};
+
+State.setScope = \s, scope ->
+    new State(s.realScope, scope);
+
+State.setRealScope = \s, scope ->
+    new State(scope, s.scope);
+
+/*
+ ******************************************************************************/
+var ok = \x -> \s, ok, err -> ok(x, s);
+
+var error = \x -> \s, ok, err -> err(x, s);
+
+var bind = \p, f -> \s, ok, err -> cont(p, [s, \x, s -> f(x)(s, ok, err), err]);
+
+var next = \p, n -> bind(p, \() -> n);
+
+var seq = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
+
+var extract = \s, ok, err -> ok(s, s);
+
+var examineScope = \f -> bind(extract, \s -> f(s.scope));
+
+var examineRealScope = \f -> bind(extract, \s -> f(s.realScope));
+
+var modifyScope = \f ->
+    \s, ok, err -> let
+        scope = f(s.scope),
+        newState = State.setScope(s, scope)
+    in ok(scope, newState);
+    
+var modifyRealScope = \f ->
+    \s, ok, err -> let
+        scope = f(s.realScope),
+        newState = State.setRealScope(s, scope)
+    in ok(scope, newState);
+    
+var setScope = \s -> modifyScope(\() -> s);
+
+var setRealScope = \s -> modifyRealScope(\() -> s);
 
 /* Scope
  ******************************************************************************/
@@ -158,55 +206,46 @@ Scope.addMapping = \s, from, to ->
             'configurable': true
         }));
 
-/*
- ******************************************************************************/
-var ok = \x -> \s, ok, err -> ok(x, s);
-
-var error = \x -> \s, ok, err -> err(x, s);
-
-var bind = \p, f -> \s, ok, err -> cont(p, [s, \x, s -> f(x)(s, ok, err), err]);
-
-var next = \p, n -> bind(p, \() -> n);
-
-var seq = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
-
-var extract = \s, ok, err -> ok(s, s);
-
-var examine = \f -> bind(extract, f);
-
-var modify = \f -> \scope, ok, err -> let s = f(scope) in ok(s, s);
-
-var setScope = \s -> modify(\() -> s);
-
 /* Operations
  ******************************************************************************/
 /**
  * Create a new lexical block for body.
  */
 var block = \body ->
-    examine(\s ->
+    examineScope(\s ->
         seq([
             setScope(new Scope({}, s, s.mapping)),
             body,
             setScope(s)]));
 
 /**
+ * Create a new lexical block for body.
+ */
+var realBlock = \body ->
+    examineRealScope(\s ->
+        seq([
+            setRealScope(new Scope({}, s, s.mapping)),
+            body,
+            setRealScope(s)]));
+
+/**
  * Test to see if the current scope already contains a binding for id.
  */
 var checkCanAddOwnBinding = \id, loc -> 
-    examine(\s -> s.hasOwnBinding(id) ?
+    examineScope(\s -> s.hasOwnBinding(id) ?
         error("'" + id + "' at:" + loc + " already bound for scope from:" + s.getBinding(id).loc) :
         ok());
 
-var hasBinding = \id, loc -> examine(\s -> s.hasBinding(id) ?
-    ok() :
-    error("Undeclared identifier:'" + id + "' at:" + loc));
+var hasBinding = \id, loc ->
+    examineScope(\s -> s.hasBinding(id) ?
+        ok() :
+        error("Undeclared identifier:'" + id + "' at:" + loc));
 
 /**
  * 
  */
 var checkCanAssign = \id, loc -> 
-    examine(\s -> s.hasBinding(id) ?
+    examineScope(\s -> s.hasBinding(id) ?
         let b = s.getBinding(id) in
             b.mutable ? ok() : error("Assign to immutable variable:'" + id + "' at:"+ loc) :
         ok());
@@ -215,16 +254,23 @@ var checkCanAssign = \id, loc ->
  * Adds a new mutable binding in the current scope. Does not perform any checks.
  */
 var addMutableBinding = \id, loc -> 
-    modify(\s -> Scope.addMapping(Scope.addMutableBinding(s, id, loc), id, id));
+    seq([
+         modifyScope(\s -> Scope.addMapping(Scope.addMutableBinding(s, id, loc), id, id)),
+         modifyRealScope(\s -> Scope.addMapping(Scope.addMutableBinding(s, id, loc), id, id))]);
 
+var addMapping = \id, newId ->
+    seq([
+         modifyScope(\s -> Scope.addMapping(s, id, newId)),
+         modifyRealScope(\s -> Scope.addMapping(s, id, newId))]);
+    
 /**
  * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
  */
 var addUniqueMutableBinding = \id, loc ->
-    examine(\s -> s.hasBinding(id) ?
+    examineRealScope(\s -> s.hasBinding(id) ?
         let new_id = s.getUnusedId(id) in seq([
              addMutableBinding(new_id, loc),
-             modify(\s -> Scope.addMapping(s, id, new_id))]) :
+             addMapping(id, new_id)]) :
         addMutableBinding(id, loc));
 
 /**
@@ -236,16 +282,16 @@ var tryAddMutableBinding = \id, loc -> seq([
 
 var addImmutableBindingInRealBlock = \id, loc -> seq([
     checkCanAddOwnBinding(id, loc),
-    examine(\s ->
+    examineScope(\s ->
         next(
             setScope(Scope.addMapping(s, id, id)),
-            modify(\s -> Scope.addImmutableBinding(s, id, loc))))]);
+            modifyScope(\s -> Scope.addImmutableBinding(s, id, loc))))]);
 
 var addImmutableBinding = \id, loc -> seq([
     checkCanAddOwnBinding(id, loc),
-    examine(\s -> s.hasBinding(id) ?
+    examineScope(\s -> s.hasBinding(id) ?
         let new_id = s.getUnusedId(id) in
-            next(setScope(Scope.addMapping(s, id, new_id)), modify(\s -> Scope.addImmutableBinding(s, new_id, loc))) :
+            next(setScope(Scope.addMapping(s, id, new_id)), modifyScope(\s -> Scope.addImmutableBinding(s, new_id, loc))) :
         addImmutableBindingInRealBlock(id, loc))]);
 
 /*
@@ -367,35 +413,35 @@ var _check = function(node) {
 // Pattern
     case 'IdentifierPattern':
         return seq([
-            tryAddMutableBinding(node.name, node.loc),
+            addImmutableBinding(node.name, node.loc),
             _check(node.init),
-            examine(\s -> {
+            examineScope(\s -> {
                 if (s.hasMapping(node.name))
                     node.name = s.getMapping(node.name);
                 return ok();
             })]);
     
     case 'ArrayPattern':
-        return examine(\s -> {
+        return examineScope(\s -> {
             if (!node.id) {
-                var id = ast_value.Identifier.create(null, s.getUnusedId('__a'));
+                var id = ast_pattern.IdentifierPattern.create(null, s.getUnusedId('__a'));
                 id.gen = true;
                 node.id = id;
             }
             return seq([
-                addImmutableBindingInRealBlock(node.id.name, node.loc),
+                _check(node.id),
                 seq(map(node.elements, _check))]);
         });
     
     case 'ObjectPattern':
-        return examine(\s -> {
+        return examineScope(\s -> {
             if (!node.id) {
-                var id = ast_value.Identifier.create(null, s.getUnusedId('__a'));
+                var id = ast_pattern.IdentifierPattern.create(null, s.getUnusedId('__a'));
                 id.gen = true;
                 node.id = id;
             }
             return seq([
-                addImmutableBindingInRealBlock(node.id.name, node.loc),
+                _check(node.id),
                 seq(map(node.elements,
                     \x -> x.value ?
                         _check(x.value) :
@@ -449,7 +495,7 @@ var _check = function(node) {
         return seq(map(node.declarations, _check));
     
     case 'StaticDeclarator':
-        return examine(\s -> s.hasOwnBinding(node.id.name) ?
+        return examineScope(\s -> s.hasOwnBinding(node.id.name) ?
             error("Binding for:'" + node.id. name + "' at:" + node.loc.start + " already exists in scope") :
             addImmutableBinding(node.id.name, node.loc));
         
@@ -457,7 +503,7 @@ var _check = function(node) {
         return seq([
             tryAddMutableBinding(node.id.name, node.loc.start),
             _check(node.init),
-            examine(\s -> {
+            examineScope(\s -> {
                 if (s.hasMapping(node.id.name))
                     node.id.name = s.getMapping(node.id.name);
                 return ok();
@@ -470,10 +516,10 @@ var _check = function(node) {
     
     // Value
     case 'Identifier':
-        return examine(\s -> {
+        return examineScope(\s -> {
             if (s.hasMapping(node.name))
                 node.name = s.getMapping(node.name);
-            return hasBinding(node.name, node.loc.start);
+            return hasBinding(node.name, node.loc);
         });
     }
     
@@ -515,7 +561,8 @@ var builtins = [
 check = function(root, globals) {
     var g = globals || builtins;
     var scope = g.reduce(Scope.addImmutableBinding, new Scope({}, null, {}));
-    return trampoline(_check(root)(scope, \s -> s, \err, s -> { throw err; }));
+    var state = new State(scope, scope);
+    return trampoline(_check(root)(state, \x -> root, \err, s -> { throw err; }));
 };
 
 }

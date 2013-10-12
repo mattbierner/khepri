@@ -54,6 +54,15 @@ function(parse,
                 var result = lexical.check(testParser(lexer.lex("var a; { var a; }")));
                 assert.ok(true);
             }],
+            ["Renaming",
+            function(){
+                var result = lexical.check(testParser(lexer.lex("var a; { var a; }")));
+                assert.ok(result.body[0].declarations[0].id.name !== result.body[1].body[0].declarations[0].id.name);
+                
+                var result = lexical.check(testParser(lexer.lex("{ var a; } var a; ")));
+                assert.ok(result.body[0].body[0].declarations[0].id.name !== result.body[1].declarations[0].id.name);
+            }],
+            
             
             ["Multiple parameter same name",
             function(){
