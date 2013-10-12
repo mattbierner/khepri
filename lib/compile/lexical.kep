@@ -49,8 +49,8 @@ var State = function(realScope, scope) {
 State.setScope = \s, scope ->
     new State(s.realScope, scope);
 
-State.setRealScope = \s, scope ->
-    new State(scope, s.scope);
+State.setRealScope = \s, realScope ->
+    new State(realScope, s.scope);
 
 /*
  ******************************************************************************/
@@ -217,6 +217,16 @@ var block = \body ->
             setScope(new Scope({}, s, s.mapping)),
             body,
             setScope(s)]));
+    
+/**
+ * Create a new lexical block for body.
+ */
+var emptyBlock = \body ->
+    examineScope(\s ->
+        seq([
+            setScope(new Scope({}, null, {})),
+            body,
+            setScope(s)]));
 
 /**
  * Create a new lexical block for body.
@@ -224,7 +234,7 @@ var block = \body ->
 var realBlock = \body ->
     examineRealScope(\s ->
         seq([
-            setRealScope(new Scope({}, s, s.mapping)),
+            setRealScope(new Scope({}, s, {})),
             body,
             setRealScope(s)]));
 
@@ -250,48 +260,55 @@ var checkCanAssign = \id, loc ->
             b.mutable ? ok() : error("Assign to immutable variable:'" + id + "' at:"+ loc) :
         ok());
 
+var addMapping = \id, newId ->
+    modifyRealScope(\s -> Scope.addMapping(s, id, newId));
+
 /**
  * Adds a new mutable binding in the current scope. Does not perform any checks.
  */
 var addMutableBinding = \id, loc -> 
     seq([
-         modifyScope(\s -> Scope.addMapping(Scope.addMutableBinding(s, id, loc), id, id)),
-         modifyRealScope(\s -> Scope.addMapping(Scope.addMutableBinding(s, id, loc), id, id))]);
-
-var addMapping = \id, newId ->
+         modifyScope(\s -> Scope.addMutableBinding(s, id, loc)),
+         modifyRealScope(\s -> Scope.addMutableBinding(s, id, loc)),
+         addMapping(id, id)]);
+/**
+ * Adds a new immutable binding in the current scope. Does not perform any checks.
+ */
+var addImmutableBinding = \id, loc -> 
     seq([
-         modifyScope(\s -> Scope.addMapping(s, id, newId)),
-         modifyRealScope(\s -> Scope.addMapping(s, id, newId))]);
-    
+         modifyScope(\s -> Scope.addImmutableBinding(s, id, loc)),
+         modifyRealScope(\s -> Scope.addImmutableBinding(s, id, loc)),
+         addMapping(id, id)]);
 /**
  * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
  */
 var addUniqueMutableBinding = \id, loc ->
-    examineRealScope(\s -> s.hasBinding(id) ?
-        let new_id = s.getUnusedId(id) in seq([
+    examineRealScope(\s -> s.hasOwnBinding(id) ?
+        let new_id = s.getUnusedId(id) in next(
              addMutableBinding(new_id, loc),
-             addMapping(id, new_id)]) :
+             addMapping(id, new_id)) :
         addMutableBinding(id, loc));
 
 /**
  * 
  */
-var tryAddMutableBinding = \id, loc -> seq([
-    checkCanAddOwnBinding(id, loc),
-    addUniqueMutableBinding(id, loc)]);
+var addMutableBindingInRealBlock = \id, loc ->
+    next(
+        checkCanAddOwnBinding(id, loc),
+        addUniqueMutableBinding(id, loc));
 
-var addImmutableBindingInRealBlock = \id, loc -> seq([
-    checkCanAddOwnBinding(id, loc),
-    examineScope(\s ->
-        next(
-            setScope(Scope.addMapping(s, id, id)),
-            modifyScope(\s -> Scope.addImmutableBinding(s, id, loc))))]);
+var addImmutableBindingInRealBlock = \id, loc ->
+    next(
+        checkCanAddOwnBinding(id, loc),
+        addImmutableBinding(id, loc));
 
-var addImmutableBinding = \id, loc -> seq([
+var addUniqueImmutableBinding = \id, loc -> seq([
     checkCanAddOwnBinding(id, loc),
     examineScope(\s -> s.hasBinding(id) ?
         let new_id = s.getUnusedId(id) in
-            next(setScope(Scope.addMapping(s, id, new_id)), modifyScope(\s -> Scope.addImmutableBinding(s, new_id, loc))) :
+            next(
+                addImmutableBinding(new_id, loc),
+                addMapping(id, new_id)):
         addImmutableBindingInRealBlock(id, loc))]);
 
 /*
@@ -304,7 +321,8 @@ var _check = function(node) {
     {
 // Statement
     case 'BlockStatement':
-        return block(seq(map(node.body, _check)));
+        return block(
+            seq(map(node.body, _check)));
     
     case 'ExpressionStatement':
         return _check(node.expression);
@@ -404,53 +422,12 @@ var _check = function(node) {
 
 // Function
     case 'FunctionExpression':
-        return block(
+        return realBlock(
             seq([
-                 (node.id ? addImmutableBindingInRealBlock(node.id.name, node.loc) : ok()),
-                 seq(map(node.params.patterns, _check)),
+                 (node.id ? addUniqueImmutableBinding(node.id.name, node.loc) : ok()),
+                 _check(node.params),
                  seq(map(node.body.body, _check))]));
-    
-// Pattern
-    case 'IdentifierPattern':
-        return seq([
-            addImmutableBinding(node.name, node.loc),
-            _check(node.init),
-            examineScope(\s -> {
-                if (s.hasMapping(node.name))
-                    node.name = s.getMapping(node.name);
-                return ok();
-            })]);
-    
-    case 'ArrayPattern':
-        return examineScope(\s -> {
-            if (!node.id) {
-                var id = ast_pattern.IdentifierPattern.create(null, s.getUnusedId('__a'));
-                id.gen = true;
-                node.id = id;
-            }
-            return seq([
-                _check(node.id),
-                seq(map(node.elements, _check))]);
-        });
-    
-    case 'ObjectPattern':
-        return examineScope(\s -> {
-            if (!node.id) {
-                var id = ast_pattern.IdentifierPattern.create(null, s.getUnusedId('__a'));
-                id.gen = true;
-                node.id = id;
-            }
-            return seq([
-                _check(node.id),
-                seq(map(node.elements,
-                    \x -> x.value ?
-                        _check(x.value) :
-                        addImmutableBindingInRealBlock(x.key.name, null)))]);
-        });
-    
-    case 'EllipsisPattern':
-        return ok();
-    
+
 // Program
     case 'Program':
         return Array.isArray(node.body) ?
@@ -495,28 +472,67 @@ var _check = function(node) {
         return seq(map(node.declarations, _check));
     
     case 'StaticDeclarator':
-        return examineScope(\s -> s.hasOwnBinding(node.id.name) ?
-            error("Binding for:'" + node.id. name + "' at:" + node.loc.start + " already exists in scope") :
-            addImmutableBinding(node.id.name, node.loc));
+        return addImmutableBindingInRealBlock(node.id.name, node.loc);
         
     case 'VariableDeclarator':
         return seq([
-            tryAddMutableBinding(node.id.name, node.loc.start),
-            _check(node.init),
-            examineScope(\s -> {
-                if (s.hasMapping(node.id.name))
-                    node.id.name = s.getMapping(node.id.name);
-                return ok();
-            })]);
+            addMutableBindingInRealBlock(node.id.name, node.loc),
+            _check(node.id),
+            _check(node.init)]);
         
     case 'Binding': 
         return seq([
             _check(node.pattern),
             _check(node.value)]);
     
-    // Value
-    case 'Identifier':
+// Pattern
+    case 'IdentifierPattern':
+        return seq([
+            addUniqueImmutableBinding(node.name, node.loc),
+            _check(node.init),
+            examineRealScope(\s -> {
+                if (s.hasMapping(node.name))
+                    node.name = s.getMapping(node.name);
+                return ok();
+            })]);
+    
+    case 'ArrayPattern':
         return examineScope(\s -> {
+            if (!node.id) {
+                var id = ast_pattern.IdentifierPattern.create(null, s.getUnusedId('__a'));
+                id.gen = true;
+                node.id = id;
+            }
+            return seq([
+                _check(node.id),
+                seq(map(node.elements, _check))]);
+        });
+    
+    case 'ObjectPattern':
+        return examineScope(\s -> {
+            if (!node.id) {
+                var id = ast_pattern.IdentifierPattern.create(null, s.getUnusedId('__a'));
+                id.gen = true;
+                node.id = id;
+            }
+            return seq([
+                _check(node.id),
+                seq(map(
+                    node.elements,
+                    \x -> x.value ?
+                        _check(x.value) :
+                        addImmutableBindingInRealBlock(x.key.name, null)))]);
+        });
+    
+    case 'EllipsisPattern':
+        return ok();
+        
+    case 'ParameterList':
+        return seq(map(node.patterns, _check));
+    
+// Value
+    case 'Identifier':
+        return examineRealScope(\s -> {
             if (s.hasMapping(node.name))
                 node.name = s.getMapping(node.name);
             return hasBinding(node.name, node.loc);

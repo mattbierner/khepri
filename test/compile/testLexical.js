@@ -89,6 +89,16 @@ function(parse,
                 var result = lexical.check(testParser(lexer.lex("\\x -> (let x=3 in x) + (let x=5 in x);")));
                 assert.ok(true);
             }],
+            ["Let patterns with same name",
+            function(){
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("let {x} = 3, {x} = 5 in x;")));
+                });
+                
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("let x=1,y=3,{'x':[x]}=4 in x;")));
+                });
+            }],
         ],
     };
 });
