@@ -146,37 +146,44 @@ var transform = function(node) {
             transform(node.consequent),
             transform(node.alternate));
         
-     case 'WithStatement':
-        var importBody = transform(khepri_declaration.VariableDeclaration.create(null,
-            flatten(node.bindings.map(\imp -> {
-                var base = imp.value;
-                switch (imp.pattern.type) {
-                case 'IdentifierPattern':
-                    return khepri_declaration.VariableDeclarator.create(null,
-                       imp.pattern,
-                       base);
-                
-                 case 'ObjectPattern':
-                     return concat(
-                        khepri_declaration.VariableDeclarator.create(null, imp.pattern.id, base),
-                        reduce(imp.pattern.elements, \p, c ->
-                            let val = objectDeclPattern(imp.pattern.id, c.value, c.key) in (val ? concat(p, val) : p),
-                            []));
-                 
-                case 'ArrayPattern':
-                    return concat(
-                        khepri_declaration.VariableDeclarator.create(null, imp.pattern.id, base),
-                        reduce(imp.pattern.elements, \p, c, i ->
-                            let val = arrayPattern(imp.pattern.id, c, i) in (val ? concat(p, val) : p),
-                            []));
-                }
-                return imp;
-            }))));
+    case 'WithStatement':
+        var bindings = reduce(node.bindings, \p, imp -> {
+            var base = imp.value;
+            switch (imp.pattern.type) {
+            case 'IdentifierPattern':
+                return concat(
+                    p,
+                    khepri_declaration.VariableDeclarator.create(null,
+                        imp.pattern,
+                        base));
+            
+             case 'ObjectPattern':
+                 return concat(
+                     p,
+                    khepri_declaration.VariableDeclarator.create(null, imp.pattern.id, base),
+                    flatten(
+                        map(imp.pattern.elements, \c ->
+                            objectDeclPattern(imp.pattern.id, c.value, c.key))));
+             
+            case 'ArrayPattern':
+                return concat(
+                    p,
+                    khepri_declaration.VariableDeclarator.create(null, imp.pattern.id, base),
+                    flatten(
+                        map(imp.pattern.elements, \c, i ->
+                            arrayPattern(imp.pattern.id, c, i))));
+            }
+            return p;
+        }, []);
+        var prefix = (bindings.length ?
+            khepri_declaration.VariableDeclaration.create(null, bindings) :
+            []);
         
-        var fBody = transform(node.body);
-        return ecma_statement.BlockStatement.create(fBody.loc, concat(
-            importBody,
-            fBody.body));
+        return transform(
+            khepri_statement.BlockStatement.create(node.body.loc,
+                concat(
+                    prefix,
+                    node.body)));
 
     case 'SwitchStatement':
         return new ecma_statement.SwitchStatement(node.loc,
