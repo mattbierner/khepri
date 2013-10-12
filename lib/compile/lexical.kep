@@ -506,9 +506,9 @@ var _check = function(node) {
                 id.gen = true;
                 node.id = id;
             }
-            return seq([
+            return next(
                 _check(node.id),
-                seq(map(node.elements, _check))]);
+                seq(map(node.elements, _check)));
         });
     
     case 'ObjectPattern':
@@ -524,7 +524,7 @@ var _check = function(node) {
                     node.elements,
                     \x -> x.value ?
                         _check(x.value) :
-                        addImmutableBindingInRealBlock(x.key.name, null)))]);
+                        _check(x.key)))]);
         });
     
     case 'EllipsisPattern':

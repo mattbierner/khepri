@@ -153,21 +153,21 @@ var transform = function(node) {
                 switch (imp.pattern.type) {
                 case 'IdentifierPattern':
                     return khepri_declaration.VariableDeclarator.create(null,
-                        transform(imp.pattern),
-                        base);
+                       imp.pattern,
+                       base);
                 
                  case 'ObjectPattern':
                      return concat(
-                        ecma_declaration.VariableDeclarator.create(null, transform(imp.pattern.id), base),
+                        khepri_declaration.VariableDeclarator.create(null, imp.pattern.id, base),
                         reduce(imp.pattern.elements, \p, c ->
-                            let val = objectDeclPattern(transform(imp.pattern.id), c.value, c.key) in (val ? concat(p, val) : p),
+                            let val = objectDeclPattern(imp.pattern.id, c.value, c.key) in (val ? concat(p, val) : p),
                             []));
                  
                 case 'ArrayPattern':
                     return concat(
-                        ecma_declaration.VariableDeclarator.create(null, transform(imp.pattern.id), base),
+                        khepri_declaration.VariableDeclarator.create(null, imp.pattern.id, base),
                         reduce(imp.pattern.elements, \p, c, i ->
-                            let val = arrayPattern(transform(imp.pattern.id), c, i) in (val ? concat(p, val) : p),
+                            let val = arrayPattern(imp.pattern.id, c, i) in (val ? concat(p, val) : p),
                             []));
                 }
                 return imp;
@@ -406,7 +406,7 @@ var transform = function(node) {
         
     case 'VariableDeclarator':
         return new ecma_declaration.VariableDeclarator(node.loc,
-            node.id,
+            transform(node.id),
             transform(node.init));
         
     case 'StaticDeclaration':
