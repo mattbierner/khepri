@@ -40,6 +40,8 @@ var concat = Function.prototype.call.bind(Array.prototype.concat);
 var map = Function.prototype.call.bind(Array.prototype.map);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
+var flatten = \x -> reduce(x, \p, c -> p.concat(c), []);
+
 /* Pattern
  ******************************************************************************/
 /**
@@ -145,25 +147,31 @@ var transform = function(node) {
             transform(node.alternate));
         
      case 'WithStatement':
-        var importBody = node.bindings.map(\imp -> {
-            var base = imp.value;//khepri_value.Identifier.create(null, imp.name);
-            switch (imp.pattern.type) {
-            case 'IdentifierPattern':
-                return ecma_declaration.VariableDeclaration.create(null,
-                    [khepri_declaration.VariableDeclarator.create(null,
+        var importBody = transform(khepri_declaration.VariableDeclaration.create(null,
+            flatten(node.bindings.map(\imp -> {
+                var base = imp.value;
+                switch (imp.pattern.type) {
+                case 'IdentifierPattern':
+                    return khepri_declaration.VariableDeclarator.create(null,
                         transform(imp.pattern),
-                        base)]);
-             case 'ObjectPattern':
-                 var b = khepri_value.Identifier.create(null, imp.pattern.id.name);
-                 return ecma_declaration.VariableDeclaration.create(null,
-                     concat(
+                        base);
+                
+                 case 'ObjectPattern':
+                     return concat(
                         ecma_declaration.VariableDeclarator.create(null, transform(imp.pattern.id), base),
                         reduce(imp.pattern.elements, \p, c ->
                             let val = objectDeclPattern(transform(imp.pattern.id), c.value, c.key) in (val ? concat(p, val) : p),
-                            [])));
-            }
-            return imp;
-        });
+                            []));
+                 
+                case 'ArrayPattern':
+                    return concat(
+                        ecma_declaration.VariableDeclarator.create(null, transform(imp.pattern.id), base),
+                        reduce(imp.pattern.elements, \p, c, i ->
+                            let val = arrayPattern(transform(imp.pattern.id), c, i) in (val ? concat(p, val) : p),
+                            []));
+                }
+                return imp;
+            }))));
         
         var fBody = transform(node.body);
         return ecma_statement.BlockStatement.create(fBody.loc, concat(
@@ -253,11 +261,11 @@ var transform = function(node) {
             node.computed);
         
     case 'ArrayExpression':
-        return new ecma_expression.ArrayExpression(node.loc,
+        return ecma_expression.ArrayExpression.create(node.loc,
             map(node.elements, transform));
     
     case 'ObjectExpression':
-        return new ecma_expression.ObjectExpression(node.loc,
+        return ecma_expression.ObjectExpression.create(node.loc,
             map(node.properties, \x -> ({
                 'kind': x.kind,
                 'key': transform(x.key),
@@ -265,19 +273,17 @@ var transform = function(node) {
             })));
     
     case 'LetExpression':
-        return node.bindings.reduceRight(\p, c ->
-            new khepri_expression.CallExpression(null,
-                transform(new khepri_expression.FunctionExpression(null,
+        return transform(
+             khepri_expression.CallExpression.create(node.loc,
+                khepri_expression.FunctionExpression.create(null,
                     null,
-                    khepri_pattern.ParameterList.create(null, [c.pattern]),
-                    transform(new khepri_statement.BlockStatement(null, [new khepri_statement.ReturnStatement(null, p)])))),
-                [(c.value.type === 'FunctionExpression' ?
-                    new ecma_expression.FunctionExpression(null,
-                        (c.value.id || (c.pattern.type === "IdentifierPattern" ? ecma_value.Identifier.create(null, c.pattern.name) : null)),
-                        transform(c.value.params),
-                        transform(c.value.body)) :
-                    transform(c.value))]),
-            transform(node.body));
+                    khepri_pattern.ParameterList.create(null, []),
+                    khepri_statement.BlockStatement.create(null, [
+                         khepri_statement.WithStatement.create(null,
+                             node.bindings,
+                             khepri_statement.BlockStatement.create(null, [
+                                 khepri_statement.ReturnStatement.create(null, node.body)]))])),
+                []));
 
 // Function
     case 'FunctionExpression':

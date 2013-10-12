@@ -51,6 +51,10 @@ function(parse,
                     lexical.check(testParser(lexer.lex("var a; var c; var a;")));
                 });
                 
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("{ var a; var c; var a; }")));
+                });
+                
                 var result = lexical.check(testParser(lexer.lex("var a; { var a; }")));
                 assert.ok(true);
             }],
