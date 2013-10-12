@@ -90,7 +90,7 @@ var objectPattern = \base, pattern, key, f -> {
 /**
  */
 var objectDeclPattern = let
-    make = \l, r -> ecma_declaration.VariableDeclarator.create(null, l, r)
+    make = \l, r -> khepri_declaration.VariableDeclarator.create(null, l, r)
 in
     \base, pattern, key ->
         objectPattern(base, pattern, key, make);
