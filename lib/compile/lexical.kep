@@ -448,7 +448,11 @@ var _check = function(node) {
             addImmutableBindingInRealBlock('exports', null),
             addImmutableBindingInRealBlock('module', null),
             _check(node.exports),
-            _check(node.body)]);
+            (node.body.type === 'WithStatement' ?
+                next(
+                    seq(node.body.bindings.map(_check)),
+                    _check(node.body.body)) :
+                seq(map(node.body, _check)))]);
         
     case 'PackageExports':
         return seq(map(node.exports, _check));
@@ -492,18 +496,19 @@ var _check = function(node) {
     
     case 'IdentifierPattern':
         return seq([
-            addUniqueImmutableBinding(node.name, node.loc),
+            addUniqueImmutableBinding(node.id.name, node.loc),
             _check(node.init),
             examineScope(\s -> {
-                if (s.hasMapping(node.name))
-                    node.name = s.getMapping(node.name);
+                if (s.hasMapping(node.id.name))
+                    node.id.name = s.getMapping(node.id.name);
                 return ok();
             })]);
     
     case 'ArrayPattern':
         return examineScope(\s -> {
             if (!node.id) {
-                var id = ast_pattern.IdentifierPattern.create(null, s.getUnusedId('__a'));
+                var id = ast_pattern.IdentifierPattern.create(null,
+                    ast_value.Identifier.create(null, s.getUnusedId('__a')));
                 id.gen = true;
                 node.id = id;
             }
@@ -515,12 +520,13 @@ var _check = function(node) {
     case 'ObjectPattern':
         return examineScope(\s -> {
             if (!node.id) {
-                var id = ast_pattern.IdentifierPattern.create(null, s.getUnusedId('__o'));
+                var id = ast_pattern.IdentifierPattern.create(null,
+                  ast_value.Identifier.create(null, s.getUnusedId('__o')));
                 id.gen = true;
                 node.id = id;
             }
             node.elements = map(node.elements,
-                \x -> (x.value ? x : {'key': ast_value.Literal.create(null, 'string', x.key.name), 'value': x.key}));
+                \x -> (x.value ? x : {'key': ast_value.Literal.create(null, 'string', x.key.id.name), 'value': x.key}));
             
             return next(
                 _check(node.id),

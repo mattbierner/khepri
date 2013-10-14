@@ -49,8 +49,11 @@ var arrayPattern;
 /**
  */
 var objectPattern = \base, pattern, key, f -> {
+    if (key.type === 'IdentifierPattern' )
+        debugger;
+    
     var k = (key.type === 'IdentifierPattern' ?
-        khepri_value.Literal.create(null, 'string', key.name) :
+        khepri_value.Literal.create(null, 'string', key.id.name) :
         key);
     
     var innerBase = khepri_expression.MemberExpression.create(null, base, k, true);
@@ -64,7 +67,7 @@ var objectPattern = \base, pattern, key, f -> {
     switch (pattern.type){
     case 'IdentifierPattern':
         return f(
-            khepri_value.Identifier.create(null, pattern.name),
+            khepri_value.Identifier.create(null, pattern.id.name),
             innerBase);
     
     case 'ArrayPattern':
@@ -320,32 +323,32 @@ var transform = function(node) {
 
 // Function
     case 'FunctionExpression':
-        var params = transform(node.params);
-        var prefix = reduce(node.params.patterns, \p, c -> {
-            switch (c.type) {
-            case 'ArrayPattern':
-                var base = khepri_value.Identifier.create(null, c.id.name);
-                return concat(p, khepri_declaration.VariableDeclaration.create(null,
-                    reduce(c.elements, \p, c, i ->
-                        let val = arrayPattern(base, c, i) in (val ? concat(p, val) : p),
-                        [])));
-             case 'ObjectPattern':
-                var base = khepri_value.Identifier.create(null, c.id.name);
-                return concat(p, khepri_declaration.VariableDeclaration.create(null,
-                    reduce(c.elements, \p, c ->
-                        let val = objectDeclPattern(base, c.value, c.key) in (val ? concat(p, val) : p),
-                        [])));
-            }
-            return p;
-        }, []);
-        
-        params = reduce(params, \p, c -> {
-            if (!c || c.type === 'EllipsisPattern')
+        return let
+            params = reduce(transform(node.params), \p, c -> {
+                if (!c || c.type === 'EllipsisPattern')
+                    return p;
+                return p.concat([c]);
+            }, []),
+            prefix = reduce(node.params.patterns, \p, c -> {
+                var base;
+                switch (c.type) {
+                case 'ArrayPattern':
+                    base = khepri_value.Identifier.create(null, c.id.name);
+                    return concat(p, khepri_declaration.VariableDeclaration.create(null,
+                        reduce(c.elements, \p, c, i ->
+                            let val = arrayPattern(base, c, i) in (val ? concat(p, val) : p),
+                            [])));
+                 case 'ObjectPattern':
+                    base = khepri_value.Identifier.create(null, c.id.name);
+                    return concat(p, khepri_declaration.VariableDeclaration.create(null,
+                        reduce(c.elements, \p, c ->
+                            let val = objectDeclPattern(base, c.value, c.key) in (val ? concat(p, val) : p),
+                            [])));
+                }
                 return p;
-            return p.concat([c]);
-        }, []);
-        
-        return ecma_expression.FunctionExpression.create(node.loc,
+        }, [])
+    in
+        ecma_expression.FunctionExpression.create(node.loc,
             transform(node.id),
             params,
             transform(new khepri_statement.BlockStatement(node.body.loc, concat(prefix, node.body.body))));
@@ -355,7 +358,7 @@ var transform = function(node) {
         return map(node.patterns, transform);
         
     case 'IdentifierPattern':
-        return new ecma_value.Identifier(node.loc, node.name);
+        return new ecma_value.Identifier(node.loc, node.id.name);
     
     case 'ArrayPattern':
         return new ecma_value.Identifier(node.loc, node.id.name);
@@ -374,11 +377,11 @@ var transform = function(node) {
                 [transform(node.body)]);
 // Package
     case 'Package':
-        var imports = (node.body.type === 'WithStatement' ?
-            map(
-                node.body.bindings.filter(\x -> x.type === 'ImportPattern'),
-                \x -> x.from) :
+        var imp = (node.body.type === 'WithStatement' ?
+            node.body.bindings.filter(\x -> x.type === 'ImportPattern') :
             []);
+        
+        var imports = map(imp, \x -> x.from);
         
         var exports = map(node.exports.exports, \x -> x.id);
         
@@ -393,20 +396,20 @@ var transform = function(node) {
                         ecma_value.Identifier.create(null, x.name)),
                     ecma_value.Identifier.create(null, x.name))));
         
-        var fBody = (node.body.type === 'WithStatement' ?
-            transform(khepri_statement.WithStatement.create(null,
+        var fBody = transform(node.body.type === 'WithStatement' ?
+            khepri_statement.WithStatement.create(null,
                 node.body.bindings.map(\x -> (x.type !== 'ImportPattern' ? x :
                     khepri_declaration.Binding.create(null,
                         x.pattern,
-                        imports.map(\x -> ecma_value.Identifier.create(null, x.from.value))))),
-                node.body.body)) :
-            transform(node.body));
+                        x.pattern.id))),
+                node.body.body) :
+            node.body);
         
         var body = ecma_expression.FunctionExpression.create(null, null,
                 concat(
                     ecma_value.Identifier.create(null, 'require'),
                     ecma_value.Identifier.create(null, 'exports'),
-                    imports.map(\x -> ecma_value.Identifier.create(null, x.value))),
+                    imp.map(\x -> transform(x.pattern.id))),
             ecma_statement.BlockStatement.create(fBody.loc, concat(
                 ecma_statement.ExpressionStatement.create(null,
                     ecma_value.Literal.create(null, 'string', "use strict")),

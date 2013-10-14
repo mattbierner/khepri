@@ -20,13 +20,12 @@ function(parse,
  ******************************************************************************/
 var pattern = \... -> pattern.apply(undefined, arguments);
 
-
 /* Parsers
  ******************************************************************************/
 var identifier = parse.Parser('Identifier Pattern',
     parse.bind(
-        token.anyIdentifier,
-        \x -> parse.always(ast_pattern.IdentifierPattern.create(x.loc, x.value))));
+        value.identifier,
+        \x -> parse.always(ast_pattern.IdentifierPattern.create(x.loc, x))));
 
 /**
  * 

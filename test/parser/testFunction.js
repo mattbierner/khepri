@@ -29,7 +29,7 @@ function(parse,
                 assert.equal(result.right.type, 'FunctionExpression');
                 assert.equal(result.right.name, null);
                 assert.equal(result.right.params.patterns.length, 1);
-                assert.equal(result.right.params.patterns[0].name, 'x');
+                assert.equal(result.right.params.patterns[0].id.name, 'x');
                 assert.equal(result.right.body.body[0].type, 'ReturnStatement');
             }],
             ["Named Function Expression",
@@ -38,7 +38,7 @@ function(parse,
                 assert.equal(result.right.type, 'FunctionExpression');
                 assert.equal(result.right.id.name, 'z');
                 assert.equal(result.right.params.patterns.length, 1);
-                assert.equal(result.right.params.patterns[0].name, 'x');
+                assert.equal(result.right.params.patterns[0].id.name, 'x');
                 assert.equal(result.right.body.body[0].type, 'ReturnStatement');
             }],
         ],
