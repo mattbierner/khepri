@@ -391,7 +391,11 @@ var transform = function(node) {
                         ecma_value.Identifier.create(null, x.name)),
                     ecma_value.Identifier.create(null, x.name))));
         
-        var fBody = transform(node.body);
+        var fBody = (node.body.type === 'WithStatement' ?
+            transform(khepri_statement.WithStatement.create(null,
+                node.body.bindings.filter(\x -> x.type !== 'ImportPattern'),
+                node.body.body)) :
+            transform(node.body));
         
         var body = ecma_expression.FunctionExpression.create(null, null,
                 concat(
