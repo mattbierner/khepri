@@ -263,7 +263,7 @@ var checkCanAssign = \id, loc ->
         ok());
 
 var addMapping = \id, newId ->
-    modifyRealScope(\s -> Scope.addMapping(s, id, newId));
+    modifyScope(\s -> Scope.addMapping(s, id, newId));
 
 /**
  * Adds a new mutable binding in the current scope. Does not perform any checks.
@@ -288,9 +288,11 @@ var addUniqueMutableBinding = \id, loc ->
     next(
         checkCanAddOwnBinding(id, loc),
         examineRealScope(\s -> s.hasOwnBinding(id) ?
-            let new_id = s.getUnusedId(id) in next(
-                 addMutableBinding(new_id, loc),
-                 addMapping(id, new_id)) :
+            let new_id = s.getUnusedId(id) in
+                seq([
+                     addMutableBinding(id, loc),
+                     addMutableBinding(new_id, loc),
+                     addMapping(id, new_id)]) :
             addMutableBinding(id, loc)));
 
 /**
@@ -310,9 +312,10 @@ var addUniqueImmutableBinding = \id, loc -> seq([
     checkCanAddOwnBinding(id, loc),
     examineRealScope(\s -> s.hasOwnBinding(id) ?
         let new_id = s.getUnusedId(id) in
-            next(
+            seq([
+                addImmutableBinding(id, loc),
                 addImmutableBinding(new_id, loc),
-                addMapping(id, new_id)):
+                addMapping(id, new_id)]):
         addImmutableBindingInRealBlock(id, loc))]);
 
 /*
@@ -461,7 +464,7 @@ var _check = function(node) {
                 seq(map(node.body.body, _check))));
     
     case 'SwitchCase':
-        return seq(map(node.body, _check));
+        return seq(map(node.consequent, _check));
     
 // Declarations
     case 'StaticDeclaration':
@@ -491,7 +494,7 @@ var _check = function(node) {
         return seq([
             addUniqueImmutableBinding(node.name, node.loc),
             _check(node.init),
-            examineRealScope(\s -> {
+            examineScope(\s -> {
                 if (s.hasMapping(node.name))
                     node.name = s.getMapping(node.name);
                 return ok();
@@ -534,7 +537,7 @@ var _check = function(node) {
     
 // Value
     case 'Identifier':
-        return examineRealScope(\s -> {
+        return examineScope(\s -> {
             if (s.hasMapping(node.name))
                 node.name = s.getMapping(node.name);
             return hasBinding(node.name, node.loc);

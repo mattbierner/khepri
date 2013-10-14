@@ -44,6 +44,8 @@ var flatten = \x -> reduce(x, \p, c -> p.concat(c), []);
 
 /* Pattern
  ******************************************************************************/
+var arrayPattern;
+
 /**
  */
 var objectPattern = \base, pattern, key, f -> {
@@ -73,15 +75,15 @@ var objectPattern = \base, pattern, key, f -> {
                 elements));
     
     case 'ObjectPattern':
-        var elements = reduce(
+        var elements2 = reduce(
             pattern.elements,
             \p, c ->
                 let val = objectPattern(innerBase, c.value, c.key) in (val ? concat(p, val) : p),
             []);
-        return (pattern.id.gen ? elements : 
+        return (pattern.id.gen ? elements2 : 
             concat(
                 [f(pattern.id, innerBase)],
-                elements));
+                elements2));
     default:
         return null;
     }
@@ -108,7 +110,7 @@ in
 /**
  * Generate the prefix for an array pattern.
  */
-var arrayPattern = \base, pattern, index -> {
+arrayPattern = \base, pattern, index -> {
     return objectDeclPattern(base, pattern, khepri_value.Literal.create(null, 'number', index));
 };
 
@@ -171,7 +173,7 @@ var transform = function(node) {
                             []));
                 }
                 return p;
-            };
+            }
             switch (imp.pattern.type) {
             case 'IdentifierPattern':
                 return concat(
@@ -393,14 +395,18 @@ var transform = function(node) {
         
         var fBody = (node.body.type === 'WithStatement' ?
             transform(khepri_statement.WithStatement.create(null,
-                node.body.bindings.filter(\x -> x.type !== 'ImportPattern'),
+                node.body.bindings.map(\x -> (x.type !== 'ImportPattern' ? x :
+                    khepri_declaration.Binding.create(null,
+                        x.pattern,
+                        imports.map(\x -> ecma_value.Identifier.create(null, x.from.value))))),
                 node.body.body)) :
             transform(node.body));
         
         var body = ecma_expression.FunctionExpression.create(null, null,
                 concat(
                     ecma_value.Identifier.create(null, 'require'),
-                    ecma_value.Identifier.create(null, 'exports')),
+                    ecma_value.Identifier.create(null, 'exports'),
+                    imports.map(\x -> ecma_value.Identifier.create(null, x.value))),
             ecma_statement.BlockStatement.create(fBody.loc, concat(
                 ecma_statement.ExpressionStatement.create(null,
                     ecma_value.Literal.create(null, 'string', "use strict")),
