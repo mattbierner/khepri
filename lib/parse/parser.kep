@@ -1,21 +1,18 @@
 /**
  * @fileOverview
  */
-static define;
-define(['parse/parse',
-        'nu/stream',
-        'ecma/position',
-        'ecma/parse/parser',
-        'khepri_ast/token',
-        'khepri/parse/program_parser'],
-function(parse,
-        stream,
-        position,
-        parser,
-        lexToken,
-        program){
-"use strict";
-
+package (
+    parserStream,
+    parseInput,
+    parseStream)
+with
+    import 'parse/parse' parse,
+    import 'nu/stream' {first, filter, isEmpty, rest, 'from': streamFrom},
+    import 'ecma/position' position,
+    import 'ecma/parse/parser' parser,
+    import 'khepri/parse/program_parser' {program}
+in {
+    
 /* Streams
  ******************************************************************************/
 /**
@@ -25,7 +22,7 @@ function(parse,
  * 
  * @return Stream suitable for parsing.
  */
-var parserStream = let 
+parserStream = let 
     langElementFilter = \x -> {
         switch (x.type) {
         case 'Whitespace':
@@ -37,7 +34,7 @@ var parserStream = let
         }
     }
 in
-    \s -> stream.filter(langElementFilter, s);
+    \s -> filter(langElementFilter, s);
 
 /* State
  ******************************************************************************/
@@ -49,9 +46,9 @@ ParserState.prototype = new parse.ParserState;
 
 ParserState.prototype.next = \tok -> {
     if (!this._next) {
-        var rest = stream.rest(this.input);
-        var end = (stream.isEmpty(rest) ? tok.loc.end : stream.first(rest).loc.start);
-        var s = new ParserState(rest, this.position.increment(tok, end), this.loc.end);
+        var r = rest(this.input);
+        var end = (isEmpty(r) ? tok.loc.end : first(r).loc.start);
+        var s = new ParserState(r, this.position.increment(tok, end), this.loc.end);
         this._next = \_, m, cok -> cok(tok, s, m);
     }
     return this._next;
@@ -59,9 +56,9 @@ ParserState.prototype.next = \tok -> {
 
 Object.defineProperty(ParserState.prototype, 'loc', {
     'get': \() ->
-        (stream.isEmpty(this.input) ?
+        (isEmpty(this.input) ?
             new position.SourceLocation(this._prevEnd, this._prevEnd) :
-            stream.first(this.input).loc)
+            first(this.input).loc)
 });
 
 /* Running
@@ -75,9 +72,9 @@ Object.defineProperty(ParserState.prototype, 'loc', {
  * 
  * @return AST.
  */
-var parseStream = \s ->
+parseStream = \s ->
     parse.runState(
-        program.program,
+        program,
         new ParserState(
             parserStream(s),
             new parser.ParserPosition(
@@ -94,16 +91,7 @@ var parseStream = \s ->
  * 
  * @return AST.
  */
-var parseInput = \input ->
-    parseStream(stream.from(input));
+parseInput = \input ->
+    parseStream(streamFrom(input));
 
-/* Export
- ******************************************************************************/
-return {
-    'parserStream': parserStream,
-    
-    'parse': parseInput,
-    'parseStream': parseStream
-};
-
-});
+}

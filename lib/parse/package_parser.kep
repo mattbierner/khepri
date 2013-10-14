@@ -1,24 +1,18 @@
 /**
  * @fileOverview Khepri package parsers.
  */
-static define;
-define(['require',
-        'parse/parse',
-        'parse/lang',
-        'ecma/parse/common',
-        'ecma/parse/token_parser',
-        'khepri_ast/package',
-        'khepri/parse/statement_parser',
-        'khepri/parse/value_parser'],
-function(require,
-        parse,
-        parse_lang,
-        ecma,
-        token,
-        ast_package,
-        statement_parser,
-        value){
-"use strict";
+package (
+    khepriPackage)
+with
+    import 'parse/parse' {attempt, eager, either, enumeration, next, optional, Parser},
+    import 'parse/lang' {between, sepBy},
+    import 'ecma/parse/common' {node, nodea},
+    import 'ecma/parse/token_parser' {keyword, punctuator},
+    import 'khepri_ast/package' ast_package,
+    import 'khepri/parse/value_parser' {identifier, stringLiteral},
+    import 'khepri/parse/pattern_parser' {objectPattern, 'identifier': identifierPattern},
+    import 'khepri/parse/statement_parser' statement
+in {
 
 /* Circular Declarations 
  ******************************************************************************/
@@ -33,42 +27,37 @@ var blockStatement = \... ->
 /**
  * Package Export
  */
-var packageExport = parse.Parser('Package Export',
-    ecma.node(
-        value.identifier,
+var packageExport = Parser('Package Export',
+    node(
+        identifier,
         ast_package.PackageExport.create));
 
 /**
  * Package Exports
  */
-var packageExports = parse.Parser('Package Exports',
-    ecma.node(
-        parse_lang.between(token.punctuator('('), token.punctuator(')'), 
-            parse.eager(parse_lang.sepBy(token.punctuator(','), packageExport))),
+var packageExports = Parser('Package Exports',
+    node(
+        between(punctuator('('), punctuator(')'), 
+            eager(sepBy(punctuator(','), packageExport))),
         ast_package.PackageExports.create));
-
 /**
  * Package Body
  */
-var packageBody = parse.Parser('Package Body',
-    parse.either(
+var packageBody = Parser('Package Body',
+    either(
         withStatement,
         blockStatement));
 
 /**
  * Package
  */
-var khepriPackage = parse.Parser('Package',
-    parse.next(
-        token.keyword('package'),
-        ecma.nodea(
-            parse.enumeration(
+khepriPackage = Parser('Package',
+    next(
+        keyword('package'),
+        nodea(
+            enumeration(
                 packageExports,
                 packageBody),
             ast_package.Package.create)));
 
-return {
-    'khepriPackage': khepriPackage 
-};
-
-});
+}

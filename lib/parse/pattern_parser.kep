@@ -1,28 +1,29 @@
 /**
  * @fileOverview Khepri patterns parsers.
  */
-static define;
-define(['parse/parse',
-        'parse/lang',
-        'ecma/parse/common',
-        'ecma/parse/token_parser',
-        'khepri_ast/pattern',
-        'khepri/parse/value_parser'],
-function(parse,
-        parse_lang,
-        ecma,
-        token,
-        ast_pattern,
-        value){
-"use strict";
+package (
+    pattern,
+    identifier,
+    ellipsis,
+    importPattern,
+    arrayPattern,
+    objectPattern)
+with
+    import 'parse/parse' parse {Parser},
+    import 'parse/lang' parse_lang,
+    import 'ecma/parse/common' {node, nodea},
+    import 'ecma/parse/token_parser' token,
+    import 'khepri_ast/pattern' ast_pattern,
+    import  'khepri/parse/value_parser' value
+in {
 
 /* Forward
  ******************************************************************************/
-var pattern = \... -> pattern.apply(undefined, arguments);
+pattern = \... -> pattern.apply(undefined, arguments);
 
 /* Parsers
  ******************************************************************************/
-var identifier = parse.Parser('Identifier Pattern',
+identifier = Parser('Identifier Pattern',
     parse.bind(
         value.identifier,
         \x -> parse.always(ast_pattern.IdentifierPattern.create(x.loc, x))));
@@ -30,7 +31,7 @@ var identifier = parse.Parser('Identifier Pattern',
 /**
  * 
  */
-var ellipsis = parse.Parser('Ellipsis Pattern',
+ellipsis = Parser('Ellipsis Pattern',
     parse.bind(
         token.punctuator('...'),
         \x -> parse.always(ast_pattern.EllipsisPattern.create(x.loc))));
@@ -38,8 +39,8 @@ var ellipsis = parse.Parser('Ellipsis Pattern',
 /**
  * 
  */
-var arrayPattern = parse.Parser('Array Pattern',
-    ecma.nodea(
+arrayPattern = Parser('Array Pattern',
+    nodea(
         parse.enumeration(
             parse.optional(null, identifier),
             parse_lang.between(token.punctuator('['), token.punctuator(']'),
@@ -67,8 +68,8 @@ var objectKeyPattern = parse.either(
 /**
  * 
  */
-var objectPattern = parse.Parser('Object Pattern',
-    ecma.nodea(
+objectPattern = Parser('Object Pattern',
+    nodea(
         parse.enumeration(
             parse.optional(null, identifier),
             parse_lang.between(token.punctuator('{'), token.punctuator('}'),
@@ -78,10 +79,10 @@ var objectPattern = parse.Parser('Object Pattern',
 /**
  * Package Import
  */
-var importPattern = parse.Parser('Import Pattern',
+importPattern = Parser('Import Pattern',
     parse.next(
         token.keyword('import'),
-        ecma.nodea(
+        nodea(
             parse.enumeration(
                 value.stringLiteral,
                 parse.either(
@@ -91,24 +92,11 @@ var importPattern = parse.Parser('Import Pattern',
 
 /**
  */
-pattern = parse.Parser('Pattern',
+pattern = Parser('Pattern',
     parse.choice(
         ellipsis,
         parse.attempt(arrayPattern),
         parse.attempt(objectPattern),
         identifier));
 
-
-/* Export
- ******************************************************************************/
-return {
-    'pattern': pattern,
-    
-    'identifier': identifier,
-    'ellipsis': ellipsis,
-    'importPattern': importPattern,
-    'arrayPattern': arrayPattern,
-    'objectPattern': objectPattern
-};
-
-});
+}

@@ -9,7 +9,7 @@ with
     import 'khepri_ast/node' ast_node,
     import 'khepri_ast/pattern' ast_pattern,
     import 'khepri_ast/value' ast_value
-{
+in {
 
 var map = Function.prototype.call.bind(Array.prototype.map);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
@@ -452,7 +452,7 @@ var _check = function(node) {
                 next(
                     seq(node.body.bindings.map(_check)),
                     _check(node.body.body)) :
-                seq(map(node.body, _check)))]);
+                seq(map(node.body.body, _check)))]);
         
     case 'PackageExports':
         return seq(map(node.exports, _check));

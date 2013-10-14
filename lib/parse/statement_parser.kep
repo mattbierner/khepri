@@ -36,35 +36,13 @@ with
     import 'parse/lang' {between, sepBy1, then},
     import 'ecma/parse/token_parser' {keyword, punctuator},
     import 'ecma/parse/common' {node, nodea},
-    import 'khepri_ast/clause' {CatchClause, SwitchCase},
-    import 'khepri_ast/declaration' {
-        Binding,
-        StaticDeclarator,
-        StaticDeclaration,
-        VariableDeclarator,
-        VariableDeclaration},
-    import 'khepri_ast/statement' {
-        BlockStatement,
-        BreakStatement,
-        ContinueStatement,
-        DebuggerStatement,
-        DoWhileStatement,
-        EmptyStatement,
-        ExpressionStatement,
-        LabeledStatement,
-        ForStatement,
-        ForInStatement,
-        IfStatement,
-        ReturnStatement,
-        SwitchStatement,
-        ThrowStatement,
-        TryStatement,
-        WithStatement,
-        WhileStatement},
+    import 'khepri_ast/clause' ast_clause,
+    import 'khepri_ast/declaration' ast_declaration,
+    import 'khepri_ast/statement' ast_statement,
     import 'khepri/parse/expression_parser' {assignmentExpression, expression},
     import 'khepri/parse/pattern_parser' {importPattern, pattern},
     import 'khepri/parse/value_parser' {identifier}
-{
+in {
 
 /* Forward declarations
  ******************************************************************************/
@@ -89,13 +67,13 @@ blockStatement = Parser('Block Statement',
     node(
         between(punctuator('{'), punctuator('}'), 
             statementList),
-        BlockStatement.create));
+        ast_statement.BlockStatement.create));
 
 // Static Statement
 ////////////////////////////////////////
 var staticDeclaration = node(
     identifier,
-    StaticDeclarator.create);
+    ast_declaration.StaticDeclarator.create);
 
 var staticDeclarationList = eager(
     sepBy1(punctuator(','),
@@ -108,7 +86,7 @@ staticStatement = Parser('Static Statement',
      node(
         between(keyword('static'), logicalSemiColon,
             staticDeclarationList),
-        StaticDeclaration.create));
+        ast_declaration.StaticDeclaration.create));
 
 // Variable Statement
 ////////////////////////////////////////
@@ -120,7 +98,7 @@ var variableDeclaration = nodea(
     enumeration(
         identifier,
         optional(null, initialiser)),
-    VariableDeclarator.create);
+    ast_declaration.VariableDeclarator.create);
 
 var variableDeclarationList = eager(sepBy1(punctuator(','),
     variableDeclaration));
@@ -133,7 +111,7 @@ variableStatement = Parser('Variable Statement',
     node(
         between(keyword('var'), logicalSemiColon,
             variableDeclarationList),
-        VariableDeclaration.create));
+        ast_declaration.VariableDeclaration.create));
 
 
 // Empty Statement
@@ -144,7 +122,7 @@ variableStatement = Parser('Variable Statement',
 emptyStatement = Parser('Empty Statement',
     node(
         punctuator(';'),
-        EmptyStatement.create));
+        ast_statement.EmptyStatement.create));
 
 // Expression
 ////////////////////////////////////////
@@ -155,7 +133,7 @@ expressionStatement = Parser('Expression Statement',
         then(
             topLevelExpression,
             logicalSemiColon),
-        ExpressionStatement.create));
+        ast_statement.ExpressionStatement.create));
 
 // If
 ////////////////////////////////////////
@@ -172,7 +150,7 @@ ifStatement = Parser('If Statement',
                 statement,
                 optional(null, next(keyword('else'),
                     statement)))),
-        IfStatement.create));
+        ast_statement.IfStatement.create));
 
 // With
 ////////////////////////////////////////
@@ -189,7 +167,7 @@ var withBinding = parse.Parser('With Binding',
                     withIdentifier,
                     punctuator('=')),
                 expression),
-            Binding.create)));
+            ast_declaration.Binding.create)));
 
 /**
  * 
@@ -204,7 +182,7 @@ withStatement = Parser('With Statement',
                 next(
                     keyword('in'),
                     blockStatement))),
-        WithStatement.create));
+        ast_statement.WithStatement.create));
 
 // Iteration
 ////////////////////////////////////////
@@ -219,7 +197,7 @@ var whileStatement = Parser('While Statement',
                 between(punctuator('('), punctuator(')'),
                     topLevelExpression),
                 statement)),
-        WhileStatement.create));
+        ast_statement.WhileStatement.create));
 
 /**
  * 
@@ -235,7 +213,7 @@ var doWhileStatement = Parser('Do While Statement',
                 between(punctuator('('), punctuator(')'),
                     topLevelExpression),
                 punctuator(';'))),
-        DoWhileStatement.create));
+        ast_statement.DoWhileStatement.create));
 
 var forInitExpression =  optional(null, 
     either(
@@ -243,7 +221,7 @@ var forInitExpression =  optional(null,
             next(
                 keyword('var'),
                 memo(variableDeclarationList)),
-            VariableDeclaration.create),
+            ast_declaration.VariableDeclaration.create),
         topLevelExpression));
 
 var forTestExpression = optional(null, topLevelExpression);
@@ -273,7 +251,7 @@ var forStatement = Parser('For Statement',
                 next(
                     punctuator(')'),
                     statement))),
-        ForStatement.create));
+        ast_statement.ForStatement.create));
 
 iterationStatement = Parser('Iteration Statement',
     choice(
@@ -290,7 +268,7 @@ continueStatement = Parser('Continue Statement',
         next(
             keyword('continue'),
             logicalSemiColon),
-        ContinueStatement.create));
+        ast_statement.ContinueStatement.create));
 
 // Break
 ////////////////////////////////////////
@@ -301,7 +279,7 @@ breakStatement = Parser('Break Statement',
         next(
             keyword('break'),
             logicalSemiColon),
-        BreakStatement.create));
+        ast_statement.BreakStatement.create));
 
 // Return
 ////////////////////////////////////////
@@ -311,7 +289,7 @@ returnStatement = Parser('Return Statement',
     node(
         between(keyword('return'), logicalSemiColon,
             optional(null, topLevelExpression)),
-        ReturnStatement.create));
+        ast_statement.ReturnStatement.create));
 
 // Switch
 ////////////////////////////////////////
@@ -323,7 +301,7 @@ var caseClause = nodea(
                 topLevelExpression,
                 punctuator(':')),
             statementList)),
-    SwitchCase.create);
+    ast_clause.SwitchCase.create);
 
 var defaultClause = node(
     next(
@@ -331,7 +309,7 @@ var defaultClause = node(
         next(
             punctuator(':'),
             statementList)),
-    \(loc, consequent) -> SwitchCase.create(loc, null, consequent));
+    \loc, consequent -> ast_clause.SwitchCase.create(loc, null, consequent));
 
 var caseClauses = eager(many(caseClause));
 
@@ -356,7 +334,7 @@ switchStatement = Parser('Switch Statement',
                 between(punctuator('('), punctuator(')'),
                     topLevelExpression),
                 caseBlock)),
-        SwitchStatement.create));
+        ast_statement.SwitchStatement.create));
 
 // Throw
 ////////////////////////////////////////
@@ -367,7 +345,7 @@ throwStatement = Parser('Throw Statement',
     node(
         between(keyword('throw'), logicalSemiColon,
             topLevelExpression),
-        ThrowStatement.create));
+        ast_statement.ThrowStatement.create));
 
 // Try
 ////////////////////////////////////////
@@ -378,7 +356,7 @@ var catchBlock = nodea(
             between(punctuator('('), punctuator(')'),
                 identifier),
             blockStatement)),
-    CatchClause.create);
+    ast_clause.CatchClause.create);
 
 var finallyBlock = next(
     keyword('finally'),
@@ -395,7 +373,7 @@ tryStatement = Parser('Try Statement',
                 blockStatement,
                 optional(null, catchBlock),
                 optional(null, finallyBlock))),
-        TryStatement.create));
+        ast_statement.TryStatement.create));
 
 // Debugger
 ////////////////////////////////////////
@@ -407,7 +385,7 @@ debuggerStatement = Parser('Debugger Statement',
         next(
             keyword('debugger'),
             punctuator(';')),
-        DebuggerStatement.create));
+        ast_statement.DebuggerStatement.create));
 
 // statement
 ////////////////////////////////////////
