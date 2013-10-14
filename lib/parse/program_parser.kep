@@ -11,8 +11,8 @@ with
     import 'nu/stream' {'end': NIL},
     import 'ecma/parse/common' {node},
     import 'khepri_ast/program' ast_program,
-    import 'khepri/parse/statement_parser' statement,
-    import 'khepri/parse/package_parser' _
+    import 'khepri/parse/statement_parser' _0,
+    import 'khepri/parse/package_parser' _1
 in {
 
 /* Circular

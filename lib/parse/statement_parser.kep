@@ -58,76 +58,32 @@ var topLevelExpression = either(
     attempt(assignmentExpression),
     expression);
 
-// Block
+// Block Statement
 ////////////////////////////////////////
-/**
- * 
- */
 blockStatement = Parser('Block Statement',
     node(
         between(punctuator('{'), punctuator('}'), 
             statementList),
         ast_statement.BlockStatement.create));
 
-// Static Statement
-////////////////////////////////////////
-var staticDeclaration = node(
-    identifier,
-    ast_declaration.StaticDeclarator.create);
-
-var staticDeclarationList = eager(
-    sepBy1(punctuator(','),
-        staticDeclaration));
-
-/**
- * Parser for a static statement that declares one or more global variables.
- */
-staticStatement = Parser('Static Statement',
-     node(
-        between(keyword('static'), logicalSemiColon,
-            staticDeclarationList),
-        ast_declaration.StaticDeclaration.create));
-
-// Variable Statement
-////////////////////////////////////////
-var initialiser = next(
-    punctuator('='),
-    topLevelExpression);
-
-var variableDeclaration = nodea(
-    enumeration(
-        identifier,
-        optional(null, initialiser)),
-    ast_declaration.VariableDeclarator.create);
-
-var variableDeclarationList = eager(sepBy1(punctuator(','),
-    variableDeclaration));
-
-/**
- * Parser for a variable statement which declares one or more variables with
- * optional initializer values.
- */
-variableStatement = Parser('Variable Statement', 
-    node(
-        between(keyword('var'), logicalSemiColon,
-            variableDeclarationList),
-        ast_declaration.VariableDeclaration.create));
-
-
 // Empty Statement
 ////////////////////////////////////////
-/**
- * 
- */
 emptyStatement = Parser('Empty Statement',
     node(
         punctuator(';'),
         ast_statement.EmptyStatement.create));
 
-// Expression
+// Debugger Statement
 ////////////////////////////////////////
-/**
- */
+debuggerStatement = Parser('Debugger Statement',
+    node(
+        next(
+            keyword('debugger'),
+            punctuator(';')),
+        ast_statement.DebuggerStatement.create));
+
+// Expression Statement
+////////////////////////////////////////
 expressionStatement = Parser('Expression Statement',
     node(
         then(
@@ -135,11 +91,73 @@ expressionStatement = Parser('Expression Statement',
             logicalSemiColon),
         ast_statement.ExpressionStatement.create));
 
-// If
+// Static Declaration Statement
 ////////////////////////////////////////
-/**
- * 
- */
+staticStatement = Parser('Static Statement', let
+    staticDeclaration = node(
+        identifier,
+        ast_declaration.StaticDeclarator.create),
+        
+    staticDeclarationList = eager(
+        sepBy1(punctuator(','),
+            staticDeclaration))
+in
+    node(
+        between(keyword('static'), logicalSemiColon,
+            staticDeclarationList),
+        ast_declaration.StaticDeclaration.create));
+
+// Variable Declaration Statement
+////////////////////////////////////////
+var variableDeclarationList = let
+    initialiser = next(
+        punctuator('='),
+        topLevelExpression),
+
+    variableDeclaration = nodea(
+        enumeration(
+            identifier,
+            optional(null, initialiser)),
+        ast_declaration.VariableDeclarator.create)
+in
+    eager(
+        sepBy1(punctuator(','),
+            variableDeclaration));
+
+variableStatement = Parser('Variable Statement',
+    node(
+        between(keyword('var'), logicalSemiColon,
+            variableDeclarationList),
+        ast_declaration.VariableDeclaration.create));
+
+// With Statement
+////////////////////////////////////////
+withStatement = Parser('With Statement', let
+    withIdentifier = expected("Any pattern", pattern),
+
+    withBinding = either(
+        importPattern,
+        nodea(
+            enumeration(
+                then(
+                    withIdentifier,
+                    punctuator('=')),
+                expression),
+            ast_declaration.Binding.create))
+in
+    nodea(
+        next(
+            keyword('with'),
+            enumeration(
+                eager(sepBy1(punctuator(','),
+                    withBinding)),
+                next(
+                    keyword('in'),
+                    blockStatement))),
+        ast_statement.WithStatement.create));
+
+// If Statement
+////////////////////////////////////////
 ifStatement = Parser('If Statement',
     nodea(
         next(
@@ -152,43 +170,50 @@ ifStatement = Parser('If Statement',
                     statement)))),
         ast_statement.IfStatement.create));
 
-// With
+// Switch Statement
 ////////////////////////////////////////
-var withIdentifier = expected("Any pattern", pattern);
-
-/**
- */
-var withBinding = parse.Parser('With Binding',
-    either(
-        importPattern,
-        nodea(
+switchStatement = Parser('Switch Statement', let
+    caseClause = nodea(
+        next(
+            keyword('case'),
             enumeration(
                 then(
-                    withIdentifier,
-                    punctuator('=')),
-                expression),
-            ast_declaration.Binding.create)));
+                    topLevelExpression,
+                    punctuator(':')),
+                statementList)),
+        ast_clause.SwitchCase.create),
 
-/**
- * 
- */
-withStatement = Parser('With Statement',
+    defaultClause = node(
+        next(
+            keyword('default'),
+            next(
+                punctuator(':'),
+                statementList)),
+        \loc, consequent -> ast_clause.SwitchCase.create(loc, null, consequent)),
+
+    caseClauses = eager(many(caseClause)),
+
+    caseBlock = between(punctuator('{'), punctuator('}'),
+        binds(
+            enumeration(
+                optional([], caseClauses),
+                optional(null, defaultClause)),
+            \first, defaultClause ->
+                always(defaultClause ?
+                    first.concat([defaultClause]) :
+                    first)))
+in
     nodea(
         next(
-            keyword('with'),
+            keyword('switch'),
             enumeration(
-                eager(sepBy1(punctuator(','),
-                    withBinding)),
-                next(
-                    keyword('in'),
-                    blockStatement))),
-        ast_statement.WithStatement.create));
+                between(punctuator('('), punctuator(')'),
+                    topLevelExpression),
+                caseBlock)),
+        ast_statement.SwitchStatement.create));
 
-// Iteration
+// Iteration Statement
 ////////////////////////////////////////
-/**
- * 
- */
 var whileStatement = Parser('While Statement',
     nodea(
         next(
@@ -199,9 +224,6 @@ var whileStatement = Parser('While Statement',
                 statement)),
         ast_statement.WhileStatement.create));
 
-/**
- * 
- */
 var doWhileStatement = Parser('Do While Statement',
     nodea(
         next(
@@ -215,26 +237,23 @@ var doWhileStatement = Parser('Do While Statement',
                 punctuator(';'))),
         ast_statement.DoWhileStatement.create));
 
-var forInitExpression =  optional(null, 
-    either(
-        node(
-            next(
-                keyword('var'),
-                memo(variableDeclarationList)),
-            ast_declaration.VariableDeclaration.create),
-        topLevelExpression));
-
-var forTestExpression = optional(null, topLevelExpression);
-
-var forUpdateExpression = optional(null,
-    either(
-        attempt(assignmentExpression),
-        topLevelExpression));
-
-/**
- * 
- */
-var forStatement = Parser('For Statement',
+var forStatement = Parser('For Statement', let
+    forInitExpression = optional(null, 
+        either(
+            node(
+                next(
+                    keyword('var'),
+                    memo(variableDeclarationList)),
+                ast_declaration.VariableDeclaration.create),
+            topLevelExpression)),
+    
+    forTestExpression = optional(null, topLevelExpression),
+    
+    forUpdateExpression = optional(null,
+        either(
+            attempt(assignmentExpression),
+            topLevelExpression))
+in
     nodea(
         next(
             keyword('for'),
@@ -259,10 +278,8 @@ iterationStatement = Parser('Iteration Statement',
         whileStatement,
         forStatement));
 
-// Continue
+// Continue Statement
 ////////////////////////////////////////
-/**
- */
 continueStatement = Parser('Continue Statement',
     node(
         next(
@@ -270,10 +287,8 @@ continueStatement = Parser('Continue Statement',
             logicalSemiColon),
         ast_statement.ContinueStatement.create));
 
-// Break
+// Break Statement
 ////////////////////////////////////////
-/**
- */
 breakStatement = Parser('Break Statement',
     node(
         next(
@@ -281,91 +296,38 @@ breakStatement = Parser('Break Statement',
             logicalSemiColon),
         ast_statement.BreakStatement.create));
 
-// Return
+// Return Statement
 ////////////////////////////////////////
-/**
- */
 returnStatement = Parser('Return Statement',
     node(
         between(keyword('return'), logicalSemiColon,
             optional(null, topLevelExpression)),
         ast_statement.ReturnStatement.create));
 
-// Switch
+// Throw Statement
 ////////////////////////////////////////
-var caseClause = nodea(
-    next(
-        keyword('case'),
-        enumeration(
-            then(
-                topLevelExpression,
-                punctuator(':')),
-            statementList)),
-    ast_clause.SwitchCase.create);
-
-var defaultClause = node(
-    next(
-        keyword('default'),
-        next(
-            punctuator(':'),
-            statementList)),
-    \loc, consequent -> ast_clause.SwitchCase.create(loc, null, consequent));
-
-var caseClauses = eager(many(caseClause));
-
-var caseBlock = between(punctuator('{'), punctuator('}'),
-    binds(
-        enumeration(
-            optional([], caseClauses),
-            optional(null, defaultClause)),
-        \first, defaultClause ->
-            always(defaultClause ?
-                first.concat([defaultClause]) :
-                first)));
-
-/**
- * 
- */
-switchStatement = Parser('Switch Statement',
-    nodea(
-        next(
-            keyword('switch'),
-            enumeration(
-                between(punctuator('('), punctuator(')'),
-                    topLevelExpression),
-                caseBlock)),
-        ast_statement.SwitchStatement.create));
-
-// Throw
-////////////////////////////////////////
-/**
- * 
- */
 throwStatement = Parser('Throw Statement',
     node(
         between(keyword('throw'), logicalSemiColon,
             topLevelExpression),
         ast_statement.ThrowStatement.create));
 
-// Try
+// Try Statement
 ////////////////////////////////////////
-var catchBlock = nodea(
-    next(
-        keyword('catch'),
-        enumeration(
-            between(punctuator('('), punctuator(')'),
-                identifier),
-            blockStatement)),
-    ast_clause.CatchClause.create);
+tryStatement = Parser('Try Statement', let
+    catchBlock = nodea(
+        next(
+            keyword('catch'),
+            enumeration(
+                between(punctuator('('), punctuator(')'),
+                    identifier),
+                blockStatement)),
+        ast_clause.CatchClause.create),
 
-var finallyBlock = next(
-    keyword('finally'),
-    blockStatement);
-
-/**
- * 
- */
-tryStatement = Parser('Try Statement',
+    finallyBlock = next(
+        keyword('finally'),
+        blockStatement)
+in
     nodea(
         next(
             keyword('try'),
@@ -375,23 +337,9 @@ tryStatement = Parser('Try Statement',
                 optional(null, finallyBlock))),
         ast_statement.TryStatement.create));
 
-// Debugger
-////////////////////////////////////////
-/**
- * Parser for a debugger statement.
- */
-debuggerStatement = Parser('Debugger Statement',
-    node(
-        next(
-            keyword('debugger'),
-            punctuator(';')),
-        ast_statement.DebuggerStatement.create));
 
-// statement
+// Statement
 ////////////////////////////////////////
-/**
- * 
- */
 statement = Parser('Statement',
     expected("statement", choice(
         blockStatement,

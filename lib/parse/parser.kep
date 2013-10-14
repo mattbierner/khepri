@@ -8,7 +8,7 @@ package (
 with
     import 'parse/parse' parse,
     import 'nu/stream' {first, filter, isEmpty, rest, 'from': streamFrom},
-    import 'ecma/position' position,
+    import 'ecma/position' {SourceLocation, SourcePosition},
     import 'ecma/parse/parser' parser,
     import 'khepri/parse/program_parser' {program}
 in {
@@ -57,7 +57,7 @@ ParserState.prototype.next = \tok -> {
 Object.defineProperty(ParserState.prototype, 'loc', {
     'get': \() ->
         (isEmpty(this.input) ?
-            new position.SourceLocation(this._prevEnd, this._prevEnd) :
+            new SourceLocation(this._prevEnd, this._prevEnd) :
             first(this.input).loc)
 });
 
@@ -79,8 +79,8 @@ parseStream = \s ->
             parserStream(s),
             new parser.ParserPosition(
                 parse.Position.initial,
-                position.SourcePosition.initial),
-            position.SourcePosition.initial));
+                SourcePosition.initial),
+            SourcePosition.initial));
 
 /**
  * Parses a lex array into an AST.

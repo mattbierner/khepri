@@ -1,57 +1,123 @@
 /**
  * @fileOverview Khepri expression parsers.
  */
-static define;
-define(['require',
-        'parse/parse',
-        'parse/lang',
-        'nu/stream', 
-        'ecma/position',
-        'ecma/parse/common',
-        'ecma/parse/token_parser',
-        'khepri_ast/declaration',
-        'khepri_ast/expression',
-        'khepri_ast/statement',
-        'khepri_ast/pattern',
-        'khepri/parse/program_parser',
-        'khepri/parse/value_parser',
-        'khepri/parse/pattern_parser'],
-function(require,
-        parse,
-        parse_lang,
-        stream,
-        position,
-        ecma_parse,
-        token,
-        ast_declaration,
-        ast_expression,
-        ast_statement,
-        ast_pattern,
-        program,
-        value,
-        pattern){
-"use strict";
+package (
+// Array Literal
+    arrayElement,
+    arrayElements,
+    arrayLiteral,
+    
+// Object Literal
+    propertyName,
+    propertySetParameterList,
+    propertyValueInitializer,
+    propertyGetInitializer,
+    propertySetInitializer,
+    propertyInitializer,
+    objectProperties,
+    objectLiteral,
+    
+// Primary Expression
+    primaryExpression,
+    
+// This Expression
+    thisExpression,
+    
+// Call Expression
+    args,
+    argumentList,
+    
+// Member Expression
+    dotAccessor,
+    bracketAccessor,
+    accessor,
+    memberExpression,
+    
+// New Expression
+    newExpression,
+    
+// Left hand side expression
+    leftHandSideExpression,
+    leftHandReferenceExpression,
+    
+// Unary Expression
+    unaryOperator,
+    unaryExpression,
+    
+// Binary Expression
+    binaryExpression,
+    
+// Conditional Expression
+    conditionalExpression,
+
+// Let Expression
+    letExpression,
+
+// Assignment
+    assignmentOperator,
+    assignmentExpression,
+    
+// Expression
+    expression)
+with
+    import 'parse/parse' {
+        always,
+        attempt,
+        bind,
+        binds,
+        choice,
+        eager,
+        either,
+        enumeration,
+        expected,
+        lookahead,
+        many,
+        memo,
+        next,
+        optional,
+        Parser},
+    import'parse/lang' {
+        between,
+        sepBy,
+        sepBy1,
+        then},
+    import 'nu/stream' {foldl, foldr},
+    import 'ecma/position' {SourceLocation},
+    import 'ecma/parse/common' {node, nodea, precedence},
+    import 'ecma/parse/token_parser' {keyword, punctuator},
+    import 'khepri_ast/declaration' ast_declaration,
+    import 'khepri_ast/expression' ast_expression,
+    import 'khepri_ast/statement' ast_statement,
+    import 'khepri_ast/pattern' ast_pattern,
+    import 'khepri/parse/program_parser' _,
+    import 'khepri/parse/value_parser' {identifier, literal, stringLiteral},
+    import 'khepri/parse/pattern_parser' pattern
+in {
 
 /* Circular Declarations 
  ******************************************************************************/
-var sourceElements = function() {
-    return require('khepri/parse/program_parser').sourceElements.apply(undefined, arguments);
+var sourceElements = \... -> {
+    with
+        import 'khepri/parse/program_parser' {sourceElements}
+    in {
+        return sourceElements.apply(undefined, arguments);
+    }
 };
 
 /* Forward Declarations
  ******************************************************************************/
-var expression = function() { return expression.apply(undefined, arguments); };
+expression = \... -> expression.apply(undefined, arguments);
 
-var conditionalExpression = function() { return conditionalExpression.apply(undefined, arguments); };
+conditionalExpression = \... -> conditionalExpression.apply(undefined, arguments);
 
-var newExpression = function() { return newExpression.apply(undefined, arguments); };
+newExpression = \... -> newExpression.apply(undefined, arguments);
 
 /* Parsers
  ******************************************************************************/
 /**
  * Parser for the body of a function.
  */
-var functionBody = ecma_parse.node(
+var functionBody = node(
     sourceElements,
     ast_statement.BlockStatement.create);
 
@@ -60,26 +126,23 @@ var functionBody = ecma_parse.node(
 /**
  * Parser for an element in an array literal.
  */
-var arrayElement = parse.Parser('Array Element',
-    parse.either(
-        expression,
-        parse.next(
-            parse.lookahead(token.punctuator(',')),
-            parse.always(null))));
+arrayElement = Parser('Array Element',
+    expression);
+
 
 /**
  * Parser for the elements of an array literal.
  */
-var arrayElements = parse.Parser('Array Elements',
-    parse.eager(parse_lang.sepBy(token.punctuator(','),
-        parse.expected('array element', arrayElement))));
+arrayElements = Parser('Array Elements',
+    eager(sepBy(punctuator(','),
+        expected('array element', arrayElement))));
 
 /**
  * Parser for an ECMASccript array literal.
  */
-var arrayLiteral = parse.Parser('Array Literal',
-    ecma_parse.node(
-        parse_lang.between(token.punctuator('['), token.punctuator(']'),
+arrayLiteral = Parser('Array Literal',
+    node(
+        between(punctuator('['), punctuator(']'),
             arrayElements),
         ast_expression.ArrayExpression.create));
 
@@ -88,25 +151,25 @@ var arrayLiteral = parse.Parser('Array Literal',
 /**
  * Parser for an object property name.
  */
-var propertyName = parse.Parser('Property Name',
-    value.stringLiteral);
+propertyName = Parser('Property Name',
+    stringLiteral);
 
 /**
  * Parser for the argument list of a object set initializer property.
  */
-var propertySetParameterList = parse.bind(value.identifier, \x ->
-    parse.always([x]));
+propertySetParameterList = bind(identifier, \x ->
+    always([x]));
 
 /**
  * Parser for the standard key to value property initializer.
  */
-var propertyValueInitializer = parse.Parser('Property Value Initializer',
-    ecma_parse.nodea(
-        parse.enumeration(
+propertyValueInitializer = Parser('Property Value Initializer',
+    nodea(
+        enumeration(
             propertyName,
-            token.punctuator(':'),
+            punctuator(':'),
             expression),
-        \(loc, name, _, value) -> ({
+        \loc, name, _, value -> ({
             'loc': loc,
             'key': name,
             'kind': 'init',
@@ -116,17 +179,17 @@ var propertyValueInitializer = parse.Parser('Property Value Initializer',
 /**
  * Parser for a getter for a property.
  */
-var propertyGetInitializer = parse.Parser('Property Get Initializer',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('get'),
-            parse.enumeration(
+propertyGetInitializer = Parser('Property Get Initializer',
+    nodea(
+        next(
+            keyword('get'),
+            enumeration(
                 propertyName,
-                token.punctuator('('),
-                token.punctuator(')'),
-                parse_lang.between(token.punctuator('{'), token.punctuator('}'),
+                punctuator('('),
+                punctuator(')'),
+                between(punctuator('{'), punctuator('}'),
                     functionBody))),
-        \(loc, name, _0, _1, body) -> ({
+        \loc, name, _0, _1, body -> ({
             'loc': loc,
             'key': name,
             'kind': 'get',
@@ -136,17 +199,17 @@ var propertyGetInitializer = parse.Parser('Property Get Initializer',
 /**
  * Parser for a setter for a property.
  */
-var propertySetInitializer = parse.Parser('Property Set Initializer',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('set'),
-            parse.enumeration(
+propertySetInitializer = Parser('Property Set Initializer',
+    nodea(
+        next(
+            keyword('set'),
+            enumeration(
                 propertyName,
-                parse_lang.between(token.punctuator('('), token.punctuator(')'),
+                between(punctuator('('), punctuator(')'),
                     propertySetParameterList),
-                parse_lang.between(token.punctuator('{'), token.punctuator('}'),
+                between(punctuator('{'), punctuator('}'),
                     functionBody))),
-        \(loc, name, parameters, body) -> ({
+        \loc, name, parameters, body -> ({
                 'loc': loc,
                 'key': name,
                 'kind': 'set',
@@ -156,73 +219,73 @@ var propertySetInitializer = parse.Parser('Property Set Initializer',
 /**
  * Parser for any property initializer.
  */
-var propertyInitializer = parse.Parser('Property Initializer',
-    parse.choice(
-        parse.attempt(propertyValueInitializer),
+propertyInitializer = Parser('Property Initializer',
+    choice(
+        attempt(propertyValueInitializer),
         propertyGetInitializer,
         propertySetInitializer));
 
 /**
  * Parser for a set or more properties in an object literal.
  */
-var objectProperties = parse.Parser('Object Properties',
-    parse.eager(
-        parse_lang.sepBy(token.punctuator(','),
+objectProperties = Parser('Object Properties',
+    eager(
+        sepBy(punctuator(','),
             propertyInitializer)));
 
 /**
  * Parser for an ECMAScript object literal.
  */
-var objectLiteral = parse.Parser('Object Literal',
-    ecma_parse.node(
-        parse_lang.between(token.punctuator('{'), token.punctuator('}'),
+objectLiteral = Parser('Object Literal',
+    node(
+        between(punctuator('{'), punctuator('}'),
             objectProperties),
         ast_expression.ObjectExpression.create));
 
 // Function Expression
 ////////////////////////////////////////
-var parameter = parse.expected("Any pattern", pattern.pattern);
+var parameter = expected("Any pattern", pattern.pattern);
 
 /**
  * Parser for a function's parameters.
  */
-var formalParameterList = ecma_parse.node(
-    parse.eager(parse_lang.sepBy(token.punctuator(','),
+var formalParameterList = node(
+    eager(sepBy(punctuator(','),
         parameter)),
     ast_pattern.ParameterList.create);
 
-var ecmaFunctionExpression = ecma_parse.nodea(
-    parse.next(
-        token.keyword('function'),
-        parse.enumeration(
-            parse.optional(null, value.identifier),
-            parse_lang.between(token.punctuator('('), token.punctuator(')'), 
+var ecmaFunctionExpression = nodea(
+    next(
+        keyword('function'),
+        enumeration(
+            optional(null, identifier),
+            between(punctuator('('), punctuator(')'), 
                 formalParameterList),
-            parse_lang.between(token.punctuator('{'), token.punctuator('}'),
+            between(punctuator('{'), punctuator('}'),
                 functionBody))),
     ast_expression.FunctionExpression.create);
 
-var lambdaFormalParameterList = parse.either(
-    parse_lang.between(token.punctuator('('), token.punctuator(')'), 
+var lambdaFormalParameterList = either(
+    between(punctuator('('), punctuator(')'), 
         formalParameterList),
     formalParameterList);
 
-var lambdaBody = parse.either(
-    parse_lang.between(token.punctuator('{'), token.punctuator('}'),
+var lambdaBody = either(
+    between(punctuator('{'), punctuator('}'),
         functionBody),
-    ecma_parse.node(
+    node(
         expression,
-        \(loc, x) ->
-            new ast_statement.BlockStatement(loc, [new ast_statement.ReturnStatement(loc, x)])));
+        \loc, x ->
+            ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(loc, x)])));
 
-var lambdaFunctionExpression = ecma_parse.nodea(
-    parse.next(
-        token.punctuator('\\'),
-        parse.enumeration(
+var lambdaFunctionExpression = nodea(
+    next(
+        punctuator('\\'),
+        enumeration(
             lambdaFormalParameterList,
-            token.punctuator('->'),
+            punctuator('->'),
             lambdaBody)),
-    \(loc, parameters, _, body) ->
+    \loc, parameters, _, body ->
         ast_expression.FunctionExpression.create(loc, null, parameters, body));
 
 /**
@@ -230,58 +293,58 @@ var lambdaFunctionExpression = ecma_parse.nodea(
  * 
  * May be named or anon.
  */
-var functionExpression = parse.Parser('Function Expression',
-    parse.either(
+var functionExpression = Parser('Function Expression',
+    either(
         ecmaFunctionExpression,
         lambdaFunctionExpression));
 
 // This Expression
 ////////////////////////////////////////
-var thisExpression = ecma_parse.node(
-    token.keyword('this'),
+var thisExpression = node(
+    keyword('this'),
     ast_expression.ThisExpression.create);
 
 // Let Expression
 ////////////////////////////////////////
-var letIdentifier = parse.expected("Any pattern", pattern.pattern);
+var letIdentifier = expected("Any pattern", pattern.pattern);
 
 /**
  * Parser for a let binding.
  */
-var letBinding =  parse.Parser('Let Binding',
-    ecma_parse.nodea(
-        parse.enumeration(
-            parse_lang.then(
+var letBinding =  Parser('Let Binding',
+    nodea(
+        enumeration(
+            then(
                 letIdentifier,
-                token.punctuator('=')),
+                punctuator('=')),
             conditionalExpression),
        ast_declaration.Binding.create));
 
 /**
  * Parser for a let expression.
  */
-var letExpression = parse.Parser('Let Expression',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('let'),
-            parse.enumeration(
-                parse.eager(parse_lang.sepBy1(token.punctuator(','),
+var letExpression = Parser('Let Expression',
+    nodea(
+        next(
+            keyword('let'),
+            enumeration(
+                eager(sepBy1(punctuator(','),
                     letBinding)),
-                parse.next(
-                    token.keyword('in'),
+                next(
+                    keyword('in'),
                     conditionalExpression))),
         ast_expression.LetExpression.create));
 
 // Primary Expression
 ////////////////////////////////////////
-var primaryExpression = parse.Parser('Primary Expression',
-    parse.choice(
+primaryExpression = Parser('Primary Expression',
+    choice(
         thisExpression,
         letExpression,
-        value.identifier,
-        parse_lang.between(token.punctuator('('), token.punctuator(')'),
+        identifier,
+        between(punctuator('('), punctuator(')'),
             expression),
-        value.literal,
+        literal,
         arrayLiteral,
         objectLiteral,
         functionExpression));
@@ -291,18 +354,18 @@ var primaryExpression = parse.Parser('Primary Expression',
 /**
  * Parser for a list of arguments.
  */
-var argumentList = parse.Parser('Argument List',
-    parse.eager(parse_lang.sepBy(token.punctuator(','),
-        parse.expected("expression", expression))));
+var argumentList = Parser('Argument List',
+    eager(sepBy(punctuator(','),
+        expected("expression", expression))));
 
 /**
  * Parser for a argument list part of a call expression.
  */
-var args = parse.Parser('Arguments',
-    ecma_parse.node(
-        parse_lang.between(token.punctuator('('), token.punctuator(')'),
+args = Parser('Arguments',
+    node(
+        between(punctuator('('), punctuator(')'),
             argumentList),
-        \(loc, args) -> {
+        \loc, args -> {
             args.loc = loc;
             args.argument = true;
             return args;
@@ -313,12 +376,12 @@ var args = parse.Parser('Arguments',
 /**
  * Parser for a dot accessor in a member expression.
  */
-var dotAccessor = parse.Parser('Dot Accessor',
-    ecma_parse.node(
-        parse.next(
-            token.punctuator('.'),
-            value.identifier),
-        \(loc, x) -> [{
+dotAccessor = Parser('Dot Accessor',
+    node(
+        next(
+            punctuator('.'),
+            identifier),
+        \loc, x -> [{
             'loc': loc,
             'property': x,
             'computed': false
@@ -327,12 +390,12 @@ var dotAccessor = parse.Parser('Dot Accessor',
 /**
  * Parser for a bracket accessor in a member expression.
  */
-var bracketAccessor = parse.Parser('Bracket Accessor',
-    parse.bind(
-        parse_lang.between(token.punctuator('['), token.punctuator(']'),
-            parse.eager(parse_lang.sepBy1(token.punctuator(','),
+bracketAccessor = Parser('Bracket Accessor',
+    bind(
+        between(punctuator('['), punctuator(']'),
+            eager(sepBy1(punctuator(','),
                 expression))),
-        \accessor -> parse.always(accessor.map(\x -> ({
+        \accessor -> always(accessor.map(\x -> ({
             'loc': x.loc,
             'property': x,
             'computed': true
@@ -341,14 +404,14 @@ var bracketAccessor = parse.Parser('Bracket Accessor',
 /**
  * Parser for an accessor in a member expression.
  */
-var accessor = parse.Parser('Accessor',
-    parse.either(
+accessor = Parser('Accessor',
+    either(
         dotAccessor,
         bracketAccessor));
 
 var accessorReducer = \p, c -> 
     ast_expression.MemberExpression.create(
-        position.SourceLocation.merge(p.loc, c.loc),
+        SourceLocation.merge(p.loc, c.loc),
         p,
         c.property,
         c.computed);
@@ -357,30 +420,30 @@ var accessorReducer = \p, c ->
  * 
  */
 var memberExpression = let
-    reducer = \(p, c) -> c.reduce(accessorReducer, p)
+    reducer = \p, c -> c.reduce(accessorReducer, p)
 in
-    parse.Parser('Member Expression',
-        parse.binds(
-            parse.enumeration(
-                parse.either(
+    Parser('Member Expression',
+        binds(
+            enumeration(
+                either(
                     newExpression,
                     primaryExpression),
-                parse.many(accessor)),
-            \(expression, props) ->
-                 parse.always(stream.foldl(reducer, expression, props))));
+                many(accessor)),
+            \expression, props ->
+                 always(foldl(reducer, expression, props))));
 
 // New Expression
 ////////////////////////////////////////
 /**
  * Parser for a new expression
  */
-newExpression = parse.Parser('New Expression',
-    ecma_parse.nodea(
-        parse.next(
-            token.keyword('new'),
-            parse.enumeration(
-                parse.expected("member expression", memberExpression),
-                parse.optional([], args))),
+newExpression = Parser('New Expression',
+    nodea(
+        next(
+            keyword('new'),
+            enumeration(
+                expected("member expression", memberExpression),
+                optional([], args))),
         ast_expression.NewExpression.create));
 
 // Left Hand Side Expression
@@ -388,107 +451,106 @@ newExpression = parse.Parser('New Expression',
 /**
  * Parser for a left hand side expression.
  */
-var leftHandSideExpression = let
-reducer = \p, c ->
-    (c && c.hasOwnProperty('argument') ?
-         ast_expression.CallExpression.create(position.SourceLocation.merge(p.loc, c.loc), p, c) :
-         c.reduce(accessorReducer, p))
+leftHandSideExpression = let
+    reducer = \p, c ->
+        (c && c.hasOwnProperty('argument') ?
+             ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c) :
+             c.reduce(accessorReducer, p))
 in
-    parse.Parser('Left Hand Side Expression',
-        parse.binds(
-            parse.enumeration(
-                parse.memo(memberExpression),
-                parse.many(parse.either(
+    Parser('Left Hand Side Expression',
+        binds(
+            enumeration(
+                memo(memberExpression),
+                many(either(
                     args,
                     accessor))),
-            \(member, accessors) ->
-                parse.always(stream.foldl(reducer, member, accessors))));
+            \member, accessors ->
+                always(foldl(reducer, member, accessors))));
 
 // Left Hand Side Expression
 ////////////////////////////////////////
 /**
  * Parser for a left hand side expression.
  */
-var leftHandReferenceExpression =
-    let reducer = \(p, c) -> c.reduce(accessorReducer, p) in
-        parse.Parser('Left Hand Reference Expression',
-            parse.binds(
-                parse.enumeration(
-                    parse.choice(
-                        thisExpression,
-                        value.identifier),
-                    parse.many(accessor)),
-                \(expression, props) ->
-                     parse.always(stream.foldl(reducer, expression, props))));
+leftHandReferenceExpression = let
+    reducer = \p, c -> c.reduce(accessorReducer, p)
+in
+    Parser('Left Hand Reference Expression',
+        binds(
+            enumeration(
+                choice(thisExpression, identifier),
+                many(accessor)),
+            \expression, props ->
+                 always(foldl(reducer, expression, props))));
 
 // Unary Expression
 ////////////////////////////////////////
-var unaryOperator = parse.Parser('Unary Operator',
-    parse.choice(
-        token.keyword('delete'),
-        token.keyword('void'),
-        token.keyword('typeof'),
-        token.punctuator('+'),
-        token.punctuator('-'),
-        token.punctuator('~'),
-        token.punctuator('!')));
+unaryOperator = Parser('Unary Operator',
+    choice(
+        keyword('delete'),
+        keyword('void'),
+        keyword('typeof'),
+        punctuator('+'),
+        punctuator('-'),
+        punctuator('~'),
+        punctuator('!')));
 
 /**
  * 
  */
-var unaryExpression = let
-reducer = \argument, op -> 
-    ast_expression.UnaryExpression.create(
-        position.SourceLocation.merge(op.loc, argument.loc),
-        op.value,
-        argument)
+unaryExpression = let
+    reducer = \argument, op -> 
+        ast_expression.UnaryExpression.create(
+            SourceLocation.merge(op.loc, argument.loc),
+            op.value,
+            argument)
 in
-    parse.Parser('Unary Expression',
-        parse.binds(
-            parse.enumeration(
-                parse.many(unaryOperator),
-                parse.expected('left hand side expression', leftHandSideExpression)),
-            \(ops, expression) ->
-                parse.always(stream.foldr(reducer, expression, ops))));
+    Parser('Unary Expression',
+        binds(
+            enumeration(
+                many(unaryOperator),
+                expected('left hand side expression', leftHandSideExpression)),
+            \ops, expression ->
+                always(foldr(reducer, expression, ops))));
 
 // Binary Expressions
 ////////////////////////////////////////
-var multiplicativeOperator = parse.choice(
-    token.punctuator('*'),
-    token.punctuator('/'),
-    token.punctuator('%'));
+var multiplicativeOperator = choice(
+    punctuator('*'),
+    punctuator('/'),
+    punctuator('%'));
 
-var additiveOperator = parse.either(
-    token.punctuator('+'),
-    token.punctuator('-'));
+var additiveOperator = either(
+    punctuator('+'),
+    punctuator('-'));
 
-var shiftOperator = parse.choice(
-    token.punctuator('<<'),
-    token.punctuator('>>'),
-    token.punctuator('>>>'));
+var shiftOperator = choice(
+    punctuator('<<'),
+    punctuator('>>'),
+    punctuator('>>>'));
 
-var relationalOperator = parse.choice(
-    token.punctuator('<'),
-    token.punctuator('>'),
-    token.punctuator('<='),
-    token.punctuator('>='),
-    token.keyword('instanceof'));
+var relationalOperator = choice(
+    punctuator('<'),
+    punctuator('>'),
+    punctuator('<='),
+    punctuator('>='),
+    keyword('instanceof'));
 
-var equalityOperator = parse.choice(
-    token.punctuator('=='),
-    token.punctuator('!='),
-    token.punctuator('==='),
-    token.punctuator('!=='));
+var equalityOperator = choice(
+    punctuator('=='),
+    punctuator('!='),
+    punctuator('==='),
+    punctuator('!=='));
 
-var bitwiseANDOperator = token.punctuator('&');
+var bitwiseANDOperator = punctuator('&');
 
-var bitwiseXOROperator = token.punctuator('^');
+var bitwiseXOROperator = punctuator('^');
 
-var bitwiseOROperator = token.punctuator('|');
+var bitwiseOROperator = punctuator('|');
 
-var logicalANDOperator = token.punctuator('&&');
+var logicalANDOperator = punctuator('&&');
 
-var logicalOROperator = token.punctuator('||');
+var logicalOROperator = punctuator('||');
 
 var precedenceTable = [
     {
@@ -543,8 +605,8 @@ var precedenceTable = [
     }
 ];
 
-var binaryExpression = parse.Parser('Binary Expression',
-    ecma_parse.precedence(unaryExpression, precedenceTable));
+var binaryExpression = Parser('Binary Expression',
+    precedence(unaryExpression, precedenceTable));
 
 // Conditional Expression
 ////////////////////////////////////////
@@ -552,112 +614,52 @@ var binaryExpression = parse.Parser('Binary Expression',
  * 
  */
 conditionalExpression = let
-    conditionalBody = parse.next(
-        token.punctuator('?'),
-        parse.enumeration(
-            parse.expected("expression", expression),
-            token.punctuator(':'),
-            parse.expected("expression", expression)))
+    conditionalBody = next(
+        punctuator('?'),
+        enumeration(
+            expected("expression", expression),
+            punctuator(':'),
+            expected("expression", expression)))
 in
-    parse.bind(binaryExpression, \bin -> 
-        parse.optional(bin,
-            ecma_parse.nodea(
+    bind(binaryExpression, \bin -> 
+        optional(bin,
+            nodea(
                 conditionalBody,
                 \loc, consequent, _1, alternate ->
                     ast_expression.ConditionalExpression.create(loc, bin, consequent, alternate))));
 
 // Assignment Statement
 ////////////////////////////////////////
-var assignmentOperator = parse.Parser('Assignment Operator',
-    parse.choice(
-        token.punctuator('='),
-        token.punctuator('*='),
-        token.punctuator('*='),
-        token.punctuator('/='),
-        token.punctuator('%='),
-        token.punctuator('+='),
-        token.punctuator('-='),
-        token.punctuator('<<='),
-        token.punctuator('>>='),
-        token.punctuator('>>>='),
-        token.punctuator('&='),
-        token.punctuator('^='),
-        token.punctuator('|=')));
+assignmentOperator = Parser('Assignment Operator',
+    choice(
+        punctuator('='),
+        punctuator('*='),
+        punctuator('*='),
+        punctuator('/='),
+        punctuator('%='),
+        punctuator('+='),
+        punctuator('-='),
+        punctuator('<<='),
+        punctuator('>>='),
+        punctuator('>>>='),
+        punctuator('&='),
+        punctuator('^='),
+        punctuator('|=')));
 
 /**
  * 
  */
-var assignmentExpression = parse.Parser('Assignment Expression',
-    ecma_parse.nodea(
-        parse.enumeration(
+assignmentExpression = Parser('Assignment Expression',
+    nodea(
+        enumeration(
             leftHandReferenceExpression,
             assignmentOperator,
-            parse.expected('expression', expression)),
+            expected('expression', expression)),
         \loc, left, op, right ->
-            new ast_expression.AssignmentExpression(loc, op.value, left, right)));
+            ast_expression.AssignmentExpression.create(loc, op.value, left, right)));
 
 // Expression
 ////////////////////////////////////////
 expression = conditionalExpression;
 
-/* Export
- ******************************************************************************/
-return {
-// Array Literal
-    'arrayElement': arrayElement,
-    'arrayElements': arrayElements,
-    'arrayLiteral': arrayLiteral,
-    
-// Object Literal
-    'propertyName': propertyName,
-    'propertySetParameterList': propertySetParameterList,
-    'propertyValueInitializer': propertyValueInitializer,
-    'propertyGetInitializer': propertyGetInitializer,
-    'propertySetInitializer': propertySetInitializer,
-    'propertyInitializer': propertyInitializer,
-    'objectProperties': objectProperties,
-    'objectLiteral': objectLiteral,
-    
-// Primary Expression
-    'primaryExpression': primaryExpression,
-    
-// This Expression
-    'thisExpression': thisExpression,
-    
-// Call Expression
-    'args': args,
-    'argumentList': argumentList,
-    
-// Member Expression
-    'dotAccessor': dotAccessor,
-    'bracketAccessor': bracketAccessor,
-    'accessor': accessor,
-    'memberExpression': memberExpression,
-    
-// New Expression
-    'newExpression': newExpression,
-    
-// Left hand side expression
-    'leftHandSideExpression': leftHandSideExpression,
-    'leftHandReferenceExpression': leftHandReferenceExpression,
-// Unary Expression
-    'unaryOperator': unaryOperator,
-    'unaryExpression': unaryExpression,
-    
-// Binary Expression
-    'binaryExpression': binaryExpression,
-    
-// Conditional Expression
-    'conditionalExpression': conditionalExpression,
-
-// Let Expression
-    'letExpression': letExpression,
-
-// Assignment
-    'assignmentExpression': assignmentExpression,
-    
-// Expression
-    'expression': expression
-};
-
-});
+}

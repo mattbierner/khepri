@@ -9,10 +9,10 @@ package (
     arrayPattern,
     objectPattern)
 with
-    import 'parse/parse' parse {Parser},
-    import 'parse/lang' parse_lang,
+    import 'parse/parse' {always, attempt, bind, binds, choice, eager, either, enumeration, next, optional, Parser},
+    import 'parse/lang' {between, sepBy1},
     import 'ecma/parse/common' {node, nodea},
-    import 'ecma/parse/token_parser' token,
+    import 'ecma/parse/token_parser' {keyword, punctuator},
     import 'khepri_ast/pattern' ast_pattern,
     import  'khepri/parse/value_parser' value
 in {
@@ -24,43 +24,43 @@ pattern = \... -> pattern.apply(undefined, arguments);
 /* Parsers
  ******************************************************************************/
 identifier = Parser('Identifier Pattern',
-    parse.bind(
+    bind(
         value.identifier,
-        \x -> parse.always(ast_pattern.IdentifierPattern.create(x.loc, x))));
+        \x -> always(ast_pattern.IdentifierPattern.create(x.loc, x))));
 
 /**
  * 
  */
 ellipsis = Parser('Ellipsis Pattern',
-    parse.bind(
-        token.punctuator('...'),
-        \x -> parse.always(ast_pattern.EllipsisPattern.create(x.loc))));
+    bind(
+        punctuator('...'),
+        \x -> always(ast_pattern.EllipsisPattern.create(x.loc))));
 
 /**
  * 
  */
 arrayPattern = Parser('Array Pattern',
     nodea(
-        parse.enumeration(
-            parse.optional(null, identifier),
-            parse_lang.between(token.punctuator('['), token.punctuator(']'),
-                parse.eager(parse_lang.sepBy1(token.punctuator(','), pattern)))),
+        enumeration(
+            optional(null, identifier),
+            between(punctuator('['), punctuator(']'),
+                eager(sepBy1(punctuator(','), pattern)))),
         ast_pattern.ArrayPattern.create));
 
 /**
  * 
  */
-var objectKeyPattern = parse.either(
-    parse.bind(identifier, \key -> parse.always({
+var objectKeyPattern = either(
+    bind(identifier, \key -> always({
         'key': key
     })),
-    parse.binds(
-        parse.enumeration(
+    binds(
+        enumeration(
             value.stringLiteral,
-            parse.next(
-                token.punctuator(':'),
+            next(
+                punctuator(':'),
                 pattern)),
-        \key, value -> parse.always({
+        \key, value -> always({
             'key': key,
             'value': value
         })));
@@ -70,33 +70,33 @@ var objectKeyPattern = parse.either(
  */
 objectPattern = Parser('Object Pattern',
     nodea(
-        parse.enumeration(
-            parse.optional(null, identifier),
-            parse_lang.between(token.punctuator('{'), token.punctuator('}'),
-                parse.eager(parse_lang.sepBy1(token.punctuator(','), objectKeyPattern)))),
+        enumeration(
+            optional(null, identifier),
+            between(punctuator('{'), punctuator('}'),
+                eager(sepBy1(punctuator(','), objectKeyPattern)))),
         ast_pattern.ObjectPattern.create));
 
 /**
  * Package Import
  */
 importPattern = Parser('Import Pattern',
-    parse.next(
-        token.keyword('import'),
+    next(
+        keyword('import'),
         nodea(
-            parse.enumeration(
+            enumeration(
                 value.stringLiteral,
-                parse.either(
-                    parse.attempt(objectPattern),
+                either(
+                    attempt(objectPattern),
                     identifier)),
             ast_pattern.ImportPattern.create)));
 
 /**
  */
 pattern = Parser('Pattern',
-    parse.choice(
+    choice(
         ellipsis,
-        parse.attempt(arrayPattern),
-        parse.attempt(objectPattern),
+        attempt(arrayPattern),
+        attempt(objectPattern),
         identifier));
 
 }
