@@ -359,15 +359,15 @@ var accessorReducer = \p, c ->
 var memberExpression = let
     reducer = \(p, c) -> c.reduce(accessorReducer, p)
 in
-        parse.Parser('Member Expression',
-            parse.binds(
-                parse.enumeration(
-                    parse.either(
-                        newExpression,
-                        primaryExpression),
-                    parse.many(accessor)),
-                \(expression, props) ->
-                     parse.always(stream.foldl(reducer, expression, props))));
+    parse.Parser('Member Expression',
+        parse.binds(
+            parse.enumeration(
+                parse.either(
+                    newExpression,
+                    primaryExpression),
+                parse.many(accessor)),
+            \(expression, props) ->
+                 parse.always(stream.foldl(reducer, expression, props))));
 
 // New Expression
 ////////////////////////////////////////

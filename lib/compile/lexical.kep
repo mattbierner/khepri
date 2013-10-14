@@ -125,13 +125,15 @@ Scope.prototype.getBinding = \id ->
  * Does this scope have a mapping for a given identifier.
  */
 Scope.prototype.hasMapping = \id ->
-    this.mapping.hasOwnProperty(id);
+    this.mapping.hasOwnProperty(id) || (this.outer && this.outer.hasMapping(id));
 
 /**
  * Get the mapped value for a given identifier.
  */
 Scope.prototype.getMapping = \id ->
-    this.mapping[id];
+    (this.mapping.hasOwnProperty(id) ?
+        this.mapping[id] :
+        this.outer && this.outer.getMapping(id));
 
 /**
  * Get an unused identifier in this scope.
@@ -224,7 +226,7 @@ var block = \body ->
 var emptyBlock = \body ->
     examineScope(\s ->
         seq([
-            setScope(new Scope({}, null, {})),
+            setScope(new Scope({}, s, {})),
             body,
             setScope(s)]));
 
@@ -283,11 +285,13 @@ var addImmutableBinding = \id, loc ->
  * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
  */
 var addUniqueMutableBinding = \id, loc ->
-    examineRealScope(\s -> s.hasOwnBinding(id) ?
-        let new_id = s.getUnusedId(id) in next(
-             addMutableBinding(new_id, loc),
-             addMapping(id, new_id)) :
-        addMutableBinding(id, loc));
+    next(
+        checkCanAddOwnBinding(id, loc),
+        examineRealScope(\s -> s.hasOwnBinding(id) ?
+            let new_id = s.getUnusedId(id) in next(
+                 addMutableBinding(new_id, loc),
+                 addMapping(id, new_id)) :
+            addMutableBinding(id, loc)));
 
 /**
  * 
@@ -304,7 +308,7 @@ var addImmutableBindingInRealBlock = \id, loc ->
 
 var addUniqueImmutableBinding = \id, loc -> seq([
     checkCanAddOwnBinding(id, loc),
-    examineScope(\s -> s.hasBinding(id) ?
+    examineRealScope(\s -> s.hasOwnBinding(id) ?
         let new_id = s.getUnusedId(id) in
             next(
                 addImmutableBinding(new_id, loc),
@@ -415,7 +419,7 @@ var _check = function(node) {
         return seq(map(node.properties, \x -> _check(x.value)));
     
     case 'LetExpression':
-        return block(
+        return realBlock(
             next(
                 seq(node.bindings.map(_check)),
                 _check(node.body)));
@@ -424,7 +428,7 @@ var _check = function(node) {
     case 'FunctionExpression':
         return realBlock(
             seq([
-                 (node.id ? addUniqueImmutableBinding(node.id.name, node.loc) : ok()),
+                 (node.id ? addImmutableBinding(node.id.name, node.loc) : ok()),
                  _check(node.params),
                  seq(map(node.body.body, _check))]));
 
@@ -474,9 +478,10 @@ var _check = function(node) {
             _check(node.init)]);
         
     case 'Binding': 
-        return seq([
+        return next(
             _check(node.pattern),
-            _check(node.value)]);
+            _check(node.value));
+        
     
 // Pattern
     case 'ImportPattern':
