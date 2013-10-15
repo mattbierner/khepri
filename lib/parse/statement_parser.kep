@@ -1,5 +1,5 @@
 /**
- * @fileOverview Parser for ECMAScript 5.1 statements.
+ * @fileOverview Khepri Statement parsers.
  */
 package (
     blockStatement,

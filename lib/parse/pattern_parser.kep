@@ -3,8 +3,8 @@
  */
 package (
     pattern,
-    identifier,
-    ellipsis,
+    identifierPattern,
+    ellipsisPattern,
     importPattern,
     arrayPattern,
     objectPattern)
@@ -14,7 +14,7 @@ with
     import 'ecma/parse/common' {node, nodea},
     import 'ecma/parse/token_parser' {keyword, punctuator},
     import 'khepri_ast/pattern' ast_pattern,
-    import  'khepri/parse/value_parser' value
+    import  'khepri/parse/value_parser' {identifier, stringLiteral}
 in {
 
 /* Forward
@@ -23,80 +23,73 @@ pattern = \... -> pattern.apply(undefined, arguments);
 
 /* Parsers
  ******************************************************************************/
-identifier = Parser('Identifier Pattern',
+// Identifier Pattern
+////////////////////////////////////////
+identifierPattern = Parser('Identifier Pattern',
     bind(
-        value.identifier,
+        identifier,
         \x -> always(ast_pattern.IdentifierPattern.create(x.loc, x))));
 
-/**
- * 
- */
-ellipsis = Parser('Ellipsis Pattern',
+// Ellipsis Pattern
+////////////////////////////////////////
+ellipsisPattern = Parser('Ellipsis Pattern',
     bind(
         punctuator('...'),
         \x -> always(ast_pattern.EllipsisPattern.create(x.loc))));
 
-/**
- * 
- */
+// Array Pattern
+////////////////////////////////////////
 arrayPattern = Parser('Array Pattern',
     nodea(
         enumeration(
-            optional(null, identifier),
+            optional(null, identifierPattern),
             between(punctuator('['), punctuator(']'),
                 eager(sepBy1(punctuator(','), pattern)))),
         ast_pattern.ArrayPattern.create));
 
-/**
- * 
- */
-var objectKeyPattern = either(
-    bind(identifier, \key -> always({
-        'key': key
-    })),
-    binds(
+// Object Pattern
+////////////////////////////////////////
+var objectPatternElement = either(
+    node(
+        identifierPattern,
+        \loc, key -> ast_pattern.ObjectPatternElement.create(loc, key, null)),
+    nodea(
         enumeration(
-            value.stringLiteral,
+            stringLiteral,
             next(
                 punctuator(':'),
                 pattern)),
-        \key, value -> always({
-            'key': key,
-            'value': value
-        })));
+        ast_pattern.ObjectPatternElement.create));
 
-/**
- * 
- */
 objectPattern = Parser('Object Pattern',
     nodea(
         enumeration(
-            optional(null, identifier),
+            optional(null, identifierPattern),
             between(punctuator('{'), punctuator('}'),
-                eager(sepBy1(punctuator(','), objectKeyPattern)))),
+                eager(sepBy1(punctuator(','), objectPatternElement)))),
         ast_pattern.ObjectPattern.create));
 
-/**
- * Package Import
- */
+// Import Pattern
+////////////////////////////////////////
 importPattern = Parser('Import Pattern',
     next(
         keyword('import'),
         nodea(
             enumeration(
-                value.stringLiteral,
+                stringLiteral,
                 either(
                     attempt(objectPattern),
-                    identifier)),
+                    identifierPattern)),
             ast_pattern.ImportPattern.create)));
 
-/**
- */
+// Pattern
+////////////////////////////////////////
 pattern = Parser('Pattern',
     choice(
-        ellipsis,
+        ellipsisPattern,
+        importPattern,
         attempt(arrayPattern),
         attempt(objectPattern),
-        identifier));
+        identifierPattern));
 
 }
