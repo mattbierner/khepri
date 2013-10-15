@@ -22,12 +22,9 @@ more fun, with a focus on functional style programming.
 ## Dependencies ##
 * [parse.js][parsejs]
 * [nu][nu]
-* [parse-ecma][parseecma]
 * [ecma-unparse][ecmaunparse]
 * [khepri-ast][khepriast]
 * [ecma-ast][ecmaast]
-
-
 
 # Differences with ECMAScript
 
@@ -474,7 +471,6 @@ generated from it.
 
 
 [parsejs]: https://github.com/mattbierner/parse.js
-[parseecma]: https://github.com/mattbierner/parse-ecma
 [ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
 [nu]: http://mattbierner.github.io/nu/
 [ecmaunparse]: https://github.com/mattbierner/ecma-unparse

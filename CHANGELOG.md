@@ -12,6 +12,8 @@
   in a package level with statement will be loaded (or marked for loading if there
   is an circular dep), before the package body executed. At this point, top level
   packages should be assumed to be undefined until the package body completes.
+  This means that they cannot be unpacked at the moment.
+* Removed pase-ecma dep.
 
 ## 0.2.0 - October 11, 2013
 * Let expressions can also use patterns to unpack their result.
