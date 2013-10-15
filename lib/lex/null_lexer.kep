@@ -1,0 +1,23 @@
+/**
+ * @fileOverview ECMAScript null value lexers.
+ */
+package (
+    nullLiteral)
+with
+    import 'parse/parse' {always, next, Parser},
+    import 'parse/text' {string}
+in {
+
+/* Lexers
+ ******************************************************************************/
+// Literals
+////////////////////////////////////////
+/**
+ * Lexer that matches null literal.
+ */
+nullLiteral = Parser('Null Parser',
+    next(
+        string('null'),
+        always(null)));
+
+}

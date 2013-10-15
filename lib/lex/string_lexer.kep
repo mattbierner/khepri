@@ -1,0 +1,222 @@
+/**
+ * @fileOverview Lexers for ECMAScript 5.1 string values.
+ */
+package (
+// Constants
+    doubleQuote,
+    escape,
+    singleQuote,
+    lineContinuation,
+    
+// Escape Sequences
+    unicodeEscapeSequence,
+    hexEscapeSequence,
+    characterEscapeSequence,
+    escapeSequence,
+    
+// Single String Literal
+    singleStringCharacter,
+    singleStringCharacters,
+    singleStringLiteral,
+    
+// Double String Literal
+    doubleStringCharacter,
+    doubleStringCharacters,
+    doubleStringLiteral,
+
+// Literal
+    stringLiteral)
+with
+    import 'parse/parse' {
+        always,
+        attempt,
+        bind,
+        choice,
+        either,
+        eof,
+        many,
+        next,
+        sequence,
+        Parser,
+        test,
+        token},
+    import 'parse/text' {character},
+    import 'parse/lang' {between, times},
+    import 'nu/stream' {foldl},
+    import 'khepri/lex/line_terminator_lexer' {lineTerminatorSequence, lineTerminator},
+    import 'khepri/lex/number_lexer' {decimalDigit, hexDigit}
+in {
+
+var join = \p, c -> p + c;
+
+/* Helpers
+ ******************************************************************************/
+var fromCharCodeParser = \digits ->
+    always(String.fromCharCode(parseInt(foldl(join, '', digits), 16)));
+
+/* Lexers
+ ******************************************************************************/
+// Constants
+////////////////////////////////////////
+doubleQuote = character('"');
+escape = character('\\');
+singleQuote = character("'");
+
+/**
+ * Lexer for string line continuation.
+ * 
+ * Returns an empty string.
+ */
+lineContinuation = next(
+    next(escape, lineTerminatorSequence),
+    always(''));
+
+// Escape Character
+////////////////////////////////////////
+/**
+ * Lexer for a single escape character.
+ * 
+ * Returns the value represented by the escape character.
+ */
+var singleEscapeCharacter = choice(
+    character("'"),
+    character('"'),
+    character('\\'),
+    next(character('b'), always('\u0008')),
+    next(character('f'), always('\u000C')),
+    next(character('n'), always('\u000A')),
+    next(character('r'), always('\u000D')),
+    next(character('t'), always('\u0009')),
+    next(character('v'), always('\u000B')));
+
+/**
+ * 
+ */
+var escapeCharacter = choice(
+    singleEscapeCharacter,
+    decimalDigit,
+    character('u'),
+    character('x'));
+
+/**
+ * Lexer for a string character which is not an escape character.
+ */
+var nonEscapeCharacter = token(
+    \tok ->
+        !(test(escapeCharacter, tok) ||
+            test(lineTerminator, tok)));
+
+// Escape Sequence
+////////////////////////////////////////
+/**
+ * Lexer for a hex escape sequence.
+ * 
+ * Returns the character defined by the escape sequence.
+ */
+hexEscapeSequence = next(
+    character('x'),
+    bind(times(2, hexDigit),
+        fromCharCodeParser));
+
+/**
+ * Lexer for a unicode escape sequence.
+ * 
+ * Returns the unicode character defined by the escape sequence.
+ */
+unicodeEscapeSequence = next(
+    character('u'),
+    bind(times(4, hexDigit),
+        fromCharCodeParser));
+
+/**
+ * Lexer for a character escape sequence.
+ */
+characterEscapeSequence = either(
+    singleEscapeCharacter,
+    nonEscapeCharacter);
+
+/**
+ * Lexer for an escape sequence.
+ * 
+ * Returns the character defined by the escape sequence.
+ */
+escapeSequence = choice(
+    characterEscapeSequence,
+    sequence(
+        character('0'),
+        either(
+            eof,
+            token(\tok -> !test(decimalDigit, tok))),
+        always('\u0000')),
+    hexEscapeSequence,
+    unicodeEscapeSequence);
+
+// Single String Literal
+////////////////////////////////////////
+/**
+ * Lexer for a valid single string character.
+ */
+singleStringCharacter = choice(
+    attempt(lineContinuation),
+    next(escape, escapeSequence),
+    token(\tok ->
+        !(test(singleQuote, tok) ||
+            test(escape, tok) || 
+            test(lineTerminator, tok))));
+
+/**
+ * Lexer for a sequence of single string characters.
+ */
+singleStringCharacters = many(singleStringCharacter);
+
+/**
+ * Lexer for a single quoted string literal.
+ * 
+ * Returns the value of the string enclosed in the single quoted string literal.
+ */
+singleStringLiteral = Parser('Single String Literal',
+    between(singleQuote, singleQuote,
+        bind(singleStringCharacters, \str ->
+            always(foldl(join, '', str)))));
+
+// Double String Literal
+////////////////////////////////////////
+/**
+ * Lexer for a valid double string character
+ */
+doubleStringCharacter = choice(
+    attempt(lineContinuation),
+    next(escape, escapeSequence),
+    token(\tok ->
+        !(test(doubleQuote, tok) ||
+            test(escape, tok) ||
+            test(lineTerminator, tok))));
+
+/**
+ * Lexer for a sequence of double string characters.
+ */
+doubleStringCharacters = many(doubleStringCharacter);
+
+/**
+ * Lexer for a double quoted string literal.
+ * 
+ * Returns the value of the string enclosed in the double quoted string literal.
+ */
+doubleStringLiteral = Parser('Double String Literal',
+    between(doubleQuote, doubleQuote,
+        bind(doubleStringCharacters, \str ->
+            always(foldl(join, '', str)))));
+
+// String Literal
+////////////////////////////////////////
+/**
+ * Lexer for a string literal.
+ * 
+ * Returns the value of the string enclosed in the string literal.
+ */
+stringLiteral = Parser('Sting Literal Lexer',
+    either(
+        singleStringLiteral,
+        doubleStringLiteral));
+
+}

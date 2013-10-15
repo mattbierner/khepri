@@ -9,8 +9,8 @@ with
     import 'parse/parse' {always, cons, eager, either, eof, many, next, Parser, rec},
     import 'parse/lang' {then},
     import 'nu/stream' {'end': NIL},
-    import 'ecma/parse/common' {node},
     import 'khepri_ast/program' ast_program,
+    import 'khepri/parse/common' {node},
     import 'khepri/parse/statement_parser' _0,
     import 'khepri/parse/package_parser' _1
 in {
@@ -35,8 +35,6 @@ var khepriPackage = \... -> {
 
 /* Parsers
  ******************************************************************************/
-// Source Elements
-////////////////////////////////////////
 /**
  * Parser for an ECMAScript source element.
  * 
@@ -49,8 +47,6 @@ sourceElement = statementParser;
  */
 sourceElements = eager(many(sourceElement));
 
-// Program
-////////////////////////////////////////
 /**
  * Parser for an ECMAScript 5.1 program.
  */

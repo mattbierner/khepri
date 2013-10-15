@@ -6,9 +6,9 @@ package (
 with
     import 'parse/parse' {attempt, eager, either, enumeration, next, optional, Parser},
     import 'parse/lang' {between, sepBy},
-    import 'ecma/parse/common' {node, nodea},
-    import 'ecma/parse/token_parser' {keyword, punctuator},
     import 'khepri_ast/package' ast_package,
+    import 'khepri/parse/common' {node, nodea},
+    import 'khepri/parse/token_parser' {keyword, punctuator},
     import 'khepri/parse/value_parser' {identifier, stringLiteral},
     import 'khepri/parse/pattern_parser' {objectPattern, 'identifier': identifierPattern},
     import 'khepri/parse/statement_parser' statement

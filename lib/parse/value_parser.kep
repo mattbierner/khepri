@@ -12,7 +12,7 @@ package (
 with
     import 'parse/parse' {always, bind, choice, Parser},
     import 'khepri_ast/value' ast_value,
-    import 'ecma/parse/token_parser' token
+    import 'khepri/parse/token_parser' token
 in {
 
 var literalParser = \kind, p ->

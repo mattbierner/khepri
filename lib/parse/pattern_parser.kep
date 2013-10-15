@@ -11,10 +11,10 @@ package (
 with
     import 'parse/parse' {always, attempt, bind, binds, choice, eager, either, enumeration, next, optional, Parser},
     import 'parse/lang' {between, sepBy1},
-    import 'ecma/parse/common' {node, nodea},
-    import 'ecma/parse/token_parser' {keyword, punctuator},
     import 'khepri_ast/pattern' ast_pattern,
-    import  'khepri/parse/value_parser' {identifier, stringLiteral}
+    import 'khepri/parse/common' {node, nodea},
+    import 'khepri/parse/token_parser' {keyword, punctuator},
+    import 'khepri/parse/value_parser' {identifier, stringLiteral}
 in {
 
 /* Forward

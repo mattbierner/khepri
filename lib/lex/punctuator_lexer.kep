@@ -1,0 +1,201 @@
+/**
+ * @fileOverview Khepri puctuator lexers.
+ */
+package (
+// Brackets and Braces
+    openBrace,
+    closeBrace,
+    openParenthesis,
+    closeParenthesis,
+    openBracket,
+    closeBracket,
+    period,
+    semicolon,
+    comma,
+    colon,
+    questionMark,
+    
+// Logical
+    logicalAnd,
+    logicalOr,
+
+// Shifts
+    leftShift,
+    signedRightShift,
+    unsignedRightShift,
+
+// Relational
+    lessThanOrEqualTo,
+    lessThan,
+    greaterThanOrEqualTo,
+    greaterThan,
+
+// Equality
+    strictEquals,
+    strictDoesNotEqual,
+    equals,
+    doesNotEqual,
+    
+// bitwise
+    and,
+    or,
+    xor,
+    
+// Assignment Operators
+    assign,
+    leftShiftAssignment,
+    signedRightShiftAssignment,
+    unsignedRightShiftAssignment,
+    additionAssignment,
+    subtrationAssignment,
+    multiplicationAssignment,
+    divisionAssignment,
+    modAssignment,
+
+// Additive Operators
+    logicalNot,
+    bitwiseNot,
+
+// Additive Operators
+    addition,
+    subtration,
+    
+// Multiplicative Operators
+    multiplication,
+    mod,
+    division,
+
+// lambda
+    lambda,
+    
+// Punctuators
+    punctuator)
+with
+    import 'parse/parse' {Parser},
+    import 'parse/text' {character, string, trie}
+in {
+    
+/* Objects
+ ******************************************************************************/
+var punctuators = [
+    '{', '}', '(', ')', ',', '[', ']', '.', ';', ',', ':', '?', '&&', '||', '<<', '>>',
+    '>>>', '<=', '<', '>=', '>', '===', '!==', '==', '!=', '=', '<<=', '>>=',
+    '>>>=', '+=', '-=', '*=', '/=', '%=', '!', '~', '&', '|', '+', '^',
+    '-', '*', '/', '%', '->', '\\', '...'];
+
+/* Lexers
+ ******************************************************************************/
+// Brackets and Braces
+////////////////////////////////////////
+openBrace = character('{');
+closeBrace = character('}');
+
+openParenthesis = character('(');
+closeParenthesis = character(')');
+
+openBracket= character('[');
+closeBracket= character(']');
+
+// Punctuation
+////////////////////////////////////////
+period = character('.');
+
+semicolon = character(';');
+
+comma = character(',');
+
+// Conditional
+////////////////////////////////////////
+colon = character(':');
+
+questionMark = character('?');
+
+// Logical
+////////////////////////////////////////
+logicalAnd = string('&&');
+
+logicalOr = string('||');
+
+// Shifts
+////////////////////////////////////////
+leftShift = string('<<');
+
+signedRightShift = string('>>');
+
+unsignedRightShift = string('>>>');
+
+// Relational
+////////////////////////////////////////
+lessThanOrEqualTo = string('<=');
+lessThan = character('<');
+
+greaterThanOrEqualTo = string('>=');
+greaterThan = character('>');
+
+// Equality
+////////////////////////////////////////
+strictEquals = string('===');
+strictDoesNotEqual = string('!==');
+
+equals = string('==');
+doesNotEqual = string('!=');
+
+// Assignment
+////////////////////////////////////////
+assign = character('=');
+
+leftShiftAssignment = string('<<=');
+
+signedRightShiftAssignment = string('>>=');
+
+unsignedRightShiftAssignment = string('>>>=');
+
+additionAssignment = string('+=');
+
+subtrationAssignment = string('-=');
+
+multiplicationAssignment = string('*=');
+
+divisionAssignment = string('/=');
+
+modAssignment = string('%=');
+
+// Unary
+////////////////////////////////////////
+logicalNot = character('!');
+
+bitwiseNot = character('~');
+
+// Bitwise
+////////////////////////////////////////
+and = character('&');
+or = character('|');
+xor = character('^');
+
+// Additive Operators
+////////////////////////////////////////
+addition = character('+');
+
+subtration = character('-');
+
+// Multiplicative Operators
+////////////////////////////////////////
+multiplication = character('*');
+
+division = character('/');
+
+mod = character('%');
+
+// Lambda Expression
+////////////////////////////////////////
+lambda = string('->');
+
+// Punctuators
+////////////////////////////////////////
+/**
+ * Lexer for punctuators excluding division punctuators.
+ */
+punctuator = Parser('Punctuator Lexer',
+    trie(punctuators));
+
+}

@@ -1,0 +1,79 @@
+/**
+ * @fileOverview Lexers for line terminators based on ECMAScrLexeript 5.1.
+ */
+package (
+    lf,
+    cr,
+    ls,
+    ps,
+    lineTerminator,
+    lineTerminatorSequence)
+with
+    import 'parse/parse' {always, choice, next, optional, Parser, token},
+    import 'parse/text' {character}
+in {
+
+var lfChar = '\u000A',
+    crChar = '\u000D',
+    lsChar = '\u2028',
+    psChar = '\u2029';
+
+/* Lexers
+ ******************************************************************************/
+/**
+ * Line Feed
+ */
+lf = Parser('Line Feed Lexer',
+    character(lfChar));
+
+/**
+ * Carriage Return
+ */
+cr = Parser('Carriage Return Lexer',
+    character(crChar));
+
+/**
+ * Line Separator
+ */
+ls = Parser('Line Separator Lexer',
+    character(lsChar));
+
+/**
+ * Paragraph Separator
+ */
+ps = Parser('Paragraph Separator Lexer',
+    character(psChar));
+
+/**
+ * A line terminator character.
+ */
+lineTerminator = Parser('Line Terminator Lexer',
+    token(\tok -> {
+        switch (tok) {
+        case lfChar:
+        case crChar:
+        case lsChar:
+        case psChar:
+            return true;
+        default:
+            return false;
+        }
+    }));
+
+/**
+ * A sequence of characters denoting a linter terminator.
+ * 
+ * crlf sequences are returned as a single token.
+ */
+lineTerminatorSequence = Parser('Line Terminator Sequence Lexer',
+    choice(
+        lf,
+        ls,
+        ps,
+        next(
+            cr,
+            optional(crChar,
+                next(lf,
+                    always(crChar + lfChar))))));
+
+}

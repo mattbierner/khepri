@@ -1,0 +1,136 @@
+/**
+ * @fileOverview Khepri regular expression lexers.
+ */
+package (
+    regularExpressionNonTerminator,
+    regularExpressionBackslashSequence,
+    
+// Class
+    regularExpressionClassChar,
+    regularExpressionClassChars,
+    regularExpressionClass,
+    
+// Characters
+    regularExpressionChar,
+    regularExpressionChars,
+    regularExpressionFirstChar,
+    
+// Parts
+    regularExpressionFlags,
+    regularExpressionBody,
+    
+// Regex Literal
+    regularExpressionLiteral)
+with
+    import 'parse/parse' {
+        always,
+        attempt,
+        bind,
+        binds,
+        choice,
+        cons,
+        either,
+        enumeration,
+        many,
+        next,
+        Parser,
+        token,
+        test},
+    import 'parse/lang' parse_lang {between},
+    import 'parse/text' {character},
+    import 'nu/stream' {foldl},
+    import 'khepri/lex/identifier_lexer' identifier_lexer,
+    import 'khepri/lex/line_terminator_lexer' line_terminator_lexer {lineTerminator}
+in {
+
+var join = \p, c -> p + c;
+
+/* Lexers
+ ******************************************************************************/
+// Parts
+////////////////////////////////////////
+/**
+ * Lexer for non terminator character in a regular expression.
+ */
+regularExpressionNonTerminator = token(
+    \tok-> !test(lineTerminator, tok));
+
+/**
+ * Lexer for regular expression backslash sequence.
+ */
+regularExpressionBackslashSequence = next(
+    character('\\'),
+    bind(regularExpressionNonTerminator, \char ->
+        always('\\' + char)));
+
+// Class
+////////////////////////////////////////
+regularExpressionClassChar = either(
+    attempt(token(\tok ->
+        !test(lineTerminator, tok) &&
+            tok !== ']' && tok !== '\\')),
+    regularExpressionBackslashSequence);
+
+regularExpressionClassChars = many(regularExpressionClassChar);
+
+regularExpressionClass = between(character('['), character(']'), 
+    bind(regularExpressionClassChars, \body ->
+        always('[' + foldl(join, '', body) + ']')));
+
+// Characters
+////////////////////////////////////////
+/**
+ * Lexer for first character of a regular expression.
+ */
+regularExpressionFirstChar = choice(
+    token(
+        \tok ->
+            !test(lineTerminator, tok) &&
+                tok !== '*' && tok !== '\\' && tok !== '`' && tok !== '['),
+    regularExpressionBackslashSequence,
+    regularExpressionClass);
+
+/**
+ * Lexer for a character in a regular expression.
+ */
+regularExpressionChar =  choice(
+    token(
+        \tok ->
+            !test(lineTerminator, tok) &&
+                tok !== '\\' && tok !== '`' && tok !== '['),
+    regularExpressionBackslashSequence,
+    regularExpressionClass);
+
+/**
+ * Lexer for string of regular expression chars.
+ */
+regularExpressionChars = many(regularExpressionChar);
+
+// Literal Parts
+////////////////////////////////////////
+/**
+ * Lexer for regular expression flags.
+ */
+regularExpressionFlags = many(identifier_lexer.identifierPart);
+
+/**
+ * Lexer for the body of a regular expression
+ */
+regularExpressionBody = bind(
+    cons(regularExpressionFirstChar, regularExpressionChars),
+    \s -> always(foldl(join, '', s)));
+
+// Literal
+////////////////////////////////////////
+/**
+ * Lexer for regular expression literals.
+ */
+regularExpressionLiteral = Parser('Regular Expression Lexer',
+    binds(
+        enumeration(
+            between(character('`'), character('`'),
+                regularExpressionBody),
+            regularExpressionFlags),
+        \body, flags -> always(new RegExp(body, foldl(join, '', flags)))));
+
+}

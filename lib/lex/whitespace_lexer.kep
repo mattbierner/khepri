@@ -1,0 +1,80 @@
+/**
+ * @fileOverview Khepri whitespace lexers.
+ */
+package (
+    tab,
+    vt,
+    ff,
+    sp,
+    nbsp,
+    bom,
+    usp,
+    
+    whitespace)
+with
+    import 'parse/parse' {Parser, token},
+    import 'parse/text' {character, match}
+in {
+
+var tabChar = '\u0009',
+    vtChar = '\u000B',
+    ffChar = '\u000C',
+    spChar = '\u0020',
+    nbspChar = '\u00A0',
+    bomChar = '\uFEFF';
+
+/* Lexers
+ ******************************************************************************/
+/**
+ * Tab
+ */
+tab = character(tabChar);
+
+/**
+ * Vertical Tab
+ */
+vt = character(vtChar);
+
+/**
+ * Form Feed
+ */
+ff = character(ffChar);
+
+/**
+ * Space
+ */
+sp = character(spChar);
+
+/**
+ * No-break space
+ */
+nbsp = character(nbspChar);
+
+/**
+ * Byte Order Mark
+ */
+bom = character(bomChar);
+
+/**
+ * Any Unicode space separator
+ */
+usp = match(`^\s$`);
+
+/**
+ * A whitespace character.
+ */
+whitespace = Parser('Whitespace Lexer',
+    token(\tok -> {
+        switch (tok) {
+        case tabChar:
+        case vtChar:
+        case ffChar:
+        case spChar:
+        case nbspChar:
+        case bomChar:
+            return true;
+        default:
+            return false;
+        }
+    }));
+}

@@ -1,0 +1,119 @@
+/**
+ * @fileOverview Khepri lexers.
+ */
+package (
+    literal,
+    token,
+    inputElementRegExp,
+    lexer,
+    lexManyState,
+    lex)
+with
+    import 'parse/parse' parse {
+        always,
+        attempt,
+        binds,
+        bind,
+        choice,
+        either,
+        eof,
+        enumeration,
+        extract,
+        expected,
+        next,
+        many,
+        runState,
+        Parser,
+        ParserState},
+    import 'nu/stream' {memoStream, 'end': NIL, 'from': streamFrom},
+    import 'khepri_ast/token' lexToken,
+    import 'khepri/position' {SourceLocation, SourcePosition},
+    import 'khepri/lex/boolean_lexer' {booleanLiteral},
+    import 'khepri/lex/comment_lexer' {comment},
+    import 'khepri/lex/identifier_lexer' {identifier},
+    import 'khepri/lex/line_terminator_lexer' {lineTerminator},
+    import 'khepri/lex/null_lexer' {nullLiteral},
+    import 'khepri/lex/number_lexer' {numericLiteral},
+    import 'khepri/lex/punctuator_lexer' {punctuator},
+    import 'khepri/lex/reserved_word_lexer' {reservedWord},
+    import 'khepri/lex/string_lexer' {stringLiteral},
+    import 'khepri/lex/whitespace_lexer' {whitespace},
+    import 'khepri/lex/regular_expression_lexer' {regularExpressionLiteral}
+in {
+
+/* Helpers
+ ******************************************************************************/
+var positionParser = extract(\state -> state.position);
+
+var makeToken = \type, p ->
+    binds(
+        enumeration(
+            positionParser,
+            p,
+            positionParser),
+        \start, value, end ->
+            always(
+                new type(
+                    new SourceLocation(start, end),
+                    value)));
+
+/* Lexers
+ ******************************************************************************/
+literal = choice(
+    expected("string literal",
+        makeToken(lexToken.StringToken, stringLiteral)),
+    expected("regular expression literal",
+        makeToken(lexToken.RegularExpressionToken, regularExpressionLiteral)),
+    expected("boolean literal",
+        makeToken(lexToken.BooleanToken, booleanLiteral)),
+    expected("null literal",
+        makeToken(lexToken.NullToken, nullLiteral)),
+    expected("number literal",
+        makeToken(lexToken.NumberToken, numericLiteral)));
+
+token = choice(
+    attempt(expected("identifier",
+        makeToken(lexToken.IdentifierToken, identifier))),
+    attempt(literal),
+    attempt(expected("reserved word",
+        makeToken(lexToken.KeywordToken, reservedWord))),
+    expected("puctuator",
+        makeToken(lexToken.PunctuatorToken, punctuator)));
+
+inputElementRegExp = choice(
+    expected("comment",
+        makeToken(lexToken.CommentToken, comment)),
+    expected("whitespace",
+        makeToken(lexToken.WhitespaceToken, whitespace)),
+    expected("line terminator",
+        makeToken(lexToken.LineTerminatorToken, lineTerminator)),
+    token);
+
+/**
+ * Parser for lexing ECMAScript 5.1 input.
+ */
+lexer = many(inputElementRegExp);
+
+/* Running
+ ******************************************************************************/
+lexManyState = \p, state -> let 
+    manyP = either(
+        bind(p, \x, state, m ->
+            always(memoStream(x, runState.bind(undefined, manyP, state, m)))),
+        next(eof, always(NIL)))
+in
+    runState(manyP, state);
+
+/**
+ * Lexes EMCAScript 5.1 input.
+ * 
+ * Result includes all tokens including comments and whitespace.
+ */
+lex = \input ->
+    lexManyState(
+        inputElementRegExp,
+        new ParserState(
+            streamFrom(input),
+            new SourcePosition(0, 0)));
+
+}

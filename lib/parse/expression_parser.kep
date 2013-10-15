@@ -83,12 +83,12 @@ with
         then},
     import 'nu/stream' {foldl, foldr},
     import 'ecma/position' {SourceLocation},
-    import 'ecma/parse/common' {node, nodea, precedence},
-    import 'ecma/parse/token_parser' {keyword, punctuator},
     import 'khepri_ast/declaration' ast_declaration,
     import 'khepri_ast/expression' ast_expression,
     import 'khepri_ast/statement' ast_statement,
     import 'khepri_ast/pattern' ast_pattern,
+    import 'khepri/parse/common' {node, nodea, precedence},
+    import 'khepri/parse/token_parser' {keyword, punctuator},
     import 'khepri/parse/program_parser' _,
     import 'khepri/parse/value_parser' {identifier, literal, stringLiteral},
     import 'khepri/parse/pattern_parser' pattern
@@ -128,7 +128,6 @@ var functionBody = node(
  */
 arrayElement = Parser('Array Element',
     expression);
-
 
 /**
  * Parser for the elements of an array literal.
@@ -487,13 +486,8 @@ in
 ////////////////////////////////////////
 unaryOperator = Parser('Unary Operator',
     choice(
-        keyword('delete'),
-        keyword('void'),
-        keyword('typeof'),
-        punctuator('+'),
-        punctuator('-'),
-        punctuator('~'),
-        punctuator('!')));
+        keyword('delete', 'void', 'typeof'),
+        punctuator('+', '-', '~', '!')));
 
 /**
  * 
@@ -515,32 +509,17 @@ in
 
 // Binary Expressions
 ////////////////////////////////////////
-var multiplicativeOperator = choice(
-    punctuator('*'),
-    punctuator('/'),
-    punctuator('%'));
+var multiplicativeOperator = punctuator('*', '/', '%');
 
-var additiveOperator = either(
-    punctuator('+'),
-    punctuator('-'));
+var additiveOperator = punctuator('+', '-');
 
-var shiftOperator = choice(
-    punctuator('<<'),
-    punctuator('>>'),
-    punctuator('>>>'));
+var shiftOperator = punctuator('<<', '>>', '>>>');
 
-var relationalOperator = choice(
-    punctuator('<'),
-    punctuator('>'),
-    punctuator('<='),
-    punctuator('>='),
+var relationalOperator = either(
+    punctuator('<', '>', '<=', '>='),
     keyword('instanceof'));
 
-var equalityOperator = choice(
-    punctuator('=='),
-    punctuator('!='),
-    punctuator('==='),
-    punctuator('!=='));
+var equalityOperator = punctuator('==', '!=', '===', '!==');
 
 var bitwiseANDOperator = punctuator('&');
 
@@ -631,24 +610,20 @@ in
 // Assignment Statement
 ////////////////////////////////////////
 assignmentOperator = Parser('Assignment Operator',
-    choice(
-        punctuator('='),
-        punctuator('*='),
-        punctuator('*='),
-        punctuator('/='),
-        punctuator('%='),
-        punctuator('+='),
-        punctuator('-='),
-        punctuator('<<='),
-        punctuator('>>='),
-        punctuator('>>>='),
-        punctuator('&='),
-        punctuator('^='),
-        punctuator('|=')));
+    punctuator('=',
+        '*=',
+        '*=',
+        '/=',
+        '%=',
+        '+=',
+        '-=',
+        '<<=',
+        '>>=',
+        '>>>=',
+        '&=',
+        '^=',
+        '|='));
 
-/**
- * 
- */
 assignmentExpression = Parser('Assignment Expression',
     nodea(
         enumeration(

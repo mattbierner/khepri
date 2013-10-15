@@ -34,11 +34,11 @@ with
         optional,
         Parser},
     import 'parse/lang' {between, sepBy1, then},
-    import 'ecma/parse/token_parser' {keyword, punctuator},
-    import 'ecma/parse/common' {node, nodea},
     import 'khepri_ast/clause' ast_clause,
     import 'khepri_ast/declaration' ast_declaration,
     import 'khepri_ast/statement' ast_statement,
+    import 'khepri/parse/common' {node, nodea},
+    import 'khepri/parse/token_parser' {keyword, punctuator},
     import 'khepri/parse/expression_parser' {assignmentExpression, expression},
     import 'khepri/parse/pattern_parser' {importPattern, pattern},
     import 'khepri/parse/value_parser' {identifier}

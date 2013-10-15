@@ -1,0 +1,101 @@
+/**
+ * @fileOverview Parsers for working with lex tokens.
+ */
+package (
+    punctuator,
+    anyPunctuator,
+    
+    keyword,
+    anyKeyword,
+    
+    identifier,
+    anyIdentifier,
+    
+    nullLiteral,
+    booleanLiteral,
+    numericLiteral,
+    stringLiteral,
+    regularExpressionLiteral)
+with
+    import 'parse/parse' parse
+in {
+
+var indexOf = Function.prototype.call.bind(Array.prototype.indexOf);
+
+var join = Function.prototype.call.bind(Array.prototype.join);
+
+var expectError = \msg ->
+    \pos, tok ->
+        new parse.ExpectError(pos, msg, (tok === null ? "end of input" : tok.value));
+
+var typeParser = \type, msg ->
+    parse.token(
+        \tok -> (tok.type === type),
+        expectError(msg));
+
+var selectAny = \type ->
+    \... -> {
+        var options = arguments;
+        return parse.token(
+            \tok -> (tok.type === type && indexOf(options, tok.value) >= 0),
+            expectError(join(options, ', ')));
+    };
+
+/* Parsers
+ ******************************************************************************/
+// Punctuator
+////////////////////////////////////////
+anyPunctuator = typeParser('Punctuator', 'any punctuator');
+
+punctuator = selectAny('Punctuator');
+
+/**
+ * Consume any keyword.
+ */
+anyKeyword = typeParser('Keyword', 'any keyword');
+
+/**
+ * Consume a specific keyword 'v'.
+ */
+keyword = selectAny('Keyword');
+
+/**
+ * Consume any identifier.
+ */
+anyIdentifier = typeParser('Identifier', 'any identifier');
+  
+
+/**
+ * Consume a specific identifier 'v'.
+ */
+identifier = selectAny('Identifier');
+
+/**
+ * Consume null literal token.
+ */
+nullLiteral = parse.Parser('Null Literal',
+    parse.token(function(tok) {
+        return (tok.type === 'Null');
+    }, expectError('Null Literal')));
+
+/**
+ * Consume boolean literal token.
+ */
+booleanLiteral = typeParser('Boolean', 'boolean literal');
+
+/**
+ * Consume numeric literal token.
+ */
+numericLiteral = typeParser('Number', 'numeric literal');
+
+/**
+ * Consume string literal token.
+ */
+stringLiteral = typeParser('String', 'string literal');
+
+/**
+ * Consume regular expression literal token.
+ */
+regularExpressionLiteral = typeParser('RegularExpression', 'regular expression literal');
+
+}
