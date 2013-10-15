@@ -8,8 +8,7 @@ package (
 with
     import 'parse/parse' parse,
     import 'nu/stream' {first, filter, isEmpty, rest, 'from': streamFrom},
-    import 'ecma/position' {SourceLocation, SourcePosition},
-    import 'ecma/parse/parser' parser,
+    import 'khepri/position' {SourceLocation, SourcePosition},
     import 'khepri/parse/program_parser' {program}
 in {
     
@@ -35,6 +34,33 @@ parserStream = let
     }
 in
     \s -> filter(langElementFilter, s);
+    
+/* Position
+ ******************************************************************************/
+/**
+ * Position in an ECMAScript parser.
+ * 
+ * Tracks position in lex stream and source positions.
+ */
+var ParserPosition = function(tokenPosition, sourcePosition) {
+    this.tokenPosition = tokenPosition;
+    this.sourcePosition = sourcePosition;
+};
+ParserPosition.prototype = new parse.Position;
+ParserPosition.prototype.constructor = ParserPosition;
+
+ParserPosition.initial = new ParserPosition(
+    parse.Position.initial,
+    SourcePosition.initial);
+
+ParserPosition.prototype.increment = \tok, end ->
+    new ParserPosition(this.tokenPosition.increment(tok), end);
+
+ParserPosition.prototype.toString = \() ->
+    '' + this.sourcePosition;
+
+ParserPosition.prototype.compare = \pos ->
+    this.tokenPosition.compare(pos.tokenPosition);
 
 /* State
  ******************************************************************************/
@@ -77,7 +103,7 @@ parseStream = \s ->
         program,
         new ParserState(
             parserStream(s),
-            new parser.ParserPosition(
+            new ParserPosition(
                 parse.Position.initial,
                 SourcePosition.initial),
             SourcePosition.initial));
