@@ -58,6 +58,7 @@ function(parse,
                 var result = lexical.check(testParser(lexer.lex("var a; { var a; }")));
                 assert.ok(true);
             }],
+            
             ["Renaming",
             function(){
                 var result = lexical.check(testParser(lexer.lex("var a; { var a; }")));
@@ -66,6 +67,19 @@ function(parse,
                 var result = lexical.check(testParser(lexer.lex("{ var a; } var a; ")));
                 assert.ok(result.body[0].body[0].declarations[0].id.name !== result.body[1].declarations[0].id.name);
             }],
+            
+            ["Switch body introduces new scope but not cases.",
+            function(){
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("var a; switch(a) {case 0: var a; default: var a; }")));
+                });
+                assert.ok(
+                    lexical.check(testParser(lexer.lex("var a; switch(a) { default: var a; }"))));
+                
+                var result = lexical.check(testParser(lexer.lex("var a; switch(a) { default: var a; }")));
+                assert.ok(result.body[0].declarations[0].id.name != result.body[1].cases[0].consequent[0].declarations[0].id.name)
+            }],
+            
             ["Package duplicate export name",
             function(){
                 assert.throws(function(){

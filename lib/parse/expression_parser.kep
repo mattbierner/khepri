@@ -300,7 +300,7 @@ var functionExpression = Parser('Function Expression',
 
 // This Expression
 ////////////////////////////////////////
-var thisExpression = node(
+thisExpression = node(
     keyword('this'),
     ast_expression.ThisExpression.create);
 
@@ -323,7 +323,7 @@ var letBinding =  Parser('Let Binding',
 /**
  * Parser for a let expression.
  */
-var letExpression = Parser('Let Expression', let
+letExpression = Parser('Let Expression', let
     letBindings = expected('let bindings',
         sepBy1(punctuator(','),
             letBinding)),
@@ -359,7 +359,7 @@ primaryExpression = Parser('Primary Expression',
 /**
  * Parser for a list of arguments.
  */
-var argumentList = Parser('Argument List',
+argumentList = Parser('Argument List',
     eager(sepBy(punctuator(','),
         expected("expression", expression))));
 
@@ -424,7 +424,7 @@ var accessorReducer = \p, c ->
 /**
  * 
  */
-var memberExpression = let
+memberExpression = let
     reducer = \p, c -> c.reduce(accessorReducer, p)
 in
     Parser('Member Expression',
@@ -515,6 +515,10 @@ in
 
 // Binary Expressions
 ////////////////////////////////////////
+var composeOperator = punctuator('\\>');
+
+var pipeOperator = punctuator('|>');
+
 var multiplicativeOperator = punctuator('*', '/', '%');
 
 var additiveOperator = punctuator('+', '-');
@@ -554,6 +558,11 @@ var precedenceTable = [
         'node': ast_expression.BinaryExpression
     },
     {
+        'sep': relationalOperator,
+        'precedence': 4,
+        'node': ast_expression.BinaryExpression
+    },
+    {
         'sep': equalityOperator,
         'precedence': 5,
         'node': ast_expression.BinaryExpression
@@ -574,23 +583,28 @@ var precedenceTable = [
         'node': ast_expression.BinaryExpression
     },
     {
-        'sep': logicalOROperator,
+        'sep': composeOperator,
         'precedence': 9,
+        'node': ast_expression.BinaryExpression
+    },
+    {
+        'sep': pipeOperator,
+        'precedence': 11,
+        'node': ast_expression.BinaryExpression
+    },
+    {
+        'sep': logicalOROperator,
+        'precedence': 12,
         'node': ast_expression.LogicalExpression
     },
     {
         'sep': logicalANDOperator,
-        'precedence': 10,
+        'precedence': 13,
         'node': ast_expression.LogicalExpression
-    },
-    {
-        'sep': relationalOperator,
-        'precedence': 4,
-        'node': ast_expression.BinaryExpression
     }
 ];
 
-var binaryExpression = Parser('Binary Expression',
+binaryExpression = Parser('Binary Expression',
     precedence(unaryExpression, precedenceTable));
 
 // Conditional Expression

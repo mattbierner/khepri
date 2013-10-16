@@ -282,6 +282,61 @@ Available syntaxes, along with translations, are shown here:
     a[5 + 10, (\x -> x.y)({'y': 7})];
     a[b][function(x) { return x.y; }({'y': 7})];
 
+## Function Composition Operator
+The `\>` operator composes two functions into a new function. It behaves like:
+
+    var (\>) = \g, f -> \x -> f(g(x));
+
+Which is the same as F#'s `>>` operator but the opposite of Haskells `.`. The 
+resulting function takes a single argument.
+
+The `\>` is left associative and has lower precedence than other binary expressions
+but higher precedence than the logical expressions `&&` and `||`.
+It also has higher precedence than the pipe operator.
+
+    var f = \x -> x + 10,
+        g = \x -> x / 2;
+    
+    (g \> f)(4); // 12
+    (f \> g)(4); // 7
+    (g \> g \> f)(4); // (g \> (g \> f))(4) // 11
+    (g \> f \> f)(4); // 22
+    
+    // Will evaluate all unary, new, member, and call expressions before composing
+    var o = {'f': f, 'g': g};
+    
+    (o.g \> o.f)(5); // 11
+
+## Function Pipe Operator
+The `|>` operator applies a function on the right to input on the left.
+
+    var (|>) = \x, f -> f(x);
+
+The `|>` is left associative and has lower precedence than other binary expressions,
+including the compose operator, but higher precedence than the logical
+expressions `&&` and `||`.
+
+The pipe operator is useful for chaining multiple functions together in a more
+readable way.
+
+    var f = \x -> x + 10,
+        g = \x -> x / 2;
+    
+    // Basic
+    10 |> g; // 5
+    
+    // Lower precedence than other binary ops
+    6 + 10 |> g; // (6 + 10) |> g; // 8
+    
+    // Left associative
+    10 |> f |> g; // (10 |> f) |> g; // 10
+    
+    // Lower precedence than compose
+    10 |> g /> f; // 10 |> (g /> f) // 15
+    
+    // Higher precedence than logical ops
+    0 |> g || 10 > g; // (0 |> g) || (10 |> g); // 5
+
 
 ## Modified ##
 

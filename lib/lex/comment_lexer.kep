@@ -16,7 +16,7 @@ package (
 with
     import 'parse/parse' {anyToken, always, bind, cons, either, many, next, Parser, RecParser, test, token},
     import 'parse/text' {character, string},
-    import 'nu/stream' {foldl, end},
+    import 'nu/stream' {foldl, 'end': NIL},
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 
@@ -77,7 +77,7 @@ multiLineCommentChars = RecParser('Multi Line Comment Characters Lexer', \self -
         next(
             character('*'),
             either(
-                next(character('/'), always(end)),
+                next(character('/'), always(NIL)),
                 cons(always('*'), self))),
         cons(anyToken, self)));
 
