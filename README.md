@@ -282,6 +282,8 @@ Available syntaxes, along with translations, are shown here:
     a[5 + 10, (\x -> x.y)({'y': 7})];
     a[b][function(x) { return x.y; }({'y': 7})];
 
+## Function Curry Operator
+
 ## Function Composition Operator
 The `\>` operator composes two functions into a new function. It behaves like:
 
@@ -332,7 +334,7 @@ readable way.
     10 |> f |> g; // (10 |> f) |> g; // 10
     
     // Lower precedence than compose
-    10 |> g /> f; // 10 |> (g /> f) // 15
+    10 |> g \> f; // 10 |> (g \> f) // 15
     
     // Higher precedence than logical ops
     0 |> g || 10 > g; // (0 |> g) || (10 |> g); // 5

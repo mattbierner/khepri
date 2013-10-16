@@ -268,7 +268,7 @@ var transform = function(node) {
             return transform(
                 khepri_expression.CallExpression.create(null,
                     khepri_expression.FunctionExpression.create(node.loc, null,
-                        khepri_pattern.ParameterList.create(null, [
+                        khepri_pattern.ArgumentsPattern.create(null, null, [
                             khepri_pattern.IdentifierPattern.create(null,
                                 khepri_value.Identifier.create(null, 'f')),
                             khepri_pattern.IdentifierPattern.create(null,
@@ -276,7 +276,7 @@ var transform = function(node) {
                     khepri_statement.BlockStatement.create(null, [
                         khepri_statement.ReturnStatement.create(null, 
                             khepri_expression.FunctionExpression.create(node.loc, null,
-                                khepri_pattern.ParameterList.create(null, [
+                                khepri_pattern.ArgumentsPattern.create(null, null, [
                                     khepri_pattern.IdentifierPattern.create(null,
                                         khepri_value.Identifier.create(null, 'x'))]),
                                 khepri_statement.BlockStatement.create(null, [
@@ -347,7 +347,7 @@ var transform = function(node) {
              khepri_expression.CallExpression.create(node.loc,
                 khepri_expression.FunctionExpression.create(null,
                     null,
-                    khepri_pattern.ParameterList.create(null, []),
+                    khepri_pattern.ArgumentsPattern.create(null, null, []),
                     khepri_statement.BlockStatement.create(null, [
                          khepri_statement.WithStatement.create(null,
                              node.bindings,
@@ -358,47 +358,53 @@ var transform = function(node) {
 // Function
     case 'FunctionExpression':
         return let
-            params = reduce(transform(node.params), \p, c -> {
+            params = reduce(transform(node.params.elements), \p, c -> {
                 if (!c || c.type === 'EllipsisPattern')
                     return p;
-                return p.concat([c]);
+                return p.concat([transform(c)]);
             }, []),
-            prefix = reduce(node.params.patterns, \p, c -> {
+            
+            
+            prefix = reduce(node.params.elements, \p, c -> {
                 var base;
                 switch (c.type) {
                 case 'ArrayPattern':
-                    base = khepri_value.Identifier.create(null, c.id.name);
+                    base = transform(c.id);
                     return concat(p, khepri_declaration.VariableDeclaration.create(null,
                         reduce(c.elements, \p, c, i ->
                             let val = arrayPattern(base, c, i) in (val ? concat(p, val) : p),
                             [])));
                  case 'ObjectPattern':
-                    base = khepri_value.Identifier.create(null, c.id.name);
+                    base = transform(c.id);
                     return concat(p, khepri_declaration.VariableDeclaration.create(null,
                         reduce(c.elements, \p, c ->
                             let val = objectDeclPattern(base, c.target, c.key) in (val ? concat(p, val) : p),
                             [])));
                 }
                 return p;
-        }, [])
+            }, (node.params.id ?
+                [khepri_declaration.VariableDeclaration.create(null, [
+                    khepri_declaration.VariableDeclarator.create(null,
+                        transform(node.params.id),
+                        khepri_value.Identifier.create(null, 'arguments'))])] :
+                []))
     in
         ecma_expression.FunctionExpression.create(node.loc,
             transform(node.id),
             params,
-            transform(new khepri_statement.BlockStatement(node.body.loc, concat(prefix, node.body.body))));
+            transform(khepri_statement.BlockStatement.create(node.body.loc,
+                concat(prefix, node.body.body))));
     
 // Patterns
-    case 'ParameterList':
-        return map(node.patterns, transform);
-        
+    case 'ArgumentsPattern':
+        return new ecma_value.Identifier(node.loc, node.id.name);
+    
     case 'IdentifierPattern':
         return new ecma_value.Identifier(node.loc, node.id.name);
     
     case 'ArrayPattern':
-        return new ecma_value.Identifier(node.loc, node.id.name);
-   
     case 'ObjectPattern':
-        return new ecma_value.Identifier(node.loc, node.id.name); 
+        return transform(node.id);
     
     case 'EllipsisPattern':
         return null;

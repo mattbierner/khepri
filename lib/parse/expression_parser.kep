@@ -243,15 +243,10 @@ objectLiteral = Parser('Object Literal',
 
 // Function Expression
 ////////////////////////////////////////
-var parameter = expected("pattern", pattern.pattern);
-
 /**
  * Parser for a function's parameters.
  */
-var formalParameterList = node(
-    eager(sepBy(punctuator(','),
-        parameter)),
-    ast_pattern.ParameterList.create);
+var formalParameterList = pattern.argumentsPattern;
 
 var ecmaFunctionExpression = nodea(
     next(
@@ -264,10 +259,7 @@ var ecmaFunctionExpression = nodea(
                 functionBody))),
     ast_expression.FunctionExpression.create);
 
-var lambdaFormalParameterList = either(
-    between(punctuator('('), punctuator(')'), 
-        formalParameterList),
-    formalParameterList);
+var lambdaFormalParameterList = pattern.argumentsPattern;
 
 var lambdaBody = either(
     between(punctuator('{'), punctuator('}'),

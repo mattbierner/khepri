@@ -492,9 +492,9 @@ var _check = function(node) {
         
     
 // Pattern
-    case 'ImportPattern':
-        return _check(node.pattern);
-    
+    case 'EllipsisPattern':
+        return ok();
+        
     case 'IdentifierPattern':
         return seq([
             addUniqueImmutableBinding(node.id.name, node.loc),
@@ -504,6 +504,9 @@ var _check = function(node) {
                     node.id.name = s.getMapping(node.id.name);
                 return ok();
             })]);
+        
+    case 'ImportPattern':
+        return _check(node.pattern);
     
     case 'ArrayPattern':
         return examineScope(\s -> {
@@ -532,16 +535,16 @@ var _check = function(node) {
                     node.elements,
                     _check)));
         });
+    
     case 'ObjectPatternElement':
         return (node.target ?
             _check(node.target) :
             _check(node.key));
         
-    case 'EllipsisPattern':
-        return ok();
-        
-    case 'ParameterList':
-        return seq(map(node.patterns, _check));
+    case 'ArgumentsPattern':
+        return next(
+            _check(node.id),
+            seq(map(node.elements, _check)));
     
 // Value
     case 'Identifier':
@@ -556,7 +559,6 @@ var _check = function(node) {
 };
 
 var builtins = [
-    'arguments',
     'Array',
     'Boolean',
     'Date',

@@ -7,10 +7,11 @@ package (
     ellipsisPattern,
     importPattern,
     arrayPattern,
-    objectPattern)
+    objectPattern,
+    argumentsPattern)
 with
     import 'parse/parse' {always, attempt, bind, binds, choice, eager, either, enumeration, next, optional, Parser},
-    import 'parse/lang' {between, sepBy1},
+    import 'parse/lang' {between, sepBy, sepBy1},
     import 'khepri_ast/pattern' ast_pattern,
     import 'khepri/parse/common' {node, nodea},
     import 'khepri/parse/token_parser' {keyword, punctuator},
@@ -81,6 +82,29 @@ importPattern = Parser('Import Pattern',
                     attempt(objectPattern),
                     identifierPattern)),
             ast_pattern.ImportPattern.create)));
+
+
+// Arguments Pattern
+////////////////////////////////////////
+argumentsPattern = Parser('Arguments Pattern', let
+    argumentsPatternElement = choice(
+        ellipsisPattern,
+        attempt(arrayPattern),
+        attempt(objectPattern),
+        identifierPattern)
+in
+    either(
+        attempt(nodea(
+            enumeration(
+                optional(null, identifierPattern),
+                between(punctuator('('), punctuator(')'),
+                    eager(sepBy(punctuator(','),
+                        argumentsPatternElement)))),
+            ast_pattern.ArgumentsPattern.create)),
+        node(
+            eager(sepBy(punctuator(','),
+                argumentsPatternElement)),
+            \loc, elements -> ast_pattern.ArgumentsPattern.create(loc, null, elements))));
 
 // Pattern
 ////////////////////////////////////////
