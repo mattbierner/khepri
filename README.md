@@ -142,8 +142,28 @@ to unpack.
 
     \{x, 'y':{z}}-> x + z;
 
+#### Arguments Pattern
+The arguments pattern is used to unpack the arguments object in functions.
+Two forms exist, explicit which allows access to the underlying arguments object
+and implicit which only allows the individual arguments to be accessed.
+The `arguments` magic identifier is no longer valid.
+
+Implicit form is a comma separated list of zero or more patterns. Each pattern
+unpacks the argument value at its index.
+
+    var f = \x, y, {z} -> x + y + z;
+    f(1, 3, {'z': 5}); // 9
+
+Explicit form adds an optional unpack for the arguments object itself. It is
+an optional identifier pattern followed by a parenthesized comma separated list
+of patterns for the individual argument unpacks.
+
+    var f = \args(...) -> args.length;
+    f(1, 2); // 2;
+    f(1, 2, 3, 4); // 4
+
 ## Let Expression
-Let expression allow variables to be bound in expressions:
+The ket expression allow variables to be bound in expressions:
 
     // Id Let Expression
     let a = 3 in a;
@@ -197,7 +217,7 @@ name in the function body:
     let fib = \x -> (x < 2 ? x : fib(n - 1) + fib(n - 2)) in
         fib(10);
 
-Named functions can access themselves by funciton name. In both cases, the scope of the
+Named functions can access themselves by function name. In both cases, the scope of the
 function name is limited to the evaluation of the bound value.
 
     let fib = function impl(x) { return (x < 2 ? x : impl(n - 1) + impl(n - 2)); } in
@@ -283,14 +303,47 @@ Available syntaxes, along with translations, are shown here:
     a[b][function(x) { return x.y; }({'y': 7})];
 
 ## Function Curry Operator
+In place of sequence expressions, parenthesized comma separated expressions are used to
+curry functions. Their current use to group a subexpression remains unchanged as
+a parenthesized expression with only a single expression just returns the value
+of that expression.
+
+    var add = \x, y -> x + y;
+    
+    var add10 = (add, 10);
+    add10(3); // 13
+    add10("abc"); "10abc";
+
+Select unary, binary, and ternary operators can also be converted to regular functions
+using the curry syntax:
+
+    var binary = \op, x, y -> op(x, y);
+    
+    var add = (binary, (+));
+    add(2, 5); // 7
+
+Logical and conditional expressions may be converted but the converted form
+will eagerly evaluate all arguments.
+
+    var args = \args(...) -> args;
+    var foldl = \f, z, x -> Array.prototype.reduce.call(x, f, z);
+    
+    // Function that sums its arguments
+    var add = args \> (foldl, (+), 0);
+    add(); // 0;
+    add(3); // 3
+    add(3, 10, 5); // 18
+
+The `this` binding of a function cannot be changed using the curry operator.
+Use `Function.prototype.bind` for this.
 
 ## Function Composition Operator
 The `\>` operator composes two functions into a new function. It behaves like:
 
-    var (\>) = \g, f -> \x -> f(g(x));
+    var (\>) = \g, f -> \args(...) -> f(g.apply(null, args));
 
-Which is the same as F#'s `>>` operator but the opposite of Haskells `.`. The 
-resulting function takes a single argument.
+Which is the same as F#'s `>>` operator but the opposite of Haskell's `.`. The 
+resulting function may forward any number of arguments to `g`.
 
 The `\>` is left associative and has lower precedence than the conditional expression.
 It has higher precedence than the pipe operator.
@@ -472,10 +525,9 @@ clearer but does not change the meaning of the actual program
 ### Function Declarations
 Function declarations are not necessary. Use function expressions instead.
 
-### Comma Separated Expressions
+### Sequence Expressions
 Comma separated sequences of expressions are not allowed. An expressions must be 
-a single expression. Such sequence expressions are usually not clear and make the
-language more complex than it should be. 
+a single expression. The syntax is reused for curry expressions.
 
 ### With Statement
 With statements are not valid in strict mode ECMAScript and have been removed.

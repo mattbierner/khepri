@@ -427,7 +427,15 @@ var _check = function(node) {
             next(
                 seq(node.bindings.map(_check)),
                 _check(node.body)));
-
+    
+    case 'CurryExpression':
+        return next(
+            _check(node.base),
+            seq(map(node.args, _check)));
+        
+    case 'UnaryOperatorExpression':
+        return ok();
+    
 // Function
     case 'FunctionExpression':
         return realBlock(

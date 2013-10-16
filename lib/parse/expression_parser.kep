@@ -17,6 +17,9 @@ package (
     objectProperties,
     objectLiteral,
     
+// Curry Expression
+    curryExpression,
+    
 // Primary Expression
     primaryExpression,
     
@@ -335,6 +338,79 @@ in
                     letBody))),
         ast_expression.LetExpression.create));
 
+// Operators Expression
+////////////////////////////////////////
+var unaryOperatorExpression = Parser('Unary Operator Expression',
+    bind(
+        either(
+            keyword('typeof'),
+            punctuator(
+                '~',
+                '!')),
+        \{loc, value} -> always(ast_expression.UnaryOperatorExpression.create(loc, value))));
+
+var binaryOperatorExpression = Parser('Binary Operator Expression',
+    bind(
+        either(
+            keyword('instanceof'),
+            punctuator(
+                '*',
+                '/',
+                '+',
+                '-',
+                '%',
+                '<<',
+                '>>',
+                '>>>',
+                '<',
+                '>',
+                '<=',
+                '>=',
+                '==',
+                '!=',
+                '===',
+                '!==',
+                '&',
+                '^',
+                '|',
+                '||',
+                '&&',
+                '\\>',
+                '|>')),
+        \{loc, value} -> always(ast_expression.BinaryOperatorExpression.create(loc, value))));
+
+var ternayOperatorExpression = Parser('Ternary Operator Expression',
+    bind(
+        punctuator('?'),
+        \{loc, value} -> always(ast_expression.TernayOperatorExpression.create(loc, value))));
+
+var operatorExpression = Parser('Operator Expression',
+    choice(
+        unaryOperatorExpression,
+        binaryOperatorExpression,
+        ternayOperatorExpression));
+
+// Curry Expression
+////////////////////////////////////////
+curryExpression = Parser('Curry Expression', let
+    base = expected('expression',
+        either(
+            attempt(expression),
+            operatorExpression))
+in
+    between(punctuator('('), punctuator(')'),
+        nodea(
+            enumeration(
+                base,
+                optional([], next(
+                    punctuator(','),
+                    eager(sepBy(punctuator(','),
+                        expression))))),
+            \loc, base, elements -> 
+                (elements.length ?
+                    ast_expression.CurryExpression.create(loc, base, elements) :
+                    base))));
+
 // Primary Expression
 ////////////////////////////////////////
 primaryExpression = Parser('Primary Expression',
@@ -342,8 +418,7 @@ primaryExpression = Parser('Primary Expression',
         thisExpression,
         letExpression,
         identifier,
-        between(punctuator('('), punctuator(')'),
-            expression),
+        curryExpression,
         literal,
         arrayLiteral,
         objectLiteral,
@@ -586,7 +661,7 @@ var precedenceTable = [
 ];
 
 binaryExpression = Parser('Binary Expression',
-    precedence(unaryExpression, precedenceTable));
+    precedence(memo(unaryExpression), precedenceTable));
 
 // Conditional Expression
 ////////////////////////////////////////

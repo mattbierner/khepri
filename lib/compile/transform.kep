@@ -276,16 +276,17 @@ var transform = function(node) {
                     khepri_statement.BlockStatement.create(null, [
                         khepri_statement.ReturnStatement.create(null, 
                             khepri_expression.FunctionExpression.create(node.loc, null,
-                                khepri_pattern.ArgumentsPattern.create(null, null, [
-                                    khepri_pattern.IdentifierPattern.create(null,
-                                        khepri_value.Identifier.create(null, 'x'))]),
+                                khepri_pattern.ArgumentsPattern.create(null, null, []),
                                 khepri_statement.BlockStatement.create(null, [
                                     khepri_statement.ReturnStatement.create(null,
                                         khepri_expression.CallExpression.create(null,
                                             khepri_value.Identifier.create(null, 'g'), [
                                                 khepri_expression.CallExpression.create(null,
-                                                     khepri_value.Identifier.create(null, 'f'), [
-                                                         khepri_value.Identifier.create(null, 'x')])]))])))])), [
+                                                     khepri_expression.MemberExpression.create(null,
+                                                         khepri_value.Identifier.create(null, 'f'),
+                                                         khepri_value.Identifier.create(null, 'apply')),
+                                                     [khepri_value.Literal.create(null, 'null', null),
+                                                     khepri_value.Identifier.create(null, 'arguments')])]))])))])), [
                     node.left,
                     node.right]));
             
@@ -354,7 +355,66 @@ var transform = function(node) {
                              khepri_statement.BlockStatement.create(null, [
                                  khepri_statement.ReturnStatement.create(null, node.body)]))])),
                 []));
-
+    
+    case 'CurryExpression':
+        return (node.args.length === 0 ?
+            transform(node.base) :
+            transform(
+                khepri_expression.CallExpression.create(null,
+                    khepri_expression.MemberExpression.create(null,
+                        transform(node.base),
+                        khepri_value.Identifier.create(null, 'bind')),
+                    concat(
+                        khepri_value.Literal.create(null, 'null', null),
+                        map(node.args, transform)))));
+    
+    case 'UnaryOperatorExpression':
+         return transform(
+             khepri_expression.FunctionExpression.create(node.loc, null,
+                khepri_pattern.ArgumentsPattern.create(null, null, [
+                    khepri_pattern.IdentifierPattern.create(null,
+                        khepri_value.Identifier.create(null, 'x'))]),
+            khepri_statement.BlockStatement.create(null, [
+                khepri_statement.ReturnStatement.create(null, 
+                    khepri_expression.UnaryExpression.create(null,
+                        node.op,
+                        khepri_value.Identifier.create(null, 'x')))])));
+         
+    case 'BinaryOperatorExpression':
+        var kind = (node.op === '||' || node.op === '&&' ?
+            khepri_expression.LogicalExpression :
+            khepri_expression.BinaryExpression);
+        
+        return transform(
+             khepri_expression.FunctionExpression.create(node.loc, null,
+                khepri_pattern.ArgumentsPattern.create(null, null, [
+                    khepri_pattern.IdentifierPattern.create(null,
+                        khepri_value.Identifier.create(null, 'x')),
+                    khepri_pattern.IdentifierPattern.create(null,
+                        khepri_value.Identifier.create(null, 'y'))]),
+            khepri_statement.BlockStatement.create(null, [
+                khepri_statement.ReturnStatement.create(null, 
+                    kind.create(null,
+                        node.op,
+                        khepri_value.Identifier.create(null, 'x'),
+                        khepri_value.Identifier.create(null, 'y')))])));
+    
+    case 'BinaryOperatorExpression':
+        return transform(
+             khepri_expression.FunctionExpression.create(node.loc, null,
+                khepri_pattern.ArgumentsPattern.create(null, null, [
+                    khepri_pattern.IdentifierPattern.create(null,
+                        khepri_value.Identifier.create(null, 'x')),
+                    khepri_pattern.IdentifierPattern.create(null,
+                        khepri_value.Identifier.create(null, 'y')),
+                        khepri_pattern.IdentifierPattern.create(null,
+                        khepri_value.Identifier.create(null, 'z'))]),
+            khepri_statement.BlockStatement.create(null, [
+                khepri_statement.ReturnStatement.create(null, 
+                    khepri_expression.ConditionalExpression.create(null,
+                        khepri_value.Identifier.create(null, 'x'),
+                        khepri_value.Identifier.create(null, 'y'),
+                        khepri_value.Identifier.create(null, 'z')))])));
 // Function
     case 'FunctionExpression':
         return let
