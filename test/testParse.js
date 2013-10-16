@@ -2,7 +2,8 @@ define(['./parser/testStatement',
         './parser/testArrayLiteral',
         './parser/testObjectLiteral',
         './parser/testExpression',
-        './parser/testFunction'],
+        './parser/testFunction',
+        './parser/testPackage'],
 function(/*...*/){
     var tests = arguments;
     return function(){

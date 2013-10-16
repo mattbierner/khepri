@@ -66,6 +66,48 @@ function(parse,
                 var result = lexical.check(testParser(lexer.lex("{ var a; } var a; ")));
                 assert.ok(result.body[0].body[0].declarations[0].id.name !== result.body[1].declarations[0].id.name);
             }],
+            ["Package duplicate export name",
+            function(){
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("package (x, x) {}")));
+                });
+                
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("package (x, y, z, x) {}")));
+                });
+            }],
+            ["Package with binding conflicts with export",
+            function(){
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("package (x) with x = 3 {}")));
+                });
+                
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("package (y, z, x) with [[[x]]] = 3 {}")));
+                });
+                
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("package (y, z, x) with import 'x' x {}")));
+                });
+            }],
+            ["Package block scope conflicts with exports",
+            function(){
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("package (x) { var x; }")));
+                });
+                
+                assert.ok(
+                    lexical.check(testParser(lexer.lex("package (x) { {var x; } }"))));
+            }],
+            ["Package block scope conflicts with with",
+            function(){
+                assert.throws(function(){
+                    lexical.check(testParser(lexer.lex("package () with x = 3 in { var x; }")));
+                });
+                
+                assert.ok(
+                    lexical.check(testParser(lexer.lex("package () with x = 3 in { {var x; } }"))));
+            }],
             
             ["Multiple parameter same name",
             function(){
@@ -76,6 +118,9 @@ function(parse,
                 assert.throws(function(){
                     lexical.check(testParser(lexer.lex("(\\x, a, b, x -> x*x)(2)")));
                 });
+                
+                 assert.ok(
+                    lexical.check(testParser(lexer.lex("\\x -> \\x -> x;"))));
             }],
             ["Let bindings with same name",
             function(){

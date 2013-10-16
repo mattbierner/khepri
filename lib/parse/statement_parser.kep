@@ -112,7 +112,7 @@ in
 var variableDeclarationList = let
     initialiser = next(
         punctuator('='),
-        topLevelExpression),
+        expected('expression', topLevelExpression)),
 
     variableDeclaration = nodea(
         enumeration(
@@ -133,7 +133,7 @@ variableStatement = Parser('Variable Statement',
 // With Statement
 ////////////////////////////////////////
 withStatement = Parser('With Statement', let
-    withIdentifier = expected("Any pattern", pattern),
+    withIdentifier = expected("pattern", pattern),
 
     withBinding = either(
         importPattern,

@@ -344,12 +344,13 @@ var _check = function(node) {
         return block(
             next(
                 seq(node.bindings.map(_check)),
-                _check(node.body)));
+                seq(map(node.body.body, _check))));
         
     case 'SwitchStatement':
-        return seq([
-            _check(node.discriminant),
-            block(seq(map(node.cases, _check)))]);
+        return block(
+            next(
+                _check(node.discriminant),
+                seq(map(node.cases, _check))));
     
     case'ReturnStatement':
         return _check(node.argument);
@@ -364,9 +365,9 @@ var _check = function(node) {
             block(_check(node.finalizer))]);
     
     case 'WhileStatement':
-        return seq([
+        return next(
             _check(node.test),
-            block(_check(node.body))]);
+            block(_check(node.body)));
     
     case 'DoWhileStatement':
         return seq([
@@ -450,15 +451,15 @@ var _check = function(node) {
             _check(node.exports),
             (node.body.type === 'WithStatement' ?
                 next(
-                    seq(node.body.bindings.map(_check)),
-                    _check(node.body.body)) :
+                    seq(map(node.body.bindings, _check)),
+                    seq(map(node.body.body.body, _check))) :
                 seq(map(node.body.body, _check)))]);
         
     case 'PackageExports':
         return seq(map(node.exports, _check));
     
     case 'PackageExport':
-        return addMutableBinding(node.id.name, node.loc);
+        return addMutableBindingInRealBlock(node.id.name, node.loc);
 
 // Clause
     case 'CatchClause':
@@ -521,20 +522,21 @@ var _check = function(node) {
         return examineScope(\s -> {
             if (!node.id) {
                 var id = ast_pattern.IdentifierPattern.create(null,
-                  ast_value.Identifier.create(null, s.getUnusedId('__o')));
+                    ast_value.Identifier.create(null, s.getUnusedId('__o')));
                 id.gen = true;
                 node.id = id;
             }
-            node.elements = map(node.elements,
-                \x -> (x.value ? x : {'key': ast_value.Literal.create(null, 'string', x.key.id.name), 'value': x.key}));
-            
             return next(
                 _check(node.id),
                 seq(map(
                     node.elements,
-                    \x -> _check(x.value))));
+                    _check)));
         });
-    
+    case 'ObjectPatternElement':
+        return (node.target ?
+            _check(node.target) :
+            _check(node.key));
+        
     case 'EllipsisPattern':
         return ok();
         

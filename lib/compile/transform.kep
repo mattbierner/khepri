@@ -81,7 +81,7 @@ var objectPattern = \base, pattern, key, f -> {
         var elements2 = reduce(
             pattern.elements,
             \p, c ->
-                let val = objectPattern(innerBase, c.value, c.key) in (val ? concat(p, val) : p),
+                let val = objectPattern(innerBase, c.target, c.key) in (val ? concat(p, val) : p),
             []);
         return (pattern.id.gen ? elements2 : 
             concat(
@@ -172,7 +172,7 @@ var transform = function(node) {
                          p,
                         ecma_declaration.VariableDeclarator.create(null, transform(imp.pattern.id), base),
                         reduce(imp.pattern.elements, \p, c ->
-                            let val = objectDeclPattern(transform(imp.pattern.id), c.value, c.key) in (val ? concat(p, val) : p),
+                            let val = objectDeclPattern(transform(imp.pattern.id), c.target, c.key) in (val ? concat(p, val) : p),
                             []));
                 }
                 return p;
@@ -191,7 +191,7 @@ var transform = function(node) {
                     khepri_declaration.VariableDeclarator.create(null, imp.pattern.id, base),
                     flatten(
                         map(imp.pattern.elements, \c ->
-                            objectDeclPattern(imp.pattern.id, c.value, c.key))));
+                            objectDeclPattern(imp.pattern.id, c.target, c.key))));
              
             case 'ArrayPattern':
                 return concat(
@@ -342,7 +342,7 @@ var transform = function(node) {
                     base = khepri_value.Identifier.create(null, c.id.name);
                     return concat(p, khepri_declaration.VariableDeclaration.create(null,
                         reduce(c.elements, \p, c ->
-                            let val = objectDeclPattern(base, c.value, c.key) in (val ? concat(p, val) : p),
+                            let val = objectDeclPattern(base, c.target, c.key) in (val ? concat(p, val) : p),
                             [])));
                 }
                 return p;

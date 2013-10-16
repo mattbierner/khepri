@@ -1,6 +1,14 @@
 # ChangeLog #
 
-## 0.3.0 - October 11, 2013
+## 0.3.1 - October 16, 2013
+* Made the lexical requirements for packages and the with statement correct,
+  stricter than they were previously.
+** Package exports may not be duplicated.
+** With body may not declare a variable that conflicts with any with binding.
+** Package with bindings must not conflict with any package exports.
+* Fixed object patterns not always working for explicit unpacks.
+
+## 0.3.0 - October 14, 2013
 * Repurposed the with statement to behave like a statement level let expression.
 ** With statements can also be used to import a package locally using the import
   pattern.

@@ -1,5 +1,5 @@
 /**
- * @fileOverview Lexers for line terminators based on ECMAScrLexeript 5.1.
+ * @fileOverview Khepri line terminators lexers.
  */
 package (
     lf,

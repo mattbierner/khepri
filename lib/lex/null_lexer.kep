@@ -1,5 +1,5 @@
 /**
- * @fileOverview ECMAScript null value lexers.
+ * @fileOverview Khepri null value lexers.
  */
 package (
     nullLiteral)

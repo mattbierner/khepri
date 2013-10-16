@@ -243,7 +243,7 @@ objectLiteral = Parser('Object Literal',
 
 // Function Expression
 ////////////////////////////////////////
-var parameter = expected("Any pattern", pattern.pattern);
+var parameter = expected("pattern", pattern.pattern);
 
 /**
  * Parser for a function's parameters.
@@ -275,16 +275,17 @@ var lambdaBody = either(
     node(
         expression,
         \loc, x ->
-            ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(loc, x)])));
+            ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)])));
 
 var lambdaFunctionExpression = nodea(
     next(
         punctuator('\\'),
         enumeration(
             lambdaFormalParameterList,
-            punctuator('->'),
-            lambdaBody)),
-    \loc, parameters, _, body ->
+            next(
+                punctuator('->'),
+                lambdaBody))),
+    \loc, parameters, body ->
         ast_expression.FunctionExpression.create(loc, null, parameters, body));
 
 /**
@@ -316,22 +317,27 @@ var letBinding =  Parser('Let Binding',
             then(
                 letIdentifier,
                 punctuator('=')),
-            conditionalExpression),
+            expected('expression', conditionalExpression)),
        ast_declaration.Binding.create));
 
 /**
  * Parser for a let expression.
  */
-var letExpression = Parser('Let Expression',
+var letExpression = Parser('Let Expression', let
+    letBindings = expected('let bindings',
+        sepBy1(punctuator(','),
+            letBinding)),
+    
+    letBody = expected('expression', conditionalExpression)
+in
     nodea(
         next(
             keyword('let'),
             enumeration(
-                eager(sepBy1(punctuator(','),
-                    letBinding)),
+                eager(letBindings),
                 next(
                     keyword('in'),
-                    conditionalExpression))),
+                    letBody))),
         ast_expression.LetExpression.create));
 
 // Primary Expression
