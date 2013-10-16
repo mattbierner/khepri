@@ -56,6 +56,9 @@ package (
 // Assignment
     assignmentOperator,
     assignmentExpression,
+
+// Compose
+    composeExpression,
     
 // Expression
     expression)
@@ -265,7 +268,7 @@ var lambdaBody = either(
     between(punctuator('{'), punctuator('}'),
         functionBody),
     node(
-        expression,
+        conditionalExpression,
         \loc, x ->
             ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)])));
 
@@ -309,7 +312,7 @@ var letBinding =  Parser('Let Binding',
             then(
                 letIdentifier,
                 punctuator('=')),
-            expected('expression', conditionalExpression)),
+            expected('expression', expression)),
        ast_declaration.Binding.create));
 
 /**
@@ -320,7 +323,7 @@ letExpression = Parser('Let Expression', let
         sepBy1(punctuator(','),
             letBinding)),
     
-    letBody = expected('expression', conditionalExpression)
+    letBody = expected('expression', expression)
 in
     nodea(
         next(
@@ -507,10 +510,6 @@ in
 
 // Binary Expressions
 ////////////////////////////////////////
-var composeOperator = punctuator('\\>');
-
-var pipeOperator = punctuator('|>');
-
 var multiplicativeOperator = punctuator('*', '/', '%');
 
 var additiveOperator = punctuator('+', '-');
@@ -575,16 +574,6 @@ var precedenceTable = [
         'node': ast_expression.BinaryExpression
     },
     {
-        'sep': composeOperator,
-        'precedence': 9,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': pipeOperator,
-        'precedence': 11,
-        'node': ast_expression.BinaryExpression
-    },
-    {
         'sep': logicalOROperator,
         'precedence': 12,
         'node': ast_expression.LogicalExpression
@@ -609,20 +598,44 @@ conditionalExpression = let
         punctuator('?'),
         enumeration(
             expected("expression", expression),
-            punctuator(':'),
-            expected("expression", expression)))
+            next(
+                punctuator(':'),
+                expected("expression", expression))))
 in
     bind(binaryExpression, \bin -> 
         optional(bin,
             nodea(
                 conditionalBody,
-                \loc, consequent, _1, alternate ->
+                \loc, consequent, alternate ->
                     ast_expression.ConditionalExpression.create(loc, bin, consequent, alternate))));
 
-// Assignment Statement
+// Compose Operator
+////////////////////////////////////////
+var composeOperator = punctuator('\\>');
+
+var pipeOperator = punctuator('|>');
+
+var composePrecedenceTable = [
+    {
+        'sep': composeOperator,
+        'precedence': 1,
+        'node': ast_expression.BinaryExpression
+    },
+    {
+        'sep': pipeOperator,
+        'precedence': 2,
+        'node': ast_expression.BinaryExpression
+    }
+];
+
+composeExpression = Parser('Compose Expression',
+    precedence(conditionalExpression, composePrecedenceTable));
+
+// Assignment Expression
 ////////////////////////////////////////
 assignmentOperator = Parser('Assignment Operator',
-    punctuator('=',
+    punctuator(
+        '=',
         '*=',
         '*=',
         '/=',
@@ -647,6 +660,6 @@ assignmentExpression = Parser('Assignment Expression',
 
 // Expression
 ////////////////////////////////////////
-expression = conditionalExpression;
+expression = composeExpression;
 
 }
