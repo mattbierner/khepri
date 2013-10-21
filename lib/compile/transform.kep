@@ -239,7 +239,7 @@ var transform = function(node) {
             transform(node.body));
     
     case 'DoWhileStatement':
-        return new ecma_statement.DoWhileStatment(node.loc,
+        return new ecma_statement.DoWhileStatement(node.loc,
             transform(node.body),
             transform(node.test));
     

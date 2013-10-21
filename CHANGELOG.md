@@ -1,5 +1,13 @@
 # ChangeLog #
 
+## 0.4.1 - Octover 20, 2013
+* Fixed bad reference on DoWhileStatement transform.
+
+## 0.4.0 - October 17, 2013
+* Added pipeline and compose operators.
+* Added syntax for currying functions.
+* Added ability to transform operators to functions.
+
 ## 0.3.1 - October 16, 2013
 * Made the lexical requirements for packages and the with statement correct,
   stricter than they were previously.

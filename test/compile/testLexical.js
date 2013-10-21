@@ -68,7 +68,7 @@ function(parse,
                 assert.ok(result.body[0].body[0].declarations[0].id.name !== result.body[1].declarations[0].id.name);
             }],
             
-            ["Switch body introduces new scope but not cases.",
+            ["Switch body introduces new scope but not cases",
             function(){
                 assert.throws(function(){
                     lexical.check(testParser(lexer.lex("var a; switch(a) {case 0: var a; default: var a; }")));
