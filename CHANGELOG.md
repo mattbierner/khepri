@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.4.2 - Octover 29, 2013
+* Fixed lexical transform for ids using building names.
+
 ## 0.4.1 - Octover 20, 2013
 * Fixed bad reference on DoWhileStatement transform.
 
