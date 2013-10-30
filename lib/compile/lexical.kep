@@ -105,7 +105,7 @@ var Scope = function(record, outer, mapping) {
  * Does this scope have a given binding?
  */
 Scope.prototype.hasOwnBinding = \id ->
-    this.record.hasOwnProperty(id);
+    Object.prototype.hasOwnProperty.call(this.record, id);
 
 /**
  * Does this scope or its parents have a given binding?
@@ -125,7 +125,7 @@ Scope.prototype.getBinding = \id ->
  * Does this scope have a mapping for a given identifier.
  */
 Scope.prototype.hasMapping = \id ->
-    this.mapping.hasOwnProperty(id) || (this.outer && this.outer.hasMapping(id));
+    Object.prototype.hasOwnProperty(this.mapping, id) || (this.outer && this.outer.hasMapping(id));
 
 /**
  * Get the mapped value for a given identifier.
@@ -273,6 +273,7 @@ var addMutableBinding = \id, loc ->
          modifyScope(\s -> Scope.addMutableBinding(s, id, loc)),
          modifyRealScope(\s -> Scope.addMutableBinding(s, id, loc)),
          addMapping(id, id)]);
+
 /**
  * Adds a new immutable binding in the current scope. Does not perform any checks.
  */
@@ -281,6 +282,7 @@ var addImmutableBinding = \id, loc ->
          modifyScope(\s -> Scope.addImmutableBinding(s, id, loc)),
          modifyRealScope(\s -> Scope.addImmutableBinding(s, id, loc)),
          addMapping(id, id)]);
+
 /**
  * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
  */
