@@ -122,16 +122,22 @@ Scope.prototype.getBinding = \id ->
         (this.outer ? this.outer.getBinding(id) : null);
 
 /**
- * Does this scope have a mapping for a given identifier.
+ * Does this scope have its own a mapping for a given identifier.
+ */
+Scope.prototype.hasOwnMapping = \id ->
+    Object.prototype.hasOwnProperty.call(this.mapping, id);
+
+/**
+ * Does this scope have any mapping for a given identifier.
  */
 Scope.prototype.hasMapping = \id ->
-    Object.prototype.hasOwnProperty(this.mapping, id) || (this.outer && this.outer.hasMapping(id));
+    this.hasOwnMapping(id) || (this.outer && this.outer.hasMapping(id));
 
 /**
  * Get the mapped value for a given identifier.
  */
 Scope.prototype.getMapping = \id ->
-    (this.mapping.hasOwnProperty(id) ?
+    (this.hasOwnMapping(id) ?
         this.mapping[id] :
         this.outer && this.outer.getMapping(id));
 
