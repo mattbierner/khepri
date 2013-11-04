@@ -87,7 +87,8 @@ importPattern = Parser('Import Pattern',
         nodea(
             enumeration(
                 stringLiteral,
-                either(
+                choice(
+                    sinkPattern,
                     attempt <| objectPattern,
                     identifierPattern)),
             ast_pattern.ImportPattern.create)));
