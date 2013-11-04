@@ -630,25 +630,39 @@ in
 
 // Compose Operator
 ////////////////////////////////////////
-var composeOperator = punctuator(
+var rightComposeOperator = punctuator(
     '\\>',
-    '\\>>',
+    '\\>>');
+
+var leftComposeOperator = punctuator(
     '<\\',
     '<<\\');
 
-var pipeOperator = punctuator(
-    '|>',
-    '<|');
+var leftPipeOperator = punctuator('|>');
+
+var rightPipeOperator = punctuator('<|');
 
 var composePrecedenceTable = [
     {
-        'sep': composeOperator,
+        'sep': rightComposeOperator,
         'precedence': 1,
         'node': ast_expression.BinaryExpression
     },
     {
-        'sep': pipeOperator,
+        'sep': leftComposeOperator,
+        'precedence': 1,
+        'right': true,
+        'node': ast_expression.BinaryExpression
+    },
+    {
+        'sep': leftPipeOperator,
         'precedence': 2,
+        'node': ast_expression.BinaryExpression
+    },
+    {
+        'sep': rightPipeOperator,
+        'precedence': 2,
+        'right': true,
         'node': ast_expression.BinaryExpression
     }
 ];

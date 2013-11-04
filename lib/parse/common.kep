@@ -7,33 +7,35 @@ package (
     nodea,
     positionParser)
 with
-    import 'parse/parse' parse,
-    import 'khepri/position' position,
-    import 'nu/stream' stream
+    import 'parse/parse' parse{
+        always,
+        bind},
+    import 'khepri/position' {SourceLocation},
+    import 'nu/stream' stream{'end': NIL}
 in {
+
 // Operator Precedence
 ////////////////////////////////////////
-precedence = function(p, table) {
-    var sep = parse.choicea(table.map(function(entry) {
-        return parse.bind(entry.sep, function(v) {
-            return parse.always({
-                'value': v.value,
-                'node': entry.node,
-                'precedence': entry.precedence
-            }, v.value);
-        });
-    }));
+precedence = \p, table -> {
+    var sep = parse.choicea(
+        table.map(\entry ->
+            bind(entry.sep, \{value} ->
+                always({
+                    'value': value,
+                    'node': entry.node,
+                    'precedence': entry.precedence,
+                    'right': entry.right
+                }, value))));
     
-    return parse.bind(
-        parse.rec(function(self) {
-            return parse.cons(p,
-                parse.optional(stream.end,
+    return bind(
+        parse.eager(parse.rec(\self ->
+            parse.cons(p,
+                parse.optional(NIL,
                     parse.cons(sep,
-                        parse.expected("binary expression", self))));
-        }),
-        function(x) {
-            var list = stream.toArray(x);
-            var stack = [], out = [];
+                        parse.expected("binary expression", self)))))),
+        \list -> {
+            var stack = [],
+                out = [];
             
             while (list.length > 0) {
                 var tok = list.shift();
@@ -42,11 +44,13 @@ precedence = function(p, table) {
                 } else {
                     while (stack.length > 0) {
                         var o2 = stack[stack.length - 1];
-                        if (o2.precedence <= tok.precedence) {
+                        if ((!tok.right && o2.precedence === tok.precedence) ||
+                          (o2.precedence < tok.precedence)) {
                             stack.pop();
                             var rt = out.pop(),
                                 lf = out.pop();
-                            out.push(new (o2.node)(position.SourceLocation.merge(lf.loc, rt.loc), o2.value, lf, rt));
+                            
+                            out.push(new (o2.node)(SourceLocation.merge(lf.loc, rt.loc), o2.value, lf, rt));
                         } else {
                             break;
                         }
@@ -59,7 +63,7 @@ precedence = function(p, table) {
                 var o = stack.pop();
                 var rt = out.pop(),
                     lf = out.pop();
-                out.push(new (o.node)(position.SourceLocation.merge(lf.loc, rt.loc), o.value, lf, rt));
+                out.push(new (o.node)(SourceLocation.merge(lf.loc, rt.loc), o.value, lf, rt));
             }
             
             return parse.always(out.pop());
@@ -68,41 +72,30 @@ precedence = function(p, table) {
 
 // State Interaction
 ////////////////////////////////////////
-positionParser = parse.extract(function(state) {
-    return state.position;
-});
+positionParser = parse.extract(\{position} -> position);
 
-var locParser = parse.extract(function(state) {
-    return state.loc;
-});
+var locParser = parse.extract(\{loc} -> loc);
 
-var prevEnd = parse.extract(function(state) {
-    return state._prevEnd;
-});
+var prevEnd = parse.extract(\{_prevEnd} -> _prevEnd);
 
 // Ast Node
 ////////////////////////////////////////
-node = function(p, f) {
-    return parse.binds(
+node = \p, f ->
+    parse.binds(
         parse.enumeration(
             locParser,
             p,
             prevEnd),
-        function(o, x, c) {
-            return parse.always(f(new position.SourceLocation(o.start, c), x));
-        });
-};
+        \o, x, c ->
+            always(f(new SourceLocation(o.start, c), x)));
 
-nodea = function(p, f) {
-    return parse.binds(
+nodea = \p, f ->
+    parse.binds(
         parse.enumeration(
             locParser,
             p,
             prevEnd),
-        function(o, x, c) {
-            return parse.always(f.apply(undefined, stream.toArray(stream.cons(new position.SourceLocation(o.start, c), x))));
-        });
-};
-
+        \o, x, c ->
+            always(f.apply(undefined, stream.toArray(stream.cons(new SourceLocation(o.start, c), x)))));
 
 }
