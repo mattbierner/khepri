@@ -14,7 +14,7 @@ with
     import 'khepri/parse/statement_parser' statement
 in {
 
-/* Circular Declarations 
+/* Circular
  ******************************************************************************/
 var withStatement = \args(...) -> {
     with
@@ -48,7 +48,8 @@ var packageExport = Parser('Package Export',
 var packageExports = Parser('Package Exports',
     node(
         between(punctuator('('), punctuator(')'), 
-            eager(sepBy(punctuator(','), packageExport))),
+            eager <|
+            sepBy(punctuator(','), packageExport)),
         ast_package.PackageExports.create));
 
 /**

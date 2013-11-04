@@ -43,7 +43,7 @@ with
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 
-var join = \p, c -> p + c;
+var join = (foldl, (+), '');
 
 /* Lexers
  ******************************************************************************/
@@ -60,8 +60,8 @@ regularExpressionNonTerminator = token(
  */
 regularExpressionBackslashSequence = next(
     character('\\'),
-    bind(regularExpressionNonTerminator, \char ->
-        always('\\' + char)));
+    bind(regularExpressionNonTerminator,
+        (+, '\\') \> always));
 
 // Class
 ////////////////////////////////////////
@@ -75,7 +75,7 @@ regularExpressionClassChars = many(regularExpressionClassChar);
 
 regularExpressionClass = between(character('['), character(']'), 
     bind(regularExpressionClassChars, \body ->
-        always('[' + foldl(join, '', body) + ']')));
+        always('[' + join(body) + ']')));
 
 // Characters
 ////////////////////////////////////////
@@ -118,7 +118,7 @@ regularExpressionFlags = many(identifier_lexer.identifierPart);
  */
 regularExpressionBody = bind(
     cons(regularExpressionFirstChar, regularExpressionChars),
-    \s -> always(foldl(join, '', s)));
+    join \> always);
 
 // Literal
 ////////////////////////////////////////
@@ -131,6 +131,6 @@ regularExpressionLiteral = Parser('Regular Expression Lexer',
             between(character('`'), character('`'),
                 regularExpressionBody),
             regularExpressionFlags),
-        \body, flags -> always(new RegExp(body, foldl(join, '', flags)))));
+        \body, flags -> always(new RegExp(body, join(flags)))));
 
 }

@@ -96,4 +96,5 @@ comment = Parser('Comment Lexer',
     either(
         singleLineComment,
         multiLineComment));
+
 }

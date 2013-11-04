@@ -138,8 +138,9 @@ arrayElement = Parser('Array Element',
  * Parser for the elements of an array literal.
  */
 arrayElements = Parser('Array Elements',
-    eager(sepBy(punctuator(','),
-        expected('array element', arrayElement))));
+    eager <|
+    sepBy(punctuator(','),
+        expected('array element', arrayElement)));
 
 /**
  * Parser for an ECMASccript array literal.
@@ -178,9 +179,9 @@ propertyInitializer = Parser('Property Initializer',
  * Parser for a set or more properties in an object literal.
  */
 objectProperties = Parser('Object Properties',
-    eager(
-        sepBy(punctuator(','),
-            propertyInitializer)));
+    eager <|
+    sepBy(punctuator(','),
+        propertyInitializer));
 
 /**
  * Parser for an ECMAScript object literal.
@@ -259,7 +260,7 @@ var letBinding =  Parser('Let Binding',
             then(
                 letIdentifier,
                 punctuator('=')),
-            expected('expression', expression)),
+            expression |> (expected, 'expression')),
        ast_declaration.Binding.create));
 
 /**
@@ -270,7 +271,7 @@ letExpression = Parser('Let Expression', let
         sepBy1(punctuator(','),
             letBinding)),
     
-    letBody = expected('expression', expression)
+    letBody = expression |> (expected, 'expression')
 in
     nodea(
         next(
@@ -400,25 +401,24 @@ dotAccessor = Parser('Dot Accessor',
         next(
             punctuator('.'),
             identifier),
-        \loc, x -> [{
+        \loc, x -> ({
             'loc': loc,
             'property': x,
             'computed': false
-        }]));
+        })));
 
 /**
  * Parser for a bracket accessor in a member expression.
  */
 bracketAccessor = Parser('Bracket Accessor',
-    bind(
+    node(
         between(punctuator('['), punctuator(']'),
-            eager(sepBy1(punctuator(','),
-                expression))),
-        \accessor -> always(accessor.map(\x -> ({
-            'loc': x.loc,
+            expression),
+        \loc, x -> ({
+            'loc': loc,
             'property': x,
             'computed': true
-        })))));
+        })));
 
 /**
  * Parser for an accessor in a member expression.
@@ -438,18 +438,14 @@ var accessorReducer = \p, c ->
 /**
  * 
  */
-memberExpression = let
-    reducer = \p, c -> c.reduce(accessorReducer, p)
-in
-    Parser('Member Expression',
-        binds(
-            enumeration(
-                either(
-                    newExpression,
-                    primaryExpression),
-                many(accessor)),
-            \expression, props ->
-                 always(foldl(reducer, expression, props))));
+memberExpression = Parser('Member Expression',
+    binds(
+        enumeration(
+            either(
+                newExpression,
+                primaryExpression),
+            many(accessor)),
+        (foldl, accessorReducer) \>> always));
 
 // New Expression
 ////////////////////////////////////////
@@ -461,7 +457,7 @@ newExpression = Parser('New Expression',
         next(
             keyword('new'),
             enumeration(
-                expected("member expression", memberExpression),
+                memberExpression |> (expected, "member expression"),
                 optional([], args))),
         ast_expression.NewExpression.create));
 
@@ -474,33 +470,30 @@ leftHandSideExpression = let
     reducer = \p, c ->
         (c && c.hasOwnProperty('argument') ?
              ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c) :
-             c.reduce(accessorReducer, p))
+             accessorReducer(p, c))
 in
     Parser('Left Hand Side Expression',
         binds(
             enumeration(
-                memo(memberExpression),
+                memberExpression |> memo,
                 many(either(
                     args,
                     accessor))),
-            \member, accessors ->
-                always(foldl(reducer, member, accessors))));
+            (foldl, reducer) \>> always));
 
 // Left Hand Side Expression
 ////////////////////////////////////////
 /**
  * Parser for a left hand side expression.
  */
-leftHandReferenceExpression = let
-    reducer = \p, c -> c.reduce(accessorReducer, p)
-in
-    Parser('Left Hand Reference Expression',
-        binds(
-            enumeration(
-                choice(thisExpression, identifier),
-                many(accessor)),
-            \expression, props ->
-                 always(foldl(reducer, expression, props))));
+leftHandReferenceExpression = Parser('Left Hand Reference Expression',
+    binds(
+        enumeration(
+            either(
+                thisExpression,
+                identifier),
+            many(accessor)),
+        (foldl, accessorReducer) \>> always));
 
 // Unary Expression
 ////////////////////////////////////////
@@ -605,7 +598,9 @@ var precedenceTable = [
 ];
 
 binaryExpression = Parser('Binary Expression',
-    precedence(memo(unaryExpression), precedenceTable));
+    precedence(
+        unaryExpression |> memo,
+        precedenceTable));
 
 // Conditional Expression
 ////////////////////////////////////////
@@ -613,20 +608,20 @@ binaryExpression = Parser('Binary Expression',
  * 
  */
 conditionalExpression = let
-    conditionalBody = next(
-        punctuator('?'),
-        enumeration(
-            expected("expression", expression),
-            next(
-                punctuator(':'),
-                expected("expression", expression))))
+    binExpr = binaryExpression |> memo
 in
-    bind(binaryExpression, \bin -> 
-        optional(bin,
-            nodea(
-                conditionalBody,
-                \loc, consequent, alternate ->
-                    ast_expression.ConditionalExpression.create(loc, bin, consequent, alternate))));
+    either(
+        nodea(
+            enumeration(
+                attempt(then(
+                    binExpr,
+                    punctuator('?'))),
+                then(
+                    binaryExpression,
+                    punctuator(':')),
+                binaryExpression),
+            ast_expression.ConditionalExpression.create),
+        binExpr);
 
 // Compose Operator
 ////////////////////////////////////////
@@ -668,7 +663,9 @@ var composePrecedenceTable = [
 ];
 
 composeExpression = Parser('Compose Expression',
-    precedence(conditionalExpression, composePrecedenceTable));
+    precedence(
+        conditionalExpression |> memo,
+        composePrecedenceTable));
 
 // Assignment Expression
 ////////////////////////////////////////
@@ -681,7 +678,8 @@ assignmentExpression = Parser('Assignment Expression',
             attempt(enumeration(
                 leftHandReferenceExpression,
                 assignmentOperator)),
-            enumeration(expected('expression', expression))),
+            enumeration(
+                expression |> (expected, 'expression'))),
         \loc, left, op, right ->
             ast_expression.AssignmentExpression.create(loc, op.value, left, right)));
 
@@ -703,7 +701,7 @@ in
         nodea(
             enumeration(
                 deleteOperator,
-                expected('left hand side expression', leftHandSideExpression)),
+                leftHandReferenceExpression |> (expected, 'reference expression')),
             \loc, op, expression ->
                 ast_expression.UnaryExpression.create(loc, op.value, expression)));
 
@@ -717,4 +715,5 @@ topLevelExpression = choice(
     deleteExpression,
     assignmentExpression,
     expression);
+
 }

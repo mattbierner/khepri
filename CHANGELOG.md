@@ -15,6 +15,7 @@
   reserved words.)
 * Removed the `void` operator.
 * Delete can only be used as a top level expression.
+* Removed support for multi value bracket accessor.
 
 ## 0.4.2 - October 29, 2013
 * Fixed lexical transform for ids using building names.

@@ -130,7 +130,7 @@ variableStatement = Parser('Variable Statement',
 // With Statement
 ////////////////////////////////////////
 withStatement = Parser('With Statement', let
-    withIdentifier = expected("pattern", pattern),
+    withIdentifier = pattern |> (expected, "pattern"),
 
     withBinding = either(
         importPattern,
