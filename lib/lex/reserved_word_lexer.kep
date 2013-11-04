@@ -183,7 +183,7 @@ futureReservedWord = choice(
 reservedWord = Parser('ReservedWordLexer',
     choice(
        trie(keywordList),
-       nullLiteral, 
+       nullLiteral,
        booleanLiteral));
 
 }

@@ -138,8 +138,7 @@ arrayElement = Parser('Array Element',
  * Parser for the elements of an array literal.
  */
 arrayElements = Parser('Array Elements',
-    eager <|
-    sepBy(punctuator(','),
+    eager <| sepBy(punctuator(','),
         expected('array element', arrayElement)));
 
 /**
@@ -340,7 +339,7 @@ var operatorExpression = Parser('Operator Expression',
 curryExpression = Parser('Curry Expression', let
     base = expected('expression',
         either(
-            attempt(expression),
+            attempt <| expression,
             operatorExpression))
 in
     between(punctuator('('), punctuator(')'),
@@ -349,8 +348,8 @@ in
                 base,
                 optional([], next(
                     punctuator(','),
-                    eager(sepBy(punctuator(','),
-                        expression))))),
+                    eager <| sepBy(punctuator(','),
+                        expression)))),
             \loc, base, elements -> 
                 (elements.length ?
                     ast_expression.CurryExpression.create(loc, base, elements) :
@@ -375,8 +374,8 @@ primaryExpression = Parser('Primary Expression',
  * Parser for a list of arguments.
  */
 argumentList = Parser('Argument List',
-    eager(sepBy(punctuator(','),
-        expected("expression", expression))));
+    eager <| sepBy(punctuator(','),
+        expected("expression", expression)));
 
 /**
  * Parser for a argument list part of a call expression.
@@ -516,7 +515,7 @@ in
         binds(
             enumeration(
                 many(unaryOperator),
-                expected('left hand side expression', leftHandSideExpression)),
+                leftHandSideExpression |> (expected, 'left hand side expression')),
             \ops, expression ->
                 always(foldr(reducer, expression, ops))));
 
@@ -613,13 +612,13 @@ in
     either(
         nodea(
             enumeration(
-                attempt(then(
+                attempt <| then(
                     binExpr,
-                    punctuator('?'))),
+                    punctuator('?')),
                 then(
-                    binaryExpression,
+                    conditionalExpression,
                     punctuator(':')),
-                binaryExpression),
+                conditionalExpression),
             ast_expression.ConditionalExpression.create),
         binExpr);
 
@@ -675,9 +674,9 @@ assignmentOperator = Parser('Assignment Operator',
 assignmentExpression = Parser('Assignment Expression',
     nodea(
         append(
-            attempt(enumeration(
+            attempt <| enumeration(
                 leftHandReferenceExpression,
-                assignmentOperator)),
+                assignmentOperator),
             enumeration(
                 expression |> (expected, 'expression'))),
         \loc, left, op, right ->

@@ -20,7 +20,7 @@ with
     import 'khepri/parse/value_parser' {identifier, stringLiteral}
 in {
 
-/* Forward
+/* Circular
  ******************************************************************************/
 pattern = \args(...) -> pattern.apply(undefined, args);
 
@@ -54,7 +54,7 @@ arrayPattern = Parser('Array Pattern',
         enumeration(
             optional(null, identifierPattern),
             between(punctuator('['), punctuator(']'),
-                eager(sepBy1(punctuator(','), pattern)))),
+                eager <| sepBy1(punctuator(','), pattern))),
         ast_pattern.ArrayPattern.create));
 
 // Object Pattern
@@ -76,7 +76,8 @@ objectPattern = Parser('Object Pattern',
         enumeration(
             optional(null, identifierPattern),
             between(punctuator('{'), punctuator('}'),
-                eager(sepBy1(punctuator(','), objectPatternElement)))),
+                eager <| sepBy1(punctuator(','),
+                    objectPatternElement))),
         ast_pattern.ObjectPattern.create));
 
 // Import Pattern
@@ -104,13 +105,11 @@ argumentsPattern = Parser('Arguments Pattern', let
         identifierPattern),
     
     elements =
-        eager
-        <| sepBy(punctuator(','),
+        eager <| sepBy(punctuator(','),
             argumentsPatternElement)
 in
     either(
-        attempt
-        <| nodea(
+        attempt <| nodea(
             enumeration(
                 optional(null, identifierPattern),
                 between(punctuator('('), punctuator(')'),

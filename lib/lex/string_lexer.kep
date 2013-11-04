@@ -160,7 +160,7 @@ escapeSequence = choice(
  * Lexer for a valid single string character.
  */
 singleStringCharacter = choice(
-    attempt(lineContinuation),
+    attempt <| lineContinuation,
     next(escape, escapeSequence),
     token(\tok ->
         !(test(singleQuote, tok) ||
@@ -188,7 +188,7 @@ singleStringLiteral = Parser('Single String Literal',
  * Lexer for a valid double string character
  */
 doubleStringCharacter = choice(
-    attempt(lineContinuation),
+    attempt <| lineContinuation,
     next(escape, escapeSequence),
     token(\tok ->
         !(test(doubleQuote, tok) ||
@@ -209,7 +209,6 @@ doubleStringLiteral = Parser('Double String Literal',
     between(doubleQuote, doubleQuote,
         bind(doubleStringCharacters,
             join \> always)));
-
 
 // String Literal
 ////////////////////////////////////////

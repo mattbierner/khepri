@@ -54,9 +54,9 @@ State.setRealScope = \s, realScope ->
 
 /*
  ******************************************************************************/
-var ok = \x -> \s, ok, err -> ok(x, s);
+var ok = \x -> \s, ok, _ -> ok(x, s);
 
-var error = \x -> \s, ok, err -> err(x, s);
+var error = \x -> \s, _, err -> err(x, s);
 
 var bind = \p, f -> \s, ok, err -> cont(p, [s, \x, s -> f(x)(s, ok, err), err]);
 
@@ -64,9 +64,9 @@ var next = \p, n -> bind(p, \() -> n);
 
 var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
 
-var seq = \args() -> seqa(args);
+var seq = \args(...) -> seqa(args);
 
-var extract = \s, ok, err -> ok(s, s);
+var extract = \s, ok, _ -> ok(s, s);
 
 var examineScope = \f -> bind(extract, \s -> f(s.scope));
 

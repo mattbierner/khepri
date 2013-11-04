@@ -11,8 +11,8 @@ with
     import 'nu/stream' {'end': NIL},
     import 'khepri_ast/program' ast_program,
     import 'khepri/parse/common' {node},
-    import 'khepri/parse/statement_parser' _0,
-    import 'khepri/parse/package_parser' _1
+    import 'khepri/parse/statement_parser' _,
+    import 'khepri/parse/package_parser' _
 in {
 
 /* Circular
@@ -50,7 +50,7 @@ sourceElements = eager <| many(sourceElement);
 /**
  * Parser for an ECMAScript 5.1 program.
  */
-program = Parser('Program',
+program = (Parser, 'Program') <|
     node(
         either(
             then(khepriPackage, eof),
@@ -58,6 +58,6 @@ program = Parser('Program',
                 either(
                     next(eof, always(NIL)),
                     cons(sourceElement, self)))),
-        ast_program.Program.create));
+        ast_program.Program.create);
 
 }

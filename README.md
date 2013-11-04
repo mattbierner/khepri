@@ -337,15 +337,20 @@ will eagerly evaluate all arguments.
 The `this` binding of a function cannot be changed using the curry operator.
 Use `Function.prototype.bind` for this.
 
-## Function Composition Operator
-The `\>` operator composes two functions into a new function. It behaves like:
+## Composition Operator 
+The `\>` and `\>>` operators composes two functions into a new function. Using
+the `\>` operator, the resulting function takes a single argument while the result
+of the `\>>` takes an artrary number of arguments.
 
-    var (\>) = \g, f -> \args(...) -> f(g.apply(null, args));
+    var (\>) = \f, g -> \x -> g(f(x));
 
-Which is the same as F#'s `>>` operator but the opposite of Haskell's `.`. The 
-resulting function may forward any number of arguments to `g`.
+    var (\>>) = \g, g -> \args(...) -> g(f.apply(null, args));
 
-The `\>` is left associative and has lower precedence than the conditional expression.
+Both compose functions like F#'s `>>` operator but the opposite of Haskell's `.`.
+
+The composition operators are left associative and have lower precedence than
+the conditional expression. They two compose operators have the same precedence,
+and also have the same precedence as the reverse composition operators.
 It has higher precedence than the pipe operator.
 
     var f = \x -> x + 10,
@@ -361,7 +366,28 @@ It has higher precedence than the pipe operator.
     
     (o.g \> o.f)(5); // 11
 
-## Function Pipe Operator
+## Reverse Composition Operator
+The `<\` and `<<\` operators behave the same as the corresponding regular
+composition operators with their arguments flipped:
+
+    var (<\) = \f, g -> \x -> f(g(x));
+
+    var (<\) = \g, g -> \args(...) -> f(g.apply(null, args));
+
+They are right associative. All composition operators have the same precedence:
+
+    var f = \x -> x + 10,
+        g = \x -> x / 2;
+    
+    (f <\ g)(10); // 15
+
+    (f <\ f <\ g)(10); // (f <\ (f <\ g))(10); // 25
+    
+    (f <\ g \> f)(10); // ((f <\ g) \> f)(10); // 25
+
+    (f \> g <\ f)(10); // ((f \> g) <\ f)(10); // g(f(f(10))) // 15
+
+## Pipe Operator
 The `|>` operator applies a function on the right to input on the left.
 
     var (|>) = \x, f -> f(x);
@@ -390,19 +416,37 @@ readable way.
     // Higher precedence than logical ops
     (0 |> g) ? 10 |> f : 5 |> f // (0 |> g) ? (10 |> f) : (5 |> f); // 15
 
+## Reverse Pipe Operator
+The `<|` operator behaves the same as the pipe operator with its arguments flipped:
+
+    var (<|) = \f, x -> f(x);
+
+This is the same as a normal function call, but the reverse pipe operator allows
+the parenthesis to be removed, which may be clearer in certain situations.
+
+The reverse pipe is right associative and has equal precedence as the regular pipe operator:
+
+    var f = \x -> x + 10,
+        g = \x -> x / 2;
+
+    g |> 10; // 5
+
+    f |> g |> 10; // g |> (g |> 10); // f(g(10)); // 15
+
+    f <| 10 |> g; // g(f(10)); // 10  
+
 
 ## Modified ##
 
-# Restrict Assignment Expressions
+# Restrict Assignment and Delete Expressions
 Assignment is generally dangerous and allowing arbitrary assignments in expressions
 can make code difficult to reason about. However, without fundamental changes to
 the entire language, we need assignment. Therefore, Khepri restricts assignment
-to top level statements and it is disallowed inside of expressions. The left hand side
-of an assignment statement must be either an identifier or a member expression.
+and deletion to top level statements. The left hand side of assignment and delete
+expressions must be either an identifier or a member expression.
 
-For statements, anywhere any expression can appear either an assignment expression
-or a normal expression can be used. This is the only place assignment expressions
-are valid.
+In a statement, any expression may either be a normal expression or either an
+assignment or delete expression:
 
     var a = {'x': 4};
     a.x = 34; // valid since used as statement
@@ -418,10 +462,6 @@ clause in the switch statement.
 ### Object Literal Keys
 Like JSON, object literal keys must be strings. ECMAScript normally allows
 number and identifier key values as well.
-
-### 'get' and 'set' keywords
-In ECMAScript 5.1, 'get' and 'set' are identifiers. This is confusing as they
-have a special meaning in object literals.
 
 ### Regular Expression Literal Syntax
 Backticks are used to mark the start and the end of regular expressions instead
@@ -480,7 +520,7 @@ Duplicate variables in the same scope are disallowed:
     var c = b;
     var b = c; // Error, b already declared.
 
-Similarly, duplicate paramter names and let bindings in the same scope are disallowed:
+Similarly, duplicate parameter names and let bindings in the same scope are disallowed:
 
     \x, y, x -> x + y; // error, x defined twice.
     
@@ -519,11 +559,19 @@ clearer but does not change the meaning of the actual program
         return $('<div></div>');
     };
 
+### Numeric Literals with Leading Decimals
+All numeric literals must begin with a digit. Literals like `.5` that are valid numbers in 
+ECMAScript are not supported.
+
 
 ## Removed ##
 
 ### Function Declarations
 Function declarations are not necessary. Use function expressions instead.
+
+### Object Literal getters and setter syntax
+The `get` and `set` syntax in object literals is not supported.
+`Object.defineProperty` should be used instead.
 
 ### Sequence Expressions
 Comma separated sequences of expressions are not allowed. An expressions must be 

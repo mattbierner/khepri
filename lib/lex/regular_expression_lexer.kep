@@ -36,10 +36,10 @@ with
         Parser,
         token,
         test},
-    import 'parse/lang' parse_lang {between},
+    import 'parse/lang' {between},
     import 'parse/text' {character},
     import 'nu/stream' {foldl},
-    import 'khepri/lex/identifier_lexer' identifier_lexer,
+    import 'khepri/lex/identifier_lexer' {identifierPart},
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 
@@ -53,7 +53,7 @@ var join = (foldl, (+), '');
  * Lexer for non terminator character in a regular expression.
  */
 regularExpressionNonTerminator = token(
-    \tok-> !test(lineTerminator, tok));
+    (!) <\ (test, lineTerminator));
 
 /**
  * Lexer for regular expression backslash sequence.
@@ -66,9 +66,9 @@ regularExpressionBackslashSequence = next(
 // Class
 ////////////////////////////////////////
 regularExpressionClassChar = either(
-    attempt(token(\tok ->
+    attempt <| token(\tok ->
         !test(lineTerminator, tok) &&
-            tok !== ']' && tok !== '\\')),
+            tok !== ']' && tok !== '\\'),
     regularExpressionBackslashSequence);
 
 regularExpressionClassChars = many(regularExpressionClassChar);
@@ -111,7 +111,7 @@ regularExpressionChars = many(regularExpressionChar);
 /**
  * Lexer for regular expression flags.
  */
-regularExpressionFlags = many(identifier_lexer.identifierPart);
+regularExpressionFlags = many(identifierPart);
 
 /**
  * Lexer for the body of a regular expression

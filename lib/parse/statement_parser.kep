@@ -95,8 +95,7 @@ staticStatement = Parser('Static Statement', let
         ast_declaration.StaticDeclarator.create),
     
     staticDeclarationList =
-        eager <|
-        sepBy1(punctuator(','),
+        eager <| sepBy1(punctuator(','),
             staticDeclaration)
 in
     node(
@@ -117,8 +116,7 @@ var variableDeclarationList = let
             optional(null, initialiser)),
         ast_declaration.VariableDeclarator.create)
 in
-    eager <|
-    sepBy1(punctuator(','),
+    eager <| sepBy1(punctuator(','),
         variableDeclaration);
 
 variableStatement = Parser('Variable Statement',
@@ -129,7 +127,7 @@ variableStatement = Parser('Variable Statement',
 
 // With Statement
 ////////////////////////////////////////
-withStatement = Parser('With Statement', let
+withStatement = (Parser, 'With Statement') <| let
     withIdentifier = pattern |> (expected, "pattern"),
 
     withBinding = either(
@@ -143,8 +141,7 @@ withStatement = Parser('With Statement', let
             ast_declaration.Binding.create)),
     
     bindings =
-        eager <|
-        sepBy1(punctuator(','),
+        eager <| sepBy1(punctuator(','),
             withBinding)
 in
     nodea(
@@ -155,7 +152,7 @@ in
                 next(
                     keyword('in'),
                     blockStatement))),
-        ast_statement.WithStatement.create));
+        ast_statement.WithStatement.create);
 
 // If Statement
 ////////////////////////////////////////
@@ -174,7 +171,7 @@ ifStatement = Parser('If Statement',
 
 // Switch Statement
 ////////////////////////////////////////
-switchStatement = Parser('Switch Statement', let
+switchStatement = (Parser, 'Switch Statement') <| let
     caseClause = nodea(
         next(
             keyword('case'),
@@ -193,7 +190,7 @@ switchStatement = Parser('Switch Statement', let
                 statementList)),
         \loc, consequent -> ast_clause.SwitchCase.create(loc, null, consequent)),
 
-    caseClauses = eager(many(caseClause)),
+    caseClauses = eager <| many(caseClause),
 
     caseBlock = between(punctuator('{'), punctuator('}'),
         binds(
@@ -212,7 +209,7 @@ in
                 between(punctuator('('), punctuator(')'),
                     topLevelExpression),
                 caseBlock)),
-        ast_statement.SwitchStatement.create));
+        ast_statement.SwitchStatement.create);
 
 // Iteration Statement
 ////////////////////////////////////////

@@ -2,12 +2,14 @@
  * @fileOverview Parsers for literals and symbols.
  */
 package (
+    literal,
+
     nullLiteral,
     booleanLiteral,
     numericLiteral,
     stringLiteral,
     regularExpressionLiteral,
-    literal,
+    
     identifier)
 with
     import 'parse/parse' {always, bind, choice, Parser},
@@ -21,34 +23,44 @@ var literalParser = \kind, p ->
 
 /* Literals
  ******************************************************************************/
-nullLiteral = Parser('Null Literal',
-    literalParser('null', token.nullLiteral));
+nullLiteral = (Parser, 'Null Literal') <|
+    literalParser(
+        'null',
+        token.nullLiteral);
 
-booleanLiteral = Parser('Boolean Literal',
-    literalParser('boolean', token.booleanLiteral));
+booleanLiteral = (Parser, 'Boolean Literal') <|
+    literalParser(
+        'boolean',
+        token.booleanLiteral);
 
-numericLiteral = Parser('Numeric Literal',
-    literalParser('number', token.numericLiteral));
+numericLiteral = (Parser, 'Numeric Literal') <|
+    literalParser(
+        'number',
+        token.numericLiteral);
 
-stringLiteral = Parser('String Literal',
-    literalParser('string', token.stringLiteral));
+stringLiteral = (Parser, 'String Literal') <|
+    literalParser(
+        'string',
+        token.stringLiteral);
 
-regularExpressionLiteral = Parser('Regular Expression Literal',
-    literalParser('regexp', token.regularExpressionLiteral));
+regularExpressionLiteral = (Parser, 'Regular Expression Literal') <|
+    literalParser(
+        'regexp',
+        token.regularExpressionLiteral);
 
-literal = Parser('Literal',
+literal = (Parser, 'Literal') <|
     choice(
         nullLiteral,
         booleanLiteral,
         numericLiteral,
         stringLiteral,
-        regularExpressionLiteral));
+        regularExpressionLiteral);
 
 /* Symbols
  ******************************************************************************/
-identifier = Parser('Identifier',
+identifier = (Parser, 'Identifier') <|
     bind(
         token.anyIdentifier,
-        \x -> always(ast_value.Identifier.create(x.loc, x.value))));
+        \x -> always(ast_value.Identifier.create(x.loc, x.value)));
 
 }

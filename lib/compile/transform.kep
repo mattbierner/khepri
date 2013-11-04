@@ -51,13 +51,13 @@ var expressionStatement;
 /* Values
  ******************************************************************************/
 var identifier = \loc, name ->
-    ecma_value.Identifier.create(null, name);
+    ecma_value.Identifier.create(loc, name);
 
 var stringLiteral = \loc, value ->
-    ecma_value.Literal.create(null, 'string', value);
+    ecma_value.Literal.create(loc, 'string', value);
 
 var nullLiteral = \loc ->
-    ecma_value.Literal.create(null, 'null', null);
+    ecma_value.Literal.create(loc, 'null', null);
 
 /* Declaration
  ******************************************************************************/
@@ -393,36 +393,36 @@ var multiCompose = \loc, f, g ->
     
 /* Package
  ******************************************************************************/
-var packageBlock = \loc, exports, body -> {
-    var imp = (body.type === 'WithStatement' ?
+var packageBlock = \loc, exports, body -> let
+    imp = (body.type === 'WithStatement' ?
         body.bindings.filter(\x -> x.type === 'ImportPattern') :
-        []);
+        []),
     
-    var imports = map(imp, \x -> x.from);
+    imports = map(imp, \x -> x.from),
 
-    var exportList = map(exports.exports, \x -> x.id);
-    debugger;
-    var exportHeader = ecma_declaration.VariableDeclaration.create(null,
-        exportList.map(\x -> variableDeclarator(null, x)));
+    exportList = map(exports.exports, \x -> x.id),
+
+    exportHeader = ecma_declaration.VariableDeclaration.create(null,
+        map(exportList, \x -> variableDeclarator(null, x))),
     
-    var exportBody = exportList.map(\x ->
+    exportBody = exportList.map(\x ->
         expressionStatement(null,
             ecma_expression.AssignmentExpression.create(null, '=',
                 memberExpression(null,
                     identifier(null, 'exports'),
                     identifier(null, x.name)),
-                identifier(null, x.name))));
+                identifier(null, x.name)))),
     
-    var fBody = (body.type === 'WithStatement' ?
+    fBody = (body.type === 'WithStatement' ?
         withStatement(null,
             map(body.bindings, \x -> (x.type !== 'ImportPattern' ? x :
                 khepri_declaration.Binding.create(null,
                     x.pattern,
                     x.pattern.id))),
             body.body) :
-        transform(body));
+        transform(body)),
     
-    var packageBody = ecma_expression.FunctionExpression.create(null, null,
+    packageBody = ecma_expression.FunctionExpression.create(null, null,
         concat(
             identifier(null, 'require'),
             identifier(null, 'exports'),
@@ -432,9 +432,9 @@ var packageBlock = \loc, exports, body -> {
                 stringLiteral(null, "use strict")),
             exportHeader,
             fBody.body,
-            exportBody)));
-    
-    return callExpression(loc,
+            exportBody)))
+in
+    callExpression(loc,
         identifier(null, 'define'),
         [ecma_expression.ArrayExpression.create(null,
             concat(
@@ -442,7 +442,7 @@ var packageBlock = \loc, exports, body -> {
                 stringLiteral(null, 'exports'),
                 imports)),
             packageBody]);
-};
+
 
 /* Transform
  ******************************************************************************/

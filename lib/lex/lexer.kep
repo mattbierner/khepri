@@ -17,6 +17,7 @@ with
         choice,
         either,
         eof,
+        getPosition,
         enumeration,
         extract,
         expected,
@@ -41,14 +42,12 @@ with
     import 'khepri/lex/regular_expression_lexer' {regularExpressionLiteral}
 in {
 
-var positionParser = extract(\state -> state.position);
-
 var makeToken = \type, p ->
     binds(
         enumeration(
-            positionParser,
+            getPosition,
             p,
-            positionParser),
+            getPosition),
         \start, value, end ->
             always(
                 new type(
@@ -97,7 +96,7 @@ lexer = many(inputElementRegExp);
 lexManyState = \p, state -> let 
     manyP = either(
         bind(p, \x, state, m ->
-            always(memoStream(x, runState.bind(undefined, manyP, state, m)))),
+            always(memoStream(x, (runState, manyP, state, m)))),
         next(eof, always(NIL)))
 in
     runState(manyP, state);
