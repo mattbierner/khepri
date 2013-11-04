@@ -120,7 +120,8 @@ var objectPattern = \base, pattern, key, f -> {
 /**
  */
 var objectDeclPattern = let
-    make = \l, r -> khepri_declaration.VariableDeclarator.create(null, l, r)
+    make = \l, r ->
+        variableDeclarator(null, l, r)
 in
     \base, pattern, key ->
         objectPattern(base, pattern, key, make);
@@ -160,7 +161,7 @@ var blockStatement = \loc, body ->
  * 
  */
 expressionStatement = \loc, expression ->
-    ecma_statement.ExpressionStatement(loc,
+    ecma_statement.ExpressionStatement.create(loc,
         transform(expression));
 
 /**
@@ -706,7 +707,13 @@ transform = function(node) {
     
     case 'EllipsisPattern':
         return null;
+        
+    case 'SinkPattern':
+        return (node.id ?
+            identifier(node.loc, node.id) :
+            null);
     
+
 // Program
     case 'Program':
         return ecma_program.Program.create(node.loc,

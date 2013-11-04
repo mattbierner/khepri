@@ -318,8 +318,7 @@ var addImmutableBindingInRealBlock = \id, loc ->
         checkCanAddOwnBinding(id, loc),
         addImmutableBinding(id, loc));
 
-var addUniqueImmutableBinding = \id, loc -> seq(
-    checkCanAddOwnBinding(id, loc),
+var addUnusedImmutableBinding = \id, loc -> seq(
     examineRealScope(\s -> s.hasOwnBinding(id) ?
         let new_id = s.getUnusedId(id) in
             seq(
@@ -327,6 +326,10 @@ var addUniqueImmutableBinding = \id, loc -> seq(
                 addImmutableBinding(new_id, loc),
                 addMapping(id, new_id)):
         addImmutableBindingInRealBlock(id, loc)));
+
+var addUniqueImmutableBinding = \id, loc -> seq(
+    checkCanAddOwnBinding(id, loc),
+    addUnusedImmutableBinding(id, loc));
 
 /*
  ******************************************************************************/
@@ -515,7 +518,16 @@ var _check = function(node) {
 // Pattern
     case 'EllipsisPattern':
         return ok();
-        
+    
+    case 'SinkPattern':
+        return seq(
+            addUnusedImmutableBinding('_', node.loc),
+            examineScope(\s -> {
+                if (s.hasMapping('_'))
+                    node.id = s.getMapping('_');
+                return ok();
+            }));
+    
     case 'IdentifierPattern':
         return seq(
             addUniqueImmutableBinding(node.id.name, node.loc),

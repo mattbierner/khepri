@@ -16,11 +16,11 @@ in {
 
 /* Circular Declarations 
  ******************************************************************************/
-var withStatement = \... ->
-    require('khepri/parse/statement_parser').withStatement.apply(undefined, arguments);
+var withStatement = \args(...) ->
+    require('khepri/parse/statement_parser').withStatement.apply(undefined, args);
 
-var blockStatement = \... ->
-    require('khepri/parse/statement_parser').blockStatement.apply(undefined, arguments);
+var blockStatement = \args(...) ->
+    require('khepri/parse/statement_parser').blockStatement.apply(undefined, args);
 
 /* Parsers
  ******************************************************************************/
@@ -40,6 +40,7 @@ var packageExports = Parser('Package Exports',
         between(punctuator('('), punctuator(')'), 
             eager(sepBy(punctuator(','), packageExport))),
         ast_package.PackageExports.create));
+
 /**
  * Package Body
  */

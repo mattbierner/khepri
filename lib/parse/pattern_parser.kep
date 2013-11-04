@@ -3,7 +3,9 @@
  */
 package (
     pattern,
+    
     identifierPattern,
+    sinkPattern,
     ellipsisPattern,
     importPattern,
     arrayPattern,
@@ -20,7 +22,7 @@ in {
 
 /* Forward
  ******************************************************************************/
-pattern = \... -> pattern.apply(undefined, arguments);
+pattern = \args(...) -> pattern.apply(undefined, args);
 
 /* Parsers
  ******************************************************************************/
@@ -30,6 +32,13 @@ identifierPattern = Parser('Identifier Pattern',
     bind(
         identifier,
         \x -> always(ast_pattern.IdentifierPattern.create(x.loc, x))));
+
+// Sink Pattern
+////////////////////////////////////////
+sinkPattern = Parser('Sink Pattern',
+    bind(
+        keyword('_'),
+        \x -> always(ast_pattern.SinkPattern.create(x.loc))));
 
 // Ellipsis Pattern
 ////////////////////////////////////////
@@ -89,6 +98,7 @@ importPattern = Parser('Import Pattern',
 argumentsPattern = Parser('Arguments Pattern', let
     argumentsPatternElement = choice(
         ellipsisPattern,
+        sinkPattern,
         attempt(arrayPattern),
         attempt(objectPattern),
         identifierPattern)
@@ -111,6 +121,7 @@ in
 pattern = Parser('Pattern',
     choice(
         ellipsisPattern,
+        sinkPattern,
         importPattern,
         attempt(arrayPattern),
         attempt(objectPattern),
