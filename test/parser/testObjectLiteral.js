@@ -35,25 +35,7 @@ function(parse,
                 assert.equal(result.properties[2].kind, 'init');
                 assert.equal(result.properties[2].key.value, '9');
                 assert.equal(result.properties[2].value.value, 2);
-            }],
-            ["Get Value Object Literal",
-            function(){
-                var result = testParser(lexer.lex("({ get 'a' () { return 3; }, get 'b'(){ return {}; } });"));
-                assert.equal(result.properties.length, 2);
-                assert.equal(result.properties[0].kind, 'get');
-                assert.equal(result.properties[0].key.value, 'a');
-                assert.equal(result.properties[0].value.type, 'FunctionExpression');
-            }],
-            ["Set Value Object Literal",
-            function(){
-                var result = testParser(lexer.lex("({ set 'a' (b) { }, set 'b'(a) { return {};} });"));
-                assert.equal(result.properties.length, 2);
-                assert.equal(result.properties[0].kind, 'set');
-                assert.equal(result.properties[0].key.value, 'a');
-                assert.equal(result.properties[0].value.type, 'FunctionExpression');
-                assert.equal(result.properties[0].value.params.length, 1);
-                assert.equal(result.properties[0].value.params[0].name, 'b');
-            }],
+            }]
         ],
     };
 });

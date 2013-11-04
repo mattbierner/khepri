@@ -9,10 +9,6 @@ package (
     
 // Object Literal
     propertyName,
-    propertySetParameterList,
-    propertyValueInitializer,
-    propertyGetInitializer,
-    propertySetInitializer,
     propertyInitializer,
     objectProperties,
     objectLiteral,
@@ -64,10 +60,13 @@ package (
     composeExpression,
     
 // Expression
-    expression)
+    expression,
+    
+    topLevelExpression)
 with
     import 'parse/parse' {
         always,
+        append,
         attempt,
         bind,
         binds,
@@ -102,21 +101,21 @@ in {
 
 /* Circular Declarations 
  ******************************************************************************/
-var sourceElements = \... -> {
+var sourceElements = \args(...) -> {
     with
         import 'khepri/parse/program_parser' {sourceElements}
     in {
-        return sourceElements.apply(undefined, arguments);
+        return sourceElements.apply(undefined, args);
     }
 };
 
 /* Forward Declarations
  ******************************************************************************/
-expression = \... -> expression.apply(undefined, arguments);
+expression = \args(...) -> expression.apply(undefined, args);
 
-conditionalExpression = \... -> conditionalExpression.apply(undefined, arguments);
+conditionalExpression = \args(...) -> conditionalExpression.apply(undefined, args);
 
-newExpression = \... -> newExpression.apply(undefined, arguments);
+newExpression = \args(...) -> newExpression.apply(undefined, args);
 
 /* Parsers
  ******************************************************************************/
@@ -160,76 +159,21 @@ propertyName = Parser('Property Name',
     stringLiteral);
 
 /**
- * Parser for the argument list of a object set initializer property.
+ * Parser for any property initializer.
  */
-propertySetParameterList = bind(identifier, \x ->
-    always([x]));
-
-/**
- * Parser for the standard key to value property initializer.
- */
-propertyValueInitializer = Parser('Property Value Initializer',
+propertyInitializer = Parser('Property Initializer',
     nodea(
         enumeration(
             propertyName,
-            punctuator(':'),
-            expression),
-        \loc, name, _, value -> ({
+            next(
+                punctuator(':'),
+                expression)),
+        \loc, name, value -> ({
             'loc': loc,
             'key': name,
             'kind': 'init',
             'value': value
         })));
-
-/**
- * Parser for a getter for a property.
- */
-propertyGetInitializer = Parser('Property Get Initializer',
-    nodea(
-        next(
-            keyword('get'),
-            enumeration(
-                propertyName,
-                punctuator('('),
-                punctuator(')'),
-                between(punctuator('{'), punctuator('}'),
-                    functionBody))),
-        \loc, name, _0, _1, body -> ({
-            'loc': loc,
-            'key': name,
-            'kind': 'get',
-            'value': ast_expression.FunctionExpression.create(loc, null, [], body)
-        })));
-
-/**
- * Parser for a setter for a property.
- */
-propertySetInitializer = Parser('Property Set Initializer',
-    nodea(
-        next(
-            keyword('set'),
-            enumeration(
-                propertyName,
-                between(punctuator('('), punctuator(')'),
-                    propertySetParameterList),
-                between(punctuator('{'), punctuator('}'),
-                    functionBody))),
-        \loc, name, parameters, body -> ({
-                'loc': loc,
-                'key': name,
-                'kind': 'set',
-                'value': ast_expression.FunctionExpression.create(loc, null, parameters, body)
-            })));
-
-/**
- * Parser for any property initializer.
- */
-propertyInitializer = Parser('Property Initializer',
-    choice(
-        attempt(propertyValueInitializer),
-        propertyGetInitializer,
-        propertySetInitializer));
-
 /**
  * Parser for a set or more properties in an object literal.
  */
@@ -382,7 +326,7 @@ var binaryOperatorExpression = Parser('Binary Operator Expression',
 var ternayOperatorExpression = Parser('Ternary Operator Expression',
     bind(
         punctuator('?'),
-        \{loc, value} -> always(ast_expression.TernayOperatorExpression.create(loc, value))));
+        \{loc, value} -> always(ast_expression.TernaryOperatorExpression.create(loc, value))));
 
 var operatorExpression = Parser('Operator Expression',
     choice(
@@ -561,8 +505,8 @@ in
 // Unary Expression
 ////////////////////////////////////////
 unaryOperator = Parser('Unary Operator',
-    choice(
-        keyword('delete', 'void', 'typeof'),
+    either(
+        keyword('typeof'),
         punctuator('+', '-', '~', '!')));
 
 /**
@@ -686,9 +630,15 @@ in
 
 // Compose Operator
 ////////////////////////////////////////
-var composeOperator = punctuator('\\>');
+var composeOperator = punctuator(
+    '\\>',
+    '\\>>',
+    '<\\',
+    '<<\\');
 
-var pipeOperator = punctuator('|>');
+var pipeOperator = punctuator(
+    '|>',
+    '<|');
 
 var composePrecedenceTable = [
     {
@@ -709,32 +659,48 @@ composeExpression = Parser('Compose Expression',
 // Assignment Expression
 ////////////////////////////////////////
 assignmentOperator = Parser('Assignment Operator',
-    punctuator(
-        '=',
-        '*=',
-        '*=',
-        '/=',
-        '%=',
-        '+=',
-        '-=',
-        '<<=',
-        '>>=',
-        '>>>=',
-        '&=',
-        '^=',
-        '|='));
+    punctuator('='));
 
 assignmentExpression = Parser('Assignment Expression',
     nodea(
-        enumeration(
-            leftHandReferenceExpression,
-            assignmentOperator,
-            expected('expression', expression)),
+        append(
+            attempt(enumeration(
+                leftHandReferenceExpression,
+                assignmentOperator)),
+            enumeration(expected('expression', expression))),
         \loc, left, op, right ->
             ast_expression.AssignmentExpression.create(loc, op.value, left, right)));
+
+// Delete Expression
+////////////////////////////////////////
+var deleteOperator = keyword('delete');
+
+/**
+ * 
+ */
+var deleteExpression = let
+    reducer = \argument, op -> 
+        ast_expression.UnaryExpression.create(
+            SourceLocation.merge(op.loc, argument.loc),
+            op.value,
+            argument)
+in
+    Parser('Delete Expression',
+        nodea(
+            enumeration(
+                deleteOperator,
+                expected('left hand side expression', leftHandSideExpression)),
+            \loc, op, expression ->
+                ast_expression.UnaryExpression.create(loc, op.value, expression)));
 
 // Expression
 ////////////////////////////////////////
 expression = composeExpression;
 
+// Top Level Expression
+////////////////////////////////////////
+topLevelExpression = choice(
+    deleteExpression,
+    assignmentExpression,
+    expression);
 }

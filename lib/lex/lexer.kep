@@ -41,8 +41,6 @@ with
     import 'khepri/lex/regular_expression_lexer' {regularExpressionLiteral}
 in {
 
-/* Helpers
- ******************************************************************************/
 var positionParser = extract(\state -> state.position);
 
 var makeToken = \type, p ->
@@ -89,9 +87,6 @@ inputElementRegExp = choice(
         makeToken(lexToken.LineTerminatorToken, lineTerminator)),
     token);
 
-/**
- * Parser for lexing ECMAScript 5.1 input.
- */
 lexer = many(inputElementRegExp);
 
 /* Running
@@ -104,11 +99,6 @@ lexManyState = \p, state -> let
 in
     runState(manyP, state);
 
-/**
- * Lexes EMCAScript 5.1 input.
- * 
- * Result includes all tokens including comments and whitespace.
- */
 lex = \input ->
     lexManyState(
         inputElementRegExp,

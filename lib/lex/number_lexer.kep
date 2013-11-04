@@ -165,7 +165,8 @@ signedInteger = Parser('Signed Integer Lexer',
  * Returns the numeric value of the exponent part.
  */
 exponentPart = Parser('Exponent Part Lexer',
-    next(exponentIndicator,
+    next(
+        exponentIndicator,
         signedInteger));
 
 // Literals
@@ -198,20 +199,15 @@ decimalIntegerLiteral = Parser('Decimal Integer Literal',
 decimalLiteral = Parser('Decimal Literal Lexer',
     binds(
         enumeration(
-            choice(
-                next(
-                    decimal,
-                    bind(decimalDigits, \fractional ->
-                        always(parseFloat('.' + fractional)))),
-                attempt(binds(
-                    enumeration(
-                        then(
-                            decimalDigits,
-                            decimal),
-                        optional(0, decimalDigits)),
-                    \whole, fractional ->
-                        always(parseFloat(whole + '.' + fractional)))),
-                decimalIntegerLiteral),
+            binds(
+                enumeration(
+                    decimalDigits,
+                    optional(0,
+                        next(
+                            decimal,
+                            optional(0, decimalDigits)))),
+                \whole, fractional ->
+                    always(parseFloat(whole + '.' + fractional))),
             optional(0, exponentPart)),
         \num, exp -> always(num * Math.pow(10, parseInt(exp)))));
 

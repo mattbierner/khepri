@@ -40,7 +40,7 @@ with
     import 'parse/text' {character},
     import 'nu/stream' {foldl},
     import 'khepri/lex/identifier_lexer' identifier_lexer,
-    import 'khepri/lex/line_terminator_lexer' line_terminator_lexer {lineTerminator}
+    import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 
 var join = \p, c -> p + c;

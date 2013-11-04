@@ -39,24 +39,20 @@ with
     import 'khepri_ast/statement' ast_statement,
     import 'khepri/parse/common' {node, nodea},
     import 'khepri/parse/token_parser' {keyword, punctuator},
-    import 'khepri/parse/expression_parser' {assignmentExpression, expression},
+    import 'khepri/parse/expression_parser' {assignmentExpression, expression, topLevelExpression},
     import 'khepri/parse/pattern_parser' {importPattern, pattern},
     import 'khepri/parse/value_parser' {identifier}
 in {
 
 /* Forward declarations
  ******************************************************************************/
-statement = \... -> statement.apply(undefined, arguments);
+statement = \args(...) -> statement.apply(undefined, args);
 
 /* Statement Parsers
  ******************************************************************************/
 var logicalSemiColon = punctuator(';');
 
 var statementList = eager(many(statement));
-
-var topLevelExpression = either(
-    attempt(assignmentExpression),
-    expression);
 
 // Block Statement
 ////////////////////////////////////////

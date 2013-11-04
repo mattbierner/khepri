@@ -129,22 +129,22 @@ define(['parse/parse', 'khepri/lex/number_lexer'], function(parse, number_lexer)
                 assert.equal(parse.run(number_lexer.decimalLiteral, '00123'), 123);
                 assert.equal(parse.run(number_lexer.decimalLiteral, '123.'), 123);
                 assert.equal(parse.run(number_lexer.decimalLiteral, '99.9'), 99.9);
-                assert.equal(parse.run(number_lexer.decimalLiteral, '.123'), .123);
+                assert.equal(parse.run(number_lexer.decimalLiteral, '0.123'), .123);
                 
                 assert.equal(parse.run(number_lexer.decimalLiteral, '00123e3'), 123000);
                 assert.equal(parse.run(number_lexer.decimalLiteral, '123.e3'), 123000);
                 assert.equal(parse.run(number_lexer.decimalLiteral, '99.9e3'), 99900);
-                assert.equal(parse.run(number_lexer.decimalLiteral, '.123e3'), 123);
+                assert.equal(parse.run(number_lexer.decimalLiteral, '0.123e3'), 123);
                 
                 assert.equal(parse.run(number_lexer.decimalLiteral, '00123e+3'), 123000);
                 assert.equal(parse.run(number_lexer.decimalLiteral, '123.e+3'), 123000);
                 assert.equal(parse.run(number_lexer.decimalLiteral, '99.9e+3'), 99900);
-                assert.equal(parse.run(number_lexer.decimalLiteral, '.123e+3'), 123);
+                assert.equal(parse.run(number_lexer.decimalLiteral, '0.123e+3'), 123);
                 
                 assert.equal(parse.run(number_lexer.decimalLiteral, '00123e-3'), 0.123);
                 assert.equal(parse.run(number_lexer.decimalLiteral, '123.e-3'), 0.123);
                 assert.equal(parse.run(number_lexer.decimalLiteral, '99.9e-3'), 0.0999);
-                assert.equal(parse.run(number_lexer.decimalLiteral, '.123e-3'), 0.000123);
+                assert.equal(parse.run(number_lexer.decimalLiteral, '0.123e-3'), 0.000123);
             }],
         ],
     };

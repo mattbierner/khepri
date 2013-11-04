@@ -43,14 +43,6 @@ package (
     
 // Assignment Operators
     assign,
-    leftShiftAssignment,
-    signedRightShiftAssignment,
-    unsignedRightShiftAssignment,
-    additionAssignment,
-    subtrationAssignment,
-    multiplicationAssignment,
-    divisionAssignment,
-    modAssignment,
 
 // Additive Operators
     logicalNot,
@@ -78,10 +70,19 @@ in {
 /* Objects
  ******************************************************************************/
 var punctuators = [
-    '{', '}', '(', ')', ',', '[', ']', '.', ';', ',', ':', '?', '&&', '||', '<<', '>>',
-    '>>>', '<=', '<', '>=', '>', '===', '!==', '==', '!=', '=', '<<=', '>>=',
-    '>>>=', '+=', '-=', '*=', '/=', '%=', '!', '~', '&', '|', '+', '^',
-    '-', '*', '/', '%', '...',  '\\',  '->', '\\>', '|>'];
+    '{', '}', '(', ')', '[', ']',
+    ',',  '.', ';', ':',
+    '?', '&&', '||',
+    '<<', '>>', '>>>',
+    '<=', '<', '>=', '>',
+    '===', '!==', '==', '!=',
+    '=',
+    '!', '~',
+    '&', '|', '^', 
+    '+', '-', '*', '/', '%',
+    '...',
+    '\\',  '->',
+    '\\>', '\\>>', '<\\', '<<\\', '|>', '<|'];
 
 /* Lexers
  ******************************************************************************/
@@ -143,22 +144,6 @@ doesNotEqual = string('!=');
 // Assignment
 ////////////////////////////////////////
 assign = character('=');
-
-leftShiftAssignment = string('<<=');
-
-signedRightShiftAssignment = string('>>=');
-
-unsignedRightShiftAssignment = string('>>>=');
-
-additionAssignment = string('+=');
-
-subtrationAssignment = string('-=');
-
-multiplicationAssignment = string('*=');
-
-divisionAssignment = string('/=');
-
-modAssignment = string('%=');
 
 // Unary
 ////////////////////////////////////////

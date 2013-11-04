@@ -62,7 +62,9 @@ var bind = \p, f -> \s, ok, err -> cont(p, [s, \x, s -> f(x)(s, ok, err), err]);
 
 var next = \p, n -> bind(p, \() -> n);
 
-var seq = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
+var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
+
+var seq = \args() -> seqa(args);
 
 var extract = \s, ok, err -> ok(s, s);
 
@@ -75,13 +77,13 @@ var modifyScope = \f ->
         scope = f(s.scope),
         newState = State.setScope(s, scope)
     in ok(scope, newState);
-    
+
 var modifyRealScope = \f ->
     \s, ok, err -> let
         scope = f(s.realScope),
         newState = State.setRealScope(s, scope)
     in ok(scope, newState);
-    
+
 var setScope = \s -> modifyScope(\() -> s);
 
 var setRealScope = \s -> modifyRealScope(\() -> s);
@@ -221,30 +223,30 @@ Scope.addMapping = \s, from, to ->
  */
 var block = \body ->
     examineScope(\s ->
-        seq([
+        seq(
             setScope(new Scope({}, s, s.mapping)),
             body,
-            setScope(s)]));
+            setScope(s)));
     
 /**
  * Create a new lexical block for body.
  */
 var emptyBlock = \body ->
     examineScope(\s ->
-        seq([
+        seq(
             setScope(new Scope({}, s, {})),
             body,
-            setScope(s)]));
+            setScope(s)));
 
 /**
  * Create a new lexical block for body.
  */
 var realBlock = \body ->
     examineRealScope(\s ->
-        seq([
+        seq(
             setRealScope(new Scope({}, s, {})),
             emptyBlock(body),
-            setRealScope(s)]));
+            setRealScope(s)));
 
 /**
  * Test to see if the current scope already contains a binding for id.
@@ -275,19 +277,19 @@ var addMapping = \id, newId ->
  * Adds a new mutable binding in the current scope. Does not perform any checks.
  */
 var addMutableBinding = \id, loc -> 
-    seq([
+    seq(
          modifyScope(\s -> Scope.addMutableBinding(s, id, loc)),
          modifyRealScope(\s -> Scope.addMutableBinding(s, id, loc)),
-         addMapping(id, id)]);
+         addMapping(id, id));
 
 /**
  * Adds a new immutable binding in the current scope. Does not perform any checks.
  */
 var addImmutableBinding = \id, loc -> 
-    seq([
+    seq(
          modifyScope(\s -> Scope.addImmutableBinding(s, id, loc)),
          modifyRealScope(\s -> Scope.addImmutableBinding(s, id, loc)),
-         addMapping(id, id)]);
+         addMapping(id, id));
 
 /**
  * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
@@ -297,10 +299,10 @@ var addUniqueMutableBinding = \id, loc ->
         checkCanAddOwnBinding(id, loc),
         examineRealScope(\s -> s.hasOwnBinding(id) ?
             let new_id = s.getUnusedId(id) in
-                seq([
+                seq(
                      addMutableBinding(id, loc),
                      addMutableBinding(new_id, loc),
-                     addMapping(id, new_id)]) :
+                     addMapping(id, new_id)) :
             addMutableBinding(id, loc)));
 
 /**
@@ -316,15 +318,18 @@ var addImmutableBindingInRealBlock = \id, loc ->
         checkCanAddOwnBinding(id, loc),
         addImmutableBinding(id, loc));
 
-var addUniqueImmutableBinding = \id, loc -> seq([
+var addUniqueImmutableBinding = \id, loc -> seq(
     checkCanAddOwnBinding(id, loc),
     examineRealScope(\s -> s.hasOwnBinding(id) ?
         let new_id = s.getUnusedId(id) in
-            seq([
+            seq(
                 addImmutableBinding(id, loc),
                 addImmutableBinding(new_id, loc),
-                addMapping(id, new_id)]):
-        addImmutableBindingInRealBlock(id, loc))]);
+                addMapping(id, new_id)):
+        addImmutableBindingInRealBlock(id, loc)));
+
+/*
+ ******************************************************************************/
 
 /*
  ******************************************************************************/
@@ -337,28 +342,28 @@ var _check = function(node) {
 // Statement
     case 'BlockStatement':
         return block(
-            seq(map(node.body, _check)));
+            seqa(map(node.body, _check)));
     
     case 'ExpressionStatement':
         return _check(node.expression);
     
     case 'IfStatement':
-        return seq([
+        return seq(
             _check(node.test),
             block(_check(node.consequent)),
-            block(_check(node.alternate))]);
+            block(_check(node.alternate)));
         
     case 'WithStatement':
         return block(
             next(
-                seq(node.bindings.map(_check)),
-                seq(map(node.body.body, _check))));
+                seqa(node.bindings.map(_check)),
+                seqa(map(node.body.body, _check))));
         
     case 'SwitchStatement':
         return block(
             next(
                 _check(node.discriminant),
-                seq(map(node.cases, _check))));
+                seqa(map(node.cases, _check))));
     
     case'ReturnStatement':
         return _check(node.argument);
@@ -367,10 +372,10 @@ var _check = function(node) {
         return _check(node.argument);
     
     case 'TryStatement':
-        return seq([
+        return seq(
             _check(node.block),
             block(_check(node.handler)),
-            block(_check(node.finalizer))]);
+            block(_check(node.finalizer)));
     
     case 'WhileStatement':
         return next(
@@ -378,68 +383,68 @@ var _check = function(node) {
             block(_check(node.body)));
     
     case 'DoWhileStatement':
-        return seq([
+        return seq(
             block(_check(node.body)),
-            block(_check(node.test))]);
+            block(_check(node.test)));
     
     case 'ForStatement':
-        return block(seq([
+        return block(seq(
             _check(node.init),
             _check(node.test),
             _check(node.update),
-            block(_check(node.body))]));
+            block(_check(node.body))));
     
 // Expression
     case 'UnaryExpression':
         return _check(node.argument);
     
      case 'AssignmentExpression':
-        return seq([
+        return seq(
             _check(node.left),
             (node.left.type === 'Identifier' ?
                 checkCanAssign(node.left.name, node.left.loc.start) :
                 ok()),
-            _check(node.right)]);
+            _check(node.right));
     
     case 'LogicalExpression':
     case 'BinaryExpression':
-        return seq([
+        return seq(
             _check(node.left),
-            _check(node.right)]);
+            _check(node.right));
     
     case 'ConditionalExpression':
-        return seq([
+        return seq(
             _check(node.test),
             _check(node.consequent),
-            _check(node.alternate)]);
+            _check(node.alternate));
     
     case 'CallExpression':
     case 'NewExpression':
-        return seq([
+        return seq(
             _check(node.callee),
-            seq(map(node.args, _check))]);
+            seqa(map(node.args, _check)));
     
     case 'MemberExpression':
-        return seq([
+        return seq(
             _check(node.object),
-            (node.computed ? _check(node.property) : ok())]);
+            (node.computed ? _check(node.property) : ok()));
         
     case 'ArrayExpression':
-        return seq(map(node.elements, _check));
+        return seqa(map(node.elements, _check));
     
     case 'ObjectExpression':
-        return seq(map(node.properties, \x -> _check(x.value)));
+        return seqa(map(node.properties, \x -> _check(x.value)));
     
     case 'LetExpression':
         return realBlock(
             next(
-                seq(node.bindings.map(_check)),
+                seqa(node.bindings.map(_check)),
                 _check(node.body)));
     
     case 'CurryExpression':
         return next(
             _check(node.base),
-            seq(map(node.args, _check)));
+            seqa(map(node.args, _check)));
         
     case 'UnaryOperatorExpression':
         return ok();
@@ -447,32 +452,32 @@ var _check = function(node) {
 // Function
     case 'FunctionExpression':
         return realBlock(
-            seq([
+            seq(
                  (node.id ? addImmutableBinding(node.id.name, node.loc) : ok()),
                  _check(node.params),
-                 seq(map(node.body.body, _check))]));
+                 seqa(map(node.body.body, _check))));
 
 // Program
     case 'Program':
         return Array.isArray(node.body) ?
-            seq(map(node.body, _check)) :
+            seqa(map(node.body, _check)) :
             _check(node.body);
 
 // Package
     case 'Package':
-        return seq([
+        return seq(
             addImmutableBindingInRealBlock('require', null),
             addImmutableBindingInRealBlock('exports', null),
             addImmutableBindingInRealBlock('module', null),
             _check(node.exports),
             (node.body.type === 'WithStatement' ?
                 next(
-                    seq(map(node.body.bindings, _check)),
-                    seq(map(node.body.body.body, _check))) :
-                seq(map(node.body.body, _check)))]);
+                    seqa(map(node.body.bindings, _check)),
+                    seqa(map(node.body.body.body, _check))) :
+                seqa(map(node.body.body, _check))));
         
     case 'PackageExports':
-        return seq(map(node.exports, _check));
+        return seqa(map(node.exports, _check));
     
     case 'PackageExport':
         return addMutableBindingInRealBlock(node.id.name, node.loc);
@@ -482,24 +487,24 @@ var _check = function(node) {
         return block(
             next(
                 addImmutableBindingInRealBlock(node.param.name, node.param.loc),
-                seq(map(node.body.body, _check))));
+                seqa(map(node.body.body, _check))));
     
     case 'SwitchCase':
-        return seq(map(node.consequent, _check));
+        return seqa(map(node.consequent, _check));
     
 // Declarations
     case 'StaticDeclaration':
     case 'VariableDeclaration':
-        return seq(map(node.declarations, _check));
+        return seqa(map(node.declarations, _check));
     
     case 'StaticDeclarator':
         return addImmutableBindingInRealBlock(node.id.name, node.loc);
         
     case 'VariableDeclarator':
-        return seq([
+        return seq(
             addMutableBindingInRealBlock(node.id.name, node.loc),
             _check(node.id),
-            _check(node.init)]);
+            _check(node.init));
         
     case 'Binding': 
         return next(
@@ -512,14 +517,14 @@ var _check = function(node) {
         return ok();
         
     case 'IdentifierPattern':
-        return seq([
+        return seq(
             addUniqueImmutableBinding(node.id.name, node.loc),
             _check(node.init),
             examineScope(\s -> {
                 if (s.hasMapping(node.id.name))
                     node.id.name = s.getMapping(node.id.name);
                 return ok();
-            })]);
+            }));
         
     case 'ImportPattern':
         return _check(node.pattern);
@@ -534,7 +539,7 @@ var _check = function(node) {
             }
             return next(
                 _check(node.id),
-                seq(map(node.elements, _check)));
+                seqa(map(node.elements, _check)));
         });
     
     case 'ObjectPattern':
@@ -547,7 +552,7 @@ var _check = function(node) {
             }
             return next(
                 _check(node.id),
-                seq(map(
+                seqa(map(
                     node.elements,
                     _check)));
         });
@@ -560,7 +565,7 @@ var _check = function(node) {
     case 'ArgumentsPattern':
         return next(
             _check(node.id),
-            seq(map(node.elements, _check)));
+            seqa(map(node.elements, _check)));
     
 // Value
     case 'Identifier':

@@ -1,9 +1,25 @@
 # ChangeLog #
 
-## 0.4.2 - Octover 29, 2013
+## 0.5.0 - ___, 2013
+* Removed object literal get and setter syntax.
+** Get and set are no longer keywords.
+* Removed prefix decimal number support.
+** All numbers must start with a digit.
+* Added reversed versions of compose and pipeline operator.
+* Added versions of compose and pipeline operator to support multiple args.
+* Changed existing compose operator to pass a single argument.
+* Removed support for all compond assignment operators.
+** Also will lex to puctuator plus assignment op.
+* Added `_` pattern for unused var.
+** `_` is a reserved word but words can contain or begin with `_` (like other
+  reserved words.)
+* Removed the `void` operator.
+* Delete can only be used as a top level expression.
+
+## 0.4.2 - October 29, 2013
 * Fixed lexical transform for ids using building names.
 
-## 0.4.1 - Octover 20, 2013
+## 0.4.1 - October 20, 2013
 * Fixed bad reference on DoWhileStatement transform.
 
 ## 0.4.0 - October 17, 2013

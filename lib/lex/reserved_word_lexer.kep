@@ -64,9 +64,18 @@ var keywordList =  [
     'break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 
     'do', 'else', 'finally', 'for', 'function', 'if', 'in', 'instanceof', 
     'typeof', 'new', 'var', 'return', 'void', 'switch', 'while', 'this', 
-    'with', 'throw', 'try', 'class', 'enum', 'extends', 'super', 'const',
-    'export', 'import', 'implements', 'let', 'private', 'public', 'interface',
-    'package', 'protected', 'static', 'yield', 'get', 'set']; 
+    'with', 'throw', 'try',
+    
+    'export', 'package',
+    'class', 'enum', 'interface',
+    'extends', 'implements',
+    'private', 'public', 'protected',
+    'super', 
+    'const',
+    'yield',
+    
+    'import', 'let', 'static',
+    '_']; 
 
 /*Lexers
  ******************************************************************************/
@@ -127,9 +136,7 @@ keyword = choice(
     attempt(thisKeyword),
     attempt(withKeyword),
     attempt(throwKeyword),
-    attempt(tryKeyword),
-    attempt(getKeyword),
-    setKeyword);
+    attempt(tryKeyword));
 
 //FutureReservedWords
 ////////////////////////////////////////
