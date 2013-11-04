@@ -48,15 +48,8 @@ with
     import 'nu/stream' {foldl}
 in {
 
-/* Helpers
- ******************************************************************************/
-var test = RegExp.prototype.test;
-
-var joinLexer = \p, joiner -> let
-    join = \p, c -> p + c
-in 
-    bind(p, \s ->
-        always(foldl(join, '', s)));
+var joinLexer = \p ->
+    bind(p, (foldl, (+), '') \> always);
 
 /* Lexers
  ******************************************************************************/
@@ -185,8 +178,7 @@ hexIntegerLiteral = Parser('Hex Integer Literal Lexer',
  * Returns the number value of the input.
  */
 decimalIntegerLiteral = Parser('Decimal Integer Literal',
-    bind(decimalDigits, \num ->
-        always(parseInt(num))));
+    bind(decimalDigits, parseInt \> always));
 
 /**
  * A decimal number literal.

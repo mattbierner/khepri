@@ -49,6 +49,6 @@ literal = Parser('Literal',
 identifier = Parser('Identifier',
     bind(
         token.anyIdentifier,
-        \x -> always(new ast_value.Identifier(x.loc, x.value))));
+        \x -> always(ast_value.Identifier.create(x.loc, x.value))));
 
 }

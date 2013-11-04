@@ -94,7 +94,7 @@ with
     import 'khepri/position' {SourceLocation},
     import 'khepri/parse/common' {node, nodea, precedence},
     import 'khepri/parse/token_parser' {keyword, punctuator},
-    import 'khepri/parse/program_parser' _,
+    import 'khepri/parse/program_parser' program_parser,
     import 'khepri/parse/value_parser' {identifier, literal, stringLiteral},
     import 'khepri/parse/pattern_parser' pattern
 in {
@@ -630,37 +630,37 @@ in
 
 // Compose Operator
 ////////////////////////////////////////
-var rightComposeOperator = punctuator(
+var composeOperator = punctuator(
     '\\>',
     '\\>>');
 
-var leftComposeOperator = punctuator(
+var reverseComposeOperator = punctuator(
     '<\\',
     '<<\\');
 
-var leftPipeOperator = punctuator('|>');
+var pipeOperator = punctuator('|>');
 
-var rightPipeOperator = punctuator('<|');
+var reversePipeOperator = punctuator('<|');
 
 var composePrecedenceTable = [
     {
-        'sep': rightComposeOperator,
+        'sep': composeOperator,
         'precedence': 1,
         'node': ast_expression.BinaryExpression
     },
     {
-        'sep': leftComposeOperator,
+        'sep': reverseComposeOperator,
         'precedence': 1,
         'right': true,
         'node': ast_expression.BinaryExpression
     },
     {
-        'sep': leftPipeOperator,
+        'sep': pipeOperator,
         'precedence': 2,
         'node': ast_expression.BinaryExpression
     },
     {
-        'sep': rightPipeOperator,
+        'sep': reversePipeOperator,
         'precedence': 2,
         'right': true,
         'node': ast_expression.BinaryExpression

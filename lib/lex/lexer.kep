@@ -58,33 +58,36 @@ var makeToken = \type, p ->
 /* Lexers
  ******************************************************************************/
 literal = choice(
-    expected("string literal",
-        makeToken(lexToken.StringToken, stringLiteral)),
-    expected("regular expression literal",
-        makeToken(lexToken.RegularExpressionToken, regularExpressionLiteral)),
-    expected("boolean literal",
-        makeToken(lexToken.BooleanToken, booleanLiteral)),
-    expected("null literal",
-        makeToken(lexToken.NullToken, nullLiteral)),
-    expected("number literal",
-        makeToken(lexToken.NumberToken, numericLiteral)));
+    makeToken(lexToken.StringToken, stringLiteral)
+        |> (expected, "string literal"),
+    makeToken(lexToken.RegularExpressionToken, regularExpressionLiteral)
+        |> (expected, "regular expression literal"),
+    makeToken(lexToken.BooleanToken, booleanLiteral)
+        |> (expected, "boolean literal"),
+    makeToken(lexToken.NullToken, nullLiteral)
+        |> (expected, "null literal"),
+    makeToken(lexToken.NumberToken, numericLiteral)
+        |> (expected, "number literal"));
 
 token = choice(
-    attempt(expected("identifier",
-        makeToken(lexToken.IdentifierToken, identifier))),
-    attempt(literal),
-    attempt(expected("reserved word",
-        makeToken(lexToken.KeywordToken, reservedWord))),
-    expected("puctuator",
-        makeToken(lexToken.PunctuatorToken, punctuator)));
+    attempt
+        <| makeToken(lexToken.IdentifierToken, identifier)
+        |> (expected, "identifier"),
+    attempt
+        <| literal,
+    attempt
+        <| makeToken(lexToken.KeywordToken, reservedWord)
+        |> (expected, "reserved word"),
+    makeToken(lexToken.PunctuatorToken, punctuator)
+        |> (expected, "puctuator"));
 
 inputElementRegExp = choice(
-    expected("comment",
-        makeToken(lexToken.CommentToken, comment)),
-    expected("whitespace",
-        makeToken(lexToken.WhitespaceToken, whitespace)),
-    expected("line terminator",
-        makeToken(lexToken.LineTerminatorToken, lineTerminator)),
+    makeToken(lexToken.CommentToken, comment)
+        |> (expected, "comment"),
+    makeToken(lexToken.WhitespaceToken, whitespace)
+        |> (expected, "whitespace"),
+    makeToken(lexToken.LineTerminatorToken, lineTerminator)
+        |> (expected, "line terminator"),
     token);
 
 lexer = many(inputElementRegExp);

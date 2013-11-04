@@ -47,12 +47,15 @@ with
     import 'khepri/lex/number_lexer' {decimalDigit, hexDigit}
 in {
 
-var join = \p, c -> p + c;
+var join = (foldl, (+), '');
 
 /* Helpers
  ******************************************************************************/
-var fromCharCodeParser = \digits ->
-    always(String.fromCharCode(parseInt(foldl(join, '', digits), 16)));
+var fromCharCodeParser =
+    join
+    \> \x -> parseInt(x, 16)
+    \> String.fromCharCode
+    \> always;
 
 /* Lexers
  ******************************************************************************/
@@ -146,7 +149,7 @@ escapeSequence = choice(
         character('0'),
         either(
             eof,
-            token(\tok -> !test(decimalDigit, tok))),
+            token((!) <\ (test, decimalDigit))),
         always('\u0000')),
     hexEscapeSequence,
     unicodeEscapeSequence);
@@ -176,8 +179,8 @@ singleStringCharacters = many(singleStringCharacter);
  */
 singleStringLiteral = Parser('Single String Literal',
     between(singleQuote, singleQuote,
-        bind(singleStringCharacters, \str ->
-            always(foldl(join, '', str)))));
+        bind(singleStringCharacters,
+            join \> always)));
 
 // Double String Literal
 ////////////////////////////////////////
@@ -204,8 +207,9 @@ doubleStringCharacters = many(doubleStringCharacter);
  */
 doubleStringLiteral = Parser('Double String Literal',
     between(doubleQuote, doubleQuote,
-        bind(doubleStringCharacters, \str ->
-            always(foldl(join, '', str)))));
+        bind(doubleStringCharacters,
+            join \> always)));
+
 
 // String Literal
 ////////////////////////////////////////

@@ -16,11 +16,21 @@ in {
 
 /* Circular Declarations 
  ******************************************************************************/
-var withStatement = \args(...) ->
-    require('khepri/parse/statement_parser').withStatement.apply(undefined, args);
+var withStatement = \args(...) -> {
+    with
+        import 'khepri/parse/statement_parser' {withStatement}
+    in {
+        return withStatement.apply(undefined, args);
+    }
+};
 
-var blockStatement = \args(...) ->
-    require('khepri/parse/statement_parser').blockStatement.apply(undefined, args);
+var blockStatement = \args(...) -> {
+    with
+        import 'khepri/parse/statement_parser' {blockStatement}
+    in {
+        return blockStatement.apply(undefined, args);
+    }
+};
 
 /* Parsers
  ******************************************************************************/

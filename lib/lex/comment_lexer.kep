@@ -20,13 +20,9 @@ with
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 
-var join = let
-    joiner = \p, c -> p + c
-in
-    \p ->
-        bind(p, \s ->
-            always(foldl(joiner, '', s)));
-    
+var join = \p ->
+    bind(p, (foldl, (+), '') \> always);
+
 /* Lexers
  ******************************************************************************/
 // Single Line Comment
@@ -40,7 +36,7 @@ singleLineCommentMarker = string('//');
  * Lexer for a valid character in a single line comment.
  */
 singleLineCommentChar = token(
-    \tok -> !test(lineTerminator, tok));
+    (!) <\ (test, lineTerminator));
 
 /**
  * Lexer for the characters in a single line comment.

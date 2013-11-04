@@ -51,7 +51,7 @@ var pc = [
     '\uFE4F',
     '\uFF3F'];
 
-var join = \p, c -> p + c;
+var join = (foldl, (+), '');
 
 /* Lexers
  ******************************************************************************/
@@ -126,7 +126,8 @@ identifierStart = choice(
  * Lexer for the rest of an identifier after the first character.
  */
 identifierPart = choice(
-    attempt(identifierStart),
+    attempt
+        <| identifierStart,
     unicodeCombiningMark,
     unicodeDigit,
     unicodeConnectorPunctuation,
@@ -157,6 +158,6 @@ identifier = Parser('Identifier Lexer',
     bind(identifierName, \name ->
         (testStream(reservedWordTest, name) ?
             fail() :
-            always(foldl(join, '', name)))));
+            always(join(name)))));
 
 }

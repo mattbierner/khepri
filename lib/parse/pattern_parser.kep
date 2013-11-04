@@ -92,7 +92,6 @@ importPattern = Parser('Import Pattern',
                     identifierPattern)),
             ast_pattern.ImportPattern.create)));
 
-
 // Arguments Pattern
 ////////////////////////////////////////
 argumentsPattern = Parser('Arguments Pattern', let
@@ -101,19 +100,23 @@ argumentsPattern = Parser('Arguments Pattern', let
         sinkPattern,
         attempt(arrayPattern),
         attempt(objectPattern),
-        identifierPattern)
+        identifierPattern),
+    
+    elements =
+        eager <|
+        sepBy(punctuator(','),
+            argumentsPatternElement)
 in
     either(
-        attempt(nodea(
+        attempt <|
+        nodea(
             enumeration(
                 optional(null, identifierPattern),
                 between(punctuator('('), punctuator(')'),
-                    eager(sepBy(punctuator(','),
-                        argumentsPatternElement)))),
-            ast_pattern.ArgumentsPattern.create)),
+                    elements)),
+            ast_pattern.ArgumentsPattern.create),
         node(
-            eager(sepBy(punctuator(','),
-                argumentsPatternElement)),
+            elements,
             \loc, elements -> ast_pattern.ArgumentsPattern.create(loc, null, elements))));
 
 // Pattern

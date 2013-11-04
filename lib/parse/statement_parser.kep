@@ -93,10 +93,11 @@ staticStatement = Parser('Static Statement', let
     staticDeclaration = node(
         identifier,
         ast_declaration.StaticDeclarator.create),
-        
-    staticDeclarationList = eager(
+    
+    staticDeclarationList =
+        eager <|
         sepBy1(punctuator(','),
-            staticDeclaration))
+            staticDeclaration)
 in
     node(
         between(keyword('static'), logicalSemiColon,
@@ -116,9 +117,9 @@ var variableDeclarationList = let
             optional(null, initialiser)),
         ast_declaration.VariableDeclarator.create)
 in
-    eager(
-        sepBy1(punctuator(','),
-            variableDeclaration));
+    eager <|
+    sepBy1(punctuator(','),
+        variableDeclaration);
 
 variableStatement = Parser('Variable Statement',
     node(
@@ -139,14 +140,18 @@ withStatement = Parser('With Statement', let
                     withIdentifier,
                     punctuator('=')),
                 expression),
-            ast_declaration.Binding.create))
+            ast_declaration.Binding.create)),
+    
+    bindings =
+        eager <|
+        sepBy1(punctuator(','),
+            withBinding)
 in
     nodea(
         next(
             keyword('with'),
             enumeration(
-                eager(sepBy1(punctuator(','),
-                    withBinding)),
+                bindings,
                 next(
                     keyword('in'),
                     blockStatement))),
@@ -162,7 +167,8 @@ ifStatement = Parser('If Statement',
                 between(punctuator('('), punctuator(')'),
                     topLevelExpression),
                 statement,
-                optional(null, next(keyword('else'),
+                optional(null, next(
+                    keyword('else'),
                     statement)))),
         ast_statement.IfStatement.create));
 
