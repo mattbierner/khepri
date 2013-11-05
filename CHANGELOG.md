@@ -5,7 +5,6 @@
 * Fixed allowing usage of generated identifiers from object and array patterns.
 * Fixed bug preventing use of nested object patterns.
 
-
 ## 0.5.0 - November 4, 2013
 * Removed object literal get and setter syntax.
 ** Get and set are no longer keywords.
