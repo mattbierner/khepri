@@ -199,6 +199,20 @@ Scope.addImmutableBinding = \s, id, loc ->
     });
 
 /**
+ * Create a new modified scope with a new reserved binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addReservedBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': false,
+        'reserved': true,
+        'loc': loc
+    });
+
+/**
  * Create a new modified scope with a new mapping
  * 
  * @s Scope
@@ -256,10 +270,25 @@ var checkCanAddOwnBinding = \id, loc ->
         error("'" + id + "' at:" + loc + " already bound for scope from:" + s.getBinding(id).loc) :
         ok());
 
+/**
+ * 
+ */
 var hasBinding = \id, loc ->
     examineScope(\s -> s.hasBinding(id) ?
         ok() :
         error("Undeclared identifier:'" + id + "' at:" + loc));
+
+/**
+ * 
+ */
+var hasFreeBinding = \id, loc ->
+    seq(
+        hasBinding(id, loc),
+        examineScope(\s ->
+            let current = s.getBinding(id) in
+                (current.reserved ?
+                    error("Undeclared identifier:'" + id + "' at:" + loc) :
+                    ok())));
 
 /**
  * 
@@ -270,6 +299,16 @@ var checkCanAssign = \id, loc ->
             b.mutable ? ok() : error("Assign to immutable variable:'" + id + "' at:"+ loc) :
         ok());
 
+/**
+ * 
+ */
+var getUnusedId = \id, loc -> 
+    examineRealScope(\s ->
+        ok(s.hasOwnBinding(id) ? s.getUnusedId(id) : id));
+
+/**
+ * 
+ */
 var addMapping = \id, newId ->
     modifyScope(\s -> Scope.addMapping(s, id, newId));
 
@@ -327,9 +366,16 @@ var addUnusedImmutableBinding = \id, loc -> seq(
                 addMapping(id, new_id)):
         addImmutableBindingInRealBlock(id, loc)));
 
-var addUniqueImmutableBinding = \id, loc -> seq(
-    checkCanAddOwnBinding(id, loc),
-    addUnusedImmutableBinding(id, loc));
+var addUniqueImmutableBinding = \id, loc ->
+    seq(
+        checkCanAddOwnBinding(id, loc),
+        addUnusedImmutableBinding(id, loc));
+
+var addReservedBinding = \id, loc -> 
+    seq(
+         modifyScope(\s -> Scope.addReservedBinding(s, id, loc)),
+         modifyRealScope(\s -> Scope.addReservedBinding(s, id, loc)),
+         addMapping(id, id));
 
 /*
  ******************************************************************************/
@@ -520,13 +566,10 @@ var _check = function(node) {
         return ok();
     
     case 'SinkPattern':
-        return seq(
-            addUnusedImmutableBinding('_', node.loc),
-            examineScope(\s -> {
-                if (s.hasMapping('_'))
-                    node.id = s.getMapping('_');
-                return ok();
-            }));
+        return bind(getUnusedId('_'), \x -> {
+            node.id = x;
+            return addReservedBinding(x, node.loc);
+        });
     
     case 'IdentifierPattern':
         return seq(
@@ -544,10 +587,13 @@ var _check = function(node) {
     case 'ArrayPattern':
         return examineScope(\s -> {
             if (!node.id) {
+                var unused = s.getUnusedId('__a');
                 var id = ast_pattern.IdentifierPattern.create(null,
-                    ast_value.Identifier.create(null, s.getUnusedId('__a')));
-                id.gen = true;
+                    ast_value.Identifier.create(null, unused));
                 node.id = id;
+                return next(
+                    addReservedBinding(unused),
+                    seqa(map(node.elements, _check)));
             }
             return next(
                 _check(node.id),
@@ -557,16 +603,18 @@ var _check = function(node) {
     case 'ObjectPattern':
         return examineScope(\s -> {
             if (!node.id) {
+                var unused = s.getUnusedId('__o');
                 var id = ast_pattern.IdentifierPattern.create(null,
-                    ast_value.Identifier.create(null, s.getUnusedId('__o')));
-                id.gen = true;
+                    ast_value.Identifier.create(null, unused));
                 node.id = id;
+                
+                return next(
+                    addReservedBinding(unused),
+                    seqa(map(node.elements, _check)));
             }
             return next(
                 _check(node.id),
-                seqa(map(
-                    node.elements,
-                    _check)));
+                seqa(map(node.elements, _check)));
         });
     
     case 'ObjectPatternElement':
@@ -584,7 +632,7 @@ var _check = function(node) {
         return examineScope(\s -> {
             if (s.hasMapping(node.name))
                 node.name = s.getMapping(node.name);
-            return hasBinding(node.name, node.loc);
+            return hasFreeBinding(node.name, node.loc);
         });
     }
     

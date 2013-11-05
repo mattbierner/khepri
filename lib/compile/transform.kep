@@ -88,30 +88,31 @@ var objectPattern = \base, pattern, key, f -> {
             identifier(null, k.value),
             innerBase);
     
-    
-    switch (pattern.type){
+    switch (pattern.type) {
     case 'IdentifierPattern':
         return f(
             identifier(null, pattern.id.name),
             innerBase);
     
     case 'ArrayPattern':
-        var elements = map(pattern.elements, \x, i -> arrayPattern(innerBase, x, i));
-        return (pattern.id.gen ? elements : 
-            concat(
-                [f(pattern.id, innerBase)],
-                elements));
+        return let
+            base = f(pattern.id, innerBase),
+            elements = map(pattern.elements, (arrayPattern, pattern.id))
+        in
+            concat(base, elements);
     
     case 'ObjectPattern':
-        var elements2 = reduce(
-            pattern.elements,
-            \p, c ->
-                let val = objectPattern(innerBase, c.target, c.key) in (val ? concat(p, val) : p),
-            []);
-        return (pattern.id.gen ? elements2 : 
-            concat(
-                [f(pattern.id, innerBase)],
-                elements2));
+        return let
+            base = f(pattern.id, innerBase),
+            elements = reduce(
+                pattern.elements,
+                \p, {target, key} ->
+                    let val = objectPattern(pattern.id, target, key, f) in
+                        (val ? concat(p, val) : p),
+                [])
+        in
+            concat(base, elements);
+    
     default:
         return null;
     }
@@ -187,6 +188,7 @@ var withStatement = \loc, bindings, body -> {
                 return concat(
                     p,
                     variableDeclarator(null, imp.pattern, base));
+            
              case 'ObjectPattern':
                  return concat(
                      p,
@@ -194,8 +196,10 @@ var withStatement = \loc, bindings, body -> {
                     reduce(imp.pattern.elements, \p, c ->
                         let val = objectDeclPattern(transform(imp.pattern.id), c.target, c.key) in (val ? concat(p, val) : p),
                         []));
-            }
-            return p;
+             
+             default:
+                 return p;
+             }
         }
         
         switch (imp.pattern.type) {
@@ -208,7 +212,7 @@ var withStatement = \loc, bindings, body -> {
              return concat(
                  p,
                  variableDeclarator(null, imp.pattern.id, base),
-                flatten(
+                 flatten(
                     map(imp.pattern.elements, \c ->
                         objectDeclPattern(imp.pattern.id, c.target, c.key))));
          
