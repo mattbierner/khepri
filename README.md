@@ -28,7 +28,7 @@ more fun, with a focus on functional style programming.
 
 # Differences with ECMAScript
 
-## Lambda Function Expression Syntax
+### Lambda Function Expression Syntax
 Available syntaxes, along with translations as last item, are shown here: 
 
     // single argument
@@ -65,7 +65,7 @@ Available syntaxes, along with translations as last item, are shown here:
 
 All scoping remains the same as in the translated version.
 
-## Patterns
+### Patterns
 Function parameter lists are patterns instead of identifiers. These patterns
 effect the behavior of the generated function and have nothing to do with pattern
 matching. All effects happen at runtime.
@@ -231,7 +231,28 @@ let expressions may also use any pattern on their left hand side:
     in
        first + y + x + o.a; // 18
 
-## Package Syntax
+### With statement
+The `with` statement has been modified to behave like a statement level let
+expression. The sytnax is:
+
+    with BINDINGS in { STATEMENTS }
+
+where `BINDINGS` is a list of let style bindings and `STATEMENTS` is zero or more
+other statements.
+
+    with x = 10, y = 5 in { 
+        if (x > y)
+            reutrn x;
+        return y;
+    }
+
+Unlike the `let` statement, `with` statements can contain flow control statements
+like `return`, `throw`, `break`, and `continue`.
+
+Like `let`, all bindings are immutable and only valid inside of the body.
+
+
+### Package Syntax
 Khepri introduces a syntax for packages. Code for different package management
 systems may be generated from the base package syntax.
 
@@ -285,23 +306,6 @@ reserve the names `require`, `exports`, `module` as immutable bindings before
 any of the package is evaluated. All packages also use strict mode.
 
 
-## Multiple value bracket accessor
-Bracket accessors support multiple expressions separated by commas for traversing
-hierarchical paths. Single expressions are still supported.
-
-Available syntaxes, along with translations, are shown here: 
-
-    // Single argument
-    a[b];
-    a[b];
-    
-    // Multiple arguments
-    a[b, c];
-    a[b][c];
-    
-    a[5 + 10, (\x -> x.y)({'y': 7})];
-    a[b][function(x) { return x.y; }({'y': 7})];
-
 ## Function Curry Operator
 In place of sequence expressions, parenthesized comma separated expressions are used to
 curry functions. Their current use to group a subexpression remains unchanged as
@@ -340,7 +344,7 @@ Use `Function.prototype.bind` for this.
 ## Composition Operator 
 The `\>` and `\>>` operators composes two functions into a new function. Using
 the `\>` operator, the resulting function takes a single argument while the result
-of the `\>>` takes an artrary number of arguments.
+of the `\>>` takes an arbitrary number of arguments.
 
     var (\>) = \f, g -> \x -> g(f(x));
 
@@ -577,9 +581,9 @@ The `get` and `set` syntax in object literals is not supported.
 Comma separated sequences of expressions are not allowed. An expressions must be 
 a single expression. The syntax is reused for curry expressions.
 
-### With Statement
-With statements are not valid in strict mode ECMAScript and have been removed.
-With remains a reserved word.
+### ECMAScript style With Statement
+ECMAScript style `with (OBJECT) BODY` expressions are not supported. The `with`
+statement has been repurposed to behave like a statement level let binding.
 
 ### Labeled Statements
 Make language more ambiguous.

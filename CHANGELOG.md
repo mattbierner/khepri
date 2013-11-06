@@ -13,7 +13,7 @@
 * Added reversed versions of compose and pipeline operator.
 * Added versions of compose and pipeline operator to support multiple args.
 * Changed existing compose operator to pass a single argument.
-* Removed support for all compond assignment operators.
+* Removed support for all compound assignment operators.
 ** Also will lex to puctuator plus assignment op.
 * Added `_` pattern for unused var.
 ** `_` is a reserved word but words can contain or begin with `_` (like other

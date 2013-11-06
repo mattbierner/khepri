@@ -145,7 +145,8 @@
             <div class='console'>
                 <h2>Input</h2>
                 <textarea rows='20'></textarea>
-                <button>Tokenize</button>
+                <button>parse</button>
+                <span id='time'></span>
             </div>
             <div>
                 <h4>Lex Out</h4>
@@ -154,7 +155,6 @@
             </div>
         </div>
         <div class='output'>
-
             <div>
                 <h4>Parse Out</h4>
                 <pre class='ParseError'></pre>
@@ -245,9 +245,9 @@
                     if (Array.isArray(ast)) {
                         var n = $("<div class='Array'></div>");
                         
-                        for (var i = 0; i < ast.length; ++i) {
+                        for (var i = 0; i < ast.length; ++i)
                             walk(ast[i], function(x) { n.append(x); });
-                        }
+                        
                         return f(n);
                     }
                     return f($("<span>" + ast + "</span>"));
@@ -265,22 +265,6 @@
                     var nodes;
                     try {
                         nodes = lexer.lex(input);
-                        stream.forEach(function(v) {
-                            var type =  v.type,
-                                value = (type === 'Whitespace' ? '' : v.value),
-                                location = v.loc;
-                            lexOut.append($("<span class='Token'>" + value + "</span>")
-                                .addClass(function() {
-                                    if (v.type === 'Whitespace' && v.value === '\t') {
-                                        return v.type + " Tab";
-                                    }
-                                    return v.type;
-                                }).data({
-                                    'type': type,
-                                    'value': value,
-                                    'location': location
-                                }));
-                        }, nodes);
                     } catch (e) {
                         $('.LexError').text(e);
                         return;
@@ -289,13 +273,16 @@
                     try
                     {
                         var start = new Date().getTime();
-                        //console.profile();
+                        console.profile();
                        
                         var ast = parser.parseStream(nodes);
                         lexical.check(ast);
-                        //console.profileEnd();
+                        console.profileEnd();
                         var end = new Date().getTime();
-                        console.log(end - start);
+                        var diff = end - start;
+                        console.log(diff);
+                       
+                        $('#time').text(diff);
                         
                         $('.ParseError').text('');
                         walk(ast, function(x){
@@ -304,6 +291,24 @@
                     } catch (e) {
                         $('.ParseError').text(e);
                     }
+                    
+                    
+                    stream.forEach(function(v) {
+                        var type =  v.type,
+                            value = (type === 'Whitespace' ? '' : v.value),
+                            location = v.loc;
+                        lexOut.append($("<span class='Token'>" + value + "</span>")
+                            .addClass(function() {
+                                if (v.type === 'Whitespace' && v.value === '\t') {
+                                    return v.type + " Tab";
+                                }
+                                return v.type;
+                            }).data({
+                                'type': type,
+                                'value': value,
+                                'location': location
+                            }));
+                    }, nodes);
                 });
             });
         });

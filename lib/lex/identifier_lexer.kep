@@ -126,8 +126,7 @@ identifierStart = choice(
  * Lexer for the rest of an identifier after the first character.
  */
 identifierPart = choice(
-    attempt
-        <| identifierStart,
+    attempt <| identifierStart,
     unicodeCombiningMark,
     unicodeDigit,
     unicodeConnectorPunctuation,
