@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.5.2 - November 10, 2013
+* Fixed generation of package with no exports creating empty variable declaration.
+
 ## 0.5.1 - November 4, 2013
 * Fixed allowing usage of mapped sink pattern internal identifiers.
 * Fixed allowing usage of generated identifiers from object and array patterns.

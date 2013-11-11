@@ -398,8 +398,10 @@ var packageBlock = \loc, exports, body -> let
 
     exportList = map(exports.exports, \x -> transform(x.id)),
 
-    exportHeader = ecma_declaration.VariableDeclaration.create(null,
-        map(exportList, \x -> variableDeclarator(null, x))),
+    exportHeader = (exportList.length ?
+        ecma_declaration.VariableDeclaration.create(null,
+            map(exportList, (variableDeclarator, null))) :
+        ecma_statement.EmptyStatement.create(null)),
     
     exportBody = exportList.map(\x ->
         expressionStatement(null,
