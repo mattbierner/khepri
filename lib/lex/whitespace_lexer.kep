@@ -13,7 +13,7 @@ package (
     whitespace)
 with
     import 'parse/parse' {Parser, token},
-    import 'parse/text' {character, match}
+    import 'parse/text' {character, characters, match}
 in {
 
 var tabChar = '\u0009',
@@ -64,17 +64,6 @@ usp = match(`^\s$`);
  * A whitespace character.
  */
 whitespace = Parser('Whitespace Lexer',
-    token(\tok -> {
-        switch (tok) {
-        case tabChar:
-        case vtChar:
-        case ffChar:
-        case spChar:
-        case nbspChar:
-        case bomChar:
-            return true;
-        default:
-            return false;
-        }
-    }));
+    characters([tabChar, vtChar, ffChar, spChar, nbspChar, bomChar]));
+
 }

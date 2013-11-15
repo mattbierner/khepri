@@ -16,7 +16,7 @@ package (
 with
     import 'parse/parse' {anyToken, always, bind, cons, either, many, next, Parser, RecParser, test, token},
     import 'parse/text' {character, string},
-    import 'nu/stream' {foldl, 'end': NIL},
+    import 'nu/stream' {foldl, NIL},
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 

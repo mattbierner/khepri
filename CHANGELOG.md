@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.5.3 - November 15, 2013
+* Fixed sink pattern creating empty declarations if used in unpacks.
+* Update to Nu V3, Parse V16.
+
 ## 0.5.2 - November 10, 2013
 * Fixed generation of package with no exports creating empty variable declaration.
 

@@ -33,23 +33,11 @@ with
         Parser,
         testStream,
         token},
-    import 'parse/text' {character, digit, letter, string},
+    import 'parse/text' {character, characters, digit, letter, string},
     import 'nu/stream' {foldl},
     import 'khepri/lex/reserved_word_lexer' {reservedWord},
     import 'khepri/lex/string_lexer' {escape, unicodeEscapeSequence}
 in {
-
-var pc = [
-    '\u005F',
-    '\u203F',
-    '\u2040',
-    '\u2054',
-    '\uFE33',
-    '\uFE34',
-    '\uFE4D',
-    '\uFE4E',
-    '\uFE4F',
-    '\uFF3F'];
 
 var join = (foldl, (+), '');
 
@@ -96,7 +84,17 @@ unicodeDigit = digit;
  * 
  * Any character in the Unicode category Connector Punctuation (Pc).
  */
-unicodeConnectorPunctuation = token(\tok -> pc.indexOf(tok) !== -1);
+unicodeConnectorPunctuation = characters([
+    '\u005F',
+    '\u203F',
+    '\u2040',
+    '\u2054',
+    '\uFE33',
+    '\uFE34',
+    '\uFE4D',
+    '\uFE4E',
+    '\uFE4F',
+    '\uFF3F']);
 
 /**
  * Lexer for any combining mark Unicode character.
@@ -116,8 +114,7 @@ unicodeCombiningMark = never();
  */
 identifierStart = choice(
     unicodeLetter,
-    character('$'),
-    character('_'),
+    characters('$_'),
     next(
         escape,
         unicodeEscapeSequence));

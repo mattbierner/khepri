@@ -10,7 +10,7 @@ package (
     lineTerminatorSequence)
 with
     import 'parse/parse' {always, choice, next, optional, Parser, token},
-    import 'parse/text' {character}
+    import 'parse/text' {character, characters}
 in {
 
 var lfChar = '\u000A',
@@ -48,17 +48,7 @@ ps = Parser('Paragraph Separator Lexer',
  * A line terminator character.
  */
 lineTerminator = Parser('Line Terminator Lexer',
-    token(\tok -> {
-        switch (tok) {
-        case lfChar:
-        case crChar:
-        case lsChar:
-        case psChar:
-            return true;
-        default:
-            return false;
-        }
-    }));
+    characters([lfChar, crChar, lsChar, psChar]));
 
 /**
  * A sequence of characters denoting a linter terminator.

@@ -11,7 +11,7 @@ with
         always,
         bind},
     import 'khepri/position' {SourceLocation},
-    import 'nu/stream' stream{'end': NIL}
+    import 'nu/stream' stream{NIL}
 in {
 
 // Operator Precedence
