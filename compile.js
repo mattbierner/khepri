@@ -5,13 +5,13 @@ var argv = require('optimist').argv;
 requirejs.config({
     nodeRequire: require,
     paths: {
-        'parse': 'dependencies/parse/lib',
+        'parse': 'dependencies/parse/dist',
         'seshat': 'dependencies/seshat/lib/seshat',
-        'nu': 'dependencies/nu/lib',
+        'nu': 'dependencies/nu/dist',
         'ecma': 'dependencies/parse-ecma/lib',
         'ecma_unparse': 'dependencies/ecma-unparse/lib',
         'ecma_ast': 'dependencies/ecma-ast/lib',
-        'khepri_ast': 'dependencies/khepri-ast/lib',
+        'khepri_ast': 'dependencies/khepri-ast/dist',
         'khepri': 'lib'
     }
 });

@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.5.3 - November 22, 2013
+* `watch.py` generate directories for files if they do not exist.
+* U
+
 ## 0.5.3 - November 15, 2013
 * Fixed sink pattern creating empty declarations if used in unpacks.
 * Update to Nu V3, Parse V16.

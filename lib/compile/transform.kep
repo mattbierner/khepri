@@ -674,11 +674,12 @@ transform = function(node) {
     
     case 'ObjectExpression':
         return ecma_expression.ObjectExpression.create(node.loc,
-            map(node.properties, \x -> ({
-                'kind': x.kind,
-                'key': transform(x.key),
-                'value': transform(x.value)
-            })));
+            map(node.properties, transform));
+    
+    case 'ObjectValue':
+        return ecma_value.ObjectValue.create(node.loc,
+            transform(node.key),
+            transform(node.value));
     
 // Patterns
     case 'ArgumentsPattern':

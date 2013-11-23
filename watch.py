@@ -23,6 +23,14 @@ class KhepriMatchingEventHandler(FileSystemEventHandler):
         out_path = os.path.join(
             self.out if self.out is not None else self.relative,
             "%s.js" % splitext(rel)[0])
+        out_dir = os.path.split(out_path)[0]
+        if out_dir:
+            try: 
+                os.makedirs(out_dir)
+            except OSError:
+                if not os.path.isdir(out_dir):
+                    raise
+        
         header = "/*\n * THIS FILE IS AUTO GENERATED from '%s'\n * DO NOT EDIT\n*/" % os.path.relpath(path)
         call('%s --header "%s" -o %s %s' % (KHEPRI, header, out_path, path), shell=True)
     

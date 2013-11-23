@@ -24,15 +24,15 @@ function(parse,
             function(){
                 var result = testParser(lexer.lex("({ 'a': 0 , 'b': 1, '9': 2});"));
                 assert.equal(result.properties.length, 3);
-                assert.equal(result.properties[0].kind, 'init');
+                assert.equal(result.properties[0].type, 'ObjectValue');
                 assert.equal(result.properties[0].key.value, 'a');
                 assert.equal(result.properties[0].value.value, 0);
                 
-                assert.equal(result.properties[1].kind, 'init');
+                assert.equal(result.properties[1].type, 'ObjectValue');
                 assert.equal(result.properties[1].key.value, 'b');
                 assert.equal(result.properties[1].value.value, 1);
                 
-                assert.equal(result.properties[2].kind, 'init');
+                assert.equal(result.properties[2].type, 'ObjectValue');
                 assert.equal(result.properties[2].key.value, '9');
                 assert.equal(result.properties[2].value.value, 2);
             }]

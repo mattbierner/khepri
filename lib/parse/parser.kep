@@ -3,11 +3,14 @@
  */
 package (
     parserStream,
+    ParserPosition,
+    ParserState,
+    
     parseInput,
     parseStream)
 with
     import 'parse/parse' parse,
-    import 'nu/stream' {first, filter, isEmpty, rest, 'from': streamFrom},
+    import 'nu/stream' {first, filter, isEmpty, rest, NIL, 'from': streamFrom},
     import 'khepri/position' {SourceLocation, SourcePosition},
     import 'khepri/parse/program_parser' {program}
 in {
@@ -42,7 +45,7 @@ in
  * 
  * Tracks position in lex stream and source positions.
  */
-var ParserPosition = function(tokenPosition, sourcePosition) {
+ParserPosition = function(tokenPosition, sourcePosition) {
     this.tokenPosition = tokenPosition;
     this.sourcePosition = sourcePosition;
 };
@@ -64,12 +67,28 @@ ParserPosition.prototype.compare = \pos ->
 
 /* State
  ******************************************************************************/
-var ParserState = function(stream, pos, prevEnd) {
-    parse.ParserState.call(this, stream, pos);
+ParserState = function(input, pos, prevEnd) {
+    parse.ParserState.call(this, input, pos);
     this._prevEnd = prevEnd;
 };
 ParserState.prototype = new parse.ParserState;
 
+ParserState.initial = new ParserState(NIL,
+    ParserPosition.initial,
+    SourcePosition.initial);
+
+ParserState.prototype.setInput = \input ->
+    new ParserState(
+        input,
+        this.position,
+        this._prevEnd);
+    
+ParserState.prototype.setPosition = \position ->
+    new ParserState(
+        this.input,
+        position,
+        this._prevEnd);
+    
 ParserState.prototype.next = \tok -> {
     if (!this._next) {
         var r = rest(this.input);
@@ -103,9 +122,7 @@ parseStream = \s ->
         program,
         new ParserState(
             parserStream(s),
-            new ParserPosition(
-                parse.Position.initial,
-                SourcePosition.initial),
+            ParserPosition.initial,
             SourcePosition.initial));
 
 /**

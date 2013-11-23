@@ -87,7 +87,7 @@ node = \p, f ->
             p,
             prevEnd),
         \o, x, c ->
-            always(f(new SourceLocation(o.start, c), x)));
+            always(f(new SourceLocation(o && o.start, c), x)));
 
 nodea = \p, f ->
     parse.binds(
@@ -96,6 +96,6 @@ nodea = \p, f ->
             p,
             prevEnd),
         \o, x, c ->
-            always(f.apply(undefined, stream.toArray(stream.cons(new SourceLocation(o.start, c), x)))));
+            always(f.apply(undefined, stream.toArray(stream.cons(new SourceLocation(o && o.start, c), x)))));
 
 }

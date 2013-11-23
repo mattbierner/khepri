@@ -4,7 +4,7 @@
 package (
     literal,
     token,
-    inputElementRegExp,
+    inputElement,
     lexer,
     lexManyState,
     lex)
@@ -26,12 +26,13 @@ with
         runState,
         Parser,
         ParserState},
+    import 'parse/lang' {then},
     import 'nu/stream' {memoStream, NIL, 'from': streamFrom},
     import 'khepri_ast/token' lexToken,
     import 'khepri/position' {SourceLocation, SourcePosition},
     import 'khepri/lex/boolean_lexer' {booleanLiteral},
     import 'khepri/lex/comment_lexer' {comment},
-    import 'khepri/lex/identifier_lexer' {identifier},
+    import 'khepri/lex/identifier_lexer' {identifier, identifierName},
     import 'khepri/lex/line_terminator_lexer' {lineTerminator},
     import 'khepri/lex/null_lexer' {nullLiteral},
     import 'khepri/lex/number_lexer' {numericLiteral},
@@ -43,20 +44,22 @@ with
 in {
 
 var makeToken = \type, p ->
+    bind(p, \value -> always([type, value]));
+
+var buildToken = \p ->
     binds(
         enumeration(
             getPosition,
             p,
             getPosition),
-        \start, value, end ->
+        \start, [type, value], end ->
             always(
                 new type(
                     new SourceLocation(start, end),
                     value)));
-
 /* Lexers
  ******************************************************************************/
-literal = choice(
+var literalImpl = choice(
     makeToken(lexToken.StringToken, stringLiteral)
         |> (expected, "string literal"),
     makeToken(lexToken.RegularExpressionToken, regularExpressionLiteral)
@@ -68,28 +71,36 @@ literal = choice(
     makeToken(lexToken.NumberToken, numericLiteral)
         |> (expected, "number literal"));
 
-token = choice(
+var tokenImpl = choice(
     attempt
         <| makeToken(lexToken.IdentifierToken, identifier)
         |> (expected, "identifier"),
     attempt
-        <| literal,
+        <| literalImpl,
     attempt
         <| makeToken(lexToken.KeywordToken, reservedWord)
         |> (expected, "reserved word"),
     makeToken(lexToken.PunctuatorToken, punctuator)
         |> (expected, "puctuator"));
 
-inputElementRegExp = choice(
+var inputElementImpl = choice(
     makeToken(lexToken.CommentToken, comment)
         |> (expected, "comment"),
     makeToken(lexToken.WhitespaceToken, whitespace)
         |> (expected, "whitespace"),
     makeToken(lexToken.LineTerminatorToken, lineTerminator)
         |> (expected, "line terminator"),
-    token);
+    tokenImpl);
 
-lexer = many(inputElementRegExp);
+literal = buildToken(literalImpl);
+
+token = buildToken(tokenImpl);
+
+inputElement = buildToken(inputElementImpl);
+
+lexer = then(
+    many(inputElement),
+    eof);
 
 /* Running
  ******************************************************************************/
@@ -103,7 +114,7 @@ in
 
 lex = \input ->
     lexManyState(
-        inputElementRegExp,
+        inputElement,
         new ParserState(
             streamFrom(input),
             new SourcePosition(0, 0)));
