@@ -1,8 +1,9 @@
 # ChangeLog #
 
-## 0.5.3 - November 22, 2013
+## 0.5.4 - November 22, 2013
 * `watch.py` generate directories for files if they do not exist.
-* U
+* Updated to `khepri_ast` V3
+* Moved generated files to `dist`.
 
 ## 0.5.3 - November 15, 2013
 * Fixed sink pattern creating empty declarations if used in unpacks.
