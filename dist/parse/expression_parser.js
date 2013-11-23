@@ -98,17 +98,20 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         }
     })()));
     var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(keyword("typeof"), punctuator("~", "!")), (function(__o6) {
-        var loc = __o6["loc"],
+        var __o6 = __o6,
+            loc = __o6["loc"],
             value = __o6["value"];
         return always(ast_expression.UnaryOperatorExpression.create(loc, value));
     })));
     var binaryOperatorExpression = Parser("Binary Operator Expression", bind(either(keyword("instanceof"), punctuator("*", "/", "+", "-", "%", "<<", ">>", ">>>", "<", ">", "<=", ">=", "==", "!=", "===", "!==", "&", "^", "|", "||", "&&", "\\>", "|>")), (function(__o6) {
-        var loc = __o6["loc"],
+        var __o6 = __o6,
+            loc = __o6["loc"],
             value = __o6["value"];
         return always(ast_expression.BinaryOperatorExpression.create(loc, value));
     })));
     var ternayOperatorExpression = Parser("Ternary Operator Expression", bind(punctuator("?"), (function(__o6) {
-        var loc = __o6["loc"],
+        var __o6 = __o6,
+            loc = __o6["loc"],
             value = __o6["value"];
         return always(ast_expression.TernaryOperatorExpression.create(loc, value));
     })));

@@ -10,8 +10,7 @@ define(["require", "exports", "parse/parse", "parse/text"], (function(require, e
         next = __o["next"],
         Parser = __o["Parser"],
         __o0 = __o0,
-        string = __o0["string"]; {
-            (nullLiteral = Parser("Null Parser", next(string("null"), always(null))));
-    }
+        string = __o0["string"];
+    (nullLiteral = Parser("Null Parser", next(string("null"), always(null))));
     (exports.nullLiteral = nullLiteral);
 }))

@@ -80,7 +80,8 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                     {
                         var base = f(pattern.id, innerBase),
                             elements = flatten(maps.bind(null, (function(__o) {
-                                var target = __o["target"],
+                                var __o = __o,
+                                    target = __o["target"],
                                     key = __o["key"];
                                 return objectPattern(pattern.id, target, key, f);
                             }))(pattern.elements));

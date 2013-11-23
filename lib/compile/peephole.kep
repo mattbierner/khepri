@@ -1,0 +1,53 @@
+package (
+    optimize)
+with
+    import 'ecma_ast/node' {modify, Node}
+in {
+
+var map = \f, x -> [].map.call(x, f);
+
+var peepholes = {};
+
+var addPeephole = \type, f -> {
+    peepholes[type] = (peepholes[type] ? peepholes[type].concat(f) : [f]);
+};
+
+/* Peepholes
+ ******************************************************************************/
+addPeephole('VariableDeclarator', \node ->
+    (node.init && node.init.type === 'Identifier' && node.id.name === node.init.name ?
+        null :
+        node));
+
+addPeephole('VariableDeclaration', \node -> let
+    declarations = node.declarations.filter(\x -> !!x)
+in
+    !declarations.length ? null :
+        modify(node, {
+            'declarations': declarations
+        }, {}));
+
+/* Interface
+ ******************************************************************************/
+optimize = \node -> {
+    if (!node)
+        return node;
+    
+    if (Array.isArray(node))
+        return map(optimize, node);
+    
+    if (!(node instanceof Node))
+        return node;
+    
+    var transforms = (peepholes[node.type] || []);
+    var result = transforms.reduce(\p, c -> c(p), node);
+    if (!result)
+        return result;
+    
+    return modify(result, node.children.reduce(\p, c -> {
+        p[c] = optimize(node[c]);
+        return p;
+    }, {}), {});
+};
+
+}

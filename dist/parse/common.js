@@ -15,7 +15,8 @@ define(["require", "exports", "parse/parse", "khepri/position", "nu/stream"], (f
     (precedence = (function(p, table) {
         var sep = parse.choicea(table.map((function(entry) {
             return bind(entry.sep, (function(__o0) {
-                var value = __o0["value"];
+                var __o0 = __o0,
+                    value = __o0["value"];
                 return always(({
                     "value": value,
                     "node": entry.node,
@@ -63,15 +64,18 @@ define(["require", "exports", "parse/parse", "khepri/position", "nu/stream"], (f
         }));
     }));
     (positionParser = parse.extract((function(__o0) {
-        var position = __o0["position"];
+        var __o0 = __o0,
+            position = __o0["position"];
         return position;
     })));
     var locParser = parse.extract((function(__o0) {
-        var loc = __o0["loc"];
+        var __o0 = __o0,
+            loc = __o0["loc"];
         return loc;
     }));
     var prevEnd = parse.extract((function(__o0) {
-        var _prevEnd = __o0["_prevEnd"];
+        var __o0 = __o0,
+            _prevEnd = __o0["_prevEnd"];
         return _prevEnd;
     }));
     (node = (function(p, f) {
