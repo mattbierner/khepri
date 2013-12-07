@@ -284,15 +284,17 @@ var memberExpression = \loc, object, property, computed ->
  */
 var letExpression = \loc, bindings, body ->
     callExpression(loc,
-        functionExpression(null,
-            null,
-            khepri_pattern.ArgumentsPattern.create(null, null, []),
-            blockStatement(null, [
-                 withStatement(null,
-                     bindings,
-                     blockStatement(null, [
-                         returnStatement(null, body)]))])),
-        []);
+        memberExpression(null, 
+            functionExpression(null,
+                null,
+                khepri_pattern.ArgumentsPattern.create(null, null, []),
+                blockStatement(null, [
+                     withStatement(null,
+                         bindings,
+                         blockStatement(null, [
+                             returnStatement(null, body)]))])),
+         identifier(null, 'call')),
+     [ecma_expression.ThisExpression.create(null)]);
 
 /**
  * 

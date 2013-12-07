@@ -197,7 +197,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return ecma_expression.MemberExpression.create(loc, transform(object), transform(property), computed);
     });
     var letExpression = (function(loc, bindings, body) {
-        return callExpression(loc, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(null, null, []), blockStatement(null, [withStatement(null, bindings, blockStatement(null, [returnStatement(null, body)]))])), []);
+        return callExpression(loc, memberExpression(null, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(null, null, []), blockStatement(null, [withStatement(null, bindings, blockStatement(null, [returnStatement(null, body)]))])), identifier(null, "call")), [ecma_expression.ThisExpression.create(null)]);
     });
     var curryExpression = (function(loc, base, args) {
         return ((args.length === 0) ? transform(base) : callExpression(null, memberExpression(null, base, identifier(null, "bind")), concat(nullLiteral(null), args)));

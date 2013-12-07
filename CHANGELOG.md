@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.5.5 - December7, 2013
+* Fixed let expressions hiding `this` values.
+
 ## 0.5.4 - November 22, 2013
 * `watch.py` generate directories for files if they do not exist.
 * Updated to `khepri_ast` V3
