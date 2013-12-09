@@ -1,6 +1,19 @@
 # ChangeLog #
 
-## 0.5.5 - December7, 2013
+## 0.6.0 - December 9, 2013
+* Added `void` back.
+* Added syntax for named lambda functions with all unpacks:
+    `function fun \args(x, ...) -> x`
+** Hybrid of base ecmascript function expression and Khepri lambda expression.
+** Syntaxes:
+*** `var fun = function fun \args(x, ...) -> x`
+*** `var fun = function \args(x, ...) -> x`
+*** `var fun = function fun(x, ...) { return x; } // no args unpack`
+*** `var fun = \args(x, ...) -> { return x; }`
+*** `var fun = \args(x, ...) ->  x;`
+*** `var fun = \x, ... -> x;`
+
+## 0.5.5 - December 9, 2013
 * Fixed let expressions hiding `this` values.
 
 ## 0.5.4 - November 22, 2013

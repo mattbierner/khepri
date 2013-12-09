@@ -12,6 +12,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         bind = __o["bind"],
         binds = __o["binds"],
         choice = __o["choice"],
+        cons = __o["cons"],
         eager = __o["eager"],
         either = __o["either"],
         enumeration = __o["enumeration"],
@@ -69,7 +70,6 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         var args = arguments;
         return newExpression.apply(undefined, args);
     }));
-    var functionBody = node(sourceElements, ast_statement.BlockStatement.create);
     (arrayElement = Parser("Array Element", expression));
     (arrayElements = Parser("Array Elements", eager(sepBy(punctuator(","), expected("array element", arrayElement)))));
     (arrayLiteral = Parser("Array Literal", node(between(punctuator("["), punctuator("]"), arrayElements), ast_expression.ArrayExpression.create)));
@@ -78,14 +78,15 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     (objectProperties = Parser("Object Properties", eager(sepBy(punctuator(","), propertyInitializer))));
     (objectLiteral = Parser("Object Literal", node(between(punctuator("{"), punctuator("}"), objectProperties), ast_expression.ObjectExpression.create)));
     var formalParameterList = pattern.argumentsPattern;
-    var ecmaFunctionExpression = nodea(next(keyword("function"), enumeration(optional(null, identifier), between(punctuator("("), punctuator(")"), formalParameterList), between(punctuator("{"), punctuator("}"), functionBody))), ast_expression.FunctionExpression.create);
-    var lambdaFormalParameterList = pattern.argumentsPattern;
-    var lambdaBody = either(between(punctuator("{"), punctuator("}"), functionBody), node(conditionalExpression, (function(loc, x) {
+    var functionBody = node(between(punctuator("{"), punctuator("}"), sourceElements), ast_statement.BlockStatement.create);
+    var lambdaBody = node(conditionalExpression, (function(loc, x) {
         return ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)]);
-    })));
-    var lambdaFunctionExpression = nodea(next(punctuator("\\"), enumeration(lambdaFormalParameterList, next(punctuator("->"), lambdaBody))), (function(loc, parameters, body) {
+    }));
+    var lambdaFunctionBody = either(functionBody, lambdaBody);
+    var lambdaFunctionExpression = nodea(next(punctuator("\\"), enumeration(formalParameterList, next(punctuator("->"), lambdaBody))), (function(loc, parameters, body) {
         return ast_expression.FunctionExpression.create(loc, null, parameters, body);
     }));
+    var ecmaFunctionExpression = nodea(next(keyword("function"), cons(optional(null, identifier), either(enumeration(between(punctuator("("), punctuator(")"), formalParameterList), functionBody), next(punctuator("\\"), enumeration(formalParameterList, next(punctuator("->"), lambdaFunctionBody)))))), ast_expression.FunctionExpression.create);
     var functionExpression = Parser("Function Expression", either(ecmaFunctionExpression, lambdaFunctionExpression));
     (thisExpression = node(keyword("this"), ast_expression.ThisExpression.create));
     var letIdentifier = expected("Any pattern", pattern.pattern);
@@ -97,7 +98,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
             return nodea(next(keyword("let"), enumeration(eager(letBindings), next(keyword("in"), letBody))), ast_expression.LetExpression.create);
         }
     })()));
-    var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(keyword("typeof"), punctuator("~", "!")), (function(__o6) {
+    var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(keyword("typeof"), punctuator("void", "~", "!")), (function(__o6) {
         var __o6 = __o6,
             loc = __o6["loc"],
             value = __o6["value"];
@@ -172,7 +173,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
             return f(g.apply(null, arguments));
         });
     })(always, foldl.bind(null, accessorReducer)))));
-    (unaryOperator = Parser("Unary Operator", either(keyword("typeof"), punctuator("+", "-", "~", "!"))));
+    (unaryOperator = Parser("Unary Operator", either(keyword("typeof", "void"), punctuator("+", "-", "~", "!"))));
     (unaryExpression = (function() {
         {
             var reducer = (function(argument, op) {

@@ -71,6 +71,7 @@ with
         bind,
         binds,
         choice,
+        cons,
         eager,
         either,
         enumeration,
@@ -120,12 +121,7 @@ newExpression = \args(...) -> newExpression.apply(undefined, args);
 
 /* Parsers
  ******************************************************************************/
-/**
- * Parser for the body of a function.
- */
-var functionBody = node(
-    sourceElements,
-    ast_statement.BlockStatement.create);
+
 
 // Array Literal
 ////////////////////////////////////////
@@ -195,37 +191,50 @@ objectLiteral = Parser('Object Literal',
  */
 var formalParameterList = pattern.argumentsPattern;
 
-var ecmaFunctionExpression = nodea(
-    next(
-        keyword('function'),
-        enumeration(
-            optional(null, identifier),
-            between(punctuator('('), punctuator(')'), 
-                formalParameterList),
-            between(punctuator('{'), punctuator('}'),
-                functionBody))),
-    ast_expression.FunctionExpression.create);
+var functionBody = node(
+     between(punctuator('{'), punctuator('}'),
+         sourceElements),
+    ast_statement.BlockStatement.create);
 
-var lambdaFormalParameterList = pattern.argumentsPattern;
+var lambdaBody = node(
+    conditionalExpression,
+    \loc, x ->
+        ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)]));
 
-var lambdaBody = either(
-    between(punctuator('{'), punctuator('}'),
-        functionBody),
-    node(
-        conditionalExpression,
-        \loc, x ->
-            ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)])));
+var lambdaFunctionBody = either(
+    functionBody,
+    lambdaBody);
 
 var lambdaFunctionExpression = nodea(
     next(
         punctuator('\\'),
         enumeration(
-            lambdaFormalParameterList,
+            formalParameterList,
             next(
                 punctuator('->'),
                 lambdaBody))),
     \loc, parameters, body ->
         ast_expression.FunctionExpression.create(loc, null, parameters, body));
+
+var ecmaFunctionExpression = nodea(
+    next(
+        keyword('function'),
+        cons(
+            optional(null, identifier),
+            either(
+                enumeration(
+                    between(punctuator('('), punctuator(')'), 
+                        formalParameterList),
+                    functionBody),
+                next(
+                    punctuator('\\'),
+                    enumeration(
+                        formalParameterList,
+                        next(
+                            punctuator('->'),
+                            lambdaFunctionBody)))))),
+    ast_expression.FunctionExpression.create);
+
 
 /**
  * Parser for an function expression.
@@ -286,6 +295,7 @@ var unaryOperatorExpression = Parser('Unary Operator Expression',
         either(
             keyword('typeof'),
             punctuator(
+                'void',
                 '~',
                 '!')),
         \{loc, value} -> always(ast_expression.UnaryOperatorExpression.create(loc, value))));
@@ -495,7 +505,7 @@ leftHandReferenceExpression = Parser('Left Hand Reference Expression',
 ////////////////////////////////////////
 unaryOperator = Parser('Unary Operator',
     either(
-        keyword('typeof'),
+        keyword('typeof', 'void'),
         punctuator('+', '-', '~', '!')));
 
 /**

@@ -29,11 +29,12 @@ more fun, with a focus on functional style programming.
 # Differences with ECMAScript
 
 ### Lambda Function Expression Syntax
-Available syntaxes, along with translations as last item, are shown here: 
+Available syntaxes, along with the also valid ECMAScript translation as last item, are shown here: 
 
     // single argument
     \x -> x + 3;
     \(x) -> x + 3;
+    function \x -> x + 3;
     function(x) { return x + 3; };
     
     // multiple arguments
@@ -46,6 +47,10 @@ Available syntaxes, along with translations as last item, are shown here:
         var z = x + 10;
         return z + y;
     };
+    function \x, y -> {
+        var z = x + 10;
+        return z + y;
+    };
     function(x, y) {
         var z = x + 10
         return z + y;
@@ -54,6 +59,7 @@ Available syntaxes, along with translations as last item, are shown here:
     // No Arguments
     \ -> 3;
     \() -> 3;
+    function \ -> 3;
     function() { return 3; };
     
     // Return empty object literal
@@ -61,7 +67,13 @@ Available syntaxes, along with translations as last item, are shown here:
     
     // Right associativity
     \x -> \y -> x + y;
-    function(x) { return function(y) { return x + y; }};
+    function(x) { return function(y) { return x + y; }; };
+    
+    // Named function expression
+    function f \x -> (x < 10 ? f(x + 1) : x);
+    function f \x -> { return (x < 10 ? f(x + 1) : x); };
+    function f (x) { return (x < 10 ? f(x + 1) : x); };
+
 
 All scoping remains the same as in the translated version.
 
