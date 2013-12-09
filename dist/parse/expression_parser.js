@@ -83,7 +83,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         return ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)]);
     }));
     var lambdaFunctionBody = either(functionBody, lambdaBody);
-    var lambdaFunctionExpression = nodea(next(punctuator("\\"), enumeration(formalParameterList, next(punctuator("->"), lambdaBody))), (function(loc, parameters, body) {
+    var lambdaFunctionExpression = nodea(next(punctuator("\\"), enumeration(formalParameterList, next(punctuator("->"), lambdaFunctionBody))), (function(loc, parameters, body) {
         return ast_expression.FunctionExpression.create(loc, null, parameters, body);
     }));
     var ecmaFunctionExpression = nodea(next(keyword("function"), cons(optional(null, identifier), either(enumeration(between(punctuator("("), punctuator(")"), formalParameterList), functionBody), next(punctuator("\\"), enumeration(formalParameterList, next(punctuator("->"), lambdaFunctionBody)))))), ast_expression.FunctionExpression.create);

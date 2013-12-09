@@ -212,7 +212,7 @@ var lambdaFunctionExpression = nodea(
             formalParameterList,
             next(
                 punctuator('->'),
-                lambdaBody))),
+                lambdaFunctionBody))),
     \loc, parameters, body ->
         ast_expression.FunctionExpression.create(loc, null, parameters, body));
 
