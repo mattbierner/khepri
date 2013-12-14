@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_ast/declaration", "khepri_ast/expression", "khepri_ast/statement", "khepri_ast/pattern", "khepri_ast/value", "khepri/position", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/program_parser", "khepri/parse/value_parser", "khepri/parse/pattern_parser"], (function(require, exports, __o, __o0, __o1, ast_declaration, ast_expression, ast_statement, ast_pattern, ast_value, __o2, __o3, __o4, program_parser, __o5, pattern) {
+define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_ast/declaration", "khepri_ast/expression", "khepri_ast/statement", "khepri_ast/pattern", "khepri_ast/value", "khepri/position", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/program_parser", "khepri/parse/value_parser", "khepri/parse/pattern_parser", "khepri/parse/shared"], (function(require, exports, __o, __o0, __o1, ast_declaration, ast_expression, ast_statement, ast_pattern, ast_value, __o2, __o3, __o4, program_parser, __o5, pattern, __o6) {
     "use strict";
     var arrayElement, arrayElements, arrayLiteral, propertyName, propertyInitializer, objectProperties, objectLiteral, curryExpression, primaryExpression, thisExpression, args, argumentList, dotAccessor, bracketAccessor, accessor, memberExpression, newExpression, leftHandSideExpression, leftHandReferenceExpression, unaryOperator, unaryExpression, binaryExpression, conditionalExpression, letExpression, assignmentOperator, assignmentExpression, composeExpression, expression, topLevelExpression;
     var __o = __o,
@@ -31,6 +31,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         __o1 = __o1,
         foldl = __o1["foldl"],
         foldr = __o1["foldr"],
+        reduce = __o1["reduce"],
         ast_declaration = ast_declaration,
         ast_expression = ast_expression,
         ast_statement = ast_statement,
@@ -48,13 +49,18 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         program_parser = program_parser,
         __o5 = __o5,
         identifier = __o5["identifier"],
-        literal = __o5["literal"],
+        booleanLiteral = __o5["booleanLiteral"],
+        nullLiteral = __o5["nullLiteral"],
+        numericLiteral = __o5["numericLiteral"],
         stringLiteral = __o5["stringLiteral"],
-        pattern = pattern;
+        regularExpressionLiteral = __o5["regularExpressionLiteral"],
+        pattern = pattern,
+        __o6 = __o6,
+        logicalComma = __o6["logicalComma"];
     var sourceElements = (function() {
         var args = arguments; {
-            var __o6 = require("khepri/parse/program_parser"),
-                sourceElements = __o6["sourceElements"];
+            var __o7 = require("khepri/parse/program_parser"),
+                sourceElements = __o7["sourceElements"];
             return sourceElements.apply(undefined, args);
         }
     });
@@ -69,6 +75,10 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     (newExpression = (function() {
         var args = arguments;
         return newExpression.apply(undefined, args);
+    }));
+    (binaryExpression = (function() {
+        var args = arguments;
+        return binaryExpression.apply(undefined, args);
     }));
     (arrayElement = Parser("Array Element", expression));
     (arrayElements = Parser("Array Elements", eager(sepBy(punctuator(","), expected("array element", arrayElement)))));
@@ -97,23 +107,23 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
                 letBody = expected.bind(null, "expression")(expression);
             return nodea(next(keyword("let"), enumeration(eager(letBindings), next(keyword("in"), letBody))), ast_expression.LetExpression.create);
         }
-    })()));
-    var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(keyword("typeof"), punctuator("void", "~", "!")), (function(__o6) {
-        var __o6 = __o6,
-            loc = __o6["loc"],
-            value = __o6["value"];
+    }).call(this)));
+    var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(keyword("typeof"), punctuator("void", "~", "!")), (function(__o7) {
+        var __o7 = __o7,
+            loc = __o7["loc"],
+            value = __o7["value"];
         return always(ast_expression.UnaryOperatorExpression.create(loc, value));
     })));
-    var binaryOperatorExpression = Parser("Binary Operator Expression", bind(either(keyword("instanceof"), punctuator("*", "/", "+", "-", "%", "<<", ">>", ">>>", "<", ">", "<=", ">=", "==", "!=", "===", "!==", "&", "^", "|", "||", "&&", "\\>", "|>")), (function(__o6) {
-        var __o6 = __o6,
-            loc = __o6["loc"],
-            value = __o6["value"];
+    var binaryOperatorExpression = Parser("Binary Operator Expression", bind(either(keyword("instanceof"), punctuator("*", "/", "+", "-", "%", "<<", ">>", ">>>", "<", ">", "<=", ">=", "==", "!=", "===", "!==", "&", "^", "|", "||", "&&", "\\>", "|>")), (function(__o7) {
+        var __o7 = __o7,
+            loc = __o7["loc"],
+            value = __o7["value"];
         return always(ast_expression.BinaryOperatorExpression.create(loc, value));
     })));
-    var ternayOperatorExpression = Parser("Ternary Operator Expression", bind(punctuator("?"), (function(__o6) {
-        var __o6 = __o6,
-            loc = __o6["loc"],
-            value = __o6["value"];
+    var ternayOperatorExpression = Parser("Ternary Operator Expression", bind(punctuator("?"), (function(__o7) {
+        var __o7 = __o7,
+            loc = __o7["loc"],
+            value = __o7["value"];
         return always(ast_expression.TernaryOperatorExpression.create(loc, value));
     })));
     var operatorExpression = Parser("Operator Expression", choice(unaryOperatorExpression, binaryOperatorExpression, ternayOperatorExpression));
@@ -124,9 +134,10 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
                 return (elements.length ? ast_expression.CurryExpression.create(loc, base, elements) : base);
             })));
         }
-    })()));
+    }).call(this)));
+    var literal = Parser.bind(null, "Literal")(choice(nullLiteral, booleanLiteral, numericLiteral, stringLiteral, regularExpressionLiteral));
     (primaryExpression = Parser("Primary Expression", choice(thisExpression, letExpression, identifier, curryExpression, literal, arrayLiteral, objectLiteral, functionExpression)));
-    (argumentList = Parser("Argument List", eager(sepBy(punctuator(","), expected("expression", expression)))));
+    (argumentList = Parser("Argument List", eager(sepBy(logicalComma, expected("expression", expression)))));
     (args = Parser("Arguments", node(between(punctuator("("), punctuator(")"), argumentList), (function(loc, args) {
         (args.loc = loc);
         (args.argument = true);
@@ -167,7 +178,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
                 });
             })(always, foldl.bind(null, reducer))));
         }
-    })());
+    }).call(this));
     (leftHandReferenceExpression = Parser("Left Hand Reference Expression", binds(enumeration(either(thisExpression, identifier), many(accessor)), (function(f, g) {
         return (function() {
             return f(g.apply(null, arguments));
@@ -183,7 +194,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
                 return always(foldr(reducer, expression, ops));
             })));
         }
-    })());
+    }).call(this));
     var multiplicativeOperator = punctuator("*", "/", "%");
     var additiveOperator = punctuator("+", "-");
     var shiftOperator = punctuator("<<", ">>", ">>>");
@@ -241,7 +252,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
             var binExpr = memo(binaryExpression);
             return either(nodea(enumeration(attempt(then(binExpr, punctuator("?"))), then(conditionalExpression, punctuator(":")), conditionalExpression), ast_expression.ConditionalExpression.create), binExpr);
         }
-    })());
+    }).call(this));
     var composeOperator = punctuator("\\>", "\\>>");
     var reverseComposeOperator = punctuator("<\\", "<<\\");
     var pipeOperator = punctuator("|>");
@@ -280,7 +291,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
                 return ast_expression.UnaryExpression.create(loc, op.value, expression);
             })));
         }
-    })();
+    }).call(this);
     (expression = composeExpression);
     (topLevelExpression = choice(deleteExpression, assignmentExpression, expression));
     (exports.arrayElement = arrayElement);

@@ -41,7 +41,7 @@ function(stream,
             var unparsed = unparse.unparse(transform.transform(ast));
             return unparse_print.print(unparsed);
         } catch (e) {
-            console.error(e);
+            console.error(e + '');
             process.exit(1);
         }
     };

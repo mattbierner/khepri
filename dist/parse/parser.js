@@ -9,6 +9,7 @@ define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "kh
         __o = __o,
         first = __o["first"],
         filter = __o["filter"],
+        memoStream = __o["memoStream"],
         isEmpty = __o["isEmpty"],
         rest = __o["rest"],
         NIL = __o["NIL"],
@@ -18,21 +19,62 @@ define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "kh
         SourcePosition = __o0["SourcePosition"],
         __o1 = __o1,
         program = __o1["program"];
+    var lineTerminatorStream = (function() {
+        {
+            var followLineTerminator = (function(x) {
+                return (!x ? null : Object.create(x, ({
+                    "loc": ({
+                        "value": x.loc
+                    }),
+                    "value": ({
+                        "value": x.value
+                    }),
+                    "lineTerminator": ({
+                        "value": true
+                    })
+                })));
+            });
+            return (function(s) {
+                if (isEmpty(s)) return s;
+
+                var f = first(s),
+                    r = rest(s);
+                if ((f.type === "LineTerminator")) {
+                    while ((f.type === "LineTerminator")) {
+                        if (isEmpty(r)) {
+                            return r;
+                        } else {
+                            (f = first(r));
+                            (r = rest(r));
+                        }
+
+                    }
+
+                    (f = followLineTerminator(f));
+                }
+
+                return memoStream(f, lineTerminatorStream.bind(undefined, r));
+            });
+        }
+    }).call(this);
     (parserStream = (function() {
         {
             var langElementFilter = (function(x) {
                 switch (x.type) {
                     case "Whitespace":
-                    case "LineTerminator":
                     case "Comment":
                         return false;
                     default:
                         return true;
                 }
             });
-            return filter.bind(null, langElementFilter);
+            return (function(f, g) {
+                return (function(x) {
+                    return f(g(x));
+                });
+            })(lineTerminatorStream, filter.bind(null, langElementFilter));
         }
-    })());
+    }).call(this));
     (ParserPosition = (function(tokenPosition, sourcePosition) {
         (this.tokenPosition = tokenPosition);
         (this.sourcePosition = sourcePosition);

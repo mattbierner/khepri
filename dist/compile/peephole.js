@@ -28,7 +28,7 @@ define(["require", "exports", "ecma_ast/node"], (function(require, exports, __o)
                     "declarations": declarations
                 }), ({})));
             }
-        })();
+        }).call(this);
     }));
     (optimize = (function(node) {
         if (!node) return node;

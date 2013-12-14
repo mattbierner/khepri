@@ -87,7 +87,7 @@ with
         sepBy,
         sepBy1,
         then},
-    import 'nu/stream' {foldl, foldr},
+    import 'nu/stream' {foldl, foldr, reduce},
     import 'khepri_ast/declaration' ast_declaration,
     import 'khepri_ast/expression' ast_expression,
     import 'khepri_ast/statement' ast_statement,
@@ -97,8 +97,15 @@ with
     import 'khepri/parse/common' {node, nodea, precedence},
     import 'khepri/parse/token_parser' {keyword, punctuator},
     import 'khepri/parse/program_parser' program_parser,
-    import 'khepri/parse/value_parser' {identifier, literal, stringLiteral},
-    import 'khepri/parse/pattern_parser' pattern
+    import 'khepri/parse/value_parser' {
+        identifier,
+        booleanLiteral,
+        nullLiteral,
+        numericLiteral,
+        stringLiteral,
+        regularExpressionLiteral},
+    import 'khepri/parse/pattern_parser' pattern,
+    import 'khepri/parse/shared' {logicalComma}
 in {
 
 /* Circular Declarations 
@@ -119,10 +126,10 @@ conditionalExpression = \args(...) -> conditionalExpression.apply(undefined, arg
 
 newExpression = \args(...) -> newExpression.apply(undefined, args);
 
+binaryExpression = \args(...) -> binaryExpression.apply(undefined, args);
+
 /* Parsers
  ******************************************************************************/
-
-
 // Array Literal
 ////////////////////////////////////////
 /**
@@ -364,6 +371,21 @@ in
 
 // Primary Expression
 ////////////////////////////////////////
+var literal = (Parser, 'Literal') <|
+    choice(
+        nullLiteral,
+        booleanLiteral,
+        numericLiteral,
+        stringLiteral,
+        regularExpressionLiteral);
+
+//var stringExpression = (Parser, 'StringExpression') <|
+ //   bind(
+  //      cons(
+   //         stringLiteral,
+   //         many(binaryExpression)),
+   //     (reduce, \p, c -> ast_expression.BinaryExpression.create(null, '+', p, c)) \> always);
+
 primaryExpression = Parser('Primary Expression',
     choice(
         thisExpression,
@@ -371,6 +393,7 @@ primaryExpression = Parser('Primary Expression',
         identifier,
         curryExpression,
         literal,
+//        stringExpression,
         arrayLiteral,
         objectLiteral,
         functionExpression));
@@ -381,7 +404,7 @@ primaryExpression = Parser('Primary Expression',
  * Parser for a list of arguments.
  */
 argumentList = Parser('Argument List',
-    eager <| sepBy(punctuator(','),
+    eager <| sepBy(logicalComma,
         expected("expression", expression)));
 
 /**

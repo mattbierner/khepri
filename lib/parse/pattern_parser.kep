@@ -17,7 +17,8 @@ with
     import 'khepri_ast/pattern' ast_pattern,
     import 'khepri/parse/common' {node, nodea},
     import 'khepri/parse/token_parser' {keyword, punctuator},
-    import 'khepri/parse/value_parser' {identifier, stringLiteral}
+    import 'khepri/parse/value_parser' {identifier, stringLiteral},
+    import 'khepri/parse/shared' {logicalComma}
 in {
 
 /* Circular
@@ -54,7 +55,7 @@ arrayPattern = Parser('Array Pattern',
         enumeration(
             optional(null, identifierPattern),
             between(punctuator('['), punctuator(']'),
-                eager <| sepBy1(punctuator(','), pattern))),
+                eager <| sepBy1(logicalComma, pattern))),
         ast_pattern.ArrayPattern.create));
 
 // Object Pattern
@@ -76,7 +77,7 @@ objectPattern = Parser('Object Pattern',
         enumeration(
             optional(null, identifierPattern),
             between(punctuator('{'), punctuator('}'),
-                eager <| sepBy1(punctuator(','),
+                eager <| sepBy1(logicalComma,
                     objectPatternElement))),
         ast_pattern.ObjectPattern.create));
 
@@ -105,7 +106,7 @@ argumentsPattern = Parser('Arguments Pattern', let
         identifierPattern),
     
     elements =
-        eager <| sepBy(punctuator(','),
+        eager <| sepBy(logicalComma,
             argumentsPatternElement)
 in
     either(

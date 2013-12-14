@@ -10,13 +10,47 @@ package (
     parseStream)
 with
     import 'parse/parse' parse,
-    import 'nu/stream' {first, filter, isEmpty, rest, NIL, 'from': streamFrom},
+    import 'nu/stream' {first, filter, memoStream,  isEmpty, rest, NIL, 'from': streamFrom},
     import 'khepri/position' {SourceLocation, SourcePosition},
     import 'khepri/parse/program_parser' {program}
 in {
     
 /* Streams
  ******************************************************************************/
+var lineTerminatorStream  = let 
+    followLineTerminator = \x ->
+        (!x ? null : Object.create(x, {
+            'loc': {
+                'value': x.loc
+            },
+            'value': {
+                'value': x.value
+            },
+            'lineTerminator': {
+                'value': true
+            }
+        }))
+in
+    \s -> {
+        if (isEmpty(s)) return s;
+        
+        var f = first(s),
+            r = rest(s);
+        
+        if (f.type === 'LineTerminator') {
+            while (f.type === 'LineTerminator') {
+                if (isEmpty(r)) {
+                    return r;
+                } else {
+                    f = first(r);
+                    r = rest(r);
+                }
+            }
+            f = followLineTerminator(f);
+        }
+        return memoStream(f, lineTerminatorStream.bind(undefined, r));
+    };
+
 /**
  * Maps a lex stream to a parse stream.
  * 
@@ -24,11 +58,10 @@ in {
  * 
  * @return Stream suitable for parsing.
  */
-parserStream = let 
+parserStream =  let 
     langElementFilter = \x -> {
         switch (x.type) {
         case 'Whitespace':
-        case 'LineTerminator':
         case 'Comment':
             return false;
         default:
@@ -36,7 +69,7 @@ parserStream = let
         }
     }
 in
-    (filter, langElementFilter);
+    (filter, langElementFilter) \> lineTerminatorStream;
 
 /* Position
  ******************************************************************************/
