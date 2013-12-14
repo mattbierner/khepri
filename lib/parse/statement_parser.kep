@@ -2,21 +2,21 @@
  * @fileOverview Khepri Statement parsers.
  */
 package (
-    blockStatement,
-    staticStatement,
-    variableStatement,
-    emptyStatement,
-    expressionStatement,
-    ifStatement,
-    withStatement,
-    iterationStatement,
-    continueStatement,
-    breakStatement,
-    returnStatement,
-    switchStatement,
-    throwStatement,
-    tryStatement,
-    debuggerStatement,
+    blockStatement
+    staticStatement
+    variableStatement
+    emptyStatement
+    expressionStatement
+    ifStatement
+    withStatement
+    iterationStatement
+    continueStatement
+    breakStatement
+    returnStatement
+    switchStatement
+    throwStatement
+    tryStatement
+    debuggerStatement
     statement)
 with
     import 'parse/parse' parse {
@@ -41,7 +41,8 @@ with
     import 'khepri/parse/token_parser' {keyword, punctuator},
     import 'khepri/parse/expression_parser' {assignmentExpression, expression, topLevelExpression},
     import 'khepri/parse/pattern_parser' {importPattern, pattern},
-    import 'khepri/parse/value_parser' {identifier}
+    import 'khepri/parse/value_parser' {identifier},
+    import 'khepri/parse/shared' {logicalComma}
 in {
 
 /* Forward declarations
@@ -95,7 +96,7 @@ staticStatement = Parser('Static Statement', let
         ast_declaration.StaticDeclarator.create),
     
     staticDeclarationList =
-        eager <| sepBy1(punctuator(','),
+        eager <| sepBy1(logicalComma,
             staticDeclaration)
 in
     node(
@@ -116,7 +117,7 @@ var variableDeclarationList = let
             optional(null, initialiser)),
         ast_declaration.VariableDeclarator.create)
 in
-    eager <| sepBy1(punctuator(','),
+    eager <| sepBy1(logicalComma,
         variableDeclaration);
 
 variableStatement = Parser('Variable Statement',
@@ -141,7 +142,7 @@ withStatement = (Parser, 'With Statement') <| let
             ast_declaration.Binding.create)),
     
     bindings =
-        eager <| sepBy1(punctuator(','),
+        eager <| sepBy1(logicalComma,
             withBinding)
 in
     nodea(

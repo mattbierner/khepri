@@ -2,13 +2,13 @@
  * @fileOverview 
  */
 package (
-    precedence,
-    node,
-    nodea,
+    precedence
+    node
+    nodea
     positionParser)
 with
     import 'parse/parse' parse{
-        always,
+        always
         bind},
     import 'khepri/position' {SourceLocation},
     import 'nu/stream' stream{NIL}
