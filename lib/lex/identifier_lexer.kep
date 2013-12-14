@@ -113,21 +113,21 @@ unicodeCombiningMark = never();
  * Lexer for the start of an identifier.
  */
 identifierStart = choice(
-    unicodeLetter,
-    characters('$_'),
+    unicodeLetter
+    characters('$_')
     next(
-        escape,
+        escape
         unicodeEscapeSequence));
 
 /**
  * Lexer for the rest of an identifier after the first character.
  */
 identifierPart = choice(
-    attempt <| identifierStart,
-    unicodeCombiningMark,
-    unicodeDigit,
-    unicodeConnectorPunctuation,
-    zwnj,
+    attempt <| identifierStart
+    unicodeCombiningMark
+    unicodeDigit
+    unicodeConnectorPunctuation
+    zwnj
     zwj);
 
 identifierParts = many(identifierPart);
@@ -142,7 +142,7 @@ identifierName = cons(identifierStart, identifierParts);
 // Identifier
 ////////////////////////////////////////
 var reservedWordTest = next(
-    reservedWord,
+    reservedWord
     eof);
 
 /**

@@ -142,7 +142,7 @@ arrayElement = Parser('Array Element',
  * Parser for the elements of an array literal.
  */
 arrayElements = Parser('Array Elements',
-    eager <| sepBy(punctuator(','),
+    eager <| sepBy(logicalComma,
         expected('array element', arrayElement)));
 
 /**
@@ -179,7 +179,7 @@ propertyInitializer = Parser('Property Initializer',
  */
 objectProperties = Parser('Object Properties',
     eager <|
-    sepBy(punctuator(','),
+    sepBy(logicalComma,
         propertyInitializer));
 
 /**
@@ -280,7 +280,7 @@ var letBinding =  Parser('Let Binding',
  */
 letExpression = Parser('Let Expression', let
     letBindings = expected('let bindings',
-        sepBy1(punctuator(','),
+        sepBy1(logicalComma,
             letBinding)),
     
     letBody = expression |> (expected, 'expression')
@@ -361,8 +361,8 @@ in
             enumeration(
                 base,
                 optional([], next(
-                    punctuator(','),
-                    eager <| sepBy(punctuator(','),
+                    logicalComma,
+                    eager <| sepBy(logicalComma,
                         expression)))),
             \loc, base, elements -> 
                 (elements.length ?
@@ -373,10 +373,10 @@ in
 ////////////////////////////////////////
 var literal = (Parser, 'Literal') <|
     choice(
-        nullLiteral,
-        booleanLiteral,
-        numericLiteral,
-        stringLiteral,
+        nullLiteral
+        booleanLiteral
+        numericLiteral
+        stringLiteral
         regularExpressionLiteral);
 
 //var stringExpression = (Parser, 'StringExpression') <|
@@ -386,17 +386,17 @@ var literal = (Parser, 'Literal') <|
    //         many(binaryExpression)),
    //     (reduce, \p, c -> ast_expression.BinaryExpression.create(null, '+', p, c)) \> always);
 
-primaryExpression = Parser('Primary Expression',
+primaryExpression = (Parser, 'Primary Expression') <|
     choice(
-        thisExpression,
-        letExpression,
-        identifier,
-        curryExpression,
-        literal,
+        thisExpression
+        letExpression
+        identifier
+        curryExpression
+        literal
 //        stringExpression,
-        arrayLiteral,
-        objectLiteral,
-        functionExpression));
+        arrayLiteral
+        objectLiteral
+        functionExpression);
 
 // Calling
 ////////////////////////////////////////
@@ -636,7 +636,7 @@ binaryExpression = Parser('Binary Expression',
 /**
  * 
  */
-conditionalExpression = let
+conditionalExpression = (Parser, 'Conditional Expression') <| let
     binExpr = binaryExpression |> memo
 in
     either(
@@ -691,26 +691,26 @@ var composePrecedenceTable = [
     }
 ];
 
-composeExpression = Parser('Compose Expression',
+composeExpression = (Parser, 'Compose Expression') <|
     precedence(
-        conditionalExpression |> memo,
-        composePrecedenceTable));
+        conditionalExpression |> memo
+        composePrecedenceTable);
 
 // Assignment Expression
 ////////////////////////////////////////
 assignmentOperator = Parser('Assignment Operator',
     punctuator('='));
 
-assignmentExpression = Parser('Assignment Expression',
+assignmentExpression = (Parser, 'Assignment Expression') <|
     nodea(
         append(
             attempt <| enumeration(
-                leftHandReferenceExpression,
+                leftHandReferenceExpression
                 assignmentOperator),
             enumeration(
                 expression |> (expected, 'expression'))),
         \loc, left, op, right ->
-            ast_expression.AssignmentExpression.create(loc, op.value, left, right)));
+            ast_expression.AssignmentExpression.create(loc, op.value, left, right));
 
 // Delete Expression
 ////////////////////////////////////////
@@ -719,20 +719,19 @@ var deleteOperator = keyword('delete');
 /**
  * 
  */
-var deleteExpression = let
+var deleteExpression = (Parser, 'Delete Expression') <| let
     reducer = \argument, op -> 
         ast_expression.UnaryExpression.create(
-            SourceLocation.merge(op.loc, argument.loc),
-            op.value,
+            SourceLocation.merge(op.loc, argument.loc)
+            op.value
             argument)
 in
-    Parser('Delete Expression',
-        nodea(
-            enumeration(
-                deleteOperator,
-                leftHandReferenceExpression |> (expected, 'reference expression')),
-            \loc, op, expression ->
-                ast_expression.UnaryExpression.create(loc, op.value, expression)));
+    nodea(
+        enumeration(
+            deleteOperator
+            leftHandReferenceExpression |> (expected, 'reference expression'))
+        \loc, op, expression ->
+            ast_expression.UnaryExpression.create(loc, op.value, expression));
 
 // Expression
 ////////////////////////////////////////
@@ -740,9 +739,10 @@ expression = composeExpression;
 
 // Top Level Expression
 ////////////////////////////////////////
-topLevelExpression = choice(
-    deleteExpression,
-    assignmentExpression,
-    expression);
+topLevelExpression = (Parser, 'Top Level Expression') <|
+    choice(
+        deleteExpression
+        assignmentExpression
+        expression);
 
 }

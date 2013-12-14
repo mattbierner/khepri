@@ -2,44 +2,44 @@
  * @fileOverview Khepri lexers.
  */
 package (
-    literal,
-    token,
-    inputElement,
-    lexer,
-    lexManyState,
+    literal
+    token
+    inputElement
+    lexer
+    lexManyState
     lex)
 with
     import 'parse/parse' parse {
-        always,
-        attempt,
-        binds,
-        bind,
-        choice,
-        either,
-        eof,
-        getPosition,
-        enumeration,
-        extract,
-        expected,
-        next,
-        many,
-        runState,
-        Parser,
-        ParserState},
-    import 'parse/lang' {then},
-    import 'nu/stream' {memoStream, NIL, 'from': streamFrom},
+        always
+        attempt
+        binds
+        bind
+        choice
+        either
+        eof
+        getPosition
+        enumeration
+        extract
+        expected
+        next
+        many
+        runState
+        Parser
+        ParserState}
+    import 'parse/lang' {then}
+    import 'nu/stream' {memoStream, NIL, 'from': streamFrom}
     import 'khepri_ast/token' lexToken,
-    import 'khepri/position' {SourceLocation, SourcePosition},
-    import 'khepri/lex/boolean_lexer' {booleanLiteral},
-    import 'khepri/lex/comment_lexer' {comment},
-    import 'khepri/lex/identifier_lexer' {identifier, identifierName},
-    import 'khepri/lex/line_terminator_lexer' {lineTerminator},
-    import 'khepri/lex/null_lexer' {nullLiteral},
-    import 'khepri/lex/number_lexer' {numericLiteral},
-    import 'khepri/lex/punctuator_lexer' {punctuator},
-    import 'khepri/lex/reserved_word_lexer' {reservedWord},
-    import 'khepri/lex/string_lexer' {stringLiteral},
-    import 'khepri/lex/whitespace_lexer' {whitespace},
+    import 'khepri/position' {SourceLocation, SourcePosition}
+    import 'khepri/lex/boolean_lexer' {booleanLiteral}
+    import 'khepri/lex/comment_lexer' {comment}
+    import 'khepri/lex/identifier_lexer' {identifier, identifierName}
+    import 'khepri/lex/line_terminator_lexer' {lineTerminator}
+    import 'khepri/lex/null_lexer' {nullLiteral}
+    import 'khepri/lex/number_lexer' {numericLiteral}
+    import 'khepri/lex/punctuator_lexer' {punctuator}
+    import 'khepri/lex/reserved_word_lexer' {reservedWord}
+    import 'khepri/lex/string_lexer' {stringLiteral}
+    import 'khepri/lex/whitespace_lexer' {whitespace}
     import 'khepri/lex/regular_expression_lexer' {regularExpressionLiteral}
 in {
 
@@ -61,35 +61,35 @@ var buildToken = \p ->
  ******************************************************************************/
 var literalImpl = choice(
     makeToken(lexToken.StringToken, stringLiteral)
-        |> (expected, "string literal"),
+        |> (expected, "string literal")
     makeToken(lexToken.RegularExpressionToken, regularExpressionLiteral)
-        |> (expected, "regular expression literal"),
+        |> (expected, "regular expression literal")
     makeToken(lexToken.BooleanToken, booleanLiteral)
-        |> (expected, "boolean literal"),
+        |> (expected, "boolean literal")
     makeToken(lexToken.NullToken, nullLiteral)
-        |> (expected, "null literal"),
+        |> (expected, "null literal")
     makeToken(lexToken.NumberToken, numericLiteral)
         |> (expected, "number literal"));
 
 var tokenImpl = choice(
     attempt
         <| makeToken(lexToken.IdentifierToken, identifier)
-        |> (expected, "identifier"),
+        |> (expected, "identifier")
     attempt
-        <| literalImpl,
+        <| literalImpl
     attempt
         <| makeToken(lexToken.KeywordToken, reservedWord)
-        |> (expected, "reserved word"),
+        |> (expected, "reserved word")
     makeToken(lexToken.PunctuatorToken, punctuator)
         |> (expected, "puctuator"));
 
 var inputElementImpl = choice(
     makeToken(lexToken.CommentToken, comment)
-        |> (expected, "comment"),
+        |> (expected, "comment")
     makeToken(lexToken.WhitespaceToken, whitespace)
-        |> (expected, "whitespace"),
+        |> (expected, "whitespace")
     makeToken(lexToken.LineTerminatorToken, lineTerminator)
-        |> (expected, "line terminator"),
+        |> (expected, "line terminator")
     tokenImpl);
 
 literal = buildToken(literalImpl);

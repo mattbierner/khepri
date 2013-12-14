@@ -2,21 +2,32 @@
  * @fileOverview Khepri comment lexers.
  */
 package (
-    singleLineCommentMarker,
-    singleLineCommentChar,
-    singleLineCommentChars,
-    singleLineComment,
+    singleLineCommentMarker
+    singleLineCommentChar
+    singleLineCommentChars
+    singleLineComment
     
-    multiLineCommentStartMarker,
-    multiLineCommentEndMarker,
-    multiLineCommentChars,
-    multiLineComment,
+    multiLineCommentStartMarker
+    multiLineCommentEndMarker
+    multiLineCommentChars
+    multiLineComment
    
     comment)
 with
-    import 'parse/parse' {anyToken, always, bind, cons, either, many, next, Parser, RecParser, test, token},
-    import 'parse/text' {character, string},
-    import 'nu/stream' {foldl, NIL},
+    import 'parse/parse' {
+        anyToken
+        always
+        bind
+        cons
+        either
+        many
+        next
+        Parser
+        RecParser
+        test
+        token}
+    import 'parse/text' {character, string}
+    import 'nu/stream' {foldl, NIL}
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 
@@ -48,10 +59,10 @@ singleLineCommentChars = many(singleLineCommentChar);
  * 
  * Returns the contents of the comment.
  */
-singleLineComment = Parser('Single Line Comment Lexer',
+singleLineComment = (Parser, 'Single Line Comment Lexer') <|
     next(
-        singleLineCommentMarker,
-        join(singleLineCommentChars)));
+        singleLineCommentMarker
+        join(singleLineCommentChars));
 
 // Multi Line Comment
 ////////////////////////////////////////
@@ -68,33 +79,33 @@ multiLineCommentEndMarker = string('*/');
 /**
  * Lexer for string of characters inside of multi line comment.
  */
-multiLineCommentChars = RecParser('Multi Line Comment Characters Lexer', \self ->
+multiLineCommentChars = (RecParser, 'Multi Line Comment Characters Lexer') <|\self ->
     either(
         next(
             character('*'),
             either(
-                next(character('/'), always(NIL)),
+                next(character('/'), always(NIL))
                 cons(always('*'), self))),
-        cons(anyToken, self)));
+        cons(anyToken, self));
 
 /**
  * Lexer for a multi line comment.
  * 
  * Returns the contents of the comment.
  */
-multiLineComment = Parser('Multi Line Comment Lexer',
+multiLineComment = (Parser, 'Multi Line Comment Lexer') <|
     next(
-        multiLineCommentStartMarker,
-        join(multiLineCommentChars)));
+        multiLineCommentStartMarker
+        join(multiLineCommentChars));
 
 // Comment
 ////////////////////////////////////////
 /**
  * Lexer for any ECMAScript 5.1 comment
  */
-comment = Parser('Comment Lexer',
+comment = (Parser, 'Comment Lexer') <|
     either(
-        singleLineComment,
-        multiLineComment));
+        singleLineComment
+        multiLineComment);
 
 }
