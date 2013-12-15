@@ -13,7 +13,7 @@ package (
     argumentsPattern)
 with
     import 'parse/parse' {always, attempt, bind, binds, choice, eager, either, enumeration, next, optional, Parser},
-    import 'parse/lang' {between, sepBy, sepBy1},
+    import 'parse/lang' {between, sepBy, sepBy1, then},
     import 'khepri_ast/pattern' ast_pattern,
     import 'khepri/parse/common' {node, nodea},
     import 'khepri/parse/token_parser' {keyword, punctuator},
@@ -24,37 +24,45 @@ in {
  ******************************************************************************/
 pattern = \args(...) -> pattern.apply(undefined, args);
 
-/* Parsers
+/* Parts
+ ******************************************************************************/
+var sep = optional(null, punctuator(','));
+
+/* Base Patterns
  ******************************************************************************/
 // Identifier Pattern
 ////////////////////////////////////////
-identifierPattern = Parser('Identifier Pattern',
+identifierPattern = (Parser, 'Identifier Pattern') <|
     bind(
         identifier,
-        \x -> always(ast_pattern.IdentifierPattern.create(x.loc, x))));
+        \x -> always(ast_pattern.IdentifierPattern.create(x.loc, x)));
 
 // Sink Pattern
 ////////////////////////////////////////
-sinkPattern = Parser('Sink Pattern',
+sinkPattern = (Parser, 'Sink Pattern') <|
     bind(
         keyword('_'),
-        \x -> always(ast_pattern.SinkPattern.create(x.loc))));
+        \x -> always(ast_pattern.SinkPattern.create(x.loc)));
 
 // Ellipsis Pattern
 ////////////////////////////////////////
-ellipsisPattern = Parser('Ellipsis Pattern',
+ellipsisPattern = (Parser, 'Ellipsis Pattern') <|
     bind(
         punctuator('...'),
-        \x -> always(ast_pattern.EllipsisPattern.create(x.loc))));
+        \x -> always(ast_pattern.EllipsisPattern.create(x.loc)));
+
+/* Unpacks
+ ******************************************************************************/
+var as = optional(null, then(identifierPattern, punctuator('#')));
 
 // Array Pattern
 ////////////////////////////////////////
 arrayPattern = Parser('Array Pattern',
     nodea(
         enumeration(
-            optional(null, identifierPattern),
+            as,
             between(punctuator('['), punctuator(']'),
-                eager <| sepBy1(punctuator(','), pattern))),
+                eager <| sepBy1(sep, pattern))),
         ast_pattern.ArrayPattern.create));
 
 // Object Pattern
@@ -74,9 +82,9 @@ var objectPatternElement = either(
 objectPattern = Parser('Object Pattern',
     nodea(
         enumeration(
-            optional(null, identifierPattern),
+            as,
             between(punctuator('{'), punctuator('}'),
-                eager <| sepBy1(punctuator(','),
+                eager <| sepBy1(sep,
                     objectPatternElement))),
         ast_pattern.ObjectPattern.create));
 
@@ -105,7 +113,7 @@ argumentsPattern = Parser('Arguments Pattern', let
         identifierPattern),
     
     elements =
-        eager <| sepBy(punctuator(','),
+        eager <| sepBy(sep,
             argumentsPatternElement)
 in
     either(

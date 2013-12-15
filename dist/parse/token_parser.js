@@ -4,7 +4,8 @@
 */
 define(["require", "exports", "parse/parse"], (function(require, exports, parse) {
     "use strict";
-    var punctuator, keyword, identifier, anyIdentifier, nullLiteral, booleanLiteral, numericLiteral, stringLiteral, regularExpressionLiteral;
+    var punctuator, keyword, identifier, anyIdentifier, nullLiteral, booleanLiteral, numericLiteral,
+            stringLiteral, regularExpressionLiteral;
     var parse = parse;
     var indexOf = Function.prototype.call.bind(Array.prototype.indexOf);
     var join = Function.prototype.call.bind(Array.prototype.join);

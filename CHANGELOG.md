@@ -1,5 +1,11 @@
 # ChangeLog #
 
+## 0.7.0 - December 15, 2013
+* Changed pattern and package syntax to allow all commas to be omitted.
+** Existing patterns are not effected.
+* Changed aliased object and pattern syntax to to require the `#` symbol between
+  top level aliases and the pattern, `let list#[e0, e1] in ...`.
+
 ## 0.6.0 - December 9, 2013
 * Added `void` back.
 * Added syntax for named lambda functions with all unpacks:

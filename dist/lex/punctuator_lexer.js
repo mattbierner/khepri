@@ -4,14 +4,21 @@
 */
 define(["require", "exports", "parse/parse", "parse/text"], (function(require, exports, __o, __o0) {
     "use strict";
-    var openBrace, closeBrace, openParenthesis, closeParenthesis, openBracket, closeBracket, period, semicolon, comma, colon, questionMark, logicalAnd, logicalOr, leftShift, signedRightShift, unsignedRightShift, lessThanOrEqualTo, lessThan, greaterThanOrEqualTo, greaterThan, strictEquals, strictDoesNotEqual, equals, doesNotEqual, and, or, xor, assign, logicalNot, bitwiseNot, addition, subtration, multiplication, mod, division, lambda, punctuator;
+    var openBrace, closeBrace, openParenthesis, closeParenthesis, openBracket, closeBracket, period, semicolon,
+            comma, colon, questionMark, logicalAnd, logicalOr, leftShift, signedRightShift, unsignedRightShift,
+            lessThanOrEqualTo, lessThan, greaterThanOrEqualTo, greaterThan, strictEquals, strictDoesNotEqual,
+            equals, doesNotEqual, and, or, xor, assign, logicalNot, bitwiseNot, addition, subtration,
+            multiplication, mod, division, lambda, punctuator;
     var __o = __o,
         Parser = __o["Parser"],
         __o0 = __o0,
         character = __o0["character"],
         string = __o0["string"],
         trie = __o0["trie"];
-    var punctuators = ["{", "}", "(", ")", "[", "]", ",", ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>", "<=", "<", ">=", ">", "===", "!==", "==", "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%", "...", "\\", "->", "\\>", "\\>>", "<\\", "<<\\", "|>", "<|"];
+    var punctuators = ["{", "}", "(", ")", "[", "]", ",", ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>",
+        "<=", "<", ">=", ">", "===", "!==", "==", "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%",
+        "...", "\\", "->", "\\>", "\\>>", "<\\", "<<\\", "|>", "<|", "#"
+    ];
     (openBrace = character("{"));
     (closeBrace = character("}"));
     (openParenthesis = character("("));

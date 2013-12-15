@@ -2,7 +2,10 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/package_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/pattern_parser", "khepri/parse/statement_parser"], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, __o4, statement) {
+define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package", "khepri/parse/common",
+    "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/pattern_parser",
+    "khepri/parse/statement_parser"
+], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, __o4, statement) {
     "use strict";
     var khepriPackage;
     var __o = __o,
@@ -45,8 +48,10 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package",
         }
     });
     var packageExport = Parser("Package Export", node(identifier, ast_package.PackageExport.create));
-    var packageExports = Parser("Package Exports", node(between(punctuator("("), punctuator(")"), eager(sepBy(punctuator(","), packageExport))), ast_package.PackageExports.create));
+    var packageExports = Parser("Package Exports", node(between(punctuator("("), punctuator(")"), eager(sepBy(
+        punctuator(","), packageExport))), ast_package.PackageExports.create));
     var packageBody = Parser("Package Body", either(withStatement, blockStatement));
-    (khepriPackage = Parser("Package", next(keyword("package"), nodea(enumeration(packageExports, packageBody), ast_package.Package.create))));
+    (khepriPackage = Parser("Package", next(keyword("package"), nodea(enumeration(packageExports, packageBody),
+        ast_package.Package.create))));
     (exports.khepriPackage = khepriPackage);
 }))

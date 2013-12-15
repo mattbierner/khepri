@@ -2,9 +2,12 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/number_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/stream"], (function(require, exports, __o, __o0, __o1, __o2) {
+define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/stream"], (function(require, exports, __o,
+    __o0, __o1, __o2) {
     "use strict";
-    var decimal, negativeSign, positiveSign, exponentIndicator, hexIndicator, decimalDigit, nonZeroDigit, hexDigit, decimalDigits, hexDigits, unsignedInteger, signedInteger, exponentPart, hexIntegerLiteral, decimalIntegerLiteral, decimalLiteral, numericLiteral;
+    var decimal, negativeSign, positiveSign, exponentIndicator, hexIndicator, decimalDigit, nonZeroDigit,
+            hexDigit, decimalDigits, hexDigits, unsignedInteger, signedInteger, exponentPart, hexIntegerLiteral,
+            decimalIntegerLiteral, decimalLiteral, numericLiteral;
     var __o = __o,
         always = __o["always"],
         attempt = __o["attempt"],
@@ -49,7 +52,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/str
     (unsignedInteger = Parser("Unsigned Integer Lexer", bind(decimalDigits, (function(t) {
         return always(parseInt(t));
     }))));
-    (signedInteger = Parser("Signed Integer Lexer", either(next(negativeSign, bind(unsignedInteger, (function(num) {
+    (signedInteger = Parser("Signed Integer Lexer", either(next(negativeSign, bind(unsignedInteger, (function(
+        num) {
         return always(-num);
     }))), next(optional(null, positiveSign), unsignedInteger))));
     (exponentPart = Parser("Exponent Part Lexer", next(exponentIndicator, signedInteger)));
@@ -64,12 +68,15 @@ define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/str
             return f(g(x));
         });
     })(always, parseInt))));
-    (decimalLiteral = Parser("Decimal Literal Lexer", binds(enumeration(binds(enumeration(decimalDigits, optional(0, next(decimal, optional(0, decimalDigits)))), (function(whole, fractional) {
+    (decimalLiteral = Parser("Decimal Literal Lexer", binds(enumeration(binds(enumeration(decimalDigits,
+        optional(0, next(decimal, optional(0, decimalDigits)))), (function(whole,
+        fractional) {
         return always(parseFloat(((whole + ".") + fractional)));
     })), optional(0, exponentPart)), (function(num, exp) {
         return always((num * Math.pow(10, parseInt(exp))));
     }))));
-    (numericLiteral = Parser("Numeric Literal Lexer", either(next(attempt(hexIndicator), expected.bind(null, "hex digits")(hexIntegerLiteralDigits)), decimalLiteral)));
+    (numericLiteral = Parser("Numeric Literal Lexer", either(next(attempt(hexIndicator), expected.bind(null,
+        "hex digits")(hexIntegerLiteralDigits)), decimalLiteral)));
     (exports.decimal = decimal);
     (exports.negativeSign = negativeSign);
     (exports.positiveSign = positiveSign);

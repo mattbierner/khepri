@@ -2,9 +2,12 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/identifier_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/text", "nu/stream", "khepri/lex/reserved_word_lexer", "khepri/lex/string_lexer"], (function(require, exports, __o, __o0, __o1, __o2, __o3) {
+define(["require", "exports", "parse/parse", "parse/text", "nu/stream", "khepri/lex/reserved_word_lexer",
+    "khepri/lex/string_lexer"
+], (function(require, exports, __o, __o0, __o1, __o2, __o3) {
     "use strict";
-    var zwnj, zwj, unicodeLetter, unicodeDigit, unicodeConnectorPunctuation, unicodeCombiningMark, identifierStart, identifierPart, identifierParts, identifierName, identifier;
+    var zwnj, zwj, unicodeLetter, unicodeDigit, unicodeConnectorPunctuation, unicodeCombiningMark,
+            identifierStart, identifierPart, identifierParts, identifierName, identifier;
     var __o = __o,
         always = __o["always"],
         attempt = __o["attempt"],
@@ -43,7 +46,8 @@ define(["require", "exports", "parse/parse", "parse/text", "nu/stream", "khepri/
     (unicodeConnectorPunctuation = characters(["_", "‿", "⁀", "⁔", "︳", "︴", "﹍", "﹎", "﹏", "＿"]));
     (unicodeCombiningMark = never());
     (identifierStart = choice(unicodeLetter, characters("$_"), next(escape, unicodeEscapeSequence)));
-    (identifierPart = choice(attempt(identifierStart), unicodeCombiningMark, unicodeDigit, unicodeConnectorPunctuation, zwnj, zwj));
+    (identifierPart = choice(attempt(identifierStart), unicodeCombiningMark, unicodeDigit,
+        unicodeConnectorPunctuation, zwnj, zwj));
     (identifierParts = many(identifierPart));
     (identifierName = cons(identifierStart, identifierParts));
     var reservedWordTest = next(reservedWord, eof);

@@ -2,9 +2,12 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/comment_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/text", "nu/stream", "khepri/lex/line_terminator_lexer"], (function(require, exports, __o, __o0, __o1, __o2) {
+define(["require", "exports", "parse/parse", "parse/text", "nu/stream", "khepri/lex/line_terminator_lexer"], (function(
+    require, exports, __o, __o0, __o1, __o2) {
     "use strict";
-    var singleLineCommentMarker, singleLineCommentChar, singleLineCommentChars, singleLineComment, multiLineCommentStartMarker, multiLineCommentEndMarker, multiLineCommentChars, multiLineComment, comment;
+    var singleLineCommentMarker, singleLineCommentChar, singleLineCommentChars, singleLineComment,
+            multiLineCommentStartMarker, multiLineCommentEndMarker, multiLineCommentChars, multiLineComment,
+            comment;
     var __o = __o,
         anyToken = __o["anyToken"],
         always = __o["always"],
@@ -43,13 +46,16 @@ define(["require", "exports", "parse/parse", "parse/text", "nu/stream", "khepri/
         return !x;
     }), test.bind(null, lineTerminator))));
     (singleLineCommentChars = many(singleLineCommentChar));
-    (singleLineComment = Parser("Single Line Comment Lexer", next(singleLineCommentMarker, join(singleLineCommentChars))));
+    (singleLineComment = Parser("Single Line Comment Lexer", next(singleLineCommentMarker, join(
+        singleLineCommentChars))));
     (multiLineCommentStartMarker = string("/*"));
     (multiLineCommentEndMarker = string("*/"));
     (multiLineCommentChars = RecParser("Multi Line Comment Characters Lexer", (function(self) {
-        return either(next(character("*"), either(next(character("/"), always(NIL)), cons(always("*"), self))), cons(anyToken, self));
+        return either(next(character("*"), either(next(character("/"), always(NIL)), cons(always(
+            "*"), self))), cons(anyToken, self));
     })));
-    (multiLineComment = Parser("Multi Line Comment Lexer", next(multiLineCommentStartMarker, join(multiLineCommentChars))));
+    (multiLineComment = Parser("Multi Line Comment Lexer", next(multiLineCommentStartMarker, join(
+        multiLineCommentChars))));
     (comment = Parser("Comment Lexer", either(singleLineComment, multiLineComment)));
     (exports.singleLineCommentMarker = singleLineCommentMarker);
     (exports.singleLineCommentChar = singleLineCommentChar);
