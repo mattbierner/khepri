@@ -9,7 +9,9 @@ package (
 with
     import 'parse/parse' parse{
         always
-        bind},
+        bind,
+        eager,
+        rec},
     import 'khepri/position' {SourceLocation},
     import 'nu/stream' stream{NIL}
 in {
@@ -28,11 +30,11 @@ precedence = \p, table -> {
                 }, value))));
     
     return bind(
-        parse.eager(parse.rec(\self ->
+        eager <| rec <|\ self ->
             parse.cons(p,
                 parse.optional(NIL,
                     parse.cons(sep,
-                        parse.expected("binary expression", self)))))),
+                        parse.expected("binary expression", self)))),
         \list -> {
             var stack = [],
                 out = [];

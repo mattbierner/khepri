@@ -2,40 +2,40 @@
  * @fileOverview Khepri identifier lexers
  */
 package (
-    zwnj,
-    zwj,
-    unicodeLetter,
-    unicodeDigit,
-    unicodeConnectorPunctuation,
-    unicodeCombiningMark,
+    zwnj
+    zwj
+    unicodeLetter
+    unicodeDigit
+    unicodeConnectorPunctuation
+    unicodeCombiningMark
     
 // Parts
-    identifierStart,
-    identifierPart,
-    identifierParts,
-    identifierName,
+    identifierStart
+    identifierPart
+    identifierParts
+    identifierName
     
 // Identifier
     identifier)
 with
     import 'parse/parse' {
-        always,
-        attempt, 
-        bind,
-        cons,
-        choice,
-        either,
-        eof,
-        fail,
-        many,
-        never,
-        next,
-        Parser,
-        testStream,
-        token},
-    import 'parse/text' {character, characters, digit, letter, string},
-    import 'nu/stream' {foldl},
-    import 'khepri/lex/reserved_word_lexer' {reservedWord},
+        always
+        attempt 
+        bind
+        cons
+        choice
+        either
+        eof
+        fail
+        many
+        never
+        next
+        Parser
+        testStream
+        token}
+    import 'parse/text' {character, characters, digit, letter, string}
+    import 'nu/stream' {foldl}
+    import 'khepri/lex/reserved_word_lexer' {reservedWord}
     import 'khepri/lex/string_lexer' {escape, unicodeEscapeSequence}
 in {
 

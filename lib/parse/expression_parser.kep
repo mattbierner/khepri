@@ -3,90 +3,90 @@
  */
 package (
 // Array Literal
-    arrayElement,
-    arrayElements,
-    arrayLiteral,
+    arrayElement
+    arrayElements
+    arrayLiteral
     
 // Object Literal
-    propertyName,
-    propertyInitializer,
-    objectProperties,
-    objectLiteral,
+    propertyName
+    propertyInitializer
+    objectProperties
+    objectLiteral
     
 // Curry Expression
-    curryExpression,
+    curryExpression
     
 // Primary Expression
-    primaryExpression,
+    primaryExpression
     
 // This Expression
-    thisExpression,
+    thisExpression
     
 // Call Expression
-    args,
-    argumentList,
+    args
+    argumentList
     
 // Member Expression
-    dotAccessor,
-    bracketAccessor,
-    accessor,
-    memberExpression,
+    dotAccessor
+    bracketAccessor
+    accessor
+    memberExpression
     
 // New Expression
-    newExpression,
+    newExpression
     
 // Left hand side expression
-    leftHandSideExpression,
-    leftHandReferenceExpression,
+    leftHandSideExpression
+    leftHandReferenceExpression
     
 // Unary Expression
-    unaryOperator,
-    unaryExpression,
+    unaryOperator
+    unaryExpression
     
 // Binary Expfression
-    binaryExpression,
+    binaryExpression
     
 // Conditional Expression
-    conditionalExpression,
+    conditionalExpression
 
 // Let Expression
-    letExpression,
+    letExpression
 
 // Assignment
-    assignmentOperator,
-    assignmentExpression,
+    assignmentOperator
+    assignmentExpression
 
 // Compose
-    composeExpression,
+    composeExpression
     
 // Expression
-    expression,
+    expression
     
     topLevelExpression)
 with
     import 'parse/parse' {
-        always,
-        append,
-        attempt,
-        bind,
-        binds,
-        choice,
-        cons,
-        eager,
-        either,
-        enumeration,
-        expected,
-        lookahead,
-        many,
-        memo,
-        next,
-        optional,
-        Parser},
+        always
+        append
+        attempt
+        bind
+        binds
+        choice
+        cons
+        eager
+        either
+        enumeration
+        expected
+        lookahead
+        many
+        memo
+        next
+        optional
+        Parser}
     import'parse/lang' {
-        between,
-        sepBy,
-        sepBy1,
-        then},
+        between
+        sepBy
+        sepBy1
+        then}
     import 'nu/stream' {foldl, foldr, reduce},
     import 'khepri_ast/declaration' ast_declaration,
     import 'khepri_ast/expression' ast_expression,
@@ -266,14 +266,14 @@ var letIdentifier = expected("Any pattern", pattern.pattern);
 /**
  * Parser for a let binding.
  */
-var letBinding =  Parser('Let Binding',
+var letBinding = (Parser, 'Let Binding') <|
     nodea(
         enumeration(
             then(
-                letIdentifier,
-                punctuator('=')),
-            expression |> (expected, 'expression')),
-       ast_declaration.Binding.create));
+                letIdentifier
+                punctuator('='))
+            expression |> (expected, 'expression'))
+       ast_declaration.Binding.create);
 
 /**
  * Parser for a let expression.
@@ -297,49 +297,49 @@ in
 
 // Operators Expression
 ////////////////////////////////////////
-var unaryOperatorExpression = Parser('Unary Operator Expression',
+var unaryOperatorExpression = (Parser, 'Unary Operator Expression') <|
     bind(
         either(
-            keyword('typeof'),
+            keyword('typeof')
             punctuator(
-                'void',
-                '~',
-                '!')),
-        \{loc, value} -> always(ast_expression.UnaryOperatorExpression.create(loc, value))));
+                'void'
+                '~'
+                '!'))
+        \{loc, value} -> always(ast_expression.UnaryOperatorExpression.create(loc, value)));
 
-var binaryOperatorExpression = Parser('Binary Operator Expression',
+var binaryOperatorExpression = (Parser, 'Binary Operator Expression') <|
     bind(
         either(
-            keyword('instanceof'),
+            keyword('instanceof')
             punctuator(
-                '*',
-                '/',
-                '+',
-                '-',
-                '%',
-                '<<',
-                '>>',
-                '>>>',
-                '<',
-                '>',
-                '<=',
-                '>=',
-                '==',
-                '!=',
-                '===',
-                '!==',
-                '&',
-                '^',
-                '|',
-                '||',
-                '&&',
-                '\\>',
-                '|>')),
-        \{loc, value} -> always(ast_expression.BinaryOperatorExpression.create(loc, value))));
+                '*'
+                '/'
+                '+'
+                '-'
+                '%'
+                '<<'
+                '>>'
+                '>>>'
+                '<'
+                '>'
+                '<='
+                '>='
+                '=='
+                '!='
+                '==='
+                '!=='
+                '&'
+                '^'
+                '|'
+                '||'
+                '&&'
+                '\\>'
+                '|>'))
+        \{loc, value} -> always(ast_expression.BinaryOperatorExpression.create(loc, value)));
 
 var ternayOperatorExpression = Parser('Ternary Operator Expression',
     bind(
-        punctuator('?'),
+        punctuator('?')
         \{loc, value} -> always(ast_expression.TernaryOperatorExpression.create(loc, value))));
 
 var operatorExpression = Parser('Operator Expression',
@@ -350,10 +350,10 @@ var operatorExpression = Parser('Operator Expression',
 
 // Curry Expression
 ////////////////////////////////////////
-curryExpression = Parser('Curry Expression', let
+curryExpression = (Parser, 'Curry Expression') <| let
     base = expected('expression',
         either(
-            attempt <| expression,
+            attempt <| expression
             operatorExpression))
 in
     between(punctuator('('), punctuator(')'),
@@ -363,11 +363,11 @@ in
                 optional([], next(
                     logicalComma,
                     eager <| sepBy(logicalComma,
-                        expression)))),
+                        expression))))
             \loc, base, elements -> 
                 (elements.length ?
                     ast_expression.CurryExpression.create(loc, base, elements) :
-                    base))));
+                    base)));
 
 // Primary Expression
 ////////////////////////////////////////
@@ -379,13 +379,6 @@ var literal = (Parser, 'Literal') <|
         stringLiteral
         regularExpressionLiteral);
 
-//var stringExpression = (Parser, 'StringExpression') <|
- //   bind(
-  //      cons(
-   //         stringLiteral,
-   //         many(binaryExpression)),
-   //     (reduce, \p, c -> ast_expression.BinaryExpression.create(null, '+', p, c)) \> always);
-
 primaryExpression = (Parser, 'Primary Expression') <|
     choice(
         thisExpression
@@ -393,7 +386,6 @@ primaryExpression = (Parser, 'Primary Expression') <|
         identifier
         curryExpression
         literal
-//        stringExpression,
         arrayLiteral
         objectLiteral
         functionExpression);
@@ -403,9 +395,9 @@ primaryExpression = (Parser, 'Primary Expression') <|
 /**
  * Parser for a list of arguments.
  */
-argumentList = Parser('Argument List',
+argumentList = (Parser, 'Argument List') <|
     eager <| sepBy(logicalComma,
-        expected("expression", expression)));
+        expected("expression", expression));
 
 /**
  * Parser for a argument list part of a call expression.
@@ -423,39 +415,24 @@ args = Parser('Arguments',
 // Accessors
 ////////////////////////////////////////
 /**
- * Parser for a dot accessor in a member expression.
- */
-dotAccessor = Parser('Dot Accessor',
-    node(
-        next(
-            punctuator('.'),
-            identifier),
-        \loc, x -> ({
-            'loc': loc,
-            'property': x,
-            'computed': false
-        })));
-
-/**
- * Parser for a bracket accessor in a member expression.
- */
-bracketAccessor = Parser('Bracket Accessor',
-    node(
-        between(punctuator('['), punctuator(']'),
-            expression),
-        \loc, x -> ({
-            'loc': loc,
-            'property': x,
-            'computed': true
-        })));
-
-/**
  * Parser for an accessor in a member expression.
  */
-accessor = Parser('Accessor',
-    either(
-        dotAccessor,
-        bracketAccessor));
+accessor = (Parser, 'Accessor') <|
+    node(
+        next(
+            punctuator('.')
+            either(
+                bind(identifier, \x -> always([false, x]))
+                bind(
+                    between(punctuator('('), punctuator(')'),
+                        expression)
+                    \x -> always([true, x]))))
+        \loc, [computed, x] -> ({
+            'loc': loc
+            'property': x
+            'computed': computed
+        }));
+
 
 var accessorReducer = \p, c -> 
     ast_expression.MemberExpression.create(
@@ -643,23 +620,23 @@ in
         nodea(
             enumeration(
                 attempt <| then(
-                    binExpr,
-                    punctuator('?')),
+                    binExpr
+                    punctuator('?'))
                 then(
-                    conditionalExpression,
-                    punctuator(':')),
-                conditionalExpression),
-            ast_expression.ConditionalExpression.create),
+                    conditionalExpression
+                    punctuator(','))
+                conditionalExpression)
+            ast_expression.ConditionalExpression.create)
         binExpr);
 
 // Compose Operator
 ////////////////////////////////////////
 var composeOperator = punctuator(
-    '\\>',
+    '\\>'
     '\\>>');
 
 var reverseComposeOperator = punctuator(
-    '<\\',
+    '<\\'
     '<<\\');
 
 var pipeOperator = punctuator('|>');
@@ -668,25 +645,25 @@ var reversePipeOperator = punctuator('<|');
 
 var composePrecedenceTable = [
     {
-        'sep': composeOperator,
-        'precedence': 1,
+        'sep': composeOperator
+        'precedence': 1
         'node': ast_expression.BinaryExpression
-    },
+    }
     {
-        'sep': reverseComposeOperator,
-        'precedence': 1,
-        'right': true,
+        'sep': reverseComposeOperator
+        'precedence': 1
+        'right': true
         'node': ast_expression.BinaryExpression
-    },
+    }
     {
-        'sep': pipeOperator,
-        'precedence': 2,
+        'sep': pipeOperator
+        'precedence': 2
         'node': ast_expression.BinaryExpression
-    },
+    }
     {
-        'sep': reversePipeOperator,
-        'precedence': 2,
-        'right': true,
+        'sep': reversePipeOperator
+        'precedence': 2
+        'right': true
         'node': ast_expression.BinaryExpression
     }
 ];
@@ -706,9 +683,9 @@ assignmentExpression = (Parser, 'Assignment Expression') <|
         append(
             attempt <| enumeration(
                 leftHandReferenceExpression
-                assignmentOperator),
+                assignmentOperator)
             enumeration(
-                expression |> (expected, 'expression'))),
+                expression |> (expected, 'expression')))
         \loc, left, op, right ->
             ast_expression.AssignmentExpression.create(loc, op.value, left, right));
 

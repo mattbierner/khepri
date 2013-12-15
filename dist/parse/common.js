@@ -9,6 +9,8 @@ define(["require", "exports", "parse/parse", "khepri/position", "nu/stream"], (f
     var parse = parse,
         always = parse["always"],
         bind = parse["bind"],
+        eager = parse["eager"],
+        rec = parse["rec"],
         __o = __o,
         SourceLocation = __o["SourceLocation"],
         stream = stream,
@@ -26,7 +28,7 @@ define(["require", "exports", "parse/parse", "khepri/position", "nu/stream"], (f
                 }), value);
             }));
         })));
-        return bind(parse.eager(parse.rec((function(self) {
+        return bind(eager(rec((function(self) {
             return parse.cons(p, parse.optional(NIL, parse.cons(sep, parse.expected(
                 "binary expression", self))));
         }))), (function(list) {

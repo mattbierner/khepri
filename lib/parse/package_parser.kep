@@ -4,14 +4,14 @@
 package (
     khepriPackage)
 with
-    import 'parse/parse' {attempt, eager, either, enumeration, next, optional, Parser},
-    import 'parse/lang' {between, sepBy},
-    import 'khepri_ast/package' ast_package,
-    import 'khepri/parse/common' {node, nodea},
-    import 'khepri/parse/token_parser' {keyword, punctuator},
-    import 'khepri/parse/value_parser' {identifier, stringLiteral},
-    import 'khepri/parse/pattern_parser' {objectPattern, 'identifier': identifierPattern},
-    import 'khepri/parse/statement_parser' statement,
+    import 'parse/parse' {attempt, eager, either, enumeration, next, optional, Parser}
+    import 'parse/lang' {between, sepBy}
+    import 'khepri_ast/package' ast_package
+    import 'khepri/parse/common' {node, nodea}
+    import 'khepri/parse/token_parser' {keyword, punctuator}
+    import 'khepri/parse/value_parser' {identifier, stringLiteral}
+    import 'khepri/parse/pattern_parser' {objectPattern, 'identifier': identifierPattern}
+    import 'khepri/parse/statement_parser' statement
     import 'khepri/parse/shared' {logicalComma}
 in {
 
@@ -38,28 +38,28 @@ var blockStatement = \args(...) -> {
 /**
  * Package Export
  */
-var packageExport = Parser('Package Export',
+var packageExport = (Parser, 'Package Export') <|
     node(
         identifier,
-        ast_package.PackageExport.create));
+        ast_package.PackageExport.create);
 
 /**
  * Package Exports
  */
-var packageExports = Parser('Package Exports',
+var packageExports = (Parser, 'Package Exports') <|
     node(
         between(punctuator('('), punctuator(')'), 
             eager <| sepBy(logicalComma,
-                packageExport)),
-        ast_package.PackageExports.create));
+                packageExport))
+        ast_package.PackageExports.create);
 
 /**
  * Package Body
  */
-var packageBody = Parser('Package Body',
+var packageBody = (Parser, 'Package Body') <|
     either(
-        withStatement,
-        blockStatement));
+        withStatement
+        blockStatement);
 
 /**
  * Package

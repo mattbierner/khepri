@@ -2,7 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "khepri/parse/program_parser"], (function(require, exports, parse, __o, __o0, __o1) {
+define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "khepri/parse/program_parser"], (function(
+    require, exports, parse, __o, __o0, __o1) {
     "use strict";
     var parserStream, ParserPosition, ParserState, parseInput, parseStream;
     var parse = parse,
@@ -36,7 +37,6 @@ define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "kh
             });
             return (function(s) {
                 if (isEmpty(s)) return s;
-
                 var f = first(s),
                     r = rest(s);
                 if ((f.type === "LineTerminator")) {
@@ -47,34 +47,33 @@ define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "kh
                             (f = first(r));
                             (r = rest(r));
                         }
-
                     }
-
                     (f = followLineTerminator(f));
                 }
-
                 return memoStream(f, lineTerminatorStream.bind(undefined, r));
             });
         }
-    }).call(this);
+    })
+        .call(this);
     (parserStream = (function() {
-        {
-            var langElementFilter = (function(x) {
-                switch (x.type) {
-                    case "Whitespace":
-                    case "Comment":
-                        return false;
-                    default:
-                        return true;
-                }
-            });
-            return (function(f, g) {
-                return (function(x) {
-                    return f(g(x));
+            {
+                var langElementFilter = (function(x) {
+                    switch (x.type) {
+                        case "Whitespace":
+                        case "Comment":
+                            return false;
+                        default:
+                            return true;
+                    }
                 });
-            })(lineTerminatorStream, filter.bind(null, langElementFilter));
-        }
-    }).call(this));
+                return (function(f, g) {
+                    return (function(x) {
+                        return f(g(x));
+                    });
+                })(lineTerminatorStream, filter.bind(null, langElementFilter));
+            }
+        })
+        .call(this));
     (ParserPosition = (function(tokenPosition, sourcePosition) {
         (this.tokenPosition = tokenPosition);
         (this.sourcePosition = sourcePosition);
@@ -106,22 +105,25 @@ define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "kh
     (ParserState.prototype.next = (function(tok) {
         if (!this._next) {
             var r = rest(this.input);
-            var end = (isEmpty(r) ? tok.loc.end : first(r).loc.start);
+            var end = (isEmpty(r) ? tok.loc.end : first(r)
+                .loc.start);
             var s = new(ParserState)(r, this.position.increment(tok, end), this.loc.end);
             (this._next = (function(_, m, cok) {
                 return cok(tok, s, m);
             }));
         }
-
         return this._next;
     }));
     Object.defineProperty(ParserState.prototype, "loc", ({
         "get": (function() {
-            return (isEmpty(this.input) ? new(SourceLocation)(this._prevEnd, this._prevEnd) : first(this.input).loc);
+            return (isEmpty(this.input) ? new(SourceLocation)(this._prevEnd, this._prevEnd) : first(
+                    this.input)
+                .loc);
         })
     }));
     (parseStream = (function(s) {
-        return parse.runState(program, new(ParserState)(parserStream(s), ParserPosition.initial, SourcePosition.initial));
+        return parse.runState(program, new(ParserState)(parserStream(s), ParserPosition.initial,
+            SourcePosition.initial));
     }));
     (parseInput = (function(f, g) {
         return (function(x) {

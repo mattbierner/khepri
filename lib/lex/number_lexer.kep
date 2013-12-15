@@ -3,49 +3,49 @@
  */
 package (
 // Constants
-    decimal,
-    negativeSign,
-    positiveSign,
-    exponentIndicator,
-    hexIndicator,
+    decimal
+    negativeSign
+    positiveSign
+    exponentIndicator
+    hexIndicator
 
 // Digits
-    decimalDigit,
-    nonZeroDigit,
-    hexDigit,
-    decimalDigits,
-    hexDigits,
+    decimalDigit
+    nonZeroDigit
+    hexDigit
+    decimalDigits
+    hexDigits
 
 // Integer
-    unsignedInteger,
-    signedInteger,
+    unsignedInteger
+    signedInteger
 
 // Part
-    exponentPart,
+    exponentPart
 
 // Literals
-    hexIntegerLiteral,
-    decimalIntegerLiteral,
-    decimalLiteral,
+    hexIntegerLiteral
+    decimalIntegerLiteral
+    decimalLiteral
 
     numericLiteral)
 with
     import 'parse/parse' {
-        always,
-        attempt,
-        bind,
-        binds,
-        choice,
-        either,
-        enumeration,
-        expected,
-        many,
-        many1,
-        next,
-        optional,
-        Parser},
-    import 'parse/lang' {then},
-    import 'parse/text' {character, match, string},
+        always
+        attempt
+        bind
+        binds
+        choice
+        either
+        enumeration
+        expected
+        many
+        many1
+        next
+        optional
+        Parser}
+    import 'parse/lang' {then}
+    import 'parse/text' {character, match, string}
     import 'nu/stream' {foldl}
 in {
 

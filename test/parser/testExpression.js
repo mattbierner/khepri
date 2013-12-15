@@ -218,7 +218,7 @@ function(parse,
             
             ["Simple Bracket Accessor",
             function(){
-                var expr = testParser(lexer.lex("a[b];"));
+                var expr = testParser(lexer.lex("a.(b);"));
                 assert.equal(expr.type, 'MemberExpression');
                 assert.equal(expr.object.name, 'a');
                 assert.equal(expr.property.name, 'b');
@@ -226,7 +226,7 @@ function(parse,
             }],
             ["Many Bracket Accessor Left Associativity",
             function(){
-                var expr = testParser(lexer.lex("a[b][c];"));
+                var expr = testParser(lexer.lex("(a).(b).(c);"));
                 assert.equal(expr.type, 'MemberExpression');
                 assert.equal(expr.object.type, 'MemberExpression');
                 assert.equal(expr.object.object.name, 'a');

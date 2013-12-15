@@ -2,7 +2,10 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/package_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/pattern_parser", "khepri/parse/statement_parser", "khepri/parse/shared"], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, __o4, statement, __o5) {
+define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package", "khepri/parse/common",
+    "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/pattern_parser",
+    "khepri/parse/statement_parser", "khepri/parse/shared"
+], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, __o4, statement, __o5) {
     "use strict";
     var khepriPackage;
     var __o = __o,
@@ -46,9 +49,11 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package",
             return blockStatement.apply(undefined, args);
         }
     });
-    var packageExport = Parser("Package Export", node(identifier, ast_package.PackageExport.create));
-    var packageExports = Parser("Package Exports", node(between(punctuator("("), punctuator(")"), eager(sepBy(logicalComma, packageExport))), ast_package.PackageExports.create));
-    var packageBody = Parser("Package Body", either(withStatement, blockStatement));
-    (khepriPackage = Parser("Package", next(keyword("package"), nodea(enumeration(packageExports, packageBody), ast_package.Package.create))));
+    var packageExport = Parser.bind(null, "Package Export")(node(identifier, ast_package.PackageExport.create));
+    var packageExports = Parser.bind(null, "Package Exports")(node(between(punctuator("("), punctuator(")"),
+        eager(sepBy(logicalComma, packageExport))), ast_package.PackageExports.create));
+    var packageBody = Parser.bind(null, "Package Body")(either(withStatement, blockStatement));
+    (khepriPackage = Parser("Package", next(keyword("package"), nodea(enumeration(packageExports, packageBody),
+        ast_package.Package.create))));
     (exports.khepriPackage = khepriPackage);
 }))
