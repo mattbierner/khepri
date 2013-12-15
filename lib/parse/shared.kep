@@ -4,24 +4,23 @@
 package (
     logicalComma)
 with
-    import 'parse/parse' parse{
-        always,
-        choice,
-        look,
-        eof,
-        Parser,
-        token},
-    import 'khepri/parse/token_parser' {keyword, punctuator}
+    import 'parse/parse' {
+        always
+        choice
+        look
+        eof
+        Parser
+        token}
+    import 'khepri/parse/token_parser' {keyword punctuator}
 in {
 
-/* Statement Parsers
- ******************************************************************************/
-var lineTerminator = look <| token <| \tok -> tok.lineTerminator;
-
+var lineTerminator = look <| token <|\tok -> tok.lineTerminator;
 
 logicalComma = (Parser, 'Logical Comma') <|
     choice(
-        punctuator(','),
-        lineTerminator,
-        parse.eof);
+        punctuator(',')
+        lineTerminator
+        eof,
+        always());
+
 }

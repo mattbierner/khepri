@@ -40,7 +40,7 @@ var blockStatement = \args(...) -> {
  */
 var packageExport = (Parser, 'Package Export') <|
     node(
-        identifier,
+        identifier
         ast_package.PackageExport.create);
 
 /**
@@ -48,8 +48,8 @@ var packageExport = (Parser, 'Package Export') <|
  */
 var packageExports = (Parser, 'Package Exports') <|
     node(
-        between(punctuator('('), punctuator(')'), 
-            eager <| sepBy(logicalComma,
+        between(punctuator('('), punctuator(')')
+            eager <| sepBy(logicalComma
                 packageExport))
         ast_package.PackageExports.create);
 
@@ -64,13 +64,13 @@ var packageBody = (Parser, 'Package Body') <|
 /**
  * Package
  */
-khepriPackage = Parser('Package',
-    next(
-        keyword('package'),
-        nodea(
+khepriPackage = (Parser, 'Package') <|
+    nodea(
+        next(
+            keyword('package')
             enumeration(
-                packageExports,
-                packageBody),
-            ast_package.Package.create)));
+                packageExports
+                packageBody))
+        ast_package.Package.create);
 
 }

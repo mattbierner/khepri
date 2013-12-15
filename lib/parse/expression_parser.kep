@@ -366,7 +366,7 @@ in
                         expression))))
             \loc, base, elements -> 
                 (elements.length ?
-                    ast_expression.CurryExpression.create(loc, base, elements) :
+                    ast_expression.CurryExpression.create(loc, base, elements),
                     base)));
 
 // Primary Expression
@@ -458,13 +458,13 @@ memberExpression = Parser('Member Expression',
 /**
  * Parser for a new expression
  */
-newExpression = Parser('New Expression',
+newExpression = Parser('New Expression'
     nodea(
         next(
-            keyword('new'),
+            keyword('new')
             enumeration(
-                memberExpression |> (expected, "member expression"),
-                optional([], args))),
+                memberExpression |> (expected, "member expression")
+                optional([], args)))
         ast_expression.NewExpression.create));
 
 // Left Hand Side Expression
@@ -475,7 +475,7 @@ newExpression = Parser('New Expression',
 leftHandSideExpression = let
     reducer = \p, c ->
         (c && c.hasOwnProperty('argument') ?
-             ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c) :
+             ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c),
              accessorReducer(p, c))
 in
     Parser('Left Hand Side Expression',
@@ -624,7 +624,7 @@ in
                     punctuator('?'))
                 then(
                     conditionalExpression
-                    punctuator(','))
+                    punctuator(':'))
                 conditionalExpression)
             ast_expression.ConditionalExpression.create)
         binExpr);

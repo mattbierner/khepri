@@ -2,18 +2,18 @@
  * @fileOverview Parsers for literals and symbols.
  */
 package (
-    literal,
+    literal
 
-    nullLiteral,
-    booleanLiteral,
-    numericLiteral,
-    stringLiteral,
-    regularExpressionLiteral,
+    nullLiteral
+    booleanLiteral
+    numericLiteral
+    stringLiteral
+    regularExpressionLiteral
     
     identifier)
 with
-    import 'parse/parse' {always, bind, choice, Parser},
-    import 'khepri_ast/value' ast_value,
+    import 'parse/parse' {always bind choice Parser}
+    import 'khepri_ast/value' ast_value
     import 'khepri/parse/token_parser' token
 in {
 
@@ -25,22 +25,22 @@ var literalParser = \kind, p ->
  ******************************************************************************/
 nullLiteral = (Parser, 'Null Literal') <|
     literalParser(
-        'null',
+        'null'
         token.nullLiteral);
 
 booleanLiteral = (Parser, 'Boolean Literal') <|
     literalParser(
-        'boolean',
+        'boolean'
         token.booleanLiteral);
 
 numericLiteral = (Parser, 'Numeric Literal') <|
     literalParser(
-        'number',
+        'number'
         token.numericLiteral);
 
 stringLiteral = (Parser, 'String Literal') <|
     literalParser(
-        'string',
+        'string'
         token.stringLiteral);
 
 regularExpressionLiteral = (Parser, 'Regular Expression Literal') <|
@@ -50,17 +50,17 @@ regularExpressionLiteral = (Parser, 'Regular Expression Literal') <|
 
 literal = (Parser, 'Literal') <|
     choice(
-        nullLiteral,
-        booleanLiteral,
-        numericLiteral,
-        stringLiteral,
+        nullLiteral
+        booleanLiteral
+        numericLiteral
+        stringLiteral
         regularExpressionLiteral);
 
 /* Symbols
  ******************************************************************************/
 identifier = (Parser, 'Identifier') <|
     bind(
-        token.anyIdentifier,
+        token.anyIdentifier
         \x -> always(ast_value.Identifier.create(x.loc, x.value)));
 
 }

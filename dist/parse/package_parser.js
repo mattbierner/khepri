@@ -53,7 +53,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package",
     var packageExports = Parser.bind(null, "Package Exports")(node(between(punctuator("("), punctuator(")"),
         eager(sepBy(logicalComma, packageExport))), ast_package.PackageExports.create));
     var packageBody = Parser.bind(null, "Package Body")(either(withStatement, blockStatement));
-    (khepriPackage = Parser("Package", next(keyword("package"), nodea(enumeration(packageExports, packageBody),
-        ast_package.Package.create))));
+    (khepriPackage = Parser.bind(null, "Package")(nodea(next(keyword("package"), enumeration(packageExports,
+        packageBody)), ast_package.Package.create)));
     (exports.khepriPackage = khepriPackage);
 }))
