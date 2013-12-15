@@ -19,14 +19,14 @@ define(["require", "exports", "parse/parse", "khepri_ast/value", "khepri/parse/t
             return always(ast_value.Literal.create(x.loc, kind, x.value));
         }));
     });
-    (nullLiteral = Parser.bind(null, "Null Literal")(literalParser("null", token.nullLiteral)));
-    (booleanLiteral = Parser.bind(null, "Boolean Literal")(literalParser("boolean", token.booleanLiteral)));
-    (numericLiteral = Parser.bind(null, "Numeric Literal")(literalParser("number", token.numericLiteral)));
-    (stringLiteral = Parser.bind(null, "String Literal")(literalParser("string", token.stringLiteral)));
-    (regularExpressionLiteral = Parser.bind(null, "Regular Expression Literal")(literalParser("regexp", token.regularExpressionLiteral)));
-    (literal = Parser.bind(null, "Literal")(choice(nullLiteral, booleanLiteral, numericLiteral, stringLiteral,
+    (nullLiteral = Parser("Null Literal", literalParser("null", token.nullLiteral)));
+    (booleanLiteral = Parser("Boolean Literal", literalParser("boolean", token.booleanLiteral)));
+    (numericLiteral = Parser("Numeric Literal", literalParser("number", token.numericLiteral)));
+    (stringLiteral = Parser("String Literal", literalParser("string", token.stringLiteral)));
+    (regularExpressionLiteral = Parser("Regular Expression Literal", literalParser("regexp", token.regularExpressionLiteral)));
+    (literal = Parser("Literal", choice(nullLiteral, booleanLiteral, numericLiteral, stringLiteral,
         regularExpressionLiteral)));
-    (identifier = Parser.bind(null, "Identifier")(bind(token.anyIdentifier, (function(x) {
+    (identifier = Parser("Identifier", bind(token.anyIdentifier, (function(x) {
         return always(ast_value.Identifier.create(x.loc, x.value));
     }))));
     (exports.literal = literal);

@@ -40,7 +40,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     });
     (sourceElement = statementParser);
     (sourceElements = eager(many(sourceElement)));
-    (program = Parser.bind(null, "Program")(node(either(then(khepriPackage, eof), eager(rec((function(self) {
+    (program = Parser("Program", node(either(then(khepriPackage, eof), eager(rec((function(self) {
         return either(next(eof, always(NIL)), cons(sourceElement, self));
     })))), ast_program.Program.create)));
     (exports.sourceElement = sourceElement);

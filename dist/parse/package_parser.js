@@ -3,16 +3,15 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package", "khepri/parse/common",
-    "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/pattern_parser",
-    "khepri/parse/statement_parser"
-], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, __o4, statement) {
+    "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/statement_parser"
+], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, _) {
     "use strict";
     var khepriPackage;
     var __o = __o,
-        attempt = __o["attempt"],
         eager = __o["eager"],
         either = __o["either"],
         enumeration = __o["enumeration"],
+        expected = __o["expected"],
         next = __o["next"],
         optional = __o["optional"],
         Parser = __o["Parser"],
@@ -27,23 +26,18 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package",
         keyword = __o2["keyword"],
         punctuator = __o2["punctuator"],
         __o3 = __o3,
-        identifier = __o3["identifier"],
-        stringLiteral = __o3["stringLiteral"],
-        __o4 = __o4,
-        objectPattern = __o4["objectPattern"],
-        identifierPattern = __o4["identifier"],
-        statement = statement;
+        identifier = __o3["identifier"];
     var withStatement = (function() {
         var args = arguments; {
-            var __o5 = require("khepri/parse/statement_parser"),
-                withStatement = __o5["withStatement"];
+            var __o4 = require("khepri/parse/statement_parser"),
+                withStatement = __o4["withStatement"];
             return withStatement.apply(undefined, args);
         }
     });
     var blockStatement = (function() {
         var args = arguments; {
-            var __o5 = require("khepri/parse/statement_parser"),
-                blockStatement = __o5["blockStatement"];
+            var __o4 = require("khepri/parse/statement_parser"),
+                blockStatement = __o4["blockStatement"];
             return blockStatement.apply(undefined, args);
         }
     });
@@ -51,7 +45,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package",
     var packageExports = Parser("Package Exports", node(between(punctuator("("), punctuator(")"), eager(sepBy(
         optional(null, punctuator(",")), packageExport))), ast_package.PackageExports.create));
     var packageBody = Parser("Package Body", either(withStatement, blockStatement));
-    (khepriPackage = Parser("Package", next(keyword("package"), nodea(enumeration(packageExports, packageBody),
-        ast_package.Package.create))));
+    (khepriPackage = Parser("Package", nodea(next(keyword("package"), enumeration(expected(
+        "package export list", packageExports), packageBody)), ast_package.Package.create)));
     (exports.khepriPackage = khepriPackage);
 }))

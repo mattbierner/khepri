@@ -75,8 +75,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/str
     })), optional(0, exponentPart)), (function(num, exp) {
         return always((num * Math.pow(10, parseInt(exp))));
     }))));
-    (numericLiteral = Parser("Numeric Literal Lexer", either(next(attempt(hexIndicator), expected.bind(null,
-        "hex digits")(hexIntegerLiteralDigits)), decimalLiteral)));
+    (numericLiteral = Parser("Numeric Literal Lexer", either(next(attempt(hexIndicator), expected("hex digits",
+        hexIntegerLiteralDigits)), decimalLiteral)));
     (exports.decimal = decimal);
     (exports.negativeSign = negativeSign);
     (exports.positiveSign = positiveSign);

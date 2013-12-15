@@ -2,17 +2,17 @@
  * @fileOverview Parsers for literals and symbols.
  */
 package (
-    literal,
+    literal
 
-    nullLiteral,
-    booleanLiteral,
-    numericLiteral,
-    stringLiteral,
-    regularExpressionLiteral,
+    nullLiteral
+    booleanLiteral
+    numericLiteral
+    stringLiteral
+    regularExpressionLiteral
     
     identifier)
 with
-    import 'parse/parse' {always, bind, choice, Parser},
+    import 'parse/parse' {always bind choice Parser},
     import 'khepri_ast/value' ast_value,
     import 'khepri/parse/token_parser' token
 in {

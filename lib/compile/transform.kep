@@ -20,7 +20,7 @@ with
     import 'khepri_ast/pattern' khepri_pattern,
     import 'khepri_ast/program' khepri_program,
     import 'khepri_ast/statement' khepri_statement,
-    import  'khepri_ast/value' khepri_value
+    import 'khepri_ast/value' khepri_value
 in {
 
 var concat = Function.prototype.call.bind(Array.prototype.concat);
@@ -32,12 +32,12 @@ var identity = \x -> x;
 var filter = \f, a ->  Array.prototype.filter.call(a, f);
 var maps = \f, a ->  Array.prototype.map.call(a, f);
 
-var flatten = \x -> reduce(x, \p, c -> p.concat(c), []);
+var flatten = \x -> (Array.isArray(x) ? reduce(x, \p, c -> p.concat(c), []) : x);
 
 /* Forward
  ******************************************************************************/
-
 var expressionStatement;
+
 
 /* Values
  ******************************************************************************/
@@ -63,86 +63,119 @@ var variableDeclarator = \loc, id, init ->
         transform(id),
         transform(init)));
 
-/* Pattern
- ******************************************************************************/
-var arrayPattern;
-
 /**
  */
-var objectPattern = \base, pattern, key, f -> {
-    var k = (key.type === 'IdentifierPattern' ?
-        stringLiteral(null, key.id.name) :
-        key);
-    
-    var innerBase = khepri_expression.MemberExpression.create(null, base, k, true);
+var objectPatternElement = \loc, key, value ->
+    khepri_pattern.ObjectPatternElement.create(loc, key, value);
 
-    if (!pattern)
-        return f(
-            identifier(null, k.value),
-            innerBase);
-    
-    switch (pattern.type) {
-    case 'IdentifierPattern':
-        return f(
-            identifier(null, pattern.id.name),
-            innerBase);
-    
-    case 'ArrayPattern':
-        return let
-            base = f(pattern.id, innerBase),
-            elements = map(pattern.elements, (arrayPattern, pattern.id))
-        in
-            concat(base, elements);
-    
-    case 'ObjectPattern':
-        return let
-            base = f(pattern.id, innerBase),
-            
-            elements = pattern.elements
-                |> (maps, \{target, key} -> objectPattern(pattern.id, target, key, f))
-                |> flatten
-        in
-            concat(base, elements);
-    
-    default:
-        return null;
-    }
+var arrayPattern = \loc, elements, id -> {
+    var node = khepri_pattern.ObjectPattern.create(loc,
+        map(elements, \x, i ->
+            objectPatternElement(null,
+                khepri_value.Literal.create(null, 'number', i),
+                x)));
+    node.id = id;
+    return node;
 };
 
-/**
- */
-var objectPatternElement = let
-    make = \l, r ->
-        variableDeclarator(null, l, r)
+/* Unpacks
+ ******************************************************************************/
+var innerPattern = let
+    objectElementUnpack = \base, pattern, key, f ->  {
+        var p = pattern;
+        var k; switch(key.type) {
+        case 'IdentifierPattern':
+            k = stringLiteral(null, key.id.name);
+            break;
+            
+        case 'AsPattern':
+            k = stringLiteral(null, key.id.id.name);
+            p = key;
+            break;
+            
+        default:
+            k = key;
+            break;
+        }
+        
+        var innerBase = khepri_expression.MemberExpression.create(null, base, k, true);
+        return (p ?
+            (flatten <| innerPattern(innerBase, p, f)) :
+            f(identifier(null, k.value), innerBase));
+    }
 in
-    \base, pattern, key ->
-        objectPattern(base, pattern, key, make);
-
-var objectUnpack = \pattern, value -> let
-    base = transform(pattern.id),
-    
-    elements = pattern.elements
-        |> (maps, \element -> objectPatternElement(base, element.target, element.key))
-        |> flatten
-in
-    concat(
-        variableDeclarator(null, base, transform(value)),
-        elements);
+    \base, pattern, f -> {
+        switch (pattern.type) {
+        case 'IdentifierPattern':
+            return f(
+                identifier(null, pattern.id.name),
+                base);
+        
+        case 'AsPattern':
+            return concat(
+                f(pattern.id, base),
+                flatten <| innerPattern(pattern.id, pattern.target, f));
+        
+        case 'ArrayPattern':
+            return flatten <| innerPattern(
+                base,
+                arrayPattern(pattern.loc, pattern.elements, pattern.id), f);
+        
+        case 'ObjectPattern':
+            return flatten <| concat(
+                innerPattern(base, pattern.id, f),
+                pattern.elements
+                    |> (maps, \{target, key} -> objectElementUnpack(pattern.id, target, key, f))
+                    |> flatten);
+        
+        default:
+            return [];
+        }
+    };
 
 /**
- * Generate the prefix for an array pattern.
+ * 
  */
-arrayPattern = \base, pattern, index ->
-    objectPatternElement(
-        base,
-        pattern,
-        khepri_value.Literal.create(null, 'number', index));
+var asUnpack = let
+    make = (variableDeclarator, null)
+in
+    \pattern, value ->
+        innerPattern(value, pattern, make)
+            |> flatten;
 
+/**
+ * 
+ */
+var unpack = let
+    make = (variableDeclarator, null)
+in
+    \pattern, value ->
+        innerPattern(value, pattern, make)
+            |> flatten;
 
 /* Pattern
  ******************************************************************************/
 var identifierPattern = \loc, name ->
     identifier(loc, name);
+
+/* Basic Expressions
+ ******************************************************************************/
+/**
+ * 
+ */
+var callExpression = \loc, callee, args ->
+    ecma_expression.CallExpression.create(loc,
+        transform(callee),
+        map(args, transform));
+
+/**
+ * 
+ */
+var memberExpression = \loc, object, property, computed ->
+    ecma_expression.MemberExpression.create(loc,
+        transform(object),
+        transform(property),
+        computed);
 
 /* Statements
  ******************************************************************************/
@@ -173,37 +206,13 @@ var returnStatement = \loc, argument ->
 var withStatement = \loc, bindings, body -> let
     vars = flatten(map(bindings, \imp -> {
         if (imp.type === 'ImportPattern') {
-            var base = ecma_expression.CallExpression.create(null,
+            var base = callExpression(null,
                 identifier(null, 'require'),
                 [imp.from]);
             
-            switch (imp.pattern.type) {
-            case 'IdentifierPattern':
-                return variableDeclarator(null, transform(imp.pattern), base);
-            
-             case 'ObjectPattern':
-                  return objectUnpack(imp.pattern, base);
-             
-             default:
-                 return [];
-             }
+            return unpack(imp.pattern, base);
         }
-        
-        switch (imp.pattern.type) {
-        case 'IdentifierPattern':
-            return variableDeclarator(null, imp.pattern, imp.value);
-        
-         case 'ObjectPattern':
-             return objectUnpack(imp.pattern, imp.value);
-         
-        case 'ArrayPattern':
-            return concat(
-                variableDeclarator(null, imp.pattern.id, imp.value),
-                flatten(
-                    map(imp.pattern.elements, \c, i ->
-                        arrayPattern(imp.pattern.id, c, i))));
-        }
-        return [];
+        return unpack(imp.pattern, imp.value);
     })),
     
     prefix = (vars.length ?
@@ -228,18 +237,14 @@ var functionExpression = \loc, id, parameters, body -> let
     
     elementsPrefix = parameters.elements
         |> (maps, \x -> {
+            // Avoid generating redundant unpacks for parameters names.
             switch (x.type) {
-            case 'ArrayPattern':
-                return let base = transform(x.id) in
-                    x.elements
-                        |> (maps, \element, i -> arrayPattern(base, element, i))
-                        |> flatten;
-            
-             case 'ObjectPattern':
-                 return objectUnpack(x, x.id);
-            
-            default:
+            case 'IdentifierPattern':
                 return [];
+            case 'AsPattern':
+                return innerPattern(transform(x.id), x.target, (variableDeclarator, null));
+            default:
+                return innerPattern(transform(x.id), x, (variableDeclarator, null));
             }
         })
         |> flatten,
@@ -262,22 +267,6 @@ in
                 (prefix.length ? variableDeclaration(null, prefix) : []),
                 transform(body).body)));
 
-/**
- * 
- */
-var callExpression = \loc, callee, args ->
-    ecma_expression.CallExpression.create(loc,
-        transform(callee),
-        map(args, transform));
-
-/**
- * 
- */
-var memberExpression = \loc, object, property, computed ->
-    ecma_expression.MemberExpression.create(loc,
-        transform(object),
-        transform(property),
-        computed);
 
 /**
  * 
@@ -515,23 +504,23 @@ transform = function(node) {
             null);
     
     case 'TryStatement':
-        return new ecma_statement.TryStatement(node.loc,
+        return ecma_statement.TryStatement.create(node.loc,
             transform(node.block),
             transform(node.handler),
             transform(node.finalizer));
     
     case 'WhileStatement':
-        return new ecma_statement.WhileStatement(node.loc,
+        return ecma_statement.WhileStatement.create(node.loc,
             transform(node.test),
             transform(node.body));
     
     case 'DoWhileStatement':
-        return new ecma_statement.DoWhileStatement(node.loc,
+        return ecma_statement.DoWhileStatement.create(node.loc,
             transform(node.body),
             transform(node.test));
     
     case 'ForStatement':
-        return new ecma_statement.ForStatement(node.loc,
+        return ecma_statement.ForStatement.create(node.loc,
             transform(node.init),
             transform(node.test),
             transform(node.update),
@@ -545,7 +534,7 @@ transform = function(node) {
             node.right);
     
     case 'UnaryExpression':
-        return new ecma_expression.UnaryExpression(node.loc,
+        return ecma_expression.UnaryExpression.create(node.loc,
             node.operator,
             transform(node.argument));
     
@@ -589,13 +578,13 @@ transform = function(node) {
         }
     
     case 'LogicalExpression':
-        return new ecma_expression.LogicalExpression(node.loc,
+        return ecma_expression.LogicalExpression.create(node.loc,
             node.operator,
             transform(node.left),
             transform(node.right));
     
     case 'ConditionalExpression':
-        return new ecma_expression.ConditionalExpression(node.loc,
+        return ecma_expression.ConditionalExpression.create(node.loc,
             transform(node.test),
             transform(node.consequent),
             transform(node.alternate));
@@ -657,13 +646,13 @@ transform = function(node) {
     
     case 'TernaryOperatorExpression':
         return functionExpression(node.loc, null,
-                khepri_pattern.ArgumentsPattern.create(null, null, [
+            khepri_pattern.ArgumentsPattern.create(null, null, [
+                khepri_pattern.IdentifierPattern.create(null,
+                    identifier(null, 'x')),
+                khepri_pattern.IdentifierPattern.create(null,
+                    identifier(null, 'y')),
                     khepri_pattern.IdentifierPattern.create(null,
-                        identifier(null, 'x')),
-                    khepri_pattern.IdentifierPattern.create(null,
-                        identifier(null, 'y')),
-                        khepri_pattern.IdentifierPattern.create(null,
-                        identifier(null, 'z'))]),
+                    identifier(null, 'z'))]),
             blockStatement(null, [
                 returnStatement(null, 
                     khepri_expression.ConditionalExpression.create(null,
@@ -699,13 +688,12 @@ transform = function(node) {
         return identifier(node.loc,
             node.id.name);
     
+    case 'AsPattern':
     case 'ArrayPattern':
     case 'ObjectPattern':
         return transform(node.id);
     
     case 'EllipsisPattern':
-        return null;
-        
     case 'SinkPattern':
         return (node.id ?
             identifier(node.loc, node.id) :

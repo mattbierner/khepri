@@ -1,47 +1,28 @@
 /**
- * @fileOverview Khepri boolean value lexers.
+ * @fileOverview Khepri boolean literals.
  */
 package (
-    trueLiteral,
-    falseLiteral,
+    trueLiteral
+    falseLiteral
     booleanLiteral)
 with
-    import 'parse/parse' {always, either, next, Parser},
+    import 'parse/parse' {always either next Parser},
     import 'parse/text' {string}
 in {
 
-/* Lexers
- ******************************************************************************/
-// Literals
-////////////////////////////////////////
-/**
- * Lexer for true literal.
- * 
- * Returns true.
- */
-trueLiteral = Parser('True Literal Lexer',
+trueLiteral = (Parser, 'True Literal Lexer') <|
     next(
         string('true'),
-        always(true)));
+        always(true));
 
-/**
- * Lexer for false literal.
- * 
- * Returns false
- */
-falseLiteral = Parser('False Literal Lexer',
+falseLiteral = (Parser, 'False Literal Lexer') <|
     next(
         string('false'),
-        always(false)));
+        always(false));
 
-/**
- * Lexer that matches boolean literal.
- * 
- * Returns the value of the boolean literal
- */
-booleanLiteral = Parser('Boolean Literal Lexer',
+booleanLiteral = (Parser, 'Boolean Literal Lexer') <|
     either(
         trueLiteral,
-        falseLiteral));
+        falseLiteral);
 
 }

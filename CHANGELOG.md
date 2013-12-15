@@ -7,6 +7,9 @@
   top level aliases and the pattern, `let list#[e0, e1] in ...`.
 * Fixed the syntax `function f(args(...)) {};` being allowed. Should always be
   `function f\args(...) -> { };` instead.
+* Improved error messages for patterns.
+* Allow unnamed as at the top level of object patterns: `let {x#{y}} = {} in y;`
+* Fixed imports being allowed in things like functions.
 
 ## 0.6.0 - December 9, 2013
 * Added `void` back.

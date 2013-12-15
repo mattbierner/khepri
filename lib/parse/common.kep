@@ -7,11 +7,11 @@ package (
     nodea,
     positionParser)
 with
-    import 'parse/parse' parse{
+    import 'parse/parse' parse#{
         always,
         bind},
     import 'khepri/position' {SourceLocation},
-    import 'nu/stream' stream{NIL}
+    import 'nu/stream' stream#{NIL}
 in {
 
 // Operator Precedence

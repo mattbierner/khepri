@@ -37,13 +37,14 @@ Available syntaxes, along with the also valid ECMAScript translation as last ite
     function \x -> x + 3;
     function(x) { return x + 3; };
     
-    // multiple arguments
+    // multiple arguments, commas are optional
+    \x y -> x + y;
     \x, y -> x + y;
     \(x, y) -> x + y; 
     function(x, y) { return x + y; };
     
     // function body
-    \x, y -> {
+    \x y -> {
         var z = x + 10;
         return z + y;
     };
@@ -77,14 +78,21 @@ Available syntaxes, along with the also valid ECMAScript translation as last ite
 
 All scoping remains the same as in the translated version.
 
-### Patterns
-Function parameter lists are patterns instead of identifiers. These patterns
-effect the behavior of the generated function and have nothing to do with pattern
-matching. All effects happen at runtime.
+### Unpack Patterns
+Khepri allows writing more concise expressions with a pattern syntax to unpack
+values into into multiple identifiers. Patterns may be used in function parameter
+lists, let expressions, and with expressions.
+
+Unpack patterns effect the behavior of the generated code and have nothing
+to do with pattern matching. All effects happen at runtime.
+
+Comma separators are optional in all patterns.
 
 #### Identifier Pattern
 Same as ECMAScript. Binds argument at position to name for function body.
 
+    (\a b c -> [a, b, c])(1, 2); // [1,2,undefined]
+    
     (\a, b, c -> [a, b, c])(1, 2); // [1,2,undefined]
 
 #### Ellipsis Pattern
@@ -101,7 +109,9 @@ value of the paramter a the given index.
     var first = \[x] -> x;
     var first = \arr -> arr[0];
     
+    var add = \[x y] -> x + y;
     var add = \[x, y] -> x + y;
+   
     var add = \arr -> arr[0] + arr[1];
     
 No type checks are performed so it is possible to pass in array like objects or
@@ -111,12 +121,6 @@ invalid objects:
     first("abc"); // a
     first({'0': 10, '1': 2}); // 10
     first(null); // error, accessing null[0]
-
-Array patterns can be anonymous, as shown above, or named. Named array patterns
-allow the base object to be accessed along with the unpacked values:
-
-    var dup = \arr[x, ...] -> [x, arr];
-    dup([1, [2]]); //[1, [1, [2]]];
 
 Patterns can be arbitrarily nested:
 
@@ -134,10 +138,6 @@ are bound to the unpacked value of the paramter's member given name at runtime.
     var swapAB =  \obj -> ({'a': obj['b'], 'b': obj['a']});
     swapAB({'a': 3, 'b': 5}); // {'a': 5, 'b': 3};
 
-Like array patterns, object patterns can also be anonymous or named.
-
-    \obj{'x': x} -> [x, obj];
-
 Object patterns can be nested:
 
     var nested = \{'c': [x, {'value': y}]} -> x + y;
@@ -149,21 +149,32 @@ unpacked directly by using the identifier as the key to unpack:
     
     var swapAB =  \{a, b} -> ({'a': b, 'b': a});
 
-Object patterns in object patterns still require an key so they know which property
-to unpack.
+#### As Pattern
+The as pattern unpacks a value to an identifier and then unpacks the value again
+with another pattern. This is similar to Haskell's `@`. It can be used in any
+other pattern.
 
-    \{x, 'y':{z}}-> x + z;
+    var dup = \arr#[x ...] -> [x, arr];
+    dup([1, [2]]); //[1, [1, [2]]]; 
 
+Used as a top level in an object pattern, the as pattern specifies the key to unpack:
+
+    var dup = \{x#{y}} -> y;
+    
+    // is short for;
+    var dup = \{'x': {y}} -> y;
+    
 #### Arguments Pattern
 The arguments pattern is used to unpack the arguments object in functions.
 Two forms exist, explicit which allows access to the underlying arguments object
 and implicit which only allows the individual arguments to be accessed.
-The `arguments` magic identifier is no longer valid.
+The `arguments` magic identifier is no longer valid and this is the only way to
+access the arguments.
 
-Implicit form is a comma separated list of zero or more patterns. Each pattern
+Implicit form is a list (optionally comma separated) of zero or more patterns. Each pattern
 unpacks the argument value at its index.
 
-    var f = \x, y, {z} -> x + y + z;
+    var f = \x y {z} -> x + y + z;
     f(1, 3, {'z': 5}); // 9
 
 Explicit form adds an optional unpack for the arguments object itself. It is
@@ -175,7 +186,7 @@ of patterns for the individual argument unpacks.
     f(1, 2, 3, 4); // 4
 
 ## Let Expression
-The ket expression allow variables to be bound in expressions:
+Let expressions bind variables in a expression:
 
     // Id Let Expression
     let a = 3 in a;
@@ -229,23 +240,23 @@ name in the function body:
     let fib = \x -> (x < 2 ? x : fib(n - 1) + fib(n - 2)) in
         fib(10);
 
-Named functions can access themselves by function name. In both cases, the scope of the
-function name is limited to the evaluation of the bound value.
+Named functions can also access themselves by function name. The
+scope of the function name is limited to the evaluation of the bound value.
 
-    let fib = function impl(x) { return (x < 2 ? x : impl(n - 1) + impl(n - 2)); } in
+    let fib = function impl \x -> (x < 2 ? x : impl(x - 1) + impl(x - 2)) in
         fib(10);
 
 let expressions may also use any pattern on their left hand side:
 
     let
-        o{x, y} = {'a': 3, 'x': 6, 'z': 5, 'y': 8},
+        o#{x, y} = {'a': 3, 'x': 6, 'z': 5, 'y': 8},
         [first] = [1,2, 3]
     in
        first + y + x + o.a; // 18
 
 ### With statement
 The `with` statement has been modified to behave like a statement level let
-expression. The sytnax is:
+expression. The syntax is:
 
     with BINDINGS in { STATEMENTS }
 
@@ -276,7 +287,7 @@ declared:
 EXPORTS is a list of symbols the package exports from BODY. For a math package,
 exporting two symbols `min` and `max`:
 
-    package (min, max)
+    package (min max)
     {
         min = \x, y -> (x < y ? x : y);
         max = \x, y -> (x < y ? y : x);
@@ -301,7 +312,7 @@ bind the entire import to a name.
 For example, importing two packages:
 
     package () with
-        import 'lib/math' math{min, max},
+        import 'lib/math' math#{min, max},
         import 'lib/str' {match, search}
     {
     }
@@ -324,7 +335,7 @@ curry functions. Their current use to group a subexpression remains unchanged as
 a parenthesized expression with only a single expression just returns the value
 of that expression.
 
-    var add = \x, y -> x + y;
+    var add = \x y -> x + y;
     
     var add10 = (add, 10);
     add10(3); // 13
@@ -333,7 +344,7 @@ of that expression.
 Select unary, binary, and ternary operators can also be converted to regular functions
 using the curry syntax:
 
-    var binary = \op, x, y -> op(x, y);
+    var binary = \op x y -> op(x, y);
     
     var add = (binary, (+));
     add(2, 5); // 7
@@ -342,7 +353,7 @@ Logical and conditional expressions may be converted but the converted form
 will eagerly evaluate all arguments.
 
     var args = \args(...) -> args;
-    var foldl = \f, z, x -> Array.prototype.reduce.call(x, f, z);
+    var foldl = \f z x -> Array.prototype.reduce.call(x, f, z);
     
     // Function that sums its arguments
     var add = args \> (foldl, (+), 0);

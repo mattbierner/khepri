@@ -250,24 +250,24 @@ thisExpression = node(
 
 // Let Expression
 ////////////////////////////////////////
-var letIdentifier = expected("Any pattern", pattern.pattern);
+var letIdentifier = expected("Any pattern", pattern.topLevelPattern);
 
 /**
  * Parser for a let binding.
  */
-var letBinding =  Parser('Let Binding',
+var letBinding = (Parser, 'Let Binding') <|
     nodea(
         enumeration(
             then(
                 letIdentifier,
                 punctuator('=')),
             expression |> (expected, 'expression')),
-       ast_declaration.Binding.create));
+       ast_declaration.Binding.create);
 
 /**
  * Parser for a let expression.
  */
-letExpression = Parser('Let Expression', let
+letExpression = (Parser, 'Let Expression') <| let
     letBindings = expected('let bindings',
         sepBy1(punctuator(','),
             letBinding)),
@@ -282,11 +282,11 @@ in
                 next(
                     keyword('in'),
                     letBody))),
-        ast_expression.LetExpression.create));
+        ast_expression.LetExpression.create);
 
 // Operators Expression
 ////////////////////////////////////////
-var unaryOperatorExpression = Parser('Unary Operator Expression',
+var unaryOperatorExpression = (Parser, 'Unary Operator Expression') <|
     bind(
         either(
             keyword('typeof'),
@@ -294,7 +294,7 @@ var unaryOperatorExpression = Parser('Unary Operator Expression',
                 'void',
                 '~',
                 '!')),
-        \{loc, value} -> always(ast_expression.UnaryOperatorExpression.create(loc, value))));
+        \{loc, value} -> always(ast_expression.UnaryOperatorExpression.create(loc, value)));
 
 var binaryOperatorExpression = Parser('Binary Operator Expression',
     bind(

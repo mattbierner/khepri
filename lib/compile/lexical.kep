@@ -266,9 +266,13 @@ var realBlock = \body ->
  * Test to see if the current scope already contains a binding for id.
  */
 var checkCanAddOwnBinding = \id, loc -> 
-    examineScope(\s -> s.hasOwnBinding(id) ?
-        error("'" + id + "' at:" + loc + " already bound for scope from:" + s.getBinding(id).loc) :
-        ok());
+    examineScope(\s -> !s.hasOwnBinding(id) ? ok() :
+        let
+            start = loc && loc.start,
+            binding = s.getBinding(id),
+            end = binding.loc && binding.loc.start
+        in
+            error("'" + id + "' at:" + start + " already bound for scope from:" + end));
 
 /**
  * 
@@ -572,6 +576,9 @@ var _check = function(node) {
         });
     
     case 'IdentifierPattern':
+        if (node.reserved)
+            return addReservedBinding(node.id.name, node.loc);
+        
         return seq(
             addUniqueImmutableBinding(node.id.name, node.loc),
             _check(node.init),
@@ -584,37 +591,39 @@ var _check = function(node) {
     case 'ImportPattern':
         return _check(node.pattern);
     
+   case 'AsPattern':
+        return examineScope(\s -> {
+            node.target.id = node.target.id || node.id;
+            return next(
+                _check(node.id),
+                _check(node.target));
+        });
+    
     case 'ArrayPattern':
         return examineScope(\s -> {
             if (!node.id) {
                 var unused = s.getUnusedId('__a');
-                var id = ast_pattern.IdentifierPattern.create(null,
+                var id = ast_pattern.IdentifierPattern.create(node.loc,
                     ast_value.Identifier.create(null, unused));
+                id.reserved = true;
                 node.id = id;
-                return next(
-                    addReservedBinding(unused),
-                    seqa(map(node.elements, _check)));
+                return _check(
+                    ast_pattern.AsPattern.create(null, id, node));
             }
-            return next(
-                _check(node.id),
-                seqa(map(node.elements, _check)));
+            return seqa(map(node.elements, _check));
         });
-    
+        
     case 'ObjectPattern':
         return examineScope(\s -> {
             if (!node.id) {
                 var unused = s.getUnusedId('__o');
-                var id = ast_pattern.IdentifierPattern.create(null,
+                var id = ast_pattern.IdentifierPattern.create(node.loc,
                     ast_value.Identifier.create(null, unused));
-                node.id = id;
-                
-                return next(
-                    addReservedBinding(unused),
-                    seqa(map(node.elements, _check)));
+                id.reserved = true;
+                return _check(
+                    ast_pattern.AsPattern.create(null, id, node));
             }
-            return next(
-                _check(node.id),
-                seqa(map(node.elements, _check)));
+            return seqa(map(node.elements, _check));
         });
     
     case 'ObjectPatternElement':

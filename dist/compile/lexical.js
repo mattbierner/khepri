@@ -2,7 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value"], (function(require, exports, ast_node, ast_pattern, ast_value) {
+define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value"], (function(require, exports,
+    ast_node, ast_pattern, ast_value) {
     "use strict";
     var check;
     var ast_node = ast_node,
@@ -12,10 +13,11 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     var reduce = Function.prototype.call.bind(Array.prototype.reduce);
     var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
     var copy = (function(obj) {
-        return Object.keys(obj).reduce((function(p, c) {
-            (p[c] = obj[c]);
-            return p;
-        }), new(obj.constructor)());
+        return Object.keys(obj)
+            .reduce((function(p, c) {
+                (p[c] = obj[c]);
+                return p;
+            }), new(obj.constructor)());
     });
     var defineProperty = (function(obj, prop, descriptor) {
         return Object.defineProperty(copy(obj), prop, descriptor);
@@ -28,7 +30,6 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     var trampoline = (function(f) {
         var value = f;
         while ((value && value._next))(value = value[0].apply(undefined, value[1]));
-
         return value;
     });
     var State = (function(realScope, scope) {
@@ -93,7 +94,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                         newState = State.setScope(s, scope);
                     return ok(scope, newState);
                 }
-            })();
+            })
+                .call(this);
         });
     });
     var modifyRealScope = (function(f) {
@@ -104,7 +106,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                         newState = State.setRealScope(s, scope);
                     return ok(scope, newState);
                 }
-            })();
+            })
+                .call(this);
         });
     });
     var setScope = (function(s) {
@@ -129,7 +132,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         return (this.hasOwnBinding(id) || (this.outer && this.outer.hasBinding(id)));
     }));
     (Scope.prototype.getBinding = (function(id) {
-        return (this.hasOwnBinding(id) ? this.record[id] : (this.outer ? this.outer.getBinding(id) : null));
+        return (this.hasOwnBinding(id) ? this.record[id] : (this.outer ? this.outer.getBinding(id) :
+            null));
     }));
     (Scope.prototype.hasOwnMapping = (function(id) {
         return Object.prototype.hasOwnProperty.call(this.mapping, id);
@@ -142,12 +146,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     }));
     (Scope.prototype.getUnusedId = (function(id) {
         if (!this.hasBinding(id)) return id;
-
         for (var i = 0;;
             (i = (i + 1)))
             if (!this.hasBinding((id + i))) return (id + i);
-
-
     }));
     (Scope.addBinding = (function(s, id, info) {
         return new(Scope)(defineProperty(s.record, id, ({
@@ -201,12 +202,22 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     });
     var checkCanAddOwnBinding = (function(id, loc) {
         return examineScope((function(s) {
-            return (s.hasOwnBinding(id) ? error(((((("'" + id) + "' at:") + loc) + " already bound for scope from:") + s.getBinding(id).loc)) : ok());
+            return (!s.hasOwnBinding(id) ? ok() : (function() {
+                    {
+                        var start = (loc && loc.start),
+                            binding = s.getBinding(id),
+                            end = (binding.loc && binding.loc.start);
+                        return error(((((("'" + id) + "' at:") + start) +
+                            " already bound for scope from:") + end));
+                    }
+                })
+                .call(this));
         }));
     });
     var hasBinding = (function(id, loc) {
         return examineScope((function(s) {
-            return (s.hasBinding(id) ? ok() : error(((("Undeclared identifier:'" + id) + "' at:") + loc)));
+            return (s.hasBinding(id) ? ok() : error(((("Undeclared identifier:'" + id) + "' at:") +
+                loc)));
         }));
     });
     var hasFreeBinding = (function(id, loc) {
@@ -214,19 +225,23 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             return (function() {
                 {
                     var current = s.getBinding(id);
-                    return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") + loc)) : ok());
+                    return (current.reserved ? error(((("Undeclared identifier:'" + id) +
+                        "' at:") + loc)) : ok());
                 }
-            })();
+            })
+                .call(this);
         })));
     });
     var checkCanAssign = (function(id, loc) {
         return examineScope((function(s) {
             return (s.hasBinding(id) ? (function() {
-                {
-                    var b = s.getBinding(id);
-                    return (b.mutable ? ok() : error(((("Assign to immutable variable:'" + id) + "' at:") + loc)));
-                }
-            })() : ok());
+                    {
+                        var b = s.getBinding(id);
+                        return (b.mutable ? ok() : error(((("Assign to immutable variable:'" +
+                            id) + "' at:") + loc)));
+                    }
+                })
+                .call(this) : ok());
         }));
     });
     var getUnusedId = (function(id, loc) {
@@ -256,11 +271,13 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     var addUniqueMutableBinding = (function(id, loc) {
         return next(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
             return (s.hasOwnBinding(id) ? (function() {
-                {
-                    var new_id = s.getUnusedId(id);
-                    return seq(addMutableBinding(id, loc), addMutableBinding(new_id, loc), addMapping(id, new_id));
-                }
-            })() : addMutableBinding(id, loc));
+                    {
+                        var new_id = s.getUnusedId(id);
+                        return seq(addMutableBinding(id, loc), addMutableBinding(new_id,
+                            loc), addMapping(id, new_id));
+                    }
+                })
+                .call(this) : addMutableBinding(id, loc));
         })));
     });
     var addMutableBindingInRealBlock = (function(id, loc) {
@@ -272,11 +289,13 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     var addUnusedImmutableBinding = (function(id, loc) {
         return seq(examineRealScope((function(s) {
             return (s.hasOwnBinding(id) ? (function() {
-                {
-                    var new_id = s.getUnusedId(id);
-                    return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id, loc), addMapping(id, new_id));
-                }
-            })() : addImmutableBindingInRealBlock(id, loc));
+                    {
+                        var new_id = s.getUnusedId(id);
+                        return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
+                            loc), addMapping(id, new_id));
+                    }
+                })
+                .call(this) : addImmutableBindingInRealBlock(id, loc));
         })));
     });
     var addUniqueImmutableBinding = (function(id, loc) {
@@ -291,7 +310,6 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     });
     var _check = (function(node) {
         if ((!node || !(node instanceof ast_node.Node))) return ok();
-
         switch (node.type) {
             case "BlockStatement":
                 return block(seqa(map(node.body, _check)));
@@ -314,11 +332,13 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "DoWhileStatement":
                 return seq(block(_check(node.body)), block(_check(node.test)));
             case "ForStatement":
-                return block(seq(_check(node.init), _check(node.test), _check(node.update), block(_check(node.body))));
+                return block(seq(_check(node.init), _check(node.test), _check(node.update), block(_check(
+                    node.body))));
             case "UnaryExpression":
                 return _check(node.argument);
             case "AssignmentExpression":
-                return seq(_check(node.left), ((node.left.type === "Identifier") ? checkCanAssign(node.left.name, node.left.loc.start) : ok()), _check(node.right));
+                return seq(_check(node.left), ((node.left.type === "Identifier") ? checkCanAssign(node.left
+                    .name, node.left.loc.start) : ok()), _check(node.right));
             case "LogicalExpression":
             case "BinaryExpression":
                 return seq(_check(node.left), _check(node.right));
@@ -342,17 +362,22 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "UnaryOperatorExpression":
                 return ok();
             case "FunctionExpression":
-                return realBlock(seq((node.id ? addImmutableBinding(node.id.name, node.loc) : ok()), _check(node.params), seqa(map(node.body.body, _check))));
+                return realBlock(seq((node.id ? addImmutableBinding(node.id.name, node.loc) : ok()), _check(
+                    node.params), seqa(map(node.body.body, _check))));
             case "Program":
                 return (Array.isArray(node.body) ? seqa(map(node.body, _check)) : _check(node.body));
             case "Package":
-                return seq(addImmutableBindingInRealBlock("require", null), addImmutableBindingInRealBlock("exports", null), addImmutableBindingInRealBlock("module", null), _check(node.exports), ((node.body.type === "WithStatement") ? next(seqa(map(node.body.bindings, _check)), seqa(map(node.body.body.body, _check))) : seqa(map(node.body.body, _check))));
+                return seq(addImmutableBindingInRealBlock("require", null), addImmutableBindingInRealBlock(
+                    "exports", null), addImmutableBindingInRealBlock("module", null), _check(node.exports), (
+                    (node.body.type === "WithStatement") ? next(seqa(map(node.body.bindings, _check)),
+                        seqa(map(node.body.body.body, _check))) : seqa(map(node.body.body, _check))));
             case "PackageExports":
                 return seqa(map(node.exports, _check));
             case "PackageExport":
                 return addMutableBindingInRealBlock(node.id.name, node.loc);
             case "CatchClause":
-                return block(next(addImmutableBindingInRealBlock(node.param.name, node.param.loc), seqa(map(node.body.body, _check))));
+                return block(next(addImmutableBindingInRealBlock(node.param.name, node.param.loc), seqa(map(
+                    node.body.body, _check))));
             case "SwitchCase":
                 return seqa(map(node.consequent, _check));
             case "StaticDeclaration":
@@ -361,7 +386,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "StaticDeclarator":
                 return addImmutableBindingInRealBlock(node.id.name, node.loc);
             case "VariableDeclarator":
-                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), _check(node.id), _check(node.init));
+                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), _check(node.id), _check(
+                    node.init));
             case "Binding":
                 return next(_check(node.pattern), _check(node.value));
             case "EllipsisPattern":
@@ -372,34 +398,41 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                     return addReservedBinding(x, node.loc);
                 }));
             case "IdentifierPattern":
-                return seq(addUniqueImmutableBinding(node.id.name, node.loc), _check(node.init), examineScope((function(s) {
-                    if (s.hasMapping(node.id.name))(node.id.name = s.getMapping(node.id.name));
-
-                    return ok();
-                })));
+                if (node.reserved) return addReservedBinding(node.id.name, node.loc);
+                return seq(addUniqueImmutableBinding(node.id.name, node.loc), _check(node.init),
+                    examineScope((function(s) {
+                        if (s.hasMapping(node.id.name))(node.id.name = s.getMapping(node.id.name));
+                        return ok();
+                    })));
             case "ImportPattern":
                 return _check(node.pattern);
+            case "AsPattern":
+                return examineScope((function(s) {
+                    (node.target.id = (node.target.id || node.id));
+                    return next(_check(node.id), _check(node.target));
+                }));
             case "ArrayPattern":
                 return examineScope((function(s) {
                     if (!node.id) {
                         var unused = s.getUnusedId("__a");
-                        var id = ast_pattern.IdentifierPattern.create(null, ast_value.Identifier.create(null, unused));
+                        var id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
+                            .create(null, unused));
+                        (id.reserved = true);
                         (node.id = id);
-                        return next(addReservedBinding(unused), seqa(map(node.elements, _check)));
+                        return _check(ast_pattern.AsPattern.create(null, id, node));
                     }
-
-                    return next(_check(node.id), seqa(map(node.elements, _check)));
+                    return seqa(map(node.elements, _check));
                 }));
             case "ObjectPattern":
                 return examineScope((function(s) {
                     if (!node.id) {
                         var unused = s.getUnusedId("__o");
-                        var id = ast_pattern.IdentifierPattern.create(null, ast_value.Identifier.create(null, unused));
-                        (node.id = id);
-                        return next(addReservedBinding(unused), seqa(map(node.elements, _check)));
+                        var id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
+                            .create(null, unused));
+                        (id.reserved = true);
+                        return _check(ast_pattern.AsPattern.create(null, id, node));
                     }
-
-                    return next(_check(node.id), seqa(map(node.elements, _check)));
+                    return seqa(map(node.elements, _check));
                 }));
             case "ObjectPatternElement":
                 return (node.target ? _check(node.target) : _check(node.key));
@@ -408,13 +441,16 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "Identifier":
                 return examineScope((function(s) {
                     if (s.hasMapping(node.name))(node.name = s.getMapping(node.name));
-
                     return hasFreeBinding(node.name, node.loc);
                 }));
         }
         return ok();
     });
-    var builtins = ["Array", "Boolean", "Date", "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent", "Error", "eval", "EvalError", "Function", "Infinity", "isFinite", "isNaN", "JSON", "Math", "NaN", "Number", "Object", "parseInt", "parseFloat", "RangeError", "ReferenceError", "RegExp", "String", "SyntaxError", "TypeError", "undefined", "URIError"];
+    var builtins = ["Array", "Boolean", "Date", "decodeURI", "decodeURIComponent", "encodeURI",
+        "encodeURIComponent", "Error", "eval", "EvalError", "Function", "Infinity", "isFinite", "isNaN", "JSON",
+        "Math", "NaN", "Number", "Object", "parseInt", "parseFloat", "RangeError", "ReferenceError", "RegExp",
+        "String", "SyntaxError", "TypeError", "undefined", "URIError"
+    ];
     (check = (function(root, globals) {
         var g = (globals || builtins);
         var scope = g.reduce(Scope.addImmutableBinding, new(Scope)(({}), null, ({})));

@@ -6,8 +6,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/pattern",
     "khepri/parse/token_parser", "khepri/parse/value_parser"
 ], (function(require, exports, __o, __o0, ast_pattern, __o1, __o2, __o3) {
     "use strict";
-    var pattern, identifierPattern, sinkPattern, ellipsisPattern, importPattern, arrayPattern, objectPattern,
-            argumentList, argumentsPattern;
+    var pattern, topLevelPattern, identifierPattern, sinkPattern, ellipsisPattern, importPattern, arrayPattern,
+            objectPattern, argumentList, argumentsPattern, asPattern;
     var __o = __o,
         always = __o["always"],
         attempt = __o["attempt"],
@@ -35,7 +35,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/pattern",
         __o3 = __o3,
         identifier = __o3["identifier"],
         stringLiteral = __o3["stringLiteral"];
-    (pattern = (function() {
+    (topLevelPattern = (function() {
         var args = arguments;
         return pattern.apply(undefined, args);
     }));
@@ -49,34 +49,32 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/pattern",
     (ellipsisPattern = Parser("Ellipsis Pattern", bind(punctuator("..."), (function(x) {
         return always(ast_pattern.EllipsisPattern.create(x.loc));
     }))));
-    var as = optional(null, then(identifierPattern, punctuator("#")));
-    (arrayPattern = Parser("Array Pattern", nodea(enumeration(as, between(punctuator("["), punctuator("]"),
-        eager(sepBy1(sep, pattern)))), ast_pattern.ArrayPattern.create)));
-    var objectPatternElement = either(node(identifierPattern, (function(loc, key) {
+    (asPattern = Parser("As Pattern", nodea(enumeration(attempt(then(identifierPattern, punctuator("#"))),
+        topLevelPattern), ast_pattern.AsPattern.create)));
+    (arrayPattern = Parser("Array Pattern", node(between(punctuator("["), punctuator("]"), eager(sepBy1(sep,
+        topLevelPattern))), ast_pattern.ArrayPattern.create)));
+    var objectPatternElement = choice(nodea(enumeration(stringLiteral, next(punctuator(":"), topLevelPattern)),
+        ast_pattern.ObjectPatternElement.create), node(asPattern, (function(loc, key) {
         return ast_pattern.ObjectPatternElement.create(loc, key, null);
-    })), nodea(enumeration(stringLiteral, next(punctuator(":"), pattern)), ast_pattern.ObjectPatternElement
-        .create));
-    (objectPattern = Parser("Object Pattern", nodea(enumeration(as, between(punctuator("{"), punctuator("}"),
-        eager(sepBy1(sep, objectPatternElement)))), ast_pattern.ObjectPattern.create)));
+    })), node(identifierPattern, (function(loc, key) {
+        return ast_pattern.ObjectPatternElement.create(loc, key, null);
+    })));
+    (objectPattern = Parser("Object Pattern", node(between(punctuator("{"), punctuator("}"), eager(sepBy1(sep,
+        objectPatternElement))), ast_pattern.ObjectPattern.create)));
     (importPattern = Parser("Import Pattern", next(keyword("import"), nodea(enumeration(stringLiteral, choice(
-        sinkPattern, attempt(objectPattern), identifierPattern)), ast_pattern.ImportPattern.create))));
-    var argumentElements = (function() {
-        {
-            var argumentsPatternElement = choice(ellipsisPattern, sinkPattern, attempt(arrayPattern),
-                attempt(objectPattern), identifierPattern);
-            return eager(sepBy(sep, argumentsPatternElement));
-        }
-    })
-        .call(this);
+        sinkPattern, objectPattern, asPattern, identifierPattern)), ast_pattern.ImportPattern.create))));
+    (topLevelPattern = Parser("Top Level Pattern", choice(ellipsisPattern, sinkPattern, arrayPattern,
+        objectPattern, asPattern, identifierPattern)));
+    var argumentElements = eager(sepBy(sep, topLevelPattern));
     (argumentList = Parser("Argument List", node(argumentElements, (function(loc, elements) {
         return ast_pattern.ArgumentsPattern.create(loc, null, elements);
     }))));
     (argumentsPattern = Parser("Arguments Pattern", either(attempt(nodea(enumeration(optional(null,
             identifierPattern), between(punctuator("("), punctuator(")"), argumentElements)),
         ast_pattern.ArgumentsPattern.create)), argumentList)));
-    (pattern = Parser("Pattern", choice(ellipsisPattern, sinkPattern, importPattern, attempt(arrayPattern),
-        attempt(objectPattern), identifierPattern)));
+    (pattern = Parser("Pattern", choice(importPattern, topLevelPattern)));
     (exports.pattern = pattern);
+    (exports.topLevelPattern = topLevelPattern);
     (exports.identifierPattern = identifierPattern);
     (exports.sinkPattern = sinkPattern);
     (exports.ellipsisPattern = ellipsisPattern);
@@ -85,4 +83,5 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/pattern",
     (exports.objectPattern = objectPattern);
     (exports.argumentList = argumentList);
     (exports.argumentsPattern = argumentsPattern);
+    (exports.asPattern = asPattern);
 }))
