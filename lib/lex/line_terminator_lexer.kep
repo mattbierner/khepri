@@ -2,15 +2,15 @@
  * @fileOverview Khepri line terminators lexers.
  */
 package (
-    lf,
-    cr,
-    ls,
-    ps,
-    lineTerminator,
+    lf
+    cr
+    ls
+    ps
+    lineTerminator
     lineTerminatorSequence)
 with
-    import 'parse/parse' {always, choice, next, optional, Parser, token},
-    import 'parse/text' {character, characters}
+    import 'parse/parse' {always choice next optional Parser token},
+    import 'parse/text' {character characters}
 in {
 
 var lfChar = '\u000A',
@@ -55,7 +55,7 @@ lineTerminator = Parser('Line Terminator Lexer',
  * 
  * crlf sequences are returned as a single token.
  */
-lineTerminatorSequence = Parser('Line Terminator Sequence Lexer',
+lineTerminatorSequence = (Parser, 'Line Terminator Sequence Lexer') <|
     choice(
         lf,
         ls,
@@ -64,6 +64,6 @@ lineTerminatorSequence = Parser('Line Terminator Sequence Lexer',
             cr,
             optional(crChar,
                 next(lf,
-                    always(crChar + lfChar))))));
+                    always(crChar + lfChar)))));
 
 }

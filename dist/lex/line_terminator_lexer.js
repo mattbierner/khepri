@@ -24,7 +24,8 @@ define(["require", "exports", "parse/parse", "parse/text"], (function(require, e
     (ls = Parser("Line Separator Lexer", character(lsChar)));
     (ps = Parser("Paragraph Separator Lexer", character(psChar)));
     (lineTerminator = Parser("Line Terminator Lexer", characters([lfChar, crChar, lsChar, psChar])));
-    (lineTerminatorSequence = Parser("Line Terminator Sequence Lexer", choice(lf, ls, ps, next(cr, optional(crChar, next(lf, always((crChar + lfChar))))))));
+    (lineTerminatorSequence = Parser("Line Terminator Sequence Lexer", choice(lf, ls, ps, next(cr, optional(
+        crChar, next(lf, always((crChar + lfChar))))))));
     (exports.lf = lf);
     (exports.cr = cr);
     (exports.ls = ls);

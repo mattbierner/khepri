@@ -2,24 +2,24 @@
  * @fileOverview Khepri Statement parsers.
  */
 package (
-    blockStatement,
-    staticStatement,
-    variableStatement,
-    emptyStatement,
-    expressionStatement,
-    ifStatement,
-    withStatement,
-    iterationStatement,
-    continueStatement,
-    breakStatement,
-    returnStatement,
-    switchStatement,
-    throwStatement,
-    tryStatement,
-    debuggerStatement,
+    blockStatement
+    staticStatement
+    variableStatement
+    emptyStatement
+    expressionStatement
+    ifStatement
+    withStatement
+    iterationStatement
+    continueStatement
+    breakStatement
+    returnStatement
+    switchStatement
+    throwStatement
+    tryStatement
+    debuggerStatement
     statement)
 with
-    import 'parse/parse' parse {
+    import 'parse/parse' parse#{
         always,
         attempt,
         binds,
@@ -56,27 +56,27 @@ var statementList = eager(many(statement));
 
 // Block Statement
 ////////////////////////////////////////
-blockStatement = Parser('Block Statement',
+blockStatement = (Parser, 'Block Statement') <|
     node(
         between(punctuator('{'), punctuator('}'), 
             statementList),
-        ast_statement.BlockStatement.create));
+        ast_statement.BlockStatement.create);
 
 // Empty Statement
 ////////////////////////////////////////
-emptyStatement = Parser('Empty Statement',
+emptyStatement = (Parser, 'Empty Statement') <|
     node(
         punctuator(';'),
-        ast_statement.EmptyStatement.create));
+        ast_statement.EmptyStatement.create);
 
 // Debugger Statement
 ////////////////////////////////////////
-debuggerStatement = Parser('Debugger Statement',
+debuggerStatement = (Parser, 'Debugger Statement') <|
     node(
         next(
             keyword('debugger'),
             punctuator(';')),
-        ast_statement.DebuggerStatement.create));
+        ast_statement.DebuggerStatement.create);
 
 // Expression Statement
 ////////////////////////////////////////

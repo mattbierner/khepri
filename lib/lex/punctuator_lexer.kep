@@ -3,68 +3,68 @@
  */
 package (
 // Brackets and Braces
-    openBrace,
-    closeBrace,
-    openParenthesis,
-    closeParenthesis,
-    openBracket,
-    closeBracket,
-    period,
-    semicolon,
-    comma,
-    colon,
-    questionMark,
+    openBrace
+    closeBrace
+    openParenthesis
+    closeParenthesis
+    openBracket
+    closeBracket
+    period
+    semicolon
+    comma
+    colon
+    questionMark
     
 // Logical
-    logicalAnd,
-    logicalOr,
+    logicalAnd
+    logicalOr
 
 // Shifts
-    leftShift,
-    signedRightShift,
-    unsignedRightShift,
+    leftShift
+    signedRightShift
+    unsignedRightShift
 
 // Relational
-    lessThanOrEqualTo,
-    lessThan,
-    greaterThanOrEqualTo,
-    greaterThan,
+    lessThanOrEqualTo
+    lessThan
+    greaterThanOrEqualTo
+    greaterThan
 
 // Equality
-    strictEquals,
-    strictDoesNotEqual,
-    equals,
-    doesNotEqual,
+    strictEquals
+    strictDoesNotEqual
+    equals
+    doesNotEqual
     
 // bitwise
-    and,
-    or,
-    xor,
+    and
+    or
+    xor
     
 // Assignment Operators
-    assign,
+    assign
 
 // Additive Operators
-    logicalNot,
-    bitwiseNot,
+    logicalNot
+    bitwiseNot
 
 // Additive Operators
-    addition,
-    subtration,
+    addition
+    subtration
     
 // Multiplicative Operators
-    multiplication,
-    mod,
-    division,
+    multiplication
+    mod
+    division
 
 // lambda
-    lambda,
+    lambda
     
 // Punctuators
     punctuator)
 with
     import 'parse/parse' {Parser},
-    import 'parse/text' {character, string, trie}
+    import 'parse/text' {character string trie}
 in {
     
 /* Objects

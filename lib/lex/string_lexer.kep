@@ -1,56 +1,55 @@
 /**
- * @fileOverview Lexers for ECMAScript 5.1 string values.
+ * @fileOverview Khepri string literal lexers.
  */
 package (
 // Constants
-    doubleQuote,
-    escape,
-    singleQuote,
-    lineContinuation,
+    doubleQuote
+    escape
+    singleQuote
+    lineContinuation
     
 // Escape Sequences
-    unicodeEscapeSequence,
-    hexEscapeSequence,
-    characterEscapeSequence,
-    escapeSequence,
+    unicodeEscapeSequence
+    hexEscapeSequence
+    characterEscapeSequence
+    escapeSequence
     
 // Single String Literal
-    singleStringCharacter,
-    singleStringCharacters,
-    singleStringLiteral,
+    singleStringCharacter
+    singleStringCharacters
+    singleStringLiteral
     
 // Double String Literal
-    doubleStringCharacter,
-    doubleStringCharacters,
-    doubleStringLiteral,
+    doubleStringCharacter
+    doubleStringCharacters
+    doubleStringLiteral
 
 // Literal
     stringLiteral)
 with
     import 'parse/parse' {
-        always,
-        attempt,
-        bind,
-        choice,
-        either,
-        eof,
-        many,
-        next,
-        sequence,
-        Parser,
-        test,
+        always
+        attempt
+        bind
+        choice
+        either
+        eof
+        many
+        next
+        sequence
+        Parser
+        test
         token},
     import 'parse/text' {character},
-    import 'parse/lang' {between, times},
+    import 'parse/lang' {between times},
     import 'nu/stream' {foldl},
-    import 'khepri/lex/line_terminator_lexer' {lineTerminatorSequence, lineTerminator},
-    import 'khepri/lex/number_lexer' {decimalDigit, hexDigit}
+    import 'khepri/lex/line_terminator_lexer' {lineTerminatorSequence lineTerminator},
+    import 'khepri/lex/number_lexer' {decimalDigit hexDigit}
 in {
 
 var join = (foldl, (+), '');
 
-/* Helpers
- ******************************************************************************/
+
 var fromCharCodeParser =
     join
     \> \x -> parseInt(x, 16)
@@ -61,26 +60,22 @@ var fromCharCodeParser =
  ******************************************************************************/
 // Constants
 ////////////////////////////////////////
-doubleQuote = character('"');
-escape = character('\\');
-singleQuote = character("'");
+doubleQuote = Parser('Double Quote Lexer',
+    character('"'));
 
-/**
- * Lexer for string line continuation.
- * 
- * Returns an empty string.
- */
-lineContinuation = next(
-    next(escape, lineTerminatorSequence),
-    always(''));
+singleQuote = Parser('Single Quote Lexer',
+    character("'"));
+
+escape = Parser('String Escape Lexer',
+    character('\\'));
+
+lineContinuation = (Parser, 'String Line Continuation Lexer') <|
+    next(
+        next(escape, lineTerminatorSequence),
+        always(''));
 
 // Escape Character
 ////////////////////////////////////////
-/**
- * Lexer for a single escape character.
- * 
- * Returns the value represented by the escape character.
- */
 var singleEscapeCharacter = choice(
     character("'"),
     character('"'),
@@ -92,18 +87,12 @@ var singleEscapeCharacter = choice(
     next(character('t'), always('\u0009')),
     next(character('v'), always('\u000B')));
 
-/**
- * 
- */
 var escapeCharacter = choice(
     singleEscapeCharacter,
     decimalDigit,
     character('u'),
     character('x'));
 
-/**
- * Lexer for a string character which is not an escape character.
- */
 var nonEscapeCharacter = token(
     \tok ->
         !(test(escapeCharacter, tok) ||
@@ -111,38 +100,23 @@ var nonEscapeCharacter = token(
 
 // Escape Sequence
 ////////////////////////////////////////
-/**
- * Lexer for a hex escape sequence.
- * 
- * Returns the character defined by the escape sequence.
- */
 hexEscapeSequence = next(
     character('x'),
-    bind(times(2, hexDigit),
+    bind(
+        times(2, hexDigit),
         fromCharCodeParser));
 
-/**
- * Lexer for a unicode escape sequence.
- * 
- * Returns the unicode character defined by the escape sequence.
- */
 unicodeEscapeSequence = next(
     character('u'),
-    bind(times(4, hexDigit),
+    bind(
+        times(4, hexDigit),
         fromCharCodeParser));
 
-/**
- * Lexer for a character escape sequence.
- */
+
 characterEscapeSequence = either(
     singleEscapeCharacter,
     nonEscapeCharacter);
 
-/**
- * Lexer for an escape sequence.
- * 
- * Returns the character defined by the escape sequence.
- */
 escapeSequence = choice(
     characterEscapeSequence,
     sequence(

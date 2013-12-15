@@ -2,19 +2,19 @@
  * @fileOverview
  */
 package (
-    parserStream,
-    ParserPosition,
-    ParserState,
+    parserStream
+    ParserPosition
+    ParserState
     
-    parseInput,
+    parseInput
     parseStream)
 with
     import 'parse/parse' parse,
-    import 'nu/stream' {first, filter, isEmpty, rest, NIL, 'from': streamFrom},
-    import 'khepri/position' {SourceLocation, SourcePosition},
+    import 'nu/stream' {first filter isEmpty rest NIL 'from': streamFrom},
+    import 'khepri/position' {SourceLocation SourcePosition},
     import 'khepri/parse/program_parser' {program}
 in {
-    
+
 /* Streams
  ******************************************************************************/
 /**
@@ -24,8 +24,8 @@ in {
  * 
  * @return Stream suitable for parsing.
  */
-parserStream = let 
-    langElementFilter = \x -> {
+parserStream = (filter,
+    \x -> {
         switch (x.type) {
         case 'Whitespace':
         case 'LineTerminator':
@@ -34,9 +34,7 @@ parserStream = let
         default:
             return true;
         }
-    }
-in
-    (filter, langElementFilter);
+    });
 
 /* Position
  ******************************************************************************/
@@ -122,8 +120,7 @@ parseStream = \s ->
         program,
         new ParserState(
             parserStream(s),
-            ParserPosition.initial,
-            SourcePosition.initial));
+            ParserPosition.initial));
 
 /**
  * Parses a lex array into an AST.

@@ -2,29 +2,29 @@
  * @fileOverview Khepri lexers.
  */
 package (
-    literal,
-    token,
-    inputElement,
-    lexer,
-    lexManyState,
+    literal
+    token
+    inputElement
+    lexer
+    lexManyState
     lex)
 with
-    import 'parse/parse' parse {
-        always,
-        attempt,
-        binds,
-        bind,
-        choice,
-        either,
-        eof,
-        getPosition,
-        enumeration,
-        extract,
-        expected,
-        next,
-        many,
-        runState,
-        Parser,
+    import 'parse/parse' {
+        always
+        attempt
+        binds
+        bind
+        choice
+        either
+        eof
+        getPosition
+        enumeration
+        extract
+        expected
+        next
+        many
+        runState
+        Parser
         ParserState},
     import 'parse/lang' {then},
     import 'nu/stream' {memoStream, NIL, 'from': streamFrom},
@@ -117,6 +117,6 @@ lex = \input ->
         inputElement,
         new ParserState(
             streamFrom(input),
-            new SourcePosition(0, 0)));
+            SourcePosition.initial));
 
 }

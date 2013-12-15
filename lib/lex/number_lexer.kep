@@ -3,191 +3,136 @@
  */
 package (
 // Constants
-    decimal,
-    negativeSign,
-    positiveSign,
-    exponentIndicator,
-    hexIndicator,
+    decimal
+    negativeSign
+    positiveSign
+    exponentIndicator
+    hexIndicator
 
 // Digits
-    decimalDigit,
-    nonZeroDigit,
-    hexDigit,
-    decimalDigits,
-    hexDigits,
+    decimalDigit
+    nonZeroDigit
+    hexDigit
+    decimalDigits
+    hexDigits
 
 // Integer
-    unsignedInteger,
-    signedInteger,
+    unsignedInteger
+    signedInteger
 
 // Part
-    exponentPart,
+    exponentPart
 
 // Literals
-    hexIntegerLiteral,
-    decimalIntegerLiteral,
-    decimalLiteral,
+    hexIntegerLiteral
+    decimalIntegerLiteral
+    decimalLiteral
 
     numericLiteral)
 with
     import 'parse/parse' {
-        always,
-        attempt,
-        bind,
-        binds,
-        choice,
-        either,
-        enumeration,
-        expected,
-        many,
-        many1,
-        next,
-        optional,
+        always
+        attempt
+        bind
+        binds
+        choice
+        either
+        enumeration
+        expected
+        many
+        many1
+        next
+        optional
         Parser},
     import 'parse/lang' {then},
-    import 'parse/text' {character, match, string},
+    import 'parse/text' {character characters match string},
     import 'nu/stream' {foldl}
 in {
 
-var joinLexer = \p ->
+var join = \p ->
     bind(p, (foldl, (+), '') \> always);
 
 /* Lexers
  ******************************************************************************/
 // Constants
 ////////////////////////////////////////
-/**
- * Lexer that matches decimal character.
- */
 decimal = Parser('Decimal Lexer',
     character('.'));
 
-/**
- * Lexer that matches negative sign.
- */
 negativeSign = Parser('Negative Sign Lexer',
     character('-'));
 
-/**
- * Lexer that matches positive sign.
- */
 positiveSign = Parser('Positive Sign Lexer',
     character('+'));
 
-/**
- * Lexer that matches character that indicates the beginning of the exponent
- * part of a number.
- * Either: 'e' or 'E'.
- */
 exponentIndicator = Parser('Exponent Indicator Lexer',
-    match(`^e$`i));
+    characters('eE'));
 
-/**
- * Lexer that matches characters that indicate the beginning of a hex number,
- * Either: '0x' or '0X'.
- */
-hexIndicator = Parser('Hex Indicator Lexer',
+hexIndicator = (Parser, 'Hex Indicator Lexer') <|
     either(
         string('0x'),
-        string('0X')));
+        string('0X'));
 
 // Digits
 ////////////////////////////////////////
-/**
- * Lexer that matches any decimal number digit.
- * One of: '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
- */
 decimalDigit = Parser('Decimal Digit Lexer',
-    match(`^[0-9]$`));
+    characters('0123456789'));
 
-/**
- * Lexer that matches any non zero decimal number digit.
- * One of: '1', '2', '3', '4', '5', '6', '7', '8', '9'
- */
 nonZeroDigit = Parser('Non Zero Digit Lexer',
-    match(`^[1-9]$`));
+    characters('123456789'));
 
-/**
- * Lexer that matches any hex number digit.
- * One of: '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
- * 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F'
- */
- hexDigit = Parser('Hex Digit Lexer',
-     match(`^[0-9a-f]$`i));
+hexDigit = Parser('Hex Digit Lexer',
+    characters('0123456789abcdefABCDEF'));
 
-/**
- * Lexer that matches a string of one or more decimal digits.
- */
-decimalDigits = Parser('Decimal Digits Lexer',
-    joinLexer(many1(decimalDigit), ''));
-
-/**
- * Lexer that matches a string of one or more hex digits.
- */
-hexDigits = Parser('Hex Digits Lexer',
-    joinLexer(many1(hexDigit), ''));
-
-// Integer
+// Strings
 ////////////////////////////////////////
-/**
- * Lexer that matches an unsigned integer.
- * 
- * Returns the numeric value of the integer.
- */
-unsignedInteger = Parser('Unsigned Integer Lexer',
-    bind(decimalDigits, \t ->
-        always(parseInt(t))));
+decimalDigits = (Parser, 'Decimal Digits Lexer') <|
+    join <| many1(decimalDigit);
 
-/**
- * Lexer that matches a signed integer.
- * 
- * Returns the numeric value of the integer.
- */
-signedInteger = Parser('Signed Integer Lexer',
+hexDigits = (Parser, 'Hex Digits Lexer') <|
+    join <| many1(hexDigit);
+
+// Integers
+////////////////////////////////////////
+unsignedInteger = (Parser, 'Unsigned Integer Lexer') <|
+    bind(
+        decimalDigits,
+        parseInt \> always);
+
+
+signedInteger = (Parser, 'Signed Integer Lexer') <|
     either(
-        next(negativeSign,
-            bind(unsignedInteger, \num ->
-                always(-num))),
-        next(optional(null, positiveSign),
-            unsignedInteger)));
+        next(
+            negativeSign,
+            bind(
+                unsignedInteger,
+                (-, 0) \> always)),
+        next(
+            optional(null, positiveSign),
+            unsignedInteger));
 
-// Part
+var hexIntegerLiteralDigits = (Parser, 'Hex Integer Literal Digits Lexer') <|
+    bind(
+        hexDigits,
+        \num -> always(parseInt(num, 16)));
+// Parts
 ////////////////////////////////////////
-/**
- * Lexer that matches the exponent part of a number.
- * 
- * Returns the numeric value of the exponent part.
- */
-exponentPart = Parser('Exponent Part Lexer',
+exponentPart = (Parser, 'Exponent Part Lexer') <|
     next(
         exponentIndicator,
-        signedInteger));
-
-/**
- * Digits of a hex number literal.
- */
-var hexIntegerLiteralDigits = Parser('Hex Integer Literal Digits Lexer',
-    bind(hexDigits, \num ->
-        always(parseInt(num, 16))));
+        signedInteger);
 
 // Literals
 ////////////////////////////////////////
-/**
- * A hex number literal.
- */
-hexIntegerLiteral = Parser('Hex Integer Literal Lexer',
+hexIntegerLiteral = (Parser, 'Hex Integer Literal Lexer') <|
     next(
         hexIndicator,
-        bind(hexDigits, \num ->
-            always(parseInt(num, 16)))));
+        hexIntegerLiteralDigits);
 
-/**
- * A integer number literal.
- * 
- * Returns the number value of the input.
- */
-decimalIntegerLiteral = Parser('Decimal Integer Literal',
-    bind(decimalDigits, parseInt \> always));
+decimalIntegerLiteral = (Parser, 'Decimal Integer Literal') <|
+    bind(
+        decimalDigits,
+        parseInt \> always);
 
 /**
  * A decimal number literal.
@@ -197,7 +142,7 @@ decimalIntegerLiteral = Parser('Decimal Integer Literal',
  * 
  * @return Number value of the input.
  */
-decimalLiteral = Parser('Decimal Literal Lexer',
+decimalLiteral = (Parser, 'Decimal Literal Lexer') <|
     binds(
         enumeration(
             binds(
@@ -211,18 +156,18 @@ decimalLiteral = Parser('Decimal Literal Lexer',
                     always(parseFloat(whole + '.' + fractional))),
             optional(0, exponentPart)),
         \num, exp ->
-            always(num * Math.pow(10, parseInt(exp)))));
+            always(num * Math.pow(10, parseInt(exp))));
 
 /**
  * Literal for any numeric value
  * 
  * @return Number value of the input.
  */
-numericLiteral = Parser('Numeric Literal Lexer',
+numericLiteral = (Parser, 'Numeric Literal Lexer') <|
     either(
         next(
             attempt <| hexIndicator,
             hexIntegerLiteralDigits |> (expected, 'hex digits')),
-        decimalLiteral));
+        decimalLiteral);
 
 }

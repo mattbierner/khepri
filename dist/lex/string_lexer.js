@@ -54,10 +54,11 @@ define(["require", "exports", "parse/parse", "parse/text", "parse/lang", "nu/str
     })((function(x) {
         return parseInt(x, 16);
     }), join)));
-    (doubleQuote = character("\""));
-    (escape = character("\\"));
-    (singleQuote = character("'"));
-    (lineContinuation = next(next(escape, lineTerminatorSequence), always("")));
+    (doubleQuote = Parser("Double Quote Lexer", character("\"")));
+    (singleQuote = Parser("Single Quote Lexer", character("'")));
+    (escape = Parser("String Escape Lexer", character("\\")));
+    (lineContinuation = Parser("String Line Continuation Lexer", next(next(escape, lineTerminatorSequence),
+        always(""))));
     var singleEscapeCharacter = choice(character("'"), character("\""), character("\\"), next(character("b"),
         always("\b")), next(character("f"), always("\f")), next(character("n"), always("\n")), next(
         character("r"), always("\r")), next(character("t"), always("\t")), next(character("v"), always(

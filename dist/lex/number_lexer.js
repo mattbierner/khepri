@@ -26,11 +26,12 @@ define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/str
         then = __o0["then"],
         __o1 = __o1,
         character = __o1["character"],
+        characters = __o1["characters"],
         match = __o1["match"],
         string = __o1["string"],
         __o2 = __o2,
         foldl = __o2["foldl"];
-    var joinLexer = (function(p) {
+    var join = (function(p) {
         return bind(p, (function(f, g) {
             return (function(x) {
                 return f(g(x));
@@ -42,27 +43,32 @@ define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/str
     (decimal = Parser("Decimal Lexer", character(".")));
     (negativeSign = Parser("Negative Sign Lexer", character("-")));
     (positiveSign = Parser("Positive Sign Lexer", character("+")));
-    (exponentIndicator = Parser("Exponent Indicator Lexer", match(/^e$/i)));
+    (exponentIndicator = Parser("Exponent Indicator Lexer", characters("eE")));
     (hexIndicator = Parser("Hex Indicator Lexer", either(string("0x"), string("0X"))));
-    (decimalDigit = Parser("Decimal Digit Lexer", match(/^[0-9]$/)));
-    (nonZeroDigit = Parser("Non Zero Digit Lexer", match(/^[1-9]$/)));
-    (hexDigit = Parser("Hex Digit Lexer", match(/^[0-9a-f]$/i)));
-    (decimalDigits = Parser("Decimal Digits Lexer", joinLexer(many1(decimalDigit), "")));
-    (hexDigits = Parser("Hex Digits Lexer", joinLexer(many1(hexDigit), "")));
-    (unsignedInteger = Parser("Unsigned Integer Lexer", bind(decimalDigits, (function(t) {
-        return always(parseInt(t));
-    }))));
-    (signedInteger = Parser("Signed Integer Lexer", either(next(negativeSign, bind(unsignedInteger, (function(
-        num) {
-        return always(-num);
-    }))), next(optional(null, positiveSign), unsignedInteger))));
-    (exponentPart = Parser("Exponent Part Lexer", next(exponentIndicator, signedInteger)));
+    (decimalDigit = Parser("Decimal Digit Lexer", characters("0123456789")));
+    (nonZeroDigit = Parser("Non Zero Digit Lexer", characters("123456789")));
+    (hexDigit = Parser("Hex Digit Lexer", characters("0123456789abcdefABCDEF")));
+    (decimalDigits = Parser("Decimal Digits Lexer", join(many1(decimalDigit))));
+    (hexDigits = Parser("Hex Digits Lexer", join(many1(hexDigit))));
+    (unsignedInteger = Parser("Unsigned Integer Lexer", bind(decimalDigits, (function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })(always, parseInt))));
+    (signedInteger = Parser("Signed Integer Lexer", either(next(negativeSign, bind(unsignedInteger, (function(f,
+        g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })(always, (function(x, y) {
+            return (x - y);
+        })
+        .bind(null, 0)))), next(optional(null, positiveSign), unsignedInteger))));
     var hexIntegerLiteralDigits = Parser("Hex Integer Literal Digits Lexer", bind(hexDigits, (function(num) {
         return always(parseInt(num, 16));
     })));
-    (hexIntegerLiteral = Parser("Hex Integer Literal Lexer", next(hexIndicator, bind(hexDigits, (function(num) {
-        return always(parseInt(num, 16));
-    })))));
+    (exponentPart = Parser("Exponent Part Lexer", next(exponentIndicator, signedInteger)));
+    (hexIntegerLiteral = Parser("Hex Integer Literal Lexer", next(hexIndicator, hexIntegerLiteralDigits)));
     (decimalIntegerLiteral = Parser("Decimal Integer Literal", bind(decimalDigits, (function(f, g) {
         return (function(x) {
             return f(g(x));

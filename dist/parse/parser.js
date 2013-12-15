@@ -19,22 +19,16 @@ define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "kh
         SourcePosition = __o0["SourcePosition"],
         __o1 = __o1,
         program = __o1["program"];
-    (parserStream = (function() {
-            {
-                var langElementFilter = (function(x) {
-                    switch (x.type) {
-                        case "Whitespace":
-                        case "LineTerminator":
-                        case "Comment":
-                            return false;
-                        default:
-                            return true;
-                    }
-                });
-                return filter.bind(null, langElementFilter);
-            }
-        })
-        .call(this));
+    (parserStream = filter.bind(null, (function(x) {
+        switch (x.type) {
+            case "Whitespace":
+            case "LineTerminator":
+            case "Comment":
+                return false;
+            default:
+                return true;
+        }
+    })));
     (ParserPosition = (function(tokenPosition, sourcePosition) {
         (this.tokenPosition = tokenPosition);
         (this.sourcePosition = sourcePosition);
@@ -83,8 +77,7 @@ define(["require", "exports", "parse/parse", "nu/stream", "khepri/position", "kh
         })
     }));
     (parseStream = (function(s) {
-        return parse.runState(program, new(ParserState)(parserStream(s), ParserPosition.initial,
-            SourcePosition.initial));
+        return parse.runState(program, new(ParserState)(parserStream(s), ParserPosition.initial));
     }));
     (parseInput = (function(f, g) {
         return (function(x) {

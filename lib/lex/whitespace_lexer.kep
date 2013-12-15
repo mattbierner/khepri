@@ -2,19 +2,24 @@
  * @fileOverview Khepri whitespace lexers.
  */
 package (
-    tab,
-    vt,
-    ff,
-    sp,
-    nbsp,
-    bom,
-    usp,
+    tab
+    vt
+    ff
+    sp
+    nbsp
+    bom
+    usp
     
+   // whitespaceCharacter,
     whitespace)
 with
-    import 'parse/parse' {Parser, token},
-    import 'parse/text' {character, characters, match}
+    import 'parse/parse' {always, bind many1 Parser},
+    import 'parse/text' {character characters match},
+    import 'nu/stream' {foldl}
 in {
+
+var join = \p ->
+    bind(p, (foldl, (+), '') \> always);
 
 var tabChar = '\u0009',
     vtChar = '\u000B',
@@ -25,6 +30,8 @@ var tabChar = '\u0009',
 
 /* Lexers
  ******************************************************************************/
+// Constants
+////////////////////////////////////////
 /**
  * Tab
  */
@@ -60,10 +67,18 @@ bom = character(bomChar);
  */
 usp = match(`^\s$`);
 
+// Whitespace
+////////////////////////////////////////
 /**
- * A whitespace character.
+ * Any whitespace character.
  */
-whitespace = Parser('Whitespace Lexer',
-    characters([tabChar, vtChar, ffChar, spChar, nbspChar, bomChar]));
+whitespace = (Parser, 'Whitespace Character Lexer') <|
+    characters([tabChar, vtChar, ffChar, spChar, nbspChar, bomChar]);
+
+/**
+ * Many Whitespace characters
+ */
+//whitespace = (Parser, 'Whitespace Lexer') <|
+ //   join <| many1(whitespaceCharacter);
 
 }

@@ -3,14 +3,12 @@
  *   text.
  */
 package (
-    SourcePosition,
+    SourcePosition
     SourceLocation)
 with
     import 'parse/parse' parse
 in {
-    
-/* Positions
- ******************************************************************************/
+
 // SourcePosition
 ////////////////////////////////////////
 /**
