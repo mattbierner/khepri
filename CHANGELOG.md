@@ -4,12 +4,12 @@
 * Changed pattern and package syntax to allow all commas to be omitted.
 ** Existing patterns are not effected.
 * Changed aliased object and pattern syntax to to require the `#` symbol between
-  top level aliases and the pattern, `let list#[e0, e1] in ...`.
+  top level aliases and the pattern, `let list#[e0, e1] =[1,2] in ...`.
 * Fixed the syntax `function f(args(...)) {};` being allowed. Should always be
   `function f\args(...) -> { };` instead.
 * Improved error messages for patterns.
 * Allow unnamed as at the top level of object patterns: `let {x#{y}} = {} in y;`
-* Fixed imports being allowed in things like functions.
+* Fixed imports being allowed in elements like functions.
 
 ## 0.6.0 - December 9, 2013
 * Added `void` back.
