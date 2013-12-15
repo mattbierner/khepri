@@ -2,33 +2,33 @@
  * @fileOverview Khepri patterns parsers.
  */
 package (
-    pattern,
-    topLevelPattern,
+    pattern
+    topLevelPattern
     
-    identifierPattern,
-    sinkPattern,
-    ellipsisPattern,
+    identifierPattern
+    sinkPattern
+    ellipsisPattern
     
-    importPattern,
-    arrayPattern,
-    objectPattern,
+    importPattern
+    arrayPattern
+    objectPattern
     
-    argumentList,
-    argumentsPattern,
+    argumentList
+    argumentsPattern
     
     asPattern)
 with
-    import 'parse/parse' {always, attempt, bind, binds, choice, eager, either, enumeration, next, optional, Parser},
-    import 'parse/lang' {between, sepBy, sepBy1, then},
+    import 'parse/parse' {always attempt, bind, binds, choice, eager, either, expected enumeration next optional Parser},
+    import 'parse/lang' {between sepBy sepBy1 then},
     import 'khepri_ast/pattern' ast_pattern,
-    import 'khepri/parse/common' {node, nodea},
-    import 'khepri/parse/token_parser' {keyword, punctuator},
-    import 'khepri/parse/value_parser' {identifier, stringLiteral}
+    import 'khepri/parse/common' {node nodea},
+    import 'khepri/parse/token_parser' {keyword punctuator},
+    import 'khepri/parse/value_parser' {identifier stringLiteral}
 in {
 
 /* Circular
  ******************************************************************************/
-topLevelPattern = \args(...) -> pattern.apply(undefined, args);
+topLevelPattern = \args(...) -> topLevelPattern.apply(undefined, args);
 
 /* Parts
  ******************************************************************************/
@@ -73,7 +73,8 @@ asPattern = (Parser, 'As Pattern') <|
 arrayPattern = (Parser, 'Array Pattern') <|
     node(
         between(punctuator('['), punctuator(']'),
-            eager <| sepBy1(sep, topLevelPattern)),
+            eager <| sepBy1(sep, topLevelPattern)
+                |> (expected, "array pattern element")),
         ast_pattern.ArrayPattern.create);
 
 // Object Pattern
@@ -96,8 +97,8 @@ var objectPatternElement = choice(
 objectPattern = (Parser, 'Object Pattern') <|
     node(
         between(punctuator('{'), punctuator('}'),
-            eager <| sepBy1(sep,
-                objectPatternElement)),
+            eager <| sepBy1(sep, objectPatternElement)
+                |> (expected, "object pattern element")),
         ast_pattern.ObjectPattern.create);
 
 // Import Pattern
@@ -131,8 +132,7 @@ topLevelPattern = (Parser, 'Top Level Pattern') <|
 
 // Arguments Pattern
 ////////////////////////////////////////
-var argumentElements =  eager <| sepBy(sep,
-    topLevelPattern);
+var argumentElements = eager <| sepBy(sep, topLevelPattern);
 
 argumentList = (Parser, 'Argument List') <|
     node(

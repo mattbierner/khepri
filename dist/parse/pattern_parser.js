@@ -16,6 +16,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/pattern",
         choice = __o["choice"],
         eager = __o["eager"],
         either = __o["either"],
+        expected = __o["expected"],
         enumeration = __o["enumeration"],
         next = __o["next"],
         optional = __o["optional"],
@@ -37,7 +38,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/pattern",
         stringLiteral = __o3["stringLiteral"];
     (topLevelPattern = (function() {
         var args = arguments;
-        return pattern.apply(undefined, args);
+        return topLevelPattern.apply(undefined, args);
     }));
     var sep = optional(null, punctuator(","));
     (identifierPattern = Parser("Identifier Pattern", bind(identifier, (function(x) {
@@ -51,16 +52,17 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/pattern",
     }))));
     (asPattern = Parser("As Pattern", nodea(enumeration(attempt(then(identifierPattern, punctuator("#"))),
         topLevelPattern), ast_pattern.AsPattern.create)));
-    (arrayPattern = Parser("Array Pattern", node(between(punctuator("["), punctuator("]"), eager(sepBy1(sep,
-        topLevelPattern))), ast_pattern.ArrayPattern.create)));
+    (arrayPattern = Parser("Array Pattern", node(between(punctuator("["), punctuator("]"), expected(
+        "array pattern element", eager(sepBy1(sep, topLevelPattern)))), ast_pattern.ArrayPattern.create)));
     var objectPatternElement = choice(nodea(enumeration(stringLiteral, next(punctuator(":"), topLevelPattern)),
         ast_pattern.ObjectPatternElement.create), node(asPattern, (function(loc, key) {
         return ast_pattern.ObjectPatternElement.create(loc, key, null);
     })), node(identifierPattern, (function(loc, key) {
         return ast_pattern.ObjectPatternElement.create(loc, key, null);
     })));
-    (objectPattern = Parser("Object Pattern", node(between(punctuator("{"), punctuator("}"), eager(sepBy1(sep,
-        objectPatternElement))), ast_pattern.ObjectPattern.create)));
+    (objectPattern = Parser("Object Pattern", node(between(punctuator("{"), punctuator("}"), expected(
+            "object pattern element", eager(sepBy1(sep, objectPatternElement)))), ast_pattern.ObjectPattern
+        .create)));
     (importPattern = Parser("Import Pattern", next(keyword("import"), nodea(enumeration(stringLiteral, choice(
         sinkPattern, objectPattern, asPattern, identifierPattern)), ast_pattern.ImportPattern.create))));
     (topLevelPattern = Parser("Top Level Pattern", choice(ellipsisPattern, sinkPattern, arrayPattern,

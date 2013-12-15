@@ -246,23 +246,15 @@ thisExpression = node(
 
 // Let Expression
 ////////////////////////////////////////
-var letIdentifier = pattern.topLevelPattern |> (expected, 'pattern');
-
-/**
- * Parser for a let binding.
- */
 var letBinding = (Parser, 'Let Binding') <|
     nodea(
         enumeration(
             then(
-                letIdentifier,
+                pattern.topLevelPattern |> (expected, 'pattern'),
                 punctuator('=')),
             expression |> (expected, 'let binding expression')),
        ast_declaration.Binding.create);
 
-/**
- * Parser for a let expression.
- */
 letExpression = (Parser, 'Let Expression') <| let
     letBindings = sepBy1(punctuator(','),
         letBinding)
@@ -384,11 +376,8 @@ args = (Parser, 'Arguments') <|
             return args;
         });
 
-// Accessors
+// Accessor
 ////////////////////////////////////////
-/**
- * Parser for a dot accessor in a member expression.
- */
 dotAccessor = (Parser, 'Dot Accessor') <|
     node(
         next(
@@ -400,9 +389,6 @@ dotAccessor = (Parser, 'Dot Accessor') <|
             'computed': false
         }));
 
-/**
- * Parser for a bracket accessor in a member expression.
- */
 bracketAccessor = (Parser, 'Bracket Accessor') <|
     node(
         between(punctuator('['), punctuator(']'),
@@ -413,14 +399,13 @@ bracketAccessor = (Parser, 'Bracket Accessor') <|
             'computed': true
         }));
 
-/**
- * Parser for an accessor in a member expression.
- */
 accessor = (Parser, 'Accessor') <|
     either(
         dotAccessor,
         bracketAccessor);
 
+// Member Expression
+////////////////////////////////////////
 var accessorReducer = \p, c -> 
     ast_expression.MemberExpression.create(
         SourceLocation.merge(p.loc, c.loc),
@@ -428,31 +413,25 @@ var accessorReducer = \p, c ->
         c.property,
         c.computed);
 
-/**
- * 
- */
-memberExpression = Parser('Member Expression',
+memberExpression = (Parser, 'Member Expression') <|
     binds(
         enumeration(
             either(
                 newExpression,
                 primaryExpression),
             many(accessor)),
-        (foldl, accessorReducer) \>> always));
+        (foldl, accessorReducer) \>> always);
 
 // New Expression
 ////////////////////////////////////////
-/**
- * Parser for a new expression
- */
-newExpression = Parser('New Expression',
+newExpression = (Parser, 'New Expression') <|
     nodea(
         next(
             keyword('new'),
             enumeration(
                 memberExpression |> (expected, "member expression"),
                 optional([], args))),
-        ast_expression.NewExpression.create));
+        ast_expression.NewExpression.create);
 
 // Left Hand Side Expression
 ////////////////////////////////////////

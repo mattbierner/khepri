@@ -109,9 +109,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     var functionExpression = Parser("Function Expression", either(ecmaFunctionExpression,
         lambdaFunctionExpression));
     (thisExpression = node(keyword("this"), ast_expression.ThisExpression.create));
-    var letIdentifier = expected("pattern", pattern.topLevelPattern);
-    var letBinding = Parser("Let Binding", nodea(enumeration(then(letIdentifier, punctuator("=")), expected(
-        "let binding expression", expression)), ast_declaration.Binding.create));
+    var letBinding = Parser("Let Binding", nodea(enumeration(then(expected("pattern", pattern.topLevelPattern),
+        punctuator("=")), expected("let binding expression", expression)), ast_declaration.Binding.create));
     (letExpression = Parser("Let Expression", (function() {
             {
                 var letBindings = expected("let bindings", sepBy1(punctuator(","), letBinding)),
