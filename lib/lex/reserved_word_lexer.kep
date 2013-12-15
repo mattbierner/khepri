@@ -54,7 +54,7 @@ package (
    staticKeyword,
    yieldKeyword)
 with
-   import 'parse/parse'parse {attempt,choice,Parser},
+   import 'parse/parse'parse#{attempt,choice,Parser},
    import 'parse/text' {string,trie},
    import 'khepri/lex/boolean_lexer' {booleanLiteral},
    import 'khepri/lex/null_lexer' {nullLiteral}

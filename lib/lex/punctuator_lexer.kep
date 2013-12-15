@@ -64,25 +64,25 @@ package (
     punctuator)
 with
     import 'parse/parse' {Parser}
-    import 'parse/text' {character, string, trie}
+    import 'parse/text' {character string trie}
 in {
     
 /* Objects
  ******************************************************************************/
 var punctuators = [
-    '{', '}', '(', ')', '[', ']',
-    ',',  '.', ';', ':',
-    '?', '&&', '||',
-    '<<', '>>', '>>>',
-    '<=', '<', '>=', '>',
-    '===', '!==', '==', '!=',
-    '=',
-    '!', '~',
-    '&', '|', '^', 
-    '+', '-', '*', '/', '%',
-    '...',
-    '\\',  '->',
-    '\\>', '\\>>', '<\\', '<<\\', '|>', '<|',
+    '{' '}' '(' ')' '[' ']'
+    ','  '.' ';' ':'
+    '?' '&&' '||'
+    '<<' '>>' '>>>'
+    '<=' '<' '>=' '>'
+    '===' '!==' '==' '!='
+    '='
+    '!' '~'
+    '&' '|' '^' 
+    '+' '-' '*' '/' '%'
+    '...'
+    '\\'  '->'
+    '\\>' '\\>>' '<\\' '<<\\' '|>' '<|'
     '#'];
 
 /* Lexers
@@ -104,7 +104,7 @@ period = character('.');
 
 semicolon = character(';');
 
-comma = character(',');
+comma = character('');
 
 // Conditional
 ////////////////////////////////////////
@@ -181,7 +181,7 @@ lambda = string('->');
 /**
  * Lexer for punctuators excluding division punctuators.
  */
-punctuator = Parser('Punctuator Lexer',
+punctuator = Parser('Punctuator Lexer'
     trie(punctuators));
 
 }

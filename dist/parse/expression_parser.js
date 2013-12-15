@@ -66,7 +66,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         regularExpressionLiteral = __o5["regularExpressionLiteral"],
         pattern = pattern,
         __o6 = __o6,
-        logicalComma = __o6["logicalComma"];
+        logicalComma = __o6["logicalComma"],
+        noLineTerminator = __o6["noLineTerminator"];
     var sourceElements = (function() {
         var args = arguments; {
             var __o7 = require("khepri/parse/program_parser"),
@@ -171,12 +172,12 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         identifier, curryExpression, literal, arrayLiteral, objectLiteral, functionExpression)));
     (argumentList = Parser.bind(null, "Argument List")(eager(sepBy(logicalComma, expected("expression",
         expression)))));
-    (args = Parser("Arguments", node(between(punctuator("("), punctuator(")"), argumentList), (function(loc,
-        args) {
-        (args.loc = loc);
-        (args.argument = true);
-        return args;
-    }))));
+    (args = Parser("Arguments", node(between(noLineTerminator(punctuator("(")), punctuator(")"), argumentList), (
+        function(loc, args) {
+            (args.loc = loc);
+            (args.argument = true);
+            return args;
+        }))));
     (accessor = Parser.bind(null, "Accessor")(node(next(punctuator("."), either(bind(identifier, (function(x) {
         return always([false, x]);
     })), bind(between(punctuator("("), punctuator(")"), expression), (function(x) {
@@ -293,7 +294,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
             {
                 var binExpr = memo(binaryExpression);
                 return either(nodea(enumeration(attempt(then(binExpr, punctuator("?"))), then(
-                        conditionalExpression, punctuator(":")), conditionalExpression),
+                        conditionalExpression, punctuator(",")), conditionalExpression),
                     ast_expression.ConditionalExpression.create), binExpr);
             }
         })

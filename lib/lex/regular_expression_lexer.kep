@@ -2,48 +2,48 @@
  * @fileOverview Khepri regular expression lexers.
  */
 package (
-    regularExpressionNonTerminator,
-    regularExpressionBackslashSequence,
+    regularExpressionNonTerminator
+    regularExpressionBackslashSequence
     
 // Class
-    regularExpressionClassChar,
-    regularExpressionClassChars,
-    regularExpressionClass,
+    regularExpressionClassChar
+    regularExpressionClassChars
+    regularExpressionClass
     
 // Characters
-    regularExpressionChar,
-    regularExpressionChars,
-    regularExpressionFirstChar,
+    regularExpressionChar
+    regularExpressionChars
+    regularExpressionFirstChar
     
 // Parts
-    regularExpressionFlags,
-    regularExpressionBody,
+    regularExpressionFlags
+    regularExpressionBody
     
 // Regex Literal
     regularExpressionLiteral)
 with
     import 'parse/parse' {
-        always,
-        attempt,
-        bind,
-        binds,
-        choice,
-        cons,
-        either,
-        enumeration,
-        many,
-        next,
-        Parser,
-        token,
-        test},
-    import 'parse/lang' {between},
-    import 'parse/text' {character},
-    import 'nu/stream' {foldl},
-    import 'khepri/lex/identifier_lexer' {identifierPart},
+        always
+        attempt
+        bind
+        binds
+        choice
+        cons
+        either
+        enumeration
+        many
+        next
+        Parser
+        token
+        test}
+    import 'parse/lang' {between}
+    import 'parse/text' {character}
+    import 'nu/stream' {foldl}
+    import 'khepri/lex/identifier_lexer' {identifierPart}
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 
-var join = (foldl, (+), '');
+var join = (foldl, (+) '');
 
 /* Lexers
  ******************************************************************************/
@@ -53,28 +53,28 @@ var join = (foldl, (+), '');
  * Lexer for non terminator character in a regular expression.
  */
 regularExpressionNonTerminator = token(
-    (!) <\ (test, lineTerminator));
+    (!) <\ (test lineTerminator));
 
 /**
  * Lexer for regular expression backslash sequence.
  */
 regularExpressionBackslashSequence = next(
-    character('\\'),
+    character('\\')
     bind(regularExpressionNonTerminator,
-        (+, '\\') \> always));
+        (+ '\\') \> always));
 
 // Class
 ////////////////////////////////////////
 regularExpressionClassChar = either(
     attempt <| token(\tok ->
-        !test(lineTerminator, tok) &&
-            tok !== ']' && tok !== '\\'),
+        !test(lineTerminator tok) &&
+            tok !== ']' && tok !== '\\')
     regularExpressionBackslashSequence);
 
 regularExpressionClassChars = many(regularExpressionClassChar);
 
-regularExpressionClass = between(character('['), character(']'), 
-    bind(regularExpressionClassChars, \body ->
+regularExpressionClass = between(character('[') character(']') 
+    bind(regularExpressionClassChars \body ->
         always('[' + join(body) + ']')));
 
 // Characters
@@ -85,9 +85,9 @@ regularExpressionClass = between(character('['), character(']'),
 regularExpressionFirstChar = choice(
     token(
         \tok ->
-            !test(lineTerminator, tok) &&
-                tok !== '*' && tok !== '\\' && tok !== '`' && tok !== '['),
-    regularExpressionBackslashSequence,
+            !test(lineTerminator tok) &&
+                tok !== '*' && tok !== '\\' && tok !== '`' && tok !== '[')
+    regularExpressionBackslashSequence
     regularExpressionClass);
 
 /**
@@ -96,9 +96,9 @@ regularExpressionFirstChar = choice(
 regularExpressionChar =  choice(
     token(
         \tok ->
-            !test(lineTerminator, tok) &&
-                tok !== '\\' && tok !== '`' && tok !== '['),
-    regularExpressionBackslashSequence,
+            !test(lineTerminator tok) &&
+                tok !== '\\' && tok !== '`' && tok !== '[')
+    regularExpressionBackslashSequence
     regularExpressionClass);
 
 /**
@@ -117,7 +117,7 @@ regularExpressionFlags = many(identifierPart);
  * Lexer for the body of a regular expression
  */
 regularExpressionBody = bind(
-    cons(regularExpressionFirstChar, regularExpressionChars),
+    cons(regularExpressionFirstChar regularExpressionChars)
     join \> always);
 
 // Literal
@@ -125,12 +125,12 @@ regularExpressionBody = bind(
 /**
  * Lexer for regular expression literals.
  */
-regularExpressionLiteral = Parser('Regular Expression Lexer',
+regularExpressionLiteral = Parser('Regular Expression Lexer'
     binds(
         enumeration(
-            between(character('`'), character('`'),
-                regularExpressionBody),
-            regularExpressionFlags),
-        \body, flags -> always(new RegExp(body, join(flags)))));
+            between(character('`') character('`')
+                regularExpressionBody)
+            regularExpressionFlags)
+        \body flags -> always(new RegExp(body join(flags)))));
 
 }

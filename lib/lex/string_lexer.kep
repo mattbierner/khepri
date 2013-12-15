@@ -3,48 +3,48 @@
  */
 package (
 // Constants
-    doubleQuote,
-    escape,
-    singleQuote,
-    lineContinuation,
+    doubleQuote
+    escape
+    singleQuote
+    lineContinuation
     
 // Escape Sequences
-    unicodeEscapeSequence,
-    hexEscapeSequence,
-    characterEscapeSequence,
-    escapeSequence,
+    unicodeEscapeSequence
+    hexEscapeSequence
+    characterEscapeSequence
+    escapeSequence
     
 // Single String Literal
-    singleStringCharacter,
-    singleStringCharacters,
-    singleStringLiteral,
+    singleStringCharacter
+    singleStringCharacters
+    singleStringLiteral
     
 // Double String Literal
-    doubleStringCharacter,
-    doubleStringCharacters,
-    doubleStringLiteral,
+    doubleStringCharacter
+    doubleStringCharacters
+    doubleStringLiteral
 
 // Literal
     stringLiteral)
 with
     import 'parse/parse' {
-        always,
-        attempt,
-        bind,
-        choice,
-        either,
-        eof,
-        many,
-        next,
-        sequence,
-        Parser,
-        test,
-        token},
-    import 'parse/text' {character},
-    import 'parse/lang' {between, times},
-    import 'nu/stream' {foldl},
-    import 'khepri/lex/line_terminator_lexer' {lineTerminatorSequence, lineTerminator},
-    import 'khepri/lex/number_lexer' {decimalDigit, hexDigit}
+        always
+        attempt
+        bind
+        choice
+        either
+        eof
+        many
+        next
+        sequence
+        Parser
+        test
+        token}
+    import 'parse/text' {character}
+    import 'parse/lang' {between times}
+    import 'nu/stream' {foldl}
+    import 'khepri/lex/line_terminator_lexer' {lineTerminatorSequence lineTerminator}
+    import 'khepri/lex/number_lexer' {decimalDigit hexDigit}
 in {
 
 var join = (foldl, (+), '');
@@ -53,7 +53,7 @@ var join = (foldl, (+), '');
  ******************************************************************************/
 var fromCharCodeParser =
     join
-    \> \x -> parseInt(x, 16)
+    \> \x -> parseInt(x 16)
     \> String.fromCharCode
     \> always;
 
@@ -71,7 +71,7 @@ singleQuote = character("'");
  * Returns an empty string.
  */
 lineContinuation = next(
-    next(escape, lineTerminatorSequence),
+    next(escape lineTerminatorSequence)
     always(''));
 
 // Escape Character
@@ -82,23 +82,23 @@ lineContinuation = next(
  * Returns the value represented by the escape character.
  */
 var singleEscapeCharacter = choice(
-    character("'"),
-    character('"'),
-    character('\\'),
-    next(character('b'), always('\u0008')),
-    next(character('f'), always('\u000C')),
-    next(character('n'), always('\u000A')),
-    next(character('r'), always('\u000D')),
-    next(character('t'), always('\u0009')),
-    next(character('v'), always('\u000B')));
+    character("'")
+    character('"')
+    character('\\')
+    next(character('b') always('\u0008'))
+    next(character('f') always('\u000C'))
+    next(character('n') always('\u000A'))
+    next(character('r') always('\u000D'))
+    next(character('t') always('\u0009'))
+    next(character('v') always('\u000B')));
 
 /**
  * 
  */
 var escapeCharacter = choice(
-    singleEscapeCharacter,
-    decimalDigit,
-    character('u'),
+    singleEscapeCharacter
+    decimalDigit
+    character('u')
     character('x'));
 
 /**
@@ -106,8 +106,8 @@ var escapeCharacter = choice(
  */
 var nonEscapeCharacter = token(
     \tok ->
-        !(test(escapeCharacter, tok) ||
-            test(lineTerminator, tok)));
+        !(test(escapeCharacter tok) ||
+            test(lineTerminator tok)));
 
 // Escape Sequence
 ////////////////////////////////////////
@@ -117,8 +117,8 @@ var nonEscapeCharacter = token(
  * Returns the character defined by the escape sequence.
  */
 hexEscapeSequence = next(
-    character('x'),
-    bind(times(2, hexDigit),
+    character('x')
+    bind(times(2 hexDigit)
         fromCharCodeParser));
 
 /**
@@ -127,15 +127,15 @@ hexEscapeSequence = next(
  * Returns the unicode character defined by the escape sequence.
  */
 unicodeEscapeSequence = next(
-    character('u'),
-    bind(times(4, hexDigit),
+    character('u')
+    bind(times(4 hexDigit)
         fromCharCodeParser));
 
 /**
  * Lexer for a character escape sequence.
  */
 characterEscapeSequence = either(
-    singleEscapeCharacter,
+    singleEscapeCharacter
     nonEscapeCharacter);
 
 /**
@@ -144,14 +144,14 @@ characterEscapeSequence = either(
  * Returns the character defined by the escape sequence.
  */
 escapeSequence = choice(
-    characterEscapeSequence,
+    characterEscapeSequence
     sequence(
-        character('0'),
+        character('0')
         either(
-            eof,
-            token((!) <\ (test, decimalDigit))),
-        always('\u0000')),
-    hexEscapeSequence,
+            eof
+            token((!) <\ (test decimalDigit)))
+        always('\u0000'))
+    hexEscapeSequence
     unicodeEscapeSequence);
 
 // Single String Literal
@@ -160,12 +160,12 @@ escapeSequence = choice(
  * Lexer for a valid single string character.
  */
 singleStringCharacter = choice(
-    attempt <| lineContinuation,
-    next(escape, escapeSequence),
+    attempt <| lineContinuation
+    next(escape escapeSequence)
     token(\tok ->
-        !(test(singleQuote, tok) ||
-            test(escape, tok) || 
-            test(lineTerminator, tok))));
+        !(test(singleQuote tok) ||
+            test(escape tok) || 
+            test(lineTerminator tok))));
 
 /**
  * Lexer for a sequence of single string characters.
@@ -177,9 +177,9 @@ singleStringCharacters = many(singleStringCharacter);
  * 
  * Returns the value of the string enclosed in the single quoted string literal.
  */
-singleStringLiteral = Parser('Single String Literal',
-    between(singleQuote, singleQuote,
-        bind(singleStringCharacters,
+singleStringLiteral = Parser('Single String Literal'
+    between(singleQuote singleQuote
+        bind(singleStringCharacters
             join \> always)));
 
 // Double String Literal
@@ -188,12 +188,12 @@ singleStringLiteral = Parser('Single String Literal',
  * Lexer for a valid double string character
  */
 doubleStringCharacter = choice(
-    attempt <| lineContinuation,
-    next(escape, escapeSequence),
+    attempt <| lineContinuation
+    next(escape escapeSequence)
     token(\tok ->
-        !(test(doubleQuote, tok) ||
-            test(escape, tok) ||
-            test(lineTerminator, tok))));
+        !(test(doubleQuote tok) ||
+            test(escape tok) ||
+            test(lineTerminator tok))));
 
 /**
  * Lexer for a sequence of double string characters.
@@ -205,9 +205,9 @@ doubleStringCharacters = many(doubleStringCharacter);
  * 
  * Returns the value of the string enclosed in the double quoted string literal.
  */
-doubleStringLiteral = Parser('Double String Literal',
-    between(doubleQuote, doubleQuote,
-        bind(doubleStringCharacters,
+doubleStringLiteral = Parser('Double String Literal'
+    between(doubleQuote doubleQuote
+        bind(doubleStringCharacters
             join \> always)));
 
 // String Literal
@@ -217,9 +217,9 @@ doubleStringLiteral = Parser('Double String Literal',
  * 
  * Returns the value of the string enclosed in the string literal.
  */
-stringLiteral = Parser('Sting Literal Lexer',
+stringLiteral = Parser('Sting Literal Lexer'
     either(
-        singleStringLiteral,
+        singleStringLiteral
         doubleStringLiteral));
 
 }

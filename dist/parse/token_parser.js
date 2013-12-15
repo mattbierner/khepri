@@ -4,7 +4,8 @@
 */
 define(["require", "exports", "parse/parse"], (function(require, exports, parse) {
     "use strict";
-    var punctuator, keyword, identifier, anyIdentifier, nullLiteral, booleanLiteral, numericLiteral, stringLiteral, regularExpressionLiteral;
+    var punctuator, keyword, identifier, anyIdentifier, nullLiteral, booleanLiteral, numericLiteral,
+            stringLiteral, regularExpressionLiteral;
     var parse = parse;
     var indexOf = Function.prototype.call.bind(Array.prototype.indexOf);
     var join = Function.prototype.call.bind(Array.prototype.join);
@@ -23,7 +24,7 @@ define(["require", "exports", "parse/parse"], (function(require, exports, parse)
             var options = arguments;
             return parse.token((function(tok) {
                 return ((tok.type === type) && (indexOf(options, tok.value) >= 0));
-            }), expectError(join(options, ", ")));
+            }), expectError(join(options, " ")));
         });
     });
     (punctuator = selectAny("Punctuator"));

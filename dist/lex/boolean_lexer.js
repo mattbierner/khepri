@@ -12,9 +12,9 @@ define(["require", "exports", "parse/parse", "parse/text"], (function(require, e
         Parser = __o["Parser"],
         __o0 = __o0,
         string = __o0["string"];
-    (trueLiteral = Parser("True Literal Lexer", next(string("true"), always(true))));
-    (falseLiteral = Parser("False Literal Lexer", next(string("false"), always(false))));
-    (booleanLiteral = Parser("Boolean Literal Lexer", either(trueLiteral, falseLiteral)));
+    (trueLiteral = Parser.bind(null, "True Literal Lexer")(next(string("true"), always(true))));
+    (falseLiteral = Parser.bind(null, "False Literal Lexer")(next(string("false"), always(false))));
+    (booleanLiteral = Parser.bind(null, "Boolean Literal Lexer")(either(trueLiteral, falseLiteral)));
     (exports.trueLiteral = trueLiteral);
     (exports.falseLiteral = falseLiteral);
     (exports.booleanLiteral = booleanLiteral);

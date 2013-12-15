@@ -27,7 +27,7 @@ define(["require", "exports", "parse/parse", "parse/text"], (function(require, e
     (closeBracket = character("]"));
     (period = character("."));
     (semicolon = character(";"));
-    (comma = character(","));
+    (comma = character(""));
     (colon = character(":"));
     (questionMark = character("?"));
     (logicalAnd = string("&&"));

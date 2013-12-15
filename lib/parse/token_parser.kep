@@ -2,15 +2,15 @@
  * @fileOverview Parsers for working with lex tokens.
  */
 package (
-    punctuator,
-    keyword,
-    identifier,
-    anyIdentifier,
+    punctuator
+    keyword
+    identifier
+    anyIdentifier
     
-    nullLiteral,
-    booleanLiteral,
-    numericLiteral,
-    stringLiteral,
+    nullLiteral
+    booleanLiteral
+    numericLiteral
+    stringLiteral
     regularExpressionLiteral)
 with
     import 'parse/parse' parse
@@ -21,19 +21,19 @@ var indexOf = Function.prototype.call.bind(Array.prototype.indexOf);
 var join = Function.prototype.call.bind(Array.prototype.join);
 
 var expectError = \msg ->
-    \pos, tok ->
+    \pos tok ->
         new parse.ExpectError(pos, msg, (tok === null ? "end of input" : tok.value));
 
-var typeParser = \type, msg ->
+var typeParser = \type msg ->
     parse.token(
-        \tok -> (tok.type === type),
+        \tok -> (tok.type === type)
         expectError(msg));
 
 var selectAny = \type ->
     \options(...) ->
         parse.token(
-            \tok -> (tok.type === type && indexOf(options, tok.value) >= 0),
-            expectError(join(options, ', ')));
+            \tok -> (tok.type === type && indexOf(options tok.value) >= 0)
+            expectError(join(options ' ')));
 
 /* Parsers
  ******************************************************************************/
@@ -41,18 +41,18 @@ punctuator = selectAny('Punctuator');
 
 keyword = selectAny('Keyword');
 
-anyIdentifier = typeParser('Identifier', 'any identifier');
+anyIdentifier = typeParser('Identifier' 'any identifier');
 
 identifier = selectAny('Identifier');
 
-nullLiteral = typeParser('Null', 'Null literal');
+nullLiteral = typeParser('Null' 'Null literal');
 
-booleanLiteral = typeParser('Boolean', 'boolean literal');
+booleanLiteral = typeParser('Boolean' 'boolean literal');
 
-numericLiteral = typeParser('Number', 'numeric literal');
+numericLiteral = typeParser('Number' 'numeric literal');
 
-stringLiteral = typeParser('String', 'string literal');
+stringLiteral = typeParser('String' 'string literal');
 
-regularExpressionLiteral = typeParser('RegularExpression', 'regular expression literal');
+regularExpressionLiteral = typeParser('RegularExpression' 'regular expression literal');
 
 }

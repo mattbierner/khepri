@@ -2,6 +2,9 @@
  * @fileOverview 
  */
 package (
+    lineTerminator,
+    noLineTerminator,
+        
     logicalComma)
 with
     import 'parse/parse' {
@@ -14,13 +17,15 @@ with
     import 'khepri/parse/token_parser' {keyword punctuator}
 in {
 
-var lineTerminator = look <| token <|\tok -> tok.lineTerminator;
+lineTerminator = look <| token <|\tok -> tok.lineTerminator;
 
-logicalComma = (Parser, 'Logical Comma') <|
+noLineTerminator = look <| token <|\tok -> !tok.lineTerminator;
+
+logicalComma = (Parser 'Logical Comma') <|
     choice(
         punctuator(',')
         lineTerminator
-        eof,
+        eof
         always());
 
 }

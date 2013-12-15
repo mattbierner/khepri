@@ -26,8 +26,8 @@ with
         RecParser
         test
         token}
-    import 'parse/text' {character, string}
-    import 'nu/stream' {foldl, NIL}
+    import 'parse/text' {character string}
+    import 'nu/stream' {foldl NIL}
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {
 
@@ -47,7 +47,7 @@ singleLineCommentMarker = string('//');
  * Lexer for a valid character in a single line comment.
  */
 singleLineCommentChar = token(
-    (!) <\ (test, lineTerminator));
+    (!) <\ (test lineTerminator));
 
 /**
  * Lexer for the characters in a single line comment.
@@ -59,7 +59,7 @@ singleLineCommentChars = many(singleLineCommentChar);
  * 
  * Returns the contents of the comment.
  */
-singleLineComment = (Parser, 'Single Line Comment Lexer') <|
+singleLineComment = (Parser 'Single Line Comment Lexer') <|
     next(
         singleLineCommentMarker
         join(singleLineCommentChars));
@@ -79,21 +79,21 @@ multiLineCommentEndMarker = string('*/');
 /**
  * Lexer for string of characters inside of multi line comment.
  */
-multiLineCommentChars = (RecParser, 'Multi Line Comment Characters Lexer') <|\self ->
+multiLineCommentChars = (RecParser 'Multi Line Comment Characters Lexer') <|\self ->
     either(
         next(
-            character('*'),
+            character('*')
             either(
-                next(character('/'), always(NIL))
-                cons(always('*'), self))),
-        cons(anyToken, self));
+                next(character('/') always(NIL))
+                cons(always('*') self)))
+        cons(anyToken self));
 
 /**
  * Lexer for a multi line comment.
  * 
  * Returns the contents of the comment.
  */
-multiLineComment = (Parser, 'Multi Line Comment Lexer') <|
+multiLineComment = (Parser 'Multi Line Comment Lexer') <|
     next(
         multiLineCommentStartMarker
         join(multiLineCommentChars));
@@ -103,7 +103,7 @@ multiLineComment = (Parser, 'Multi Line Comment Lexer') <|
 /**
  * Lexer for any ECMAScript 5.1 comment
  */
-comment = (Parser, 'Comment Lexer') <|
+comment = (Parser 'Comment Lexer') <|
     either(
         singleLineComment
         multiLineComment);

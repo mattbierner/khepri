@@ -2,9 +2,14 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/string_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/text", "parse/lang", "nu/stream", "khepri/lex/line_terminator_lexer", "khepri/lex/number_lexer"], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
+define(["require", "exports", "parse/parse", "parse/text", "parse/lang", "nu/stream",
+    "khepri/lex/line_terminator_lexer", "khepri/lex/number_lexer"
+], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
     "use strict";
-    var doubleQuote, escape, singleQuote, lineContinuation, unicodeEscapeSequence, hexEscapeSequence, characterEscapeSequence, escapeSequence, singleStringCharacter, singleStringCharacters, singleStringLiteral, doubleStringCharacter, doubleStringCharacters, doubleStringLiteral, stringLiteral;
+    var doubleQuote, escape, singleQuote, lineContinuation, unicodeEscapeSequence, hexEscapeSequence,
+            characterEscapeSequence, escapeSequence, singleStringCharacter, singleStringCharacters,
+            singleStringLiteral, doubleStringCharacter, doubleStringCharacters, doubleStringLiteral,
+            stringLiteral;
     var __o = __o,
         always = __o["always"],
         attempt = __o["attempt"],
@@ -53,7 +58,10 @@ define(["require", "exports", "parse/parse", "parse/text", "parse/lang", "nu/str
     (escape = character("\\"));
     (singleQuote = character("'"));
     (lineContinuation = next(next(escape, lineTerminatorSequence), always("")));
-    var singleEscapeCharacter = choice(character("'"), character("\""), character("\\"), next(character("b"), always("\b")), next(character("f"), always("\f")), next(character("n"), always("\n")), next(character("r"), always("\r")), next(character("t"), always("\t")), next(character("v"), always("\u000b")));
+    var singleEscapeCharacter = choice(character("'"), character("\""), character("\\"), next(character("b"),
+        always("\b")), next(character("f"), always("\f")), next(character("n"), always("\n")), next(
+        character("r"), always("\r")), next(character("t"), always("\t")), next(character("v"), always(
+        "\u000b")));
     var escapeCharacter = choice(singleEscapeCharacter, decimalDigit, character("u"), character("x"));
     var nonEscapeCharacter = token((function(tok) {
         return !(test(escapeCharacter, tok) || test(lineTerminator, tok));
@@ -68,24 +76,28 @@ define(["require", "exports", "parse/parse", "parse/text", "parse/lang", "nu/str
     })((function(x) {
         return !x;
     }), test.bind(null, decimalDigit)))), always("\u0000")), hexEscapeSequence, unicodeEscapeSequence));
-    (singleStringCharacter = choice(attempt(lineContinuation), next(escape, escapeSequence), token((function(tok) {
+    (singleStringCharacter = choice(attempt(lineContinuation), next(escape, escapeSequence), token((function(
+        tok) {
         return !((test(singleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok));
     }))));
     (singleStringCharacters = many(singleStringCharacter));
-    (singleStringLiteral = Parser("Single String Literal", between(singleQuote, singleQuote, bind(singleStringCharacters, (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(always, join)))));
-    (doubleStringCharacter = choice(attempt(lineContinuation), next(escape, escapeSequence), token((function(tok) {
+    (singleStringLiteral = Parser("Single String Literal", between(singleQuote, singleQuote, bind(
+        singleStringCharacters, (function(f, g) {
+            return (function(x) {
+                return f(g(x));
+            });
+        })(always, join)))));
+    (doubleStringCharacter = choice(attempt(lineContinuation), next(escape, escapeSequence), token((function(
+        tok) {
         return !((test(doubleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok));
     }))));
     (doubleStringCharacters = many(doubleStringCharacter));
-    (doubleStringLiteral = Parser("Double String Literal", between(doubleQuote, doubleQuote, bind(doubleStringCharacters, (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(always, join)))));
+    (doubleStringLiteral = Parser("Double String Literal", between(doubleQuote, doubleQuote, bind(
+        doubleStringCharacters, (function(f, g) {
+            return (function(x) {
+                return f(g(x));
+            });
+        })(always, join)))));
     (stringLiteral = Parser("Sting Literal Lexer", either(singleStringLiteral, doubleStringLiteral)));
     (exports.doubleQuote = doubleQuote);
     (exports.escape = escape);

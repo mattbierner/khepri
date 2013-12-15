@@ -2,16 +2,16 @@
  * @fileOverview Khepri program parsers.
  */
 package (
-    sourceElement,
-    sourceElements,
+    sourceElement
+    sourceElements
     program)
 with
-    import 'parse/parse' {always, cons, eager, either, eof, many, next, Parser, rec},
-    import 'parse/lang' {then},
-    import 'nu/stream' {NIL},
-    import 'khepri_ast/program' ast_program,
-    import 'khepri/parse/common' {node},
-    import 'khepri/parse/statement_parser' _,
+    import 'parse/parse' {always cons eager either eof many next Parser rec}
+    import 'parse/lang' {then}
+    import 'nu/stream' {NIL}
+    import 'khepri_ast/program' ast_program
+    import 'khepri/parse/common' {node}
+    import 'khepri/parse/statement_parser' _
     import 'khepri/parse/package_parser' _
 in {
 
@@ -21,7 +21,7 @@ var statementParser = \args(...) -> {
     with
         import 'khepri/parse/statement_parser' {statement}
     in {
-        return statement.apply(undefined, args);
+        return statement.apply(undefined args);
     }
 };
 
@@ -29,7 +29,7 @@ var khepriPackage = \args(...) -> {
     with
         import 'khepri/parse/package_parser' {khepriPackage}
     in {
-        return khepriPackage.apply(undefined, args);
+        return khepriPackage.apply(undefined args);
     }
 };
 
@@ -50,14 +50,14 @@ sourceElements = eager <| many(sourceElement);
 /**
  * Parser for an ECMAScript 5.1 program.
  */
-program = (Parser, 'Program') <|
+program = (Parser 'Program') <|
     node(
         either(
-            then(khepriPackage, eof),
+            then(khepriPackage eof)
             eager <| rec(\self ->
                 either(
-                    next(eof, always(NIL)),
-                    cons(sourceElement, self)))),
+                    next(eof always(NIL))
+                    cons(sourceElement self))))
         ast_program.Program.create);
 
 }
