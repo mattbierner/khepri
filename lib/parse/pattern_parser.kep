@@ -10,6 +10,7 @@ package (
     importPattern,
     arrayPattern,
     objectPattern,
+    argumentList,
     argumentsPattern)
 with
     import 'parse/parse' {always, attempt, bind, binds, choice, eager, either, enumeration, next, optional, Parser},
@@ -104,28 +105,32 @@ importPattern = Parser('Import Pattern',
 
 // Arguments Pattern
 ////////////////////////////////////////
-argumentsPattern = Parser('Arguments Pattern', let
+var argumentElements = let
     argumentsPatternElement = choice(
         ellipsisPattern,
         sinkPattern,
         attempt <| arrayPattern,
         attempt <| objectPattern,
-        identifierPattern),
-    
-    elements =
-        eager <| sepBy(sep,
-            argumentsPatternElement)
+        identifierPattern)
 in
+    eager <| sepBy(sep,
+            argumentsPatternElement);
+
+argumentList = (Parser, 'Argument List') <|
+    node(
+        argumentElements,
+        \loc, elements -> ast_pattern.ArgumentsPattern.create(loc, null, elements));
+
+argumentsPattern = (Parser, 'Arguments Pattern') <|
     either(
         attempt <| nodea(
             enumeration(
                 optional(null, identifierPattern),
                 between(punctuator('('), punctuator(')'),
-                    elements)),
+                    argumentElements)),
             ast_pattern.ArgumentsPattern.create),
-        node(
-            elements,
-            \loc, elements -> ast_pattern.ArgumentsPattern.create(loc, null, elements))));
+        argumentList);
+
 
 // Pattern
 ////////////////////////////////////////

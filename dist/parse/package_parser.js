@@ -49,7 +49,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package",
     });
     var packageExport = Parser("Package Export", node(identifier, ast_package.PackageExport.create));
     var packageExports = Parser("Package Exports", node(between(punctuator("("), punctuator(")"), eager(sepBy(
-        punctuator(","), packageExport))), ast_package.PackageExports.create));
+        optional(null, punctuator(",")), packageExport))), ast_package.PackageExports.create));
     var packageBody = Parser("Package Body", either(withStatement, blockStatement));
     (khepriPackage = Parser("Package", next(keyword("package"), nodea(enumeration(packageExports, packageBody),
         ast_package.Package.create))));

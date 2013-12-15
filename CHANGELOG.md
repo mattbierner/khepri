@@ -5,6 +5,8 @@
 ** Existing patterns are not effected.
 * Changed aliased object and pattern syntax to to require the `#` symbol between
   top level aliases and the pattern, `let list#[e0, e1] in ...`.
+* Fixed the syntax `function f(args(...)) {};` being allowed. Should always be
+  `function f\args(...) -> { };` instead.
 
 ## 0.6.0 - December 9, 2013
 * Added `void` back.
