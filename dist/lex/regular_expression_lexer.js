@@ -48,7 +48,10 @@ define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/str
         return (function(x) {
             return f(g(x));
         });
-    })(always, +"\\"))));
+    })(always, (function(x, y) {
+            return (x + y);
+        })
+        .bind(null, "\\")))));
     (regularExpressionClassChar = either(attempt(token((function(tok) {
         return ((!test(lineTerminator, tok) && (tok !== "]")) && (tok !== "\\"));
     }))), regularExpressionBackslashSequence));

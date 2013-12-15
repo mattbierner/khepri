@@ -294,7 +294,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
             {
                 var binExpr = memo(binaryExpression);
                 return either(nodea(enumeration(attempt(then(binExpr, punctuator("?"))), then(
-                        conditionalExpression, punctuator(",")), conditionalExpression),
+                        conditionalExpression, punctuator(":")), conditionalExpression),
                     ast_expression.ConditionalExpression.create), binExpr);
             }
         })

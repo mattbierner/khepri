@@ -366,7 +366,7 @@ in
                         expression))))
             \loc, base, elements -> 
                 (elements.length ?
-                    ast_expression.CurryExpression.create(loc, base, elements) :
+                    ast_expression.CurryExpression.create(loc, base, elements) : 
                     base)));
 
 // Primary Expression
@@ -404,7 +404,7 @@ argumentList = (Parser, 'Argument List') <|
  */
 args = Parser('Arguments',
     node(
-        between(noLineTerminator(punctuator('(')), punctuator(')'),
+        between(noLineTerminator <| punctuator('('), punctuator(')'),
             argumentList),
         \loc, args -> {
             args.loc = loc;
@@ -473,7 +473,7 @@ newExpression = Parser('New Expression'
  * Parser for a left hand side expression.
  */
 leftHandSideExpression = let
-    reducer = \p c ->
+    reducer = \p, c ->
         (c && c.hasOwnProperty('argument') ?
              ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c) :
              accessorReducer(p, c))
@@ -483,7 +483,7 @@ in
             enumeration(
                 memberExpression |> memo,
                 many(either(
-                    args
+                    args,
                     accessor))),
             (foldl, reducer) \>> always));
 
@@ -624,7 +624,7 @@ in
                     punctuator('?'))
                 then(
                     conditionalExpression
-                    punctuator(','))
+                    punctuator(':'))
                 conditionalExpression)
             ast_expression.ConditionalExpression.create)
         binExpr);

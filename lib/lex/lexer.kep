@@ -9,7 +9,7 @@ package (
     lexManyState
     lex)
 with
-    import 'parse/parse' parse {
+    import 'parse/parse' parse#{
         always
         attempt
         binds
@@ -27,12 +27,12 @@ with
         Parser
         ParserState}
     import 'parse/lang' {then}
-    import 'nu/stream' {memoStream, NIL, 'from': streamFrom}
-    import 'khepri_ast/token' lexToken,
-    import 'khepri/position' {SourceLocation, SourcePosition}
+    import 'nu/stream' {memoStream NIL 'from': streamFrom}
+    import 'khepri_ast/token' lexToken
+    import 'khepri/position' {SourceLocation SourcePosition}
     import 'khepri/lex/boolean_lexer' {booleanLiteral}
     import 'khepri/lex/comment_lexer' {comment}
-    import 'khepri/lex/identifier_lexer' {identifier, identifierName}
+    import 'khepri/lex/identifier_lexer' {identifier identifierName}
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
     import 'khepri/lex/null_lexer' {nullLiteral}
     import 'khepri/lex/number_lexer' {numericLiteral}
@@ -43,7 +43,7 @@ with
     import 'khepri/lex/regular_expression_lexer' {regularExpressionLiteral}
 in {
 
-var makeToken = \type, p ->
+var makeToken = \type p ->
     bind(p, \value -> always([type, value]));
 
 var buildToken = \p ->

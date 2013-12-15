@@ -33,10 +33,10 @@ with
         Parser
         testStream
         token}
-    import 'parse/text' {character, characters, digit, letter, string}
+    import 'parse/text' {character characters digit letter string}
     import 'nu/stream' {foldl}
     import 'khepri/lex/reserved_word_lexer' {reservedWord}
-    import 'khepri/lex/string_lexer' {escape, unicodeEscapeSequence}
+    import 'khepri/lex/string_lexer' {escape unicodeEscapeSequence}
 in {
 
 var join = (foldl, (+), '');
@@ -85,15 +85,15 @@ unicodeDigit = digit;
  * Any character in the Unicode category Connector Punctuation (Pc).
  */
 unicodeConnectorPunctuation = characters([
-    '\u005F',
-    '\u203F',
-    '\u2040',
-    '\u2054',
-    '\uFE33',
-    '\uFE34',
-    '\uFE4D',
-    '\uFE4E',
-    '\uFE4F',
+    '\u005F'
+    '\u203F'
+    '\u2040'
+    '\u2054'
+    '\uFE33'
+    '\uFE34'
+    '\uFE4D'
+    '\uFE4E'
+    '\uFE4F'
     '\uFF3F']);
 
 /**
@@ -137,7 +137,7 @@ identifierParts = many(identifierPart);
  * 
  * May be a keyword.
  */
-identifierName = cons(identifierStart, identifierParts);
+identifierName = cons(identifierStart identifierParts);
 
 // Identifier
 ////////////////////////////////////////
@@ -150,9 +150,9 @@ var reservedWordTest = next(
  * 
  * Checks to make sure returned identifier is not a keyword.
  */
-identifier = Parser('Identifier Lexer',
-    bind(identifierName, \name ->
-        (testStream(reservedWordTest, name) ?
+identifier = Parser('Identifier Lexer'
+    bind(identifierName \name ->
+        (testStream(reservedWordTest name) ?
             fail() :
             always(join(name)))));
 

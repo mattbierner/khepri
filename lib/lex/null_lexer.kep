@@ -1,23 +1,19 @@
 /**
- * @fileOverview Khepri null value lexers.
+ * @fileOverview Khepri null literal.
  */
 package (
     nullLiteral)
 with
-    import 'parse/parse' {always, next, Parser},
+    import 'parse/parse' {always next Parser}
     import 'parse/text' {string}
 in {
 
-/* Lexers
- ******************************************************************************/
-// Literals
-////////////////////////////////////////
 /**
  * Lexer that matches null literal.
  */
-nullLiteral = Parser('Null Parser',
+nullLiteral = Parser('Null Parser'
     next(
-        string('null'),
+        string('null')
         always(null)));
 
 }

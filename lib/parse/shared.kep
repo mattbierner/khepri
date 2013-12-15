@@ -2,16 +2,18 @@
  * @fileOverview 
  */
 package (
-    lineTerminator,
-    noLineTerminator,
+    lineTerminator
+    noLineTerminator
         
     logicalComma)
 with
     import 'parse/parse' {
         always
+        bind
         choice
         look
         eof
+        next
         Parser
         token}
     import 'khepri/parse/token_parser' {keyword punctuator}
@@ -19,7 +21,8 @@ in {
 
 lineTerminator = look <| token <|\tok -> tok.lineTerminator;
 
-noLineTerminator = look <| token <|\tok -> !tok.lineTerminator;
+noLineTerminator = (next
+    look <| token <|\tok -> !tok.lineTerminator);
 
 logicalComma = (Parser 'Logical Comma') <|
     choice(
