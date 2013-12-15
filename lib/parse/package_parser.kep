@@ -37,39 +37,39 @@ var blockStatement = \args(...) -> {
 /**
  * Package Export
  */
-var packageExport = Parser('Package Export',
+var packageExport = (Parser, 'Package Export') <|
     node(
         identifier,
-        ast_package.PackageExport.create));
+        ast_package.PackageExport.create);
 
 /**
  * Package Exports
  */
-var packageExports = Parser('Package Exports',
+var packageExports = (Parser, 'Package Exports') <|
     node(
         between(punctuator('('), punctuator(')'), 
             eager <| sepBy(optional(null, punctuator(',')),
                 packageExport)),
-        ast_package.PackageExports.create));
+        ast_package.PackageExports.create);
 
 /**
  * Package Body
  */
-var packageBody = Parser('Package Body',
+var packageBody = (Parser, 'Package Body') <|
     either(
         withStatement,
-        blockStatement));
+        blockStatement);
 
 /**
  * Package
  */
-khepriPackage = Parser('Package',
+khepriPackage = (Parser, 'Package') <|
     next(
         keyword('package'),
         nodea(
             enumeration(
                 packageExports,
                 packageBody),
-            ast_package.Package.create)));
+            ast_package.Package.create));
 
 }
