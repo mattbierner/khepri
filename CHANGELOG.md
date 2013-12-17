@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.7.1 - December 17, 2013
+* Optimized the case `return let` to not use extra function.
+
 ## 0.7.0 - December 15, 2013
 * Changed pattern and package syntax to allow all commas to be omitted.
 ** Existing patterns are not effected.

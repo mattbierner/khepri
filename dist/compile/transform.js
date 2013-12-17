@@ -313,9 +313,12 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             case "WithStatement":
                 return withStatement(node.loc, node.bindings, node.body);
             case "SwitchStatement":
-                return new(ecma_statement.SwitchStatement)(node.loc, transform(node.discriminant), map(
-                    node.cases, transform));
+                return ecma_statement.SwitchStatement.create(node.loc, transform(node.discriminant),
+                    map(node.cases, transform));
             case "ReturnStatement":
+                if ((node.argument && (node.argument.type === "LetExpression"))) return withStatement(
+                    null, node.argument.bindings, blockStatement(null, [returnStatement(node.loc, node.argument
+                        .body)]));
                 return returnStatement(node.loc, node.argument);
             case "ThrowStatement":
                 return new(ecma_statement.ThrowStatement)(node.loc, transform(node.argument));

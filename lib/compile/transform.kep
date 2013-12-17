@@ -483,11 +483,18 @@ transform = function(node) {
             node.body);
 
     case 'SwitchStatement':
-        return new ecma_statement.SwitchStatement(node.loc,
+        return ecma_statement.SwitchStatement.create(node.loc,
             transform(node.discriminant),
             map(node.cases, transform));
     
     case'ReturnStatement':
+        // @TODO: should not be here.
+        if (node.argument && node.argument.type === 'LetExpression')
+            return withStatement(null,
+                node.argument.bindings,
+                blockStatement(null, 
+                    [returnStatement(node.loc, node.argument.body)]));
+        
         return returnStatement(node.loc,
             node.argument);
     
@@ -602,6 +609,7 @@ transform = function(node) {
     case 'MemberExpression':
         return ecma_expression.MemberExpression.create(node.loc,
             transform(node.object),
+            
             transform(node.property),
             node.computed);
     
