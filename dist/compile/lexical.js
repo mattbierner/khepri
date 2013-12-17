@@ -409,7 +409,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                     return _check(x.value);
                 })));
             case "LetExpression":
-                return realBlock(checkChild("bindings"), checkChild("body"));
+                return block(checkChild("bindings"), checkChild("body"));
             case "CurryExpression":
                 return seq(checkChild("base"), checkChild("args"));
             case "UnaryOperatorExpression":
@@ -440,8 +440,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "StaticDeclarator":
                 return addImmutableBindingInRealBlock(node.id.name, node.loc);
             case "VariableDeclarator":
-                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), _check(node.id),
-                    _check(node.init));
+                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), checkChild("id"),
+                    checkChild("init"));
             case "Binding":
                 return seq(checkChild("pattern"), checkChild("value"));
             case "EllipsisPattern":
@@ -459,14 +459,13 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                         return ok();
                     })));
             case "ImportPattern":
-                return _check(node.pattern);
+                return checkChild("pattern");
             case "AsPattern":
                 return examineScope((function(s) {
-                    return ok();
                     var n = setUserData(node.target, (node.target.ud || ({})));
                     (n.ud.id = n.id);
-                    (node.target = n);
-                    return seq(_check(node.id), _check(node.target));
+                    return seq(checkChild("id"), child(move(tree.setNode.bind(null, n)),
+                        "target"));
                 }));
             case "ArrayPattern":
                 return examineScope((function(s) {

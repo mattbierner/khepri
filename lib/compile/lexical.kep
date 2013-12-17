@@ -541,7 +541,7 @@ _check = function(node) {
         return seqa(map(node.properties, \x -> _check(x.value)));
     
     case 'LetExpression':
-        return realBlock(
+        return block(
             checkChild('bindings'),
             checkChild('body'));
     
@@ -601,8 +601,8 @@ _check = function(node) {
     case 'VariableDeclarator':
         return seq(
             addMutableBindingInRealBlock(node.id.name, node.loc),
-            _check(node.id),
-            _check(node.init));
+            checkChild('id'),
+            checkChild('init'));
         
     case 'Binding': 
         return seq(
@@ -633,17 +633,15 @@ _check = function(node) {
             }));
         
     case 'ImportPattern':
-        return _check(node.pattern);
+        return checkChild('pattern');
     
    case 'AsPattern':
         return examineScope(\s -> {
-            return ok();
             var n = setUserData(node.target, node.target.ud || {});
             n.ud.id = n.id;
-            node.target = n;
             return seq(
-                _check(node.id),
-                _check(node.target));
+                checkChild('id'),
+                child(move((tree.setNode, n)), 'target'));
         });
     
     case 'ArrayPattern':
