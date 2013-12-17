@@ -125,7 +125,7 @@ in
             return flatten <| concat(
                 innerPattern(base, pattern.ud.id, f),
                 pattern.elements
-                    |> (maps, \{target, key} -> objectElementUnpack(pattern.id, target, key, f))
+                    |> (maps, \{target, key} -> objectElementUnpack(pattern.ud.id, target, key, f))
                     |> flatten);
         
         default:

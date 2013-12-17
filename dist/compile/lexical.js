@@ -464,34 +464,22 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 return examineScope((function(s) {
                     var n = setUserData(node.target, (node.target.ud || ({})));
                     (n.ud.id = n.id);
-                    return seq(checkChild("id"), child(move(tree.setNode.bind(null, n)),
-                        "target"));
+                    return seq(checkChild("id"), child(seq(move(tree.setNode.bind(null, n)),
+                        checkTop), "target"));
                 }));
             case "ArrayPattern":
-                return examineScope((function(s) {
-                    if (((!node.ud || !node.ud.id) && false)) {
-                        var unused = s.getUnusedId("__a");
-                        var id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
-                            .create(null, unused));
-                        (id.reserved = true);
-                        var n = setUserData(node, (node.ud || ({})));
-                        (n.ud.id = id);
-                        return seq(move(tree.setNode.bind(null, n)), _check(id), _check(n));
-                    }
-                    return checkChild("elements");
-                }));
             case "ObjectPattern":
                 return examineScope((function(s) {
-                    if (((!node.ud || !node.ud.id) && false)) {
+                    if ((!node.ud || !node.ud.id)) {
                         var unused = s.getUnusedId("__o");
                         var id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
                             .create(null, unused));
                         (id.reserved = true);
                         var n = setUserData(node, (node.ud || ({})));
                         (n.ud.id = id);
-                        return seq(move(tree.setNode.bind(null, n)), _check(id), _check(n));
+                        return seq(move(tree.setNode.bind(null, n)), checkTop);
                     }
-                    return checkChild("elements");
+                    return seq(checkChild("elements"));
                 }));
             case "ObjectPatternElement":
                 return seq(checkChild("target"), checkChild("key"));

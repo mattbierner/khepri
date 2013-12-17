@@ -113,7 +113,8 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                                 var __o = __o,
                                     target = __o["target"],
                                     key = __o["key"];
-                                return objectElementUnpack(pattern.id, target, key, f);
+                                return objectElementUnpack(pattern.ud.id, target, key,
+                                    f);
                             }), pattern.elements))));
                     default:
                         return [];
