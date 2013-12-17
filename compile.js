@@ -12,7 +12,11 @@ requirejs.config({
         'ecma_unparse': 'dependencies/ecma-unparse/lib',
         'ecma_ast': 'dependencies/ecma-ast/lib',
         'khepri_ast': 'dependencies/khepri-ast/dist',
-        'khepri': 'dist'
+        'khepri': 'dist',
+        
+        'neith': 'dependencies/neith/dist',
+        'ecma_ast_zipper': 'dependencies/ecma-ast-zipper/dist',
+        'khepri_ast_zipper': 'dependencies/khepri-ast-zipper/dist'
     }
 });
 

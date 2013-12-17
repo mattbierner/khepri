@@ -19,3 +19,9 @@
 [submodule "dependencies/neith"]
 	path = dependencies/neith
 	url = git@github.com:mattbierner/neith.git
+[submodule "dependencies/ecma-ast-zipper"]
+	path = dependencies/ecma-ast-zipper
+	url = git@github.com:mattbierner/ecma-ast-zipper.git
+[submodule "dependencies/khepri-ast-zipper"]
+	path = dependencies/khepri-ast-zipper
+	url = git@github.com:mattbierner/khepri-ast-zipper.git

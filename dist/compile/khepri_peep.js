@@ -1,17 +1,19 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/peephole.kep'
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/khepri_peep.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast/node", "khepri_ast/statement",
-    "khepri_ast/expression"
-], (function(require, exports, tree, zipper, __o, ast_statement, ast_expression) {
+define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/khepri_zipper", "khepri_ast/node",
+    "khepri_ast/statement", "khepri_ast/expression"
+], (function(require, exports, tree, zipper, __o, __o0, ast_statement, ast_expression) {
     "use strict";
     var optimize;
     var tree = tree,
         zipper = zipper,
         __o = __o,
-        modify = __o["modify"],
-        Node = __o["Node"],
+        khepriZipper = __o["khepriZipper"],
+        __o0 = __o0,
+        modify = __o0["modify"],
+        Node = __o0["Node"],
         ast_statement = ast_statement,
         ast_expression = ast_expression;
     var concat = (function() {
@@ -27,26 +29,6 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast/node", "
             return p.concat(c);
         }), []) : x);
     });
-    var range = (function(end) {
-        var a = [];
-        for (var i = 0;
-            (i < end);
-            (i = (i + 1)))(a[i] = i);
-        return a;
-    });
-    var joinKeys = (function(children, values) {
-        return children.reduce((function(p, c) {
-            (p[c] = values[c]);
-            return p;
-        }), []);
-    });
-    var Zipper = tree.treeZipper.bind(null, (function(node) {
-        return (!node ? [] : (Array.isArray(node) ? range(node.length) : node.children));
-    }), (function(n, k) {
-        return n[k];
-    }), (function(node, _, children, values) {
-        return ((node instanceof Node) ? modify(node, values, ({})) : joinKeys(children, values));
-    }));
     var peepholes = ({});
     var addPeephole = (function(type, condition, f) {
         var entry = ({
@@ -113,15 +95,6 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast/node", "
         return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ?
             node.right.base : node.right), concat((node.right.args || []), node.left));
     }));
-    addPeephole("BlockStatement", (function(_) {
-        return true;
-    }), (function(node) {
-        return modify(node, ({
-            "body": flatten(node.body.map((function(x) {
-                return ((x && (x.type === "BlockStatement")) ? x.body : x);
-            })))
-        }), ({}));
-    }));
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {
             if (!node) return node;
@@ -137,7 +110,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast/node", "
         return (next ? opt(next) : t);
     });
     (optimize = (function(node) {
-        return tree.node(zipper.root(opt(Zipper(node))));
+        return tree.node(zipper.root(opt(khepriZipper(node))));
     }));
     (exports.optimize = optimize);
 }))

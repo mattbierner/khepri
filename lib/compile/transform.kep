@@ -119,11 +119,11 @@ in
         case 'ArrayPattern':
             return flatten <| innerPattern(
                 base,
-                arrayPattern(pattern.loc, pattern.elements, pattern.id), f);
+                arrayPattern(pattern.loc, pattern.elements, pattern.ud.id), f);
         
         case 'ObjectPattern':
             return flatten <| concat(
-                innerPattern(base, pattern.id, f),
+                innerPattern(base, pattern.ud.id, f),
                 pattern.elements
                     |> (maps, \{target, key} -> objectElementUnpack(pattern.id, target, key, f))
                     |> flatten);
@@ -394,7 +394,7 @@ var packageBlock = \loc, exports, body -> let
             map(body.bindings, \x -> (x.type !== 'ImportPattern' ? x :
                 khepri_declaration.Binding.create(null,
                     x.pattern,
-                    x.pattern.id))),
+                    x.pattern.ud.id))),
             body.body) :
         transform(body)),
     

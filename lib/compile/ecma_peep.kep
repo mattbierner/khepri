@@ -1,0 +1,108 @@
+/**
+ * 
+ */
+package (
+    optimize)
+with
+    import 'neith/tree' tree,
+    import 'neith/zipper' zipper,
+
+    import 'ecma_ast_zipper/ecma_zipper' {ecmaZipper},
+    
+    import 'ecma_ast/node' {modify, Node},
+    import 'ecma_ast/statement' ast_statement,
+    import 'ecma_ast/expression' ast_expression
+in {
+
+var concat = \args(...) ->
+    [].concat.apply([], args);
+    
+
+var map = \f, x -> [].map.call(x, f);
+var reduce = Function.prototype.call.bind(Array.prototype.reduce);
+
+var flatten = \x -> (Array.isArray(x) ? reduce(x, \p, c -> p.concat(c), []) : x);
+
+
+/*
+ ******************************************************************************/
+var peepholes = {};
+
+var addPeephole = \type, condition, f -> {
+    var entry = {
+        'condition': condition,
+        'map': f
+    };
+    peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]);
+};
+
+/* Peepholes
+ ******************************************************************************/
+/**
+ * Remove noop variable declarations.
+ */
+addPeephole('VariableDeclarator',
+    \node ->
+        (node.init && node.init.type === 'Identifier' && node.id.name === node.init.name),
+    \_ -> null);
+
+/**
+ * Filter out empty variable declarators.
+ */
+addPeephole('VariableDeclaration',
+    \_ -> true, 
+    \node -> let
+        declarations = node.declarations.filter(\x -> !!x)
+    in
+        modify(node, {
+            'declarations': declarations
+        }, {}));
+
+/**
+ * Remove empty Variable declarations.
+ */
+addPeephole('VariableDeclaration',
+    \node -> !node.declarations.length,
+    \_ -> null);
+
+/**
+ * Reduce block statements when possible.
+ */
+addPeephole('BlockStatement',
+    \_ -> true,
+    \node ->
+        modify(node, {
+            'body': flatten(node.body.map(\x ->
+                (x && x.type === 'BlockStatement' ? x.body : x)))
+        }, {}));
+
+/**
+ * Reduce block statements when possible.
+ */
+addPeephole('Program',
+    \_ -> true,
+    \node ->
+        modify(node, {
+            'body': flatten(node.body.map(\x ->
+                (x && x.type === 'BlockStatement' ? x.body : x)))
+        }, {}));
+
+/* Interface
+ ******************************************************************************/
+var opt = \z -> {
+    var t = tree.modifyNode(\node -> {
+        if (!node) return node;
+        var transforms = (peepholes[node.type] || []).filter(\x -> x.condition(node));
+        return transforms.reduce(\p c -> c.map(p), node);
+    }, z);
+    
+    var next = zipper.nextDfs(t);
+    return (next ? opt(next) : t);
+};
+
+optimize = \node -> 
+    (opt(ecmaZipper(node))
+        |> zipper.root
+        |> tree.node);
+
+}

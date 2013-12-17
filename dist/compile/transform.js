@@ -106,15 +106,15 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                             f)));
                     case "ArrayPattern":
                         return flatten(innerPattern(base, arrayPattern(pattern.loc, pattern.elements,
-                            pattern.id), f));
+                            pattern.ud.id), f));
                     case "ObjectPattern":
-                        return flatten(concat(innerPattern(base, pattern.id, f), flatten(maps((function(
-                            __o) {
-                            var __o = __o,
-                                target = __o["target"],
-                                key = __o["key"];
-                            return objectElementUnpack(pattern.id, target, key, f);
-                        }), pattern.elements))));
+                        return flatten(concat(innerPattern(base, pattern.ud.id, f), flatten(maps((
+                            function(__o) {
+                                var __o = __o,
+                                    target = __o["target"],
+                                    key = __o["key"];
+                                return objectElementUnpack(pattern.id, target, key, f);
+                            }), pattern.elements))));
                     default:
                         return [];
                 }
@@ -269,7 +269,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                     fBody = ((body.type === "WithStatement") ? withStatement(null, map(body.bindings, (
                         function(x) {
                             return ((x.type !== "ImportPattern") ? x : khepri_declaration.Binding
-                                .create(null, x.pattern, x.pattern.id));
+                                .create(null, x.pattern, x.pattern.ud.id));
                         })), body.body) : transform(body)),
                     packageBody = ecma_expression.FunctionExpression.create(null, null, concat(
                         identifier(null, "require"), identifier(null, "exports"), imp.map((function(

@@ -2,13 +2,20 @@
  * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value"], (function(require, exports,
-    ast_node, ast_pattern, ast_value) {
+define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value", "neith/zipper", "neith/tree",
+    "khepri_ast_zipper/khepri_zipper"
+], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o) {
     "use strict";
     var check;
     var ast_node = ast_node,
+        ast_node = ast_node,
+        setUserData = ast_node["setUserData"],
         ast_pattern = ast_pattern,
-        ast_value = ast_value;
+        ast_value = ast_value,
+        zipper = zipper,
+        tree = tree,
+        __o = __o,
+        khepriZipper = __o["khepriZipper"];
     var map = Function.prototype.call.bind(Array.prototype.map);
     var reduce = Function.prototype.call.bind(Array.prototype.reduce);
     var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
@@ -32,15 +39,19 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         while ((value && value._next))(value = value[0].apply(undefined, value[1]));
         return value;
     });
-    var State = (function(realScope, scope) {
+    var State = (function(ctx, realScope, scope) {
+        (this.ctx = ctx);
         (this.realScope = realScope);
         (this.scope = scope);
     });
+    (State.setCtx = (function(s, ctx) {
+        return new(State)(ctx, s.realScope, s.scope);
+    }));
     (State.setScope = (function(s, scope) {
-        return new(State)(s.realScope, scope);
+        return new(State)(s.ctx, s.realScope, scope);
     }));
     (State.setRealScope = (function(s, realScope) {
-        return new(State)(realScope, s.scope);
+        return new(State)(s.ctx, realScope, s.scope);
     }));
     var ok = (function(x) {
         return (function(s, ok, _) {
@@ -60,7 +71,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         });
     });
     var next = (function(p, n) {
-        return bind(p, (function() {
+        return bind(p, (function(_) {
             return n;
         }));
     });
@@ -75,6 +86,22 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     });
     var extract = (function(s, ok, _) {
         return ok(s, s);
+    });
+    var setState = (function(s) {
+        return (function(_, ok, _0) {
+            return ok(s, s);
+        });
+    });
+    var modifyState = (function(f) {
+        return bind(extract, (function(s) {
+            return setState(f(s));
+        }));
+    });
+    var move = (function(op) {
+        return modifyState((function(s) {
+            var c = op(s.ctx);
+            return State.setCtx(s, c);
+        }));
     });
     var examineScope = (function(f) {
         return bind(extract, (function(s) {
@@ -185,19 +212,23 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             "configurable": true
         })));
     }));
-    var block = (function(body) {
+    var block = (function() {
+        var body = arguments;
         return examineScope((function(s) {
-            return seq(setScope(new(Scope)(({}), s, s.mapping)), body, setScope(s));
+            return seq(setScope(new(Scope)(({}), s, s.mapping)), seqa(body), setScope(s));
         }));
     });
-    var emptyBlock = (function(body) {
+    var emptyBlock = (function() {
+        var body = arguments;
         return examineScope((function(s) {
-            return seq(setScope(new(Scope)(({}), s, ({}))), body, setScope(s));
+            return seq(setScope(new(Scope)(({}), s, ({}))), seqa(body), setScope(s));
         }));
     });
-    var realBlock = (function(body) {
+    var realBlock = (function() {
+        var body = arguments;
         return examineRealScope((function(s) {
-            return seq(setRealScope(new(Scope)(({}), s, ({}))), emptyBlock(body), setRealScope(s));
+            return seq(setRealScope(new(Scope)(({}), s, ({}))), emptyBlock.apply(undefined, body),
+                setRealScope(s));
         }));
     });
     var checkCanAddOwnBinding = (function(id, loc) {
@@ -308,88 +339,111 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             return Scope.addReservedBinding(s, id, loc);
         })), addMapping(id, id));
     });
-    var _check = (function(node) {
-        if ((!node || !(node instanceof ast_node.Node))) return ok();
+    var _check;
+    var child = (function(f, edge) {
+        return seq(move(tree.child.bind(null, edge)), f, move(zipper.up));
+    });
+    var checkCtx = (function(node) {
+        return _check(tree.node(node));
+    });
+    var checkTop = (function(s, ok, err) {
+        return checkCtx(s.ctx)(s, ok, err);
+    });
+    var checkChild = child.bind(null, checkTop);
+    (_check = (function(node) {
+        if (!node) return ok();
+        if (Array.isArray(node)) {
+            if (!node.length) return ok();
+            return seq(move(zipper.down), seqa(map(node, (function(_, i) {
+                return ((i === (node.length - 1)) ? checkTop : next(checkTop, move(
+                    zipper.right)));
+            }))), move(zipper.up));
+        }
+        if (!(node instanceof ast_node.Node)) return ok();
         switch (node.type) {
+            case "Program":
+                return checkChild("body");
             case "BlockStatement":
-                return block(seqa(map(node.body, _check)));
+                return block(checkChild("body"));
             case "ExpressionStatement":
-                return _check(node.expression);
+                return checkChild("expression");
             case "IfStatement":
-                return seq(_check(node.test), block(_check(node.consequent)), block(_check(node.alternate)));
+                return seq(checkChild("test"), block(checkChild("consequent")), block(checkChild(
+                    "alternate")));
             case "WithStatement":
-                return block(next(seqa(node.bindings.map(_check)), seqa(map(node.body.body, _check))));
+                return block(checkChild("bindings"), child(checkChild("body"), "body"));
             case "SwitchStatement":
-                return block(next(_check(node.discriminant), seqa(map(node.cases, _check))));
+                return block(checkChild("discriminant"), checkChild("cases"));
             case "ReturnStatement":
-                return _check(node.argument);
             case "ThrowStatement":
-                return _check(node.argument);
+                return checkChild("argument");
             case "TryStatement":
-                return seq(_check(node.block), block(_check(node.handler)), block(_check(node.finalizer)));
+                return seq(checkChild("block"), block(checkChild("handler")), block(checkChild(
+                    "finalizer")));
             case "WhileStatement":
-                return next(_check(node.test), block(_check(node.body)));
+                return seq(checkChild("test"), block(checkChild("body")));
             case "DoWhileStatement":
-                return seq(block(_check(node.body)), block(_check(node.test)));
+                return seq(block(checkChild("body")), checkChild("test"));
             case "ForStatement":
-                return block(seq(_check(node.init), _check(node.test), _check(node.update), block(_check(
-                    node.body))));
+                return block(checkChild("init"), checkChild("test"), checkChild("update"), block(
+                    checkChild("body")));
             case "UnaryExpression":
-                return _check(node.argument);
+                return checkChild("argument");
             case "AssignmentExpression":
-                return seq(_check(node.left), ((node.left.type === "Identifier") ? checkCanAssign(node.left
-                    .name, node.left.loc.start) : ok()), _check(node.right));
+                return seq(checkChild("left"), ((node.left.type === "Identifier") ? checkCanAssign(node
+                    .left.name, node.left.loc.start) : ok()), checkChild("right"));
             case "LogicalExpression":
             case "BinaryExpression":
-                return seq(_check(node.left), _check(node.right));
+                return seq(checkChild("left"), checkChild("right"));
             case "ConditionalExpression":
-                return seq(_check(node.test), _check(node.consequent), _check(node.alternate));
+                return seq(checkChild("test"), checkChild("consequent"), checkChild("alternate"));
             case "CallExpression":
             case "NewExpression":
-                return seq(_check(node.callee), seqa(map(node.args, _check)));
+                return seq(checkChild("callee"), checkChild("args"));
             case "MemberExpression":
-                return seq(_check(node.object), (node.computed ? _check(node.property) : ok()));
+                return seq(checkChild("object"), (node.computed ? checkChild("property") : ok()));
             case "ArrayExpression":
-                return seqa(map(node.elements, _check));
+                return checkChild("elements");
             case "ObjectExpression":
                 return seqa(map(node.properties, (function(x) {
                     return _check(x.value);
                 })));
             case "LetExpression":
-                return realBlock(next(seqa(node.bindings.map(_check)), _check(node.body)));
+                return realBlock(checkChild("bindings"), checkChild("body"));
             case "CurryExpression":
-                return next(_check(node.base), seqa(map(node.args, _check)));
+                return seq(checkChild("base"), checkChild("args"));
             case "UnaryOperatorExpression":
+            case "BinaryOperatorExpression":
+            case "TernaryOperatorExpression":
                 return ok();
             case "FunctionExpression":
-                return realBlock(seq((node.id ? addImmutableBinding(node.id.name, node.loc) : ok()), _check(
-                    node.params), seqa(map(node.body.body, _check))));
-            case "Program":
-                return (Array.isArray(node.body) ? seqa(map(node.body, _check)) : _check(node.body));
+                return realBlock((node.id ? addImmutableBinding(node.id.name, node.loc) : ok()),
+                    checkChild("params"), child(checkChild("body"), "body"));
             case "Package":
-                return seq(addImmutableBindingInRealBlock("require", null), addImmutableBindingInRealBlock(
-                    "exports", null), addImmutableBindingInRealBlock("module", null), _check(node.exports), (
-                    (node.body.type === "WithStatement") ? next(seqa(map(node.body.bindings, _check)),
-                        seqa(map(node.body.body.body, _check))) : seqa(map(node.body.body, _check))));
+                return seq(addImmutableBindingInRealBlock("require", null),
+                    addImmutableBindingInRealBlock("exports", null), addImmutableBindingInRealBlock(
+                        "module", null), checkChild("exports"), ((node.body.type === "WithStatement") ?
+                        seq(child(checkChild("bindings"), "body"), child(child(checkChild("body"),
+                            "body"), "body")) : child(checkChild("body"), "body")));
             case "PackageExports":
-                return seqa(map(node.exports, _check));
+                return checkChild("exports");
             case "PackageExport":
                 return addMutableBindingInRealBlock(node.id.name, node.loc);
             case "CatchClause":
-                return block(next(addImmutableBindingInRealBlock(node.param.name, node.param.loc), seqa(map(
-                    node.body.body, _check))));
+                return block(addImmutableBindingInRealBlock(node.param.name, node.param.loc), child(
+                    checkChild("body"), "body"));
             case "SwitchCase":
-                return seqa(map(node.consequent, _check));
+                return checkChild("consequent");
             case "StaticDeclaration":
             case "VariableDeclaration":
-                return seqa(map(node.declarations, _check));
+                return checkChild("declarations");
             case "StaticDeclarator":
                 return addImmutableBindingInRealBlock(node.id.name, node.loc);
             case "VariableDeclarator":
-                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), _check(node.id), _check(
-                    node.init));
+                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), _check(node.id),
+                    _check(node.init));
             case "Binding":
-                return next(_check(node.pattern), _check(node.value));
+                return seq(checkChild("pattern"), checkChild("value"));
             case "EllipsisPattern":
                 return ok();
             case "SinkPattern":
@@ -408,36 +462,42 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 return _check(node.pattern);
             case "AsPattern":
                 return examineScope((function(s) {
-                    (node.target.id = (node.target.id || node.id));
-                    return next(_check(node.id), _check(node.target));
+                    return ok();
+                    var n = setUserData(node.target, (node.target.ud || ({})));
+                    (n.ud.id = n.id);
+                    (node.target = n);
+                    return seq(_check(node.id), _check(node.target));
                 }));
             case "ArrayPattern":
                 return examineScope((function(s) {
-                    if (!node.id) {
+                    if (((!node.ud || !node.ud.id) && false)) {
                         var unused = s.getUnusedId("__a");
                         var id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
                             .create(null, unused));
                         (id.reserved = true);
-                        (node.id = id);
-                        return _check(ast_pattern.AsPattern.create(null, id, node));
+                        var n = setUserData(node, (node.ud || ({})));
+                        (n.ud.id = id);
+                        return seq(move(tree.setNode.bind(null, n)), _check(id), _check(n));
                     }
-                    return seqa(map(node.elements, _check));
+                    return checkChild("elements");
                 }));
             case "ObjectPattern":
                 return examineScope((function(s) {
-                    if (!node.id) {
+                    if (((!node.ud || !node.ud.id) && false)) {
                         var unused = s.getUnusedId("__o");
                         var id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
                             .create(null, unused));
                         (id.reserved = true);
-                        return _check(ast_pattern.AsPattern.create(null, id, node));
+                        var n = setUserData(node, (node.ud || ({})));
+                        (n.ud.id = id);
+                        return seq(move(tree.setNode.bind(null, n)), _check(id), _check(n));
                     }
-                    return seqa(map(node.elements, _check));
+                    return checkChild("elements");
                 }));
             case "ObjectPatternElement":
-                return (node.target ? _check(node.target) : _check(node.key));
+                return seq(checkChild("target"), checkChild("key"));
             case "ArgumentsPattern":
-                return next(_check(node.id), seqa(map(node.elements, _check)));
+                return seq(checkChild("elements"));
             case "Identifier":
                 return examineScope((function(s) {
                     if (s.hasMapping(node.name))(node.name = s.getMapping(node.name));
@@ -445,7 +505,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 }));
         }
         return ok();
-    });
+    }));
     var builtins = ["Array", "Boolean", "Date", "decodeURI", "decodeURIComponent", "encodeURI",
         "encodeURIComponent", "Error", "eval", "EvalError", "Function", "Infinity", "isFinite", "isNaN", "JSON",
         "Math", "NaN", "Number", "Object", "parseInt", "parseFloat", "RangeError", "ReferenceError", "RegExp",
@@ -454,9 +514,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     (check = (function(root, globals) {
         var g = (globals || builtins);
         var scope = g.reduce(Scope.addImmutableBinding, new(Scope)(({}), null, ({})));
-        var state = new(State)(scope, scope);
-        return trampoline(_check(root)(state, (function(x) {
-            return root;
+        var state = new(State)(khepriZipper(root), scope, scope);
+        return trampoline(checkTop(state, (function(x, s) {
+            return tree.node(zipper.root(s.ctx));
         }), (function(err, s) {
             throw err;
         })));

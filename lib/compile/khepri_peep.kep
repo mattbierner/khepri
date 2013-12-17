@@ -1,9 +1,13 @@
+/**
+ * 
+ */
 package (
     optimize)
 with
     import 'neith/tree' tree,
     import 'neith/zipper' zipper,
 
+    import 'khepri_ast_zipper/khepri_zipper' {khepriZipper},
     
     import 'khepri_ast/node' {modify, Node},
     import 'khepri_ast/statement' ast_statement,
@@ -18,37 +22,6 @@ var map = \f, x -> [].map.call(x, f);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
 var flatten = \x -> (Array.isArray(x) ? reduce(x, \p, c -> p.concat(c), []) : x);
-
-var range = \end -> {
-    var a = [];
-    for (var i = 0; i < end; i = i + 1)
-        a[i] = i;
-    return a;
-};
-
-/* Zipper
- ******************************************************************************/
-var joinKeys = \children values->
-    children.reduce(
-        \p, c -> {
-            p[c] = values[c];
-            return p;
-        },
-        []);
-
-var Zipper = (tree.treeZipper,
-    \node ->
-        (!node ? [] :
-            (Array.isArray(node) ?
-                range(node.length) :
-                node.children)),
-    
-    \n, k -> n[k],
-    
-    \node _ children, values ->
-        (node instanceof Node ?
-            modify(node, values, {}) :
-            joinKeys(children, values)));
 
 /*
  ******************************************************************************/
@@ -148,17 +121,6 @@ addPeephole('BinaryExpression',
             (node.right.type === 'CurryExpression' ? node.right.base : node.right),
             concat(node.right.args || [], node.left)));
 
-/**
- * Reduce block statements when possible.
- */
-addPeephole('BlockStatement',
-    \_ -> true,
-    \node ->
-        modify(node, {
-            'body': flatten(node.body.map(\x ->
-                (x && x.type === 'BlockStatement' ? x.body : x)))
-        }, {}));
-
 /* Interface
  ******************************************************************************/
 var opt = \z -> {
@@ -173,7 +135,7 @@ var opt = \z -> {
 };
 
 optimize = \node -> 
-    (opt(Zipper(node))
+    (opt(khepriZipper(node))
         |> zipper.root
         |> tree.node);
 
