@@ -37,31 +37,6 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
         });
         (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
     });
-    addPeephole("VariableDeclarator", (function(node) {
-        return ((node.init && (node.init.type === "Identifier")) && (node.id.name === node.init.name));
-    }), (function(_) {
-        return null;
-    }));
-    addPeephole("VariableDeclaration", (function(_) {
-        return true;
-    }), (function(node) {
-        return (function() {
-            {
-                var declarations = node.declarations.filter((function(x) {
-                    return !!x;
-                }));
-                return modify(node, ({
-                    "declarations": declarations
-                }), ({}));
-            }
-        })
-            .call(this);
-    }));
-    addPeephole("VariableDeclaration", (function(node) {
-        return !node.declarations.length;
-    }), (function(_) {
-        return null;
-    }));
     addPeephole("ReturnStatement", (function(node) {
         return (node.argument && (node.argument.type === "LetExpression"));
     }), (function(node) {

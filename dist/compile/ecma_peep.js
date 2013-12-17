@@ -3,8 +3,8 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecma_zipper", "ecma_ast/node",
-    "ecma_ast/statement", "ecma_ast/expression"
-], (function(require, exports, tree, zipper, __o, __o0, ast_statement, ast_expression) {
+    "ecma_ast/value", "ecma_ast/statement", "ecma_ast/expression"
+], (function(require, exports, tree, zipper, __o, __o0, ast_value, ast_statement, ast_expression) {
     "use strict";
     var optimize;
     var tree = tree,
@@ -14,6 +14,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
         __o0 = __o0,
         modify = __o0["modify"],
         Node = __o0["Node"],
+        ast_value = ast_value,
         ast_statement = ast_statement,
         ast_expression = ast_expression;
     var concat = (function() {
@@ -37,11 +38,6 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
         });
         (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
     });
-    addPeephole("VariableDeclarator", (function(node) {
-        return ((node.init && (node.init.type === "Identifier")) && (node.id.name === node.init.name));
-    }), (function(_) {
-        return null;
-    }));
     addPeephole("VariableDeclaration", (function(_) {
         return true;
     }), (function(node) {
@@ -79,6 +75,19 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
                 return ((x && (x.type === "BlockStatement")) ? x.body : x);
             })))
         }), ({}));
+    }));
+    addPeephole("BinaryExpression", (function(__o1) {
+        var __o1 = __o1,
+            operator = __o1["operator"],
+            left = __o1["left"],
+            right = __o1["right"];
+        return (((((operator === "+") && (left.type === "Literal")) && (left.kind === "string")) && (
+            right.type === "Literal")) && (right.kind === "string"));
+    }), (function(__o1) {
+        var __o1 = __o1,
+            left = __o1["left"],
+            right = __o1["right"];
+        return ast_value.Literal.create(null, "string", (left.value + right.value));
     }));
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {

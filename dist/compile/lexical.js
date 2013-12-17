@@ -351,7 +351,6 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     });
     var checkChild = child.bind(null, checkTop);
     (_check = (function(node) {
-        if (!node) return ok();
         if (Array.isArray(node)) {
             if (!node.length) return ok();
             return seq(move(zipper.down), seqa(map(node, (function(_, i) {
@@ -363,6 +362,31 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         switch (node.type) {
             case "Program":
                 return checkChild("body");
+            case "Package":
+                return seq(addImmutableBindingInRealBlock("require", null),
+                    addImmutableBindingInRealBlock("exports", null), addImmutableBindingInRealBlock(
+                        "module", null), checkChild("exports"), ((node.body.type === "WithStatement") ?
+                        child(seq(checkChild("bindings"), checkChild("body")), "body") : child(
+                            checkChild("body"), "body")));
+            case "PackageExports":
+                return checkChild("exports");
+            case "PackageExport":
+                return addMutableBindingInRealBlock(node.id.name, node.loc);
+            case "CatchClause":
+                return block(addImmutableBindingInRealBlock(node.param.name, node.param.loc), child(
+                    checkChild("body"), "body"));
+            case "SwitchCase":
+                return checkChild("consequent");
+            case "StaticDeclaration":
+            case "VariableDeclaration":
+                return checkChild("declarations");
+            case "StaticDeclarator":
+                return addImmutableBindingInRealBlock(node.id.name, node.loc);
+            case "VariableDeclarator":
+                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), checkChild("id"),
+                    checkChild("init"));
+            case "Binding":
+                return seq(checkChild("pattern"), checkChild("value"));
             case "BlockStatement":
                 return block(checkChild("body"));
             case "ExpressionStatement":
@@ -419,31 +443,6 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "FunctionExpression":
                 return realBlock((node.id ? addImmutableBinding(node.id.name, node.loc) : ok()),
                     checkChild("params"), child(checkChild("body"), "body"));
-            case "Package":
-                return seq(addImmutableBindingInRealBlock("require", null),
-                    addImmutableBindingInRealBlock("exports", null), addImmutableBindingInRealBlock(
-                        "module", null), checkChild("exports"), ((node.body.type === "WithStatement") ?
-                        seq(child(checkChild("bindings"), "body"), child(child(checkChild("body"),
-                            "body"), "body")) : child(checkChild("body"), "body")));
-            case "PackageExports":
-                return checkChild("exports");
-            case "PackageExport":
-                return addMutableBindingInRealBlock(node.id.name, node.loc);
-            case "CatchClause":
-                return block(addImmutableBindingInRealBlock(node.param.name, node.param.loc), child(
-                    checkChild("body"), "body"));
-            case "SwitchCase":
-                return checkChild("consequent");
-            case "StaticDeclaration":
-            case "VariableDeclaration":
-                return checkChild("declarations");
-            case "StaticDeclarator":
-                return addImmutableBindingInRealBlock(node.id.name, node.loc);
-            case "VariableDeclarator":
-                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), checkChild("id"),
-                    checkChild("init"));
-            case "Binding":
-                return seq(checkChild("pattern"), checkChild("value"));
             case "EllipsisPattern":
                 return ok();
             case "SinkPattern":
@@ -453,11 +452,13 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 }));
             case "IdentifierPattern":
                 if (node.reserved) return addReservedBinding(node.id.name, node.loc);
-                return seq(addUniqueImmutableBinding(node.id.name, node.loc), _check(node.init),
-                    examineScope((function(s) {
-                        if (s.hasMapping(node.id.name))(node.id.name = s.getMapping(node.id.name));
-                        return ok();
-                    })));
+                return seq(addUniqueImmutableBinding(node.id.name, node.loc), checkChild("id"), move(
+                    tree.modifyNode.bind(null, (function(node) {
+                        var n = setUserData(node, (node.ud || ({})));
+                        var id = ast_value.Identifier.create(null, node.id.name);
+                        (n.ud.id = id);
+                        return n;
+                    }))));
             case "ImportPattern":
                 return checkChild("pattern");
             case "AsPattern":
@@ -484,12 +485,28 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "ObjectPatternElement":
                 return seq(checkChild("target"), checkChild("key"));
             case "ArgumentsPattern":
-                return seq(checkChild("elements"));
+                return seq(checkChild("id"), checkChild("elements"));
             case "Identifier":
-                return examineScope((function(s) {
-                    if (s.hasMapping(node.name))(node.name = s.getMapping(node.name));
-                    return hasFreeBinding(node.name, node.loc);
-                }));
+                return (function() {
+                    {
+                        var name = node.name;
+                        return examineScope((function(s) {
+                            return (s.hasMapping(name) ? (function() {
+                                    {
+                                        var mappedName = s.getMapping(name);
+                                        return seq(move(tree.modifyNode.bind(null, (
+                                            function(x) {
+                                                return ast_node.modify(x, ({}), ({
+                                                    "name": mappedName
+                                                }));
+                                            }))), hasFreeBinding(mappedName, node.loc));
+                                    }
+                                })
+                                .call(this) : hasFreeBinding(name, node.loc));
+                        }));
+                    }
+                })
+                    .call(this);
         }
         return ok();
     }));

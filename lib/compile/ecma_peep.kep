@@ -10,6 +10,7 @@ with
     import 'ecma_ast_zipper/ecma_zipper' {ecmaZipper},
     
     import 'ecma_ast/node' {modify, Node},
+    import 'ecma_ast/value' ast_value,
     import 'ecma_ast/statement' ast_statement,
     import 'ecma_ast/expression' ast_expression
 in {
@@ -41,10 +42,10 @@ var addPeephole = \type, condition, f -> {
 /**
  * Remove noop variable declarations.
  */
-addPeephole('VariableDeclarator',
+/*addPeephole('VariableDeclarator',
     \node ->
         (node.init && node.init.type === 'Identifier' && node.id.name === node.init.name),
-    \_ -> null);
+    \_ -> null);*/
 
 /**
  * Filter out empty variable declarators.
@@ -66,7 +67,7 @@ addPeephole('VariableDeclaration',
     \_ -> null);
 
 /**
- * Reduce block statements when possible.
+ * Reduce block statements
  */
 addPeephole('BlockStatement',
     \_ -> true,
@@ -86,6 +87,16 @@ addPeephole('Program',
             'body': flatten(node.body.map(\x ->
                 (x && x.type === 'BlockStatement' ? x.body : x)))
         }, {}));
+
+/**
+ * Combine added string literals
+ */
+addPeephole('BinaryExpression',
+    \{operator left right} -> operator === '+' &&
+        left.type === 'Literal' && left.kind === 'string' &&
+        right.type === 'Literal' && right.kind === 'string',
+    \{left right} ->
+        ast_value.Literal.create(null, 'string', left.value + right.value));
 
 /* Interface
  ******************************************************************************/
