@@ -2,14 +2,11 @@ package (
     compile)
 with
     import 'khepri/compile/lexical' lexical,
-    import 'khepri/compile/transform' transform
-    //import 'khepri/compile/peephole' peephole
+    import 'khepri/compile/transform' transform,
+    import 'khepri/compile/peephole' peephole
 in {
 
-compile = \root ->
-    (root
-        |> lexical.check
-        |> transform.transform);
-      //  |> peephole.optimize);
+compile =
+    lexical.check \> peephole.optimize \> transform.transform;
 
 }

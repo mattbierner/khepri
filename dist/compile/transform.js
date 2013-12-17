@@ -212,16 +212,13 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         ]);
     });
     var curryExpression = (function(loc, base, args) {
-        return (!args.length ? transform(base) : callExpression(null, memberExpression(null, base,
-            identifier(null, "bind")), concat(nullLiteral(null), args)));
+        return callExpression(null, memberExpression(null, base, identifier(null, "bind")), concat(
+            nullLiteral(null), args));
     });
     var assignmentExpression = (function(loc, operator, left, right) {
         return ecma_expression.AssignmentExpression.create(loc, operator, transform(left), transform(right));
     });
     var pipeline = (function(loc, value, target) {
-        if ((target.type === "CurryExpression")) {
-            return callExpression(loc, transform(target.base), concat(target.args, value));
-        }
         return callExpression(loc, target, [value]);
     });
     var singleCompose = (function(loc, f, g) {
@@ -316,9 +313,6 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                 return ecma_statement.SwitchStatement.create(node.loc, transform(node.discriminant),
                     map(node.cases, transform));
             case "ReturnStatement":
-                if ((node.argument && (node.argument.type === "LetExpression"))) return withStatement(
-                    null, node.argument.bindings, blockStatement(null, [returnStatement(node.loc, node.argument
-                        .body)]));
                 return returnStatement(node.loc, node.argument);
             case "ThrowStatement":
                 return new(ecma_statement.ThrowStatement)(node.loc, transform(node.argument));

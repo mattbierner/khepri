@@ -267,7 +267,6 @@ in
                 (prefix.length ? variableDeclaration(null, prefix) : []),
                 transform(body).body)));
 
-
 /**
  * 
  */
@@ -289,14 +288,13 @@ var letExpression = \loc, bindings, body ->
  * 
  */
 var curryExpression = \loc, base, args ->
-    (!args.length ? transform(base) :
-        callExpression(null,
-            memberExpression(null,
-                base,
-                identifier(null, 'bind')),
-            concat(
-                nullLiteral(null),
-                args)));
+    callExpression(null,
+        memberExpression(null,
+            base,
+            identifier(null, 'bind')),
+        concat(
+            nullLiteral(null),
+            args));
 
 /**
  * 
@@ -310,18 +308,10 @@ var assignmentExpression = \loc, operator, left, right ->
 /**
  * 
  */
-var pipeline = \loc, value, target -> {
-    if (target.type === 'CurryExpression') {
-        return callExpression(loc,
-            transform(target.base),
-            concat(
-                target.args,
-                value));
-    }
-    return callExpression(loc,
+var pipeline = \loc, value, target ->
+    callExpression(loc,
         target,
         [value]);
-};
 
 /**
  * 
@@ -488,13 +478,6 @@ transform = function(node) {
             map(node.cases, transform));
     
     case'ReturnStatement':
-        // @TODO: should not be here.
-        if (node.argument && node.argument.type === 'LetExpression')
-            return withStatement(null,
-                node.argument.bindings,
-                blockStatement(null, 
-                    [returnStatement(node.loc, node.argument.body)]));
-        
         return returnStatement(node.loc,
             node.argument);
     

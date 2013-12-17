@@ -16,3 +16,6 @@
 [submodule "dependencies/seshat"]
 	path = dependencies/seshat
 	url = git://github.com/mattbierner/seshat
+[submodule "dependencies/neith"]
+	path = dependencies/neith
+	url = git@github.com:mattbierner/neith.git
