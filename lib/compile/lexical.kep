@@ -454,7 +454,7 @@ _check = function(node) {
                 child(
                     seq(
                         checkChild('bindings'),
-                        checkChild('body')), 'body') :
+                        child(checkChild('body'), 'body')), 'body') :
                 child(checkChild('body'), 'body')));
         
     case 'PackageExports':

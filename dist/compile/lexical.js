@@ -366,8 +366,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 return seq(addImmutableBindingInRealBlock("require", null),
                     addImmutableBindingInRealBlock("exports", null), addImmutableBindingInRealBlock(
                         "module", null), checkChild("exports"), ((node.body.type === "WithStatement") ?
-                        child(seq(checkChild("bindings"), checkChild("body")), "body") : child(
-                            checkChild("body"), "body")));
+                        child(seq(checkChild("bindings"), child(checkChild("body"), "body")), "body") :
+                        child(checkChild("body"), "body")));
             case "PackageExports":
                 return checkChild("exports");
             case "PackageExport":
