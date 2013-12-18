@@ -3,8 +3,8 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value", "neith/zipper", "neith/tree",
-    "khepri_ast_zipper/khepri_zipper"
-], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o) {
+    "khepri_ast_zipper/khepri_zipper", "khepri/compile/scope"
+], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, __o0) {
     "use strict";
     var check;
     var ast_node = ast_node,
@@ -15,20 +15,12 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         zipper = zipper,
         tree = tree,
         __o = __o,
-        khepriZipper = __o["khepriZipper"];
+        khepriZipper = __o["khepriZipper"],
+        __o0 = __o0,
+        Scope = __o0["Scope"];
     var map = Function.prototype.call.bind(Array.prototype.map);
     var reduce = Function.prototype.call.bind(Array.prototype.reduce);
     var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
-    var copy = (function(obj) {
-        return Object.keys(obj)
-            .reduce((function(p, c) {
-                (p[c] = obj[c]);
-                return p;
-            }), new(obj.constructor)());
-    });
-    var defineProperty = (function(obj, prop, descriptor) {
-        return Object.defineProperty(copy(obj), prop, descriptor);
-    });
     var cont = (function(f, args) {
         var c = [f, args];
         (c._next = true);
@@ -147,71 +139,6 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             return s;
         }));
     });
-    var Scope = (function(record, outer, mapping) {
-        (this.record = record);
-        (this.outer = outer);
-        (this.mapping = mapping);
-    });
-    (Scope.prototype.hasOwnBinding = (function(id) {
-        return Object.prototype.hasOwnProperty.call(this.record, id);
-    }));
-    (Scope.prototype.hasBinding = (function(id) {
-        return (this.hasOwnBinding(id) || (this.outer && this.outer.hasBinding(id)));
-    }));
-    (Scope.prototype.getBinding = (function(id) {
-        return (this.hasOwnBinding(id) ? this.record[id] : (this.outer ? this.outer.getBinding(id) :
-            null));
-    }));
-    (Scope.prototype.hasOwnMapping = (function(id) {
-        return Object.prototype.hasOwnProperty.call(this.mapping, id);
-    }));
-    (Scope.prototype.hasMapping = (function(id) {
-        return (this.hasOwnMapping(id) || (this.outer && this.outer.hasMapping(id)));
-    }));
-    (Scope.prototype.getMapping = (function(id) {
-        return (this.hasOwnMapping(id) ? this.mapping[id] : (this.outer && this.outer.getMapping(id)));
-    }));
-    (Scope.prototype.getUnusedId = (function(id) {
-        if (!this.hasBinding(id)) return id;
-        for (var i = 0;;
-            (i = (i + 1)))
-            if (!this.hasBinding((id + i))) return (id + i);
-    }));
-    (Scope.addBinding = (function(s, id, info) {
-        return new(Scope)(defineProperty(s.record, id, ({
-            "value": info,
-            "enumerable": true,
-            "writable": true,
-            "configurable": true
-        })), s.outer, s.mapping);
-    }));
-    (Scope.addMutableBinding = (function(s, id, loc) {
-        return Scope.addBinding(s, id, ({
-            "mutable": true,
-            "loc": loc
-        }));
-    }));
-    (Scope.addImmutableBinding = (function(s, id, loc) {
-        return Scope.addBinding(s, id, ({
-            "mutable": false,
-            "loc": loc
-        }));
-    }));
-    (Scope.addReservedBinding = (function(s, id, loc) {
-        return Scope.addBinding(s, id, ({
-            "mutable": false,
-            "reserved": true,
-            "loc": loc
-        }));
-    }));
-    (Scope.addMapping = (function(s, from, to) {
-        return new(Scope)(s.record, s.outer, defineProperty(s.mapping, from, ({
-            "value": to,
-            "enumerable": true,
-            "writable": true,
-            "configurable": true
-        })));
-    }));
     var block = (function() {
         var body = arguments;
         return examineScope((function(s) {
@@ -429,9 +356,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "ArrayExpression":
                 return checkChild("elements");
             case "ObjectExpression":
-                return seqa(map(node.properties, (function(x) {
-                    return _check(x.value);
-                })));
+                return checkChild("properties");
             case "LetExpression":
                 return block(checkChild("bindings"), checkChild("body"));
             case "CurryExpression":
@@ -466,12 +391,11 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "ImportPattern":
                 return checkChild("pattern");
             case "AsPattern":
-                return examineScope((function(s) {
+                return seq(checkChild("id"), child(seq(move(tree.modifyNode.bind(null, (function(node) {
                     var n = setUserData(node.target, (node.target.ud || ({})));
                     (n.ud.id = node.id);
-                    return seq(checkChild("id"), child(seq(move(tree.setNode.bind(null, n)),
-                        checkTop), "target"));
-                }));
+                    return n;
+                }))), checkTop), "target"));
             case "ArrayPattern":
             case "ObjectPattern":
                 return examineScope((function(s) {
@@ -485,12 +409,14 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                         return seq(move(tree.setNode.bind(null, ast_pattern.AsPattern.create(
                             null, id, node))), checkTop);
                     }
-                    return seq(checkChild("elements"));
+                    return checkChild("elements");
                 }));
             case "ObjectPatternElement":
                 return seq(checkChild("target"), checkChild("key"));
             case "ArgumentsPattern":
                 return seq(checkChild("id"), checkChild("elements"));
+            case "ObjectValue":
+                return checkChild("value");
             case "Identifier":
                 return (function() {
                     {
