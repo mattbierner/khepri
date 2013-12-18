@@ -1,5 +1,10 @@
 # ChangeLog #
 
+## 0.7.2 - December 17, 2013
+* Rewrote to eliminate most AST mutation.
+* Added a few peephole optimizes/rewrites.
+* Divided stages better.
+
 ## 0.7.1 - December 17, 2013
 * Optimized the case `return let` to not use extra function.
 
