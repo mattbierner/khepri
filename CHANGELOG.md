@@ -1,5 +1,18 @@
 # ChangeLog #
 
+## 0.8.0 - December 18, 2013
+* Updated pattern grammar to disallow some weird forms including:
+** `{'a': ...}`, `{'a': _}` for object patterns
+** `a#b#c#d` and `a#...` or `a#_`. As Patterns are now
+  restricted to targeting only object and array patterns.
+* Updated statement grammar to restrict assignment and delete expressions
+  to top level expressions.
+** They are disallowed in return and throw arguments, if tests, switch tests,
+  while and do while conditions, and for test expressions.
+** Only expression statements and the for init and update expressions can use 
+  deletion or assignment.
+* Added more specific parser error messages.
+
 ## 0.7.2 - December 17, 2013
 * Rewrote to eliminate most AST mutation.
 * Added a few peephole optimizes/rewrites.

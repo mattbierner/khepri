@@ -87,20 +87,20 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
         return node.base;
     }));
     addPeephole("BinaryExpression", (function(node) {
-        return ((node.operator === "|>") && ((((node.left.type === "CurryExpression") || (node.left.type ===
-                "BinaryOperatorExpression")) || (node.left.type === "UnaryOperatorExpression")) ||
-            (node.left.type === "TernaryOperatorExpression")));
-    }), (function(node) {
-        return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ?
-            node.left.base : node.left), concat((node.left.args || []), node.right));
-    }));
-    addPeephole("BinaryExpression", (function(node) {
-        return ((node.operator === "<|") && ((((node.right.type === "CurryExpression") || (node.right.type ===
+        return ((node.operator === "|>") && ((((node.right.type === "CurryExpression") || (node.right.type ===
                 "BinaryOperatorExpression")) || (node.right.type === "UnaryOperatorExpression")) ||
             (node.right.type === "TernaryOperatorExpression")));
     }), (function(node) {
         return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ?
             node.right.base : node.right), concat((node.right.args || []), node.left));
+    }));
+    addPeephole("BinaryExpression", (function(node) {
+        return ((node.operator === "<|") && ((((node.left.type === "CurryExpression") || (node.left.type ===
+                "BinaryOperatorExpression")) || (node.left.type === "UnaryOperatorExpression")) ||
+            (node.left.type === "TernaryOperatorExpression")));
+    }), (function(node) {
+        return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ?
+            node.left.base : node.left), concat((node.left.args || []), node.right));
     }));
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {

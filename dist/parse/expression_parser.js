@@ -94,12 +94,12 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     var formalParameterList = pattern.argumentsPattern;
     var functionBody = node(between(punctuator("{"), punctuator("}"), sourceElements), ast_statement.BlockStatement
         .create);
-    var lambdaBody = node(conditionalExpression, (function(loc, x) {
+    var lambdaBody = node(expected("lambda body expression", conditionalExpression), (function(loc, x) {
         return ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)]);
     }));
     var lambdaFunctionBody = either(functionBody, lambdaBody);
     var lambdaFunctionExpression = nodea(next(punctuator("\\"), enumeration(formalParameterList, next(
-        punctuator("->"), lambdaFunctionBody))), (function(loc, parameters, body) {
+        punctuator("->"), expected("lambda body", lambdaFunctionBody)))), (function(loc, parameters, body) {
         return ast_expression.FunctionExpression.create(loc, null, parameters, body);
     }));
     var ecmaFunctionExpression = nodea(next(keyword("function"), cons(optional(null, identifier), either(
@@ -319,7 +319,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     })];
     (composeExpression = Parser("Compose Expression", precedence(memo(conditionalExpression),
         composePrecedenceTable)));
-    (assignmentOperator = Parser("Assignment Operator", punctuator("=")));
+    (assignmentOperator = punctuator("="));
     (assignmentExpression = Parser("Assignment Expression", nodea(append(attempt(enumeration(
         leftHandReferenceExpression, assignmentOperator)), enumeration(expected("expression",
         expression))), (function(loc, left, op, right) {

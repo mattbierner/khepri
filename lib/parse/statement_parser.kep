@@ -19,27 +19,30 @@ package (
     debuggerStatement
     statement)
 with
-    import 'parse/parse' parse#{
-        always,
-        attempt,
-        binds,
-        choice,
-        eager,
-        either,
-        enumeration,
-        expected,
-        many,
-        memo,
-        next,
-        optional,
+    import 'parse/parse' {
+        always
+        attempt
+        binds
+        choice
+        eager
+        either
+        enumeration
+        expected
+        many
+        memo
+        next
+        optional
         Parser},
     import 'parse/lang' {between, sepBy1, then},
     import 'khepri_ast/clause' ast_clause,
     import 'khepri_ast/declaration' ast_declaration,
     import 'khepri_ast/statement' ast_statement,
+    
     import 'khepri/parse/common' {node, nodea},
-    import 'khepri/parse/token_parser' {keyword, punctuator},
-    import 'khepri/parse/expression_parser' {assignmentExpression, expression, topLevelExpression},
+    import 'khepri/parse/token_parser' {keyword punctuator},
+    import 'khepri/parse/expression_parser' {
+        expression
+        topLevelExpression},
     import 'khepri/parse/pattern_parser' {importPattern, pattern},
     import 'khepri/parse/value_parser' {identifier}
 in {
@@ -108,7 +111,7 @@ in
 var variableDeclarationList = let
     initialiser = next(
         punctuator('='),
-        expected('expression', topLevelExpression)),
+        expression |> (expected, "variable initilizer")),
 
     variableDeclaration = nodea(
         enumeration(
@@ -162,7 +165,7 @@ ifStatement = Parser('If Statement',
             keyword('if'),
             enumeration(
                 between(punctuator('('), punctuator(')'),
-                    topLevelExpression),
+                    expression |> (expected, "if condition")),
                 statement,
                 optional(null, next(
                     keyword('else'),
@@ -177,7 +180,7 @@ switchStatement = (Parser, 'Switch Statement') <| let
             keyword('case'),
             enumeration(
                 then(
-                    topLevelExpression,
+                    expression,
                     punctuator(':')),
                 statementList)),
         ast_clause.SwitchCase.create),
@@ -207,7 +210,7 @@ in
             keyword('switch'),
             enumeration(
                 between(punctuator('('), punctuator(')'),
-                    topLevelExpression),
+                    expression |> (expected, "switch discriminant")),
                 caseBlock)),
         ast_statement.SwitchStatement.create);
 
@@ -219,7 +222,7 @@ var whileStatement = Parser('While Statement',
             keyword('while'),
             enumeration(
                 between(punctuator('('), punctuator(')'),
-                    topLevelExpression),
+                    expression),
                 statement)),
         ast_statement.WhileStatement.create));
 
@@ -232,7 +235,7 @@ var doWhileStatement = Parser('Do While Statement',
                     statement,
                     keyword('while')),
                 between(punctuator('('), punctuator(')'),
-                    topLevelExpression),
+                    expression),
                 punctuator(';'))),
         ast_statement.DoWhileStatement.create));
 
@@ -246,12 +249,9 @@ var forStatement = Parser('For Statement', let
                 ast_declaration.VariableDeclaration.create),
             topLevelExpression)),
     
-    forTestExpression = optional(null, topLevelExpression),
+    forTestExpression = optional(null, expression),
     
-    forUpdateExpression = optional(null,
-        either(
-            attempt(assignmentExpression),
-            topLevelExpression))
+    forUpdateExpression = optional(null, topLevelExpression)
 in
     nodea(
         next(
@@ -300,7 +300,7 @@ breakStatement = Parser('Break Statement',
 returnStatement = Parser('Return Statement',
     node(
         between(keyword('return'), logicalSemiColon,
-            optional(null, topLevelExpression)),
+            optional(null, expression)),
         ast_statement.ReturnStatement.create));
 
 // Throw Statement
@@ -308,7 +308,7 @@ returnStatement = Parser('Return Statement',
 throwStatement = Parser('Throw Statement',
     node(
         between(keyword('throw'), logicalSemiColon,
-            topLevelExpression),
+            expression),
         ast_statement.ThrowStatement.create));
 
 // Try Statement

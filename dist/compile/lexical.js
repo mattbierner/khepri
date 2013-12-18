@@ -139,6 +139,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             return s;
         }));
     });
+    var pass = ok();
     var block = (function() {
         var body = arguments;
         return examineScope((function(s) {
@@ -160,7 +161,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     });
     var checkCanAddOwnBinding = (function(id, loc) {
         return examineScope((function(s) {
-            return (!s.hasOwnBinding(id) ? ok() : (function() {
+            return (!s.hasOwnBinding(id) ? pass : (function() {
                     {
                         var start = (loc && loc.start),
                             binding = s.getBinding(id),
@@ -174,7 +175,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     });
     var hasBinding = (function(id, loc) {
         return examineScope((function(s) {
-            return (s.hasBinding(id) ? ok() : error(((("Undeclared identifier:'" + id) + "' at:") +
+            return (s.hasBinding(id) ? pass : error(((("Undeclared identifier:'" + id) + "' at:") +
                 loc)));
         }));
     });
@@ -184,7 +185,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 {
                     var current = s.getBinding(id);
                     return (current.reserved ? error(((("Undeclared identifier:'" + id) +
-                        "' at:") + loc)) : ok());
+                        "' at:") + loc)) : pass);
                 }
             })
                 .call(this);
@@ -195,11 +196,11 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             return (s.hasBinding(id) ? (function() {
                     {
                         var b = s.getBinding(id);
-                        return (b.mutable ? ok() : error(((("Assign to immutable variable:'" +
+                        return (b.mutable ? pass : error(((("Assign to immutable variable:'" +
                             id) + "' at:") + loc)));
                     }
                 })
-                .call(this) : ok());
+                .call(this) : pass);
         }));
     });
     var getUnusedId = (function(id, loc) {
@@ -277,15 +278,18 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         return checkCtx(s.ctx)(s, ok, err);
     });
     var checkChild = child.bind(null, checkTop);
+    var modifyNode = (function(f) {
+        return move(tree.modifyNode.bind(null, f));
+    });
     (_check = (function(node) {
         if (Array.isArray(node)) {
-            if (!node.length) return ok();
+            if (!node.length) return pass;
             return seq(move(zipper.down), seqa(map(node, (function(_, i) {
                 return ((i === (node.length - 1)) ? checkTop : next(checkTop, move(
                     zipper.right)));
             }))), move(zipper.up));
         }
-        if (!(node instanceof ast_node.Node)) return ok();
+        if (!(node instanceof ast_node.Node)) return pass;
         switch (node.type) {
             case "Program":
                 return checkChild("body");
@@ -303,7 +307,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 return block(addImmutableBindingInRealBlock(node.param.name, node.param.loc), child(
                     checkChild("body"), "body"));
             case "SwitchCase":
-                return checkChild("consequent");
+                return seq(checkChild("test"), checkChild("consequent"));
             case "StaticDeclaration":
             case "VariableDeclaration":
                 return checkChild("declarations");
@@ -342,7 +346,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 return checkChild("argument");
             case "AssignmentExpression":
                 return seq(checkChild("left"), ((node.left.type === "Identifier") ? checkCanAssign(node
-                    .left.name, node.left.loc.start) : ok()), checkChild("right"));
+                    .left.name, node.left.loc.start) : pass), checkChild("right"));
             case "LogicalExpression":
             case "BinaryExpression":
                 return seq(checkChild("left"), checkChild("right"));
@@ -352,7 +356,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "NewExpression":
                 return seq(checkChild("callee"), checkChild("args"));
             case "MemberExpression":
-                return seq(checkChild("object"), (node.computed ? checkChild("property") : ok()));
+                return seq(checkChild("object"), (node.computed ? checkChild("property") : pass));
             case "ArrayExpression":
                 return checkChild("elements");
             case "ObjectExpression":
@@ -364,38 +368,37 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "UnaryOperatorExpression":
             case "BinaryOperatorExpression":
             case "TernaryOperatorExpression":
-                return ok();
+                return pass;
             case "FunctionExpression":
-                return realBlock((node.id ? addImmutableBinding(node.id.name, node.loc) : ok()),
+                return realBlock((node.id ? addImmutableBinding(node.id.name, node.loc) : pass),
                     checkChild("params"), child(checkChild("body"), "body"));
             case "EllipsisPattern":
-                return ok();
+                return pass;
             case "SinkPattern":
                 return bind(getUnusedId("_"), (function(x) {
-                    return seq(move(tree.modifyNode.bind(null, (function(node) {
+                    return seq(modifyNode((function(node) {
                         var n = setUserData(node, (node.ud || ({})));
                         var id = ast_value.Identifier.create(null, x);
                         (n.ud.id = id);
                         return n;
-                    }))), addReservedBinding(x, node.loc));
+                    })), addReservedBinding(x, node.loc));
                 }));
             case "IdentifierPattern":
                 if (node.reserved) return addReservedBinding(node.id.name, node.loc);
-                return seq(addUniqueImmutableBinding(node.id.name, node.loc), checkChild("id"), move(
-                    tree.modifyNode.bind(null, (function(node) {
+                return seq(addUniqueImmutableBinding(node.id.name, node.loc), checkChild("id"),
+                    modifyNode((function(node) {
                         var n = setUserData(node, (node.ud || ({})));
-                        var id = ast_value.Identifier.create(null, node.id.name);
-                        (n.ud.id = id);
+                        (n.ud.id = ast_value.Identifier.create(null, node.id.name));
                         return n;
-                    }))));
+                    })));
             case "ImportPattern":
                 return checkChild("pattern");
             case "AsPattern":
-                return seq(checkChild("id"), child(seq(move(tree.modifyNode.bind(null, (function(node) {
-                    var n = setUserData(node.target, (node.target.ud || ({})));
+                return seq(checkChild("id"), child(seq(modifyNode((function(target) {
+                    var n = setUserData(target, (target.ud || ({})));
                     (n.ud.id = node.id);
                     return n;
-                }))), checkTop), "target"));
+                })), checkTop), "target"));
             case "ArrayPattern":
             case "ObjectPattern":
                 return examineScope((function(s) {
@@ -439,7 +442,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 })
                     .call(this);
         }
-        return ok();
+        return pass;
     }));
     var builtins = ["Array", "Boolean", "Date", "decodeURI", "decodeURIComponent", "encodeURI",
         "encodeURIComponent", "Error", "eval", "EvalError", "Function", "Infinity", "isFinite", "isNaN", "JSON",
@@ -448,7 +451,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     ];
     (check = (function(root, globals) {
         var g = (globals || builtins);
-        var scope = g.reduce(Scope.addImmutableBinding, new(Scope)(({}), null, ({})));
+        var scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({})));
         var state = new(State)(khepriZipper(root), scope, scope);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));

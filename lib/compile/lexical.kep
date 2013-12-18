@@ -63,7 +63,6 @@ var bind = \p f ->
     \s ok err ->
         cont(p, [s, \x, s -> f(x)(s, ok, err), err]);
 
-        
 var next = \p n -> bind(p, \_ -> n);
 
 var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
@@ -103,6 +102,8 @@ var setRealScope = \s -> modifyRealScope(\() -> s);
 
 /* Operations
  ******************************************************************************/
+var pass = ok();
+
 /**
  * Create a new lexical block for body.
  */
@@ -137,21 +138,23 @@ var realBlock = \body(...) ->
  * Test to see if the current scope already contains a binding for id.
  */
 var checkCanAddOwnBinding = \id, loc -> 
-    examineScope(\s -> !s.hasOwnBinding(id) ? ok() :
-        let
-            start = loc && loc.start,
-            binding = s.getBinding(id),
-            end = binding.loc && binding.loc.start
-        in
-            error("'" + id + "' at:" + start + " already bound for scope from:" + end));
+    (examineScope <|\ s ->
+        (!s.hasOwnBinding(id) ? pass :
+            let
+                start = loc && loc.start,
+                binding = s.getBinding(id),
+                end = binding.loc && binding.loc.start
+            in
+                error("'" + id + "' at:" + start + " already bound for scope from:" + end)));
 
 /**
  * 
  */
 var hasBinding = \id, loc ->
-    examineScope(\s -> s.hasBinding(id) ?
-        ok() :
-        error("Undeclared identifier:'" + id + "' at:" + loc));
+    (examineScope <|\ s ->
+        (s.hasBinding(id) ?
+            pass :
+            error("Undeclared identifier:'" + id + "' at:" + loc)));
 
 /**
  * 
@@ -163,7 +166,7 @@ var hasFreeBinding = \id, loc ->
             let current = s.getBinding(id) in
                 (current.reserved ?
                     error("Undeclared identifier:'" + id + "' at:" + loc) :
-                    ok())));
+                    pass)));
 
 /**
  * 
@@ -171,8 +174,8 @@ var hasFreeBinding = \id, loc ->
 var checkCanAssign = \id, loc -> 
     examineScope(\s -> s.hasBinding(id) ?
         let b = s.getBinding(id) in
-            b.mutable ? ok() : error("Assign to immutable variable:'" + id + "' at:"+ loc) :
-        ok());
+            b.mutable ? pass : error("Assign to immutable variable:'" + id + "' at:"+ loc) :
+        pass);
 
 /**
  * 
@@ -272,13 +275,16 @@ var checkTop = \s ok err ->
     
 var checkChild = (child, checkTop);
 
+var modifyNode = \f ->
+    move((tree.modifyNode, f));
+
 /*
  ******************************************************************************/
 _check = function(node) {
     
     if (Array.isArray(node)) {
         if (!node.length)
-            return ok();
+            return pass;
         return seq(
             move(zipper.down),
             seqa(map(node, \_ i -> (i === node.length - 1 ? checkTop : next(checkTop, move(zipper.right))))),
@@ -286,7 +292,7 @@ _check = function(node) {
     }
     
     if (!(node instanceof ast_node.Node))
-        return ok();
+        return pass;
     
     switch (node.type)
     {
@@ -321,7 +327,9 @@ _check = function(node) {
             child(checkChild('body'), 'body'));
     
     case 'SwitchCase':
-        return checkChild('consequent');
+        return seq(
+            checkChild('test'),
+            checkChild('consequent'));
     
 // Declarations
     case 'StaticDeclaration':
@@ -403,7 +411,7 @@ _check = function(node) {
             checkChild('left'),
             (node.left.type === 'Identifier' ?
                 checkCanAssign(node.left.name, node.left.loc.start) :
-                ok()),
+                pass),
             checkChild('right'));
     
     case 'LogicalExpression':
@@ -427,7 +435,7 @@ _check = function(node) {
     case 'MemberExpression':
         return seq(
             checkChild('object'),
-            (node.computed ? checkChild('property') : ok()));
+            (node.computed ? checkChild('property') : pass));
         
     case 'ArrayExpression':
         return checkChild('elements');
@@ -448,29 +456,29 @@ _check = function(node) {
     case 'UnaryOperatorExpression':
     case 'BinaryOperatorExpression':
     case 'TernaryOperatorExpression':
-        return ok();
+        return pass;
     
 // Function
     case 'FunctionExpression':
         return realBlock(
-             (node.id ? addImmutableBinding(node.id.name, node.loc) : ok()),
+             (node.id ? addImmutableBinding(node.id.name, node.loc) : pass),
              checkChild('params'),
              child(checkChild('body'), 'body'));
 
 // Pattern
     case 'EllipsisPattern':
-        return ok();
+        return pass;
     
     case 'SinkPattern':
         return bind(
             getUnusedId('_'),
             \x -> seq(
-                move((tree.modifyNode, \node -> {
+                modifyNode(\node -> {
                     var n = setUserData(node, node.ud || {});
                     var id = ast_value.Identifier.create(null, x);
                     n.ud.id = id;
                     return n;
-                })),
+                }),
                 addReservedBinding(x, node.loc)));
     
     case 'IdentifierPattern':
@@ -480,13 +488,11 @@ _check = function(node) {
         return seq(
             addUniqueImmutableBinding(node.id.name, node.loc),
             checkChild('id'),
-            move((tree.modifyNode, \node ->{
+            modifyNode(\node ->{
                 var n = setUserData(node, node.ud || {});
-                var id =  ast_value.Identifier.create(null, node.id.name);
-
-                n.ud.id = id;
+                n.ud.id = ast_value.Identifier.create(null, node.id.name);
                 return n;
-            })));
+            }));
         
     case 'ImportPattern':
         return checkChild('pattern');
@@ -496,12 +502,13 @@ _check = function(node) {
             checkChild('id'),
             child(
                 seq(
-                    move((tree.modifyNode, \node -> {
-                        var n = setUserData(node.target, node.target.ud || {});
+                   modifyNode(\target -> {
+                        var n = setUserData(target, target.ud || {});
                         n.ud.id = node.id;
                         return n;
-                    })),
-                    checkTop), 'target'));
+                    }),
+                    checkTop),
+                'target'));
     
     case 'ArrayPattern':
     case 'ObjectPattern':
@@ -546,7 +553,7 @@ _check = function(node) {
                 hasFreeBinding(name, node.loc));
     }
     
-    return ok();
+    return pass;
 };
 
 
@@ -584,7 +591,7 @@ var builtins = [
 
 check = function(root, globals) {
     var g = globals || builtins;
-    var scope = g.reduce(Scope.addImmutableBinding, new Scope({}, null, {}));
+    var scope = reduce(g, Scope.addImmutableBinding, new Scope({}, null, {}));
     var state = new State(khepriZipper(root), scope, scope);
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };

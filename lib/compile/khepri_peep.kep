@@ -109,18 +109,19 @@ addPeephole('CurryExpression',
     \node -> !node.args.length,
     \node -> node.base);
 
+
 /**
  * Rewrite left pipe of curried expression to a call.
  */
 addPeephole('BinaryExpression',
     \node ->
         (node.operator === '|>' &&
-            node.left.type === 'CurryExpression' || node.left.type === 'BinaryOperatorExpression' ||
-            node.left.type === 'UnaryOperatorExpression' || node.left.type === 'TernaryOperatorExpression'),
+            node.right.type === 'CurryExpression' || node.right.type === 'BinaryOperatorExpression' ||
+            node.right.type === 'UnaryOperatorExpression' || node.right.type === 'TernaryOperatorExpression'),
     \node ->
         ast_expression.CallExpression.create(null,
-            (node.left.type === 'CurryExpression' ? node.left.base : node.left),
-            concat(node.left.args || [], node.right)));
+            (node.right.type === 'CurryExpression' ? node.right.base : node.right),
+            concat(node.right.args || [], node.left)));
 
 /**
  * Rewrite right pipe of curried expression to a call.
@@ -128,12 +129,13 @@ addPeephole('BinaryExpression',
 addPeephole('BinaryExpression',
     \node ->
         (node.operator === '<|' &&
-            node.right.type === 'CurryExpression' || node.right.type === 'BinaryOperatorExpression' ||
-            node.right.type === 'UnaryOperatorExpression' || node.right.type === 'TernaryOperatorExpression'),
+            node.left.type === 'CurryExpression' || node.left.type === 'BinaryOperatorExpression' ||
+            node.left.type === 'UnaryOperatorExpression' || node.left.type === 'TernaryOperatorExpression'),
     \node ->
         ast_expression.CallExpression.create(null,
-            (node.right.type === 'CurryExpression' ? node.right.base : node.right),
-            concat(node.right.args || [], node.left)));
+            (node.left.type === 'CurryExpression' ? node.left.base : node.left),
+            concat(node.left.args || [], node.right)));
+
 
 /* Interface
  ******************************************************************************/

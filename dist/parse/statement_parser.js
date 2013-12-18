@@ -5,47 +5,46 @@
 define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/clause", "khepri_ast/declaration",
     "khepri_ast/statement", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/expression_parser",
     "khepri/parse/pattern_parser", "khepri/parse/value_parser"
-], (function(require, exports, parse, __o, ast_clause, ast_declaration, ast_statement, __o0, __o1, __o2, __o3, __o4) {
+], (function(require, exports, __o, __o0, ast_clause, ast_declaration, ast_statement, __o1, __o2, __o3, __o4, __o5) {
     "use strict";
     var blockStatement, staticStatement, variableStatement, emptyStatement, expressionStatement, ifStatement,
             withStatement, iterationStatement, continueStatement, breakStatement, returnStatement,
             switchStatement, throwStatement, tryStatement, debuggerStatement, statement;
-    var parse = parse,
-        always = parse["always"],
-        attempt = parse["attempt"],
-        binds = parse["binds"],
-        choice = parse["choice"],
-        eager = parse["eager"],
-        either = parse["either"],
-        enumeration = parse["enumeration"],
-        expected = parse["expected"],
-        many = parse["many"],
-        memo = parse["memo"],
-        next = parse["next"],
-        optional = parse["optional"],
-        Parser = parse["Parser"],
-        __o = __o,
-        between = __o["between"],
-        sepBy1 = __o["sepBy1"],
-        then = __o["then"],
+    var __o = __o,
+        always = __o["always"],
+        attempt = __o["attempt"],
+        binds = __o["binds"],
+        choice = __o["choice"],
+        eager = __o["eager"],
+        either = __o["either"],
+        enumeration = __o["enumeration"],
+        expected = __o["expected"],
+        many = __o["many"],
+        memo = __o["memo"],
+        next = __o["next"],
+        optional = __o["optional"],
+        Parser = __o["Parser"],
+        __o0 = __o0,
+        between = __o0["between"],
+        sepBy1 = __o0["sepBy1"],
+        then = __o0["then"],
         ast_clause = ast_clause,
         ast_declaration = ast_declaration,
         ast_statement = ast_statement,
-        __o0 = __o0,
-        node = __o0["node"],
-        nodea = __o0["nodea"],
         __o1 = __o1,
-        keyword = __o1["keyword"],
-        punctuator = __o1["punctuator"],
+        node = __o1["node"],
+        nodea = __o1["nodea"],
         __o2 = __o2,
-        assignmentExpression = __o2["assignmentExpression"],
-        expression = __o2["expression"],
-        topLevelExpression = __o2["topLevelExpression"],
+        keyword = __o2["keyword"],
+        punctuator = __o2["punctuator"],
         __o3 = __o3,
-        importPattern = __o3["importPattern"],
-        pattern = __o3["pattern"],
+        expression = __o3["expression"],
+        topLevelExpression = __o3["topLevelExpression"],
         __o4 = __o4,
-        identifier = __o4["identifier"];
+        importPattern = __o4["importPattern"],
+        pattern = __o4["pattern"],
+        __o5 = __o5,
+        identifier = __o5["identifier"];
     (statement = (function() {
         var args = arguments;
         return statement.apply(undefined, args);
@@ -70,7 +69,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/clause", 
         .call(this)));
     var variableDeclarationList = (function() {
         {
-            var initialiser = next(punctuator("="), expected("expression", topLevelExpression)),
+            var initialiser = next(punctuator("="), expected("variable initilizer", expression)),
                 variableDeclaration = nodea(enumeration(identifier, optional(null, initialiser)),
                     ast_declaration.VariableDeclarator.create);
             return eager(sepBy1(punctuator(","), variableDeclaration));
@@ -91,12 +90,12 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/clause", 
         })
         .call(this)));
     (ifStatement = Parser("If Statement", nodea(next(keyword("if"), enumeration(between(punctuator("("),
-        punctuator(")"), topLevelExpression), statement, optional(null, next(keyword("else"),
-        statement)))), ast_statement.IfStatement.create)));
+        punctuator(")"), expected("if condition", expression)), statement, optional(null,
+        next(keyword("else"), statement)))), ast_statement.IfStatement.create)));
     (switchStatement = Parser("Switch Statement", (function() {
             {
-                var caseClause = nodea(next(keyword("case"), enumeration(then(topLevelExpression,
-                    punctuator(":")), statementList)), ast_clause.SwitchCase.create),
+                var caseClause = nodea(next(keyword("case"), enumeration(then(expression, punctuator(
+                    ":")), statementList)), ast_clause.SwitchCase.create),
                     defaultClause = node(next(keyword("default"), next(punctuator(":"), statementList)), (
                         function(loc, consequent) {
                             return ast_clause.SwitchCase.create(loc, null, consequent);
@@ -109,23 +108,23 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/clause", 
                             first));
                     })));
                 return nodea(next(keyword("switch"), enumeration(between(punctuator("("), punctuator(
-                    ")"), topLevelExpression), caseBlock)), ast_statement.SwitchStatement.create);
+                        ")"), expected("switch discriminant", expression)), caseBlock)), ast_statement.SwitchStatement
+                    .create);
             }
         })
         .call(this)));
     var whileStatement = Parser("While Statement", nodea(next(keyword("while"), enumeration(between(punctuator(
-        "("), punctuator(")"), topLevelExpression), statement)), ast_statement.WhileStatement.create));
+        "("), punctuator(")"), expression), statement)), ast_statement.WhileStatement.create));
     var doWhileStatement = Parser("Do While Statement", nodea(next(keyword("do"), enumeration(then(statement,
-            keyword("while")), between(punctuator("("), punctuator(")"), topLevelExpression),
-        punctuator(";"))), ast_statement.DoWhileStatement.create));
+        keyword("while")), between(punctuator("("), punctuator(")"), expression), punctuator(
+        ";"))), ast_statement.DoWhileStatement.create));
     var forStatement = Parser("For Statement", (function() {
             {
                 var forInitExpression = optional(null, either(node(next(keyword("var"), memo(
                         variableDeclarationList)), ast_declaration.VariableDeclaration.create),
                     topLevelExpression)),
-                    forTestExpression = optional(null, topLevelExpression),
-                    forUpdateExpression = optional(null, either(attempt(assignmentExpression),
-                        topLevelExpression));
+                    forTestExpression = optional(null, expression),
+                    forUpdateExpression = optional(null, topLevelExpression);
                 return nodea(next(keyword("for"), enumeration(next(punctuator("("), forInitExpression),
                         next(punctuator(";"), forTestExpression), next(punctuator(";"),
                             forUpdateExpression), next(punctuator(")"), statement))), ast_statement.ForStatement
@@ -139,9 +138,9 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/clause", 
     (breakStatement = Parser("Break Statement", node(next(keyword("break"), logicalSemiColon), ast_statement.BreakStatement
         .create)));
     (returnStatement = Parser("Return Statement", node(between(keyword("return"), logicalSemiColon, optional(
-        null, topLevelExpression)), ast_statement.ReturnStatement.create)));
-    (throwStatement = Parser("Throw Statement", node(between(keyword("throw"), logicalSemiColon,
-        topLevelExpression), ast_statement.ThrowStatement.create)));
+        null, expression)), ast_statement.ReturnStatement.create)));
+    (throwStatement = Parser("Throw Statement", node(between(keyword("throw"), logicalSemiColon, expression),
+        ast_statement.ThrowStatement.create)));
     (tryStatement = Parser("Try Statement", (function() {
             {
                 var catchBlock = nodea(next(keyword("catch"), enumeration(between(punctuator("("),

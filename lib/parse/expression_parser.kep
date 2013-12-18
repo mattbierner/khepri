@@ -190,7 +190,7 @@ var functionBody = node(
     ast_statement.BlockStatement.create);
 
 var lambdaBody = node(
-    conditionalExpression,
+    conditionalExpression |> (expected, "lambda body expression"),
     \loc, x ->
         ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)]));
 
@@ -205,7 +205,7 @@ var lambdaFunctionExpression = nodea(
             formalParameterList,
             next(
                 punctuator('->'),
-                lambdaFunctionBody))),
+                lambdaFunctionBody |> (expected, "lambda body")))),
     \loc, parameters, body ->
         ast_expression.FunctionExpression.create(loc, null, parameters, body));
 
@@ -629,8 +629,7 @@ composeExpression = (Parser, 'Compose Expression') <|
 
 // Assignment Expression
 ////////////////////////////////////////
-assignmentOperator = (Parser, 'Assignment Operator') <|
-    punctuator('=');
+assignmentOperator = punctuator('=');
 
 assignmentExpression = (Parser, 'Assignment Expression') <|
     nodea(
