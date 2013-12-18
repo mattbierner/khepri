@@ -378,7 +378,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                 return transform(node.ud.id);
             case "EllipsisPattern":
             case "SinkPattern":
-                return (node.id ? identifier(node.loc, node.id) : null);
+                return ((node.ud && node.ud.id) ? transform(node.ud.id) : null);
             case "Program":
                 return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? map(node.body,
                     transform) : [transform(node.body)]));

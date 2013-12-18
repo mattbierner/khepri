@@ -613,10 +613,16 @@ _check = function(node) {
         return ok();
     
     case 'SinkPattern':
-        return bind(getUnusedId('_'), \x -> {
-            node.id = x;
-            return addReservedBinding(x, node.loc);
-        });
+        return bind(
+            getUnusedId('_'),
+            \x -> seq(
+                move((tree.modifyNode, \node -> {
+                    var n = setUserData(node, node.ud || {});
+                    var id = ast_value.Identifier.create(null, x);
+                    n.ud.id = id;
+                    return n;
+                })),
+                addReservedBinding(x, node.loc)));
     
     case 'IdentifierPattern':
         if (node.reserved)

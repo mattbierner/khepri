@@ -641,8 +641,8 @@ transform = function(node) {
     
     case 'EllipsisPattern':
     case 'SinkPattern':
-        return (node.id ?
-            identifier(node.loc, node.id) :
+        return (node.ud && node.ud.id ?
+            transform(node.ud.id) :
             null);
     
 // Program

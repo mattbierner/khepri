@@ -447,8 +447,12 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 return ok();
             case "SinkPattern":
                 return bind(getUnusedId("_"), (function(x) {
-                    (node.id = x);
-                    return addReservedBinding(x, node.loc);
+                    return seq(move(tree.modifyNode.bind(null, (function(node) {
+                        var n = setUserData(node, (node.ud || ({})));
+                        var id = ast_value.Identifier.create(null, x);
+                        (n.ud.id = id);
+                        return n;
+                    }))), addReservedBinding(x, node.loc));
                 }));
             case "IdentifierPattern":
                 if (node.reserved) return addReservedBinding(node.id.name, node.loc);
