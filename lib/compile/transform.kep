@@ -64,21 +64,6 @@ var variableDeclarator = \loc, id, init ->
         transform(id),
         transform(init)));
 
-/**
- */
-var objectPatternElement = \loc, key, value ->
-    khepri_pattern.ObjectPatternElement.create(loc, key, value);
-
-var arrayPattern = \loc, elements, id -> {
-    var node = khepri_pattern.ObjectPattern.create(loc,
-        map(elements, \x, i ->
-            objectPatternElement(null,
-                khepri_value.Literal.create(null, 'number', i),
-                x)));
-    node.id = id;
-    return setUserData(node, {'id': id});
-};
-
 /* Unpacks
  ******************************************************************************/
 var innerPattern = let
@@ -116,11 +101,6 @@ in
             return concat(
                 f(pattern.id, base),
                 flatten <| innerPattern(pattern.id, pattern.target, f));
-        
-        case 'ArrayPattern':
-            return flatten <| innerPattern(
-                base,
-                arrayPattern(pattern.loc, pattern.elements, pattern.ud.id), f);
         
         case 'ObjectPattern':
             return pattern.elements

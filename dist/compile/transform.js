@@ -68,18 +68,6 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     var variableDeclarator = (function(loc, id, init) {
         return (!id ? null : ecma_declaration.VariableDeclarator.create(loc, transform(id), transform(init)));
     });
-    var objectPatternElement = (function(loc, key, value) {
-        return khepri_pattern.ObjectPatternElement.create(loc, key, value);
-    });
-    var arrayPattern = (function(loc, elements, id) {
-        var node = khepri_pattern.ObjectPattern.create(loc, map(elements, (function(x, i) {
-            return objectPatternElement(null, khepri_value.Literal.create(null, "number", i), x);
-        })));
-        (node.id = id);
-        return setUserData(node, ({
-            "id": id
-        }));
-    });
     var innerPattern = (function() {
         {
             var objectElementUnpack = (function(base, pattern, key, f) {
@@ -108,9 +96,6 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                     case "AsPattern":
                         return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target,
                             f)));
-                    case "ArrayPattern":
-                        return flatten(innerPattern(base, arrayPattern(pattern.loc, pattern.elements,
-                            pattern.ud.id), f));
                     case "ObjectPattern":
                         return flatten(maps((function(__o) {
                             var __o = __o,

@@ -9,9 +9,13 @@ with
 
     import 'khepri_ast_zipper/khepri_zipper' {khepriZipper},
     
-    import 'khepri_ast/node' {modify, Node},
+    import 'khepri_ast/node' {modify Node setUserData},
     import 'khepri_ast/statement' ast_statement,
-    import 'khepri_ast/expression' ast_expression
+    import 'khepri_ast/expression' ast_expression,
+    import 'khepri_ast/pattern' ast_pattern,
+    import 'khepri_ast/value' ast_value
+
+
 in {
 
 var concat = \args(...) ->
@@ -60,6 +64,21 @@ addPeephole('ExpressionStatement',
             node.expression.bindings,
             ast_statement.BlockStatement.create(null, 
                 [ast_statement.ExpressionStatement.create(node.loc, node.expression.body)])));
+
+/**
+ * Convert all array patterns to object patterns
+ */
+addPeephole('ArrayPattern',
+    \_ -> true,
+    \{loc elements ud} ->
+        setUserData(
+            ast_pattern.ObjectPattern.create(loc,
+                map(\x, i ->
+                    ast_pattern.ObjectPatternElement.create(null,
+                        ast_value.Literal.create(null, 'number', i),
+                        x),
+                    elements)),
+            ud));
 
 /**
  * Curry nothing is identity.
