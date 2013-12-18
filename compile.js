@@ -5,14 +5,16 @@ var argv = require('optimist').argv;
 requirejs.config({
     nodeRequire: require,
     paths: {
+        'khepri': 'dist',
+
         'parse': 'dependencies/parse/dist',
         'seshat': 'dependencies/seshat/lib/seshat',
         'nu': 'dependencies/nu/dist',
+        
         'ecma': 'dependencies/parse-ecma/lib',
         'ecma_unparse': 'dependencies/ecma-unparse/lib',
         'ecma_ast': 'dependencies/ecma-ast/lib',
         'khepri_ast': 'dependencies/khepri-ast/dist',
-        'khepri': 'dist',
         
         'neith': 'dependencies/neith/dist',
         'ecma_ast_zipper': 'dependencies/ecma-ast-zipper/dist',
@@ -24,16 +26,14 @@ requirejs(['nu/stream',
            'parse/parse',
            'ecma_unparse/unparse',
            'ecma_unparse/print',
-           'khepri/compile/lexical',
-           'khepri/compile/transform',
+           'khepri/compile/compile',
            'khepri/lex/lexer',
            'khepri/parse/parser'],
 function(stream,
         parse,
         unparse,
         unparse_print,
-        lexical,
-        transform,
+        khepri_compile,
         lexer,
         parser){
     
@@ -41,11 +41,10 @@ function(stream,
         try {
             var lex = lexer.lex(input);
             var ast = parser.parseStream(lex);
-            lexical.check(ast);
-            var unparsed = unparse.unparse(transform.transform(ast));
+            var unparsed = unparse.unparse(khepri_compile.compile(ast));
             return unparse_print.print(unparsed);
         } catch (e) {
-            console.error(e);
+            console.error(e + '');
             process.exit(1);
         }
     };

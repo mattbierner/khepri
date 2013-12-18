@@ -13,10 +13,11 @@ with
     import 'ecma_ast/program' ecma_program,
     import 'ecma_ast/statement' ecma_statement,
     import 'ecma_ast/value'ecma_value ,
+    
     import 'khepri_ast/clause' khepri_clause,
     import 'khepri_ast/declaration' khepri_declaration,
     import 'khepri_ast/expression' khepri_expression,
-    import 'khepri_ast/node' khepri_node,
+    import 'khepri_ast/node' khepri_node#{setUserData},
     import 'khepri_ast/pattern' khepri_pattern,
     import 'khepri_ast/program' khepri_program,
     import 'khepri_ast/statement' khepri_statement,
@@ -75,7 +76,7 @@ var arrayPattern = \loc, elements, id -> {
                 khepri_value.Literal.create(null, 'number', i),
                 x)));
     node.id = id;
-    return node;
+    return setUserData(node, {'id': id});
 };
 
 /* Unpacks
@@ -122,11 +123,9 @@ in
                 arrayPattern(pattern.loc, pattern.elements, pattern.ud.id), f);
         
         case 'ObjectPattern':
-            return flatten <| concat(
-                innerPattern(base, pattern.ud.id, f),
-                pattern.elements
-                    |> (maps, \{target, key} -> objectElementUnpack(pattern.ud.id, target, key, f))
-                    |> flatten);
+            return pattern.elements
+                |> (maps, \{target key} -> objectElementUnpack(pattern.ud.id, target, key, f))
+                |> flatten;
         
         default:
             return [];
@@ -244,7 +243,7 @@ var functionExpression = \loc, id, parameters, body -> let
             case 'AsPattern':
                 return innerPattern(transform(x.id), x.target, (variableDeclarator, null));
             default:
-                return innerPattern(transform(x.id), x, (variableDeclarator, null));
+                return innerPattern(transform(x.ud.id), x, (variableDeclarator, null));
             }
         })
         |> flatten,
@@ -378,7 +377,7 @@ var packageBlock = \loc, exports, body -> let
 
     exportHeader = (exportList.length ?
         ecma_declaration.VariableDeclaration.create(null,
-            map(exportList, (variableDeclarator, null))) :
+            map(exportList, \x -> variableDeclarator(null, x))) :
         ecma_statement.EmptyStatement.create(null)),
     
     exportBody = exportList.map(\x ->
@@ -394,7 +393,7 @@ var packageBlock = \loc, exports, body -> let
             map(body.bindings, \x -> (x.type !== 'ImportPattern' ? x :
                 khepri_declaration.Binding.create(null,
                     x.pattern,
-                    x.pattern.ud.id))),
+                    x.pattern.id))),
             body.body) :
         transform(body)),
     
@@ -402,7 +401,7 @@ var packageBlock = \loc, exports, body -> let
         concat(
             identifier(null, 'require'),
             identifier(null, 'exports'),
-            imp.map(\x -> transform(x.pattern))),
+            imp.map(\x -> transform(x.pattern.id))),
         blockStatement(fBody.loc,
             concat(
                 expressionStatement(null,
@@ -680,9 +679,11 @@ transform = function(node) {
             node.id.name);
     
     case 'AsPattern':
+        return transform(node.id);
+
     case 'ArrayPattern':
     case 'ObjectPattern':
-        return transform(node.id);
+        return transform(node.ud.id);
     
     case 'EllipsisPattern':
     case 'SinkPattern':

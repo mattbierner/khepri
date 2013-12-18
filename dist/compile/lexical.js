@@ -464,7 +464,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "AsPattern":
                 return examineScope((function(s) {
                     var n = setUserData(node.target, (node.target.ud || ({})));
-                    (n.ud.id = n.id);
+                    (n.ud.id = node.id);
                     return seq(checkChild("id"), child(seq(move(tree.setNode.bind(null, n)),
                         checkTop), "target"));
                 }));
@@ -478,7 +478,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                         (id.reserved = true);
                         var n = setUserData(node, (node.ud || ({})));
                         (n.ud.id = id);
-                        return seq(move(tree.setNode.bind(null, n)), checkTop);
+                        return seq(move(tree.setNode.bind(null, ast_pattern.AsPattern.create(
+                            null, id, node))), checkTop);
                     }
                     return seq(checkChild("elements"));
                 }));

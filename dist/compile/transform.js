@@ -22,6 +22,8 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         khepri_declaration = khepri_declaration,
         khepri_expression = khepri_expression,
         khepri_node = khepri_node,
+        khepri_node = khepri_node,
+        setUserData = khepri_node["setUserData"],
         khepri_pattern = khepri_pattern,
         khepri_program = khepri_program,
         khepri_statement = khepri_statement,
@@ -74,7 +76,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             return objectPatternElement(null, khepri_value.Literal.create(null, "number", i), x);
         })));
         (node.id = id);
-        return node;
+        return setUserData(node, ({
+            "id": id
+        }));
     });
     var innerPattern = (function() {
         {
@@ -108,14 +112,12 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                         return flatten(innerPattern(base, arrayPattern(pattern.loc, pattern.elements,
                             pattern.ud.id), f));
                     case "ObjectPattern":
-                        return flatten(concat(innerPattern(base, pattern.ud.id, f), flatten(maps((
-                            function(__o) {
-                                var __o = __o,
-                                    target = __o["target"],
-                                    key = __o["key"];
-                                return objectElementUnpack(pattern.ud.id, target, key,
-                                    f);
-                            }), pattern.elements))));
+                        return flatten(maps((function(__o) {
+                            var __o = __o,
+                                target = __o["target"],
+                                key = __o["key"];
+                            return objectElementUnpack(pattern.ud.id, target, key, f);
+                        }), pattern.elements));
                     default:
                         return [];
                 }
@@ -190,8 +192,8 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                                 return innerPattern(transform(x.id), x.target,
                                     variableDeclarator.bind(null, null));
                             default:
-                                return innerPattern(transform(x.id), x, variableDeclarator.bind(
-                                    null, null));
+                                return innerPattern(transform(x.ud.id), x,
+                                    variableDeclarator.bind(null, null));
                         }
                     }), parameters.elements)),
                     argumentsPrefix = (parameters.id ? variableDeclarator(null, transform(parameters.id),
@@ -260,8 +262,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                         return transform(x.id);
                     })),
                     exportHeader = (exportList.length ? ecma_declaration.VariableDeclaration.create(
-                            null, map(exportList, variableDeclarator.bind(null, null))) :
-                        ecma_statement.EmptyStatement.create(null)),
+                        null, map(exportList, (function(x) {
+                            return variableDeclarator(null, x);
+                        }))) : ecma_statement.EmptyStatement.create(null)),
                     exportBody = exportList.map((function(x) {
                         return expressionStatement(null, ecma_expression.AssignmentExpression.create(
                             null, "=", memberExpression(null, identifier(null, "exports"),
@@ -270,12 +273,12 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                     fBody = ((body.type === "WithStatement") ? withStatement(null, map(body.bindings, (
                         function(x) {
                             return ((x.type !== "ImportPattern") ? x : khepri_declaration.Binding
-                                .create(null, x.pattern, x.pattern.ud.id));
+                                .create(null, x.pattern, x.pattern.id));
                         })), body.body) : transform(body)),
                     packageBody = ecma_expression.FunctionExpression.create(null, null, concat(
                         identifier(null, "require"), identifier(null, "exports"), imp.map((function(
                             x) {
-                            return transform(x.pattern);
+                            return transform(x.pattern.id);
                         }))), blockStatement(fBody.loc, concat(expressionStatement(null,
                             stringLiteral(null, "use strict")), exportHeader, fBody.body,
                         exportBody)));
@@ -407,9 +410,10 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             case "IdentifierPattern":
                 return identifier(node.loc, node.id.name);
             case "AsPattern":
+                return transform(node.id);
             case "ArrayPattern":
             case "ObjectPattern":
-                return transform(node.id);
+                return transform(node.ud.id);
             case "EllipsisPattern":
             case "SinkPattern":
                 return (node.id ? identifier(node.loc, node.id) : null);
