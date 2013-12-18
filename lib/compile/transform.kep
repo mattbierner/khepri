@@ -68,26 +68,10 @@ var variableDeclarator = \loc, id, init ->
  ******************************************************************************/
 var innerPattern = let
     objectElementUnpack = \base, pattern, key, f ->  {
-        var p = pattern;
-        var k; switch(key.type) {
-        case 'IdentifierPattern':
-            k = stringLiteral(null, key.id.name);
-            break;
-            
-        case 'AsPattern':
-            k = stringLiteral(null, key.id.id.name);
-            p = key;
-            break;
-            
-        default:
-            k = key;
-            break;
-        }
-        
-        var innerBase = khepri_expression.MemberExpression.create(null, base, k, true);
-        return (p ?
-            (flatten <| innerPattern(innerBase, p, f)) :
-            f(identifier(null, k.value), innerBase));
+        var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
+        return (pattern ?
+            (flatten <| innerPattern(innerBase, pattern, f)) :
+            f(identifier(null, key.value), innerBase));
     }
 in
     \base, pattern, f -> {
@@ -111,16 +95,6 @@ in
             return [];
         }
     };
-
-/**
- * 
- */
-var asUnpack = let
-    make = (variableDeclarator, null)
-in
-    \pattern, value ->
-        innerPattern(value, pattern, make)
-            |> flatten;
 
 /**
  * 

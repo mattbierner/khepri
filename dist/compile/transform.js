@@ -71,23 +71,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     var innerPattern = (function() {
         {
             var objectElementUnpack = (function(base, pattern, key, f) {
-                var p = pattern;
-                var k;
-                switch (key.type) {
-                    case "IdentifierPattern":
-                        (k = stringLiteral(null, key.id.name));
-                        break;
-                    case "AsPattern":
-                        (k = stringLiteral(null, key.id.id.name));
-                        (p = key);
-                        break;
-                    default:
-                        (k = key);
-                        break;
-                }
-                var innerBase = khepri_expression.MemberExpression.create(null, base, k, true);
-                return (p ? flatten(innerPattern(innerBase, p, f)) : f(identifier(null, k.value),
-                    innerBase));
+                var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
+                return (pattern ? flatten(innerPattern(innerBase, pattern, f)) : f(identifier(null, key
+                    .value), innerBase));
             });
             return (function(base, pattern, f) {
                 switch (pattern.type) {
@@ -107,15 +93,6 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                         return [];
                 }
             });
-        }
-    })
-        .call(this);
-    var asUnpack = (function() {
-        {
-            var make = variableDeclarator.bind(null, null);
-            return flatten((function(pattern, value) {
-                return innerPattern(value, pattern, make);
-            }));
         }
     })
         .call(this);

@@ -81,6 +81,28 @@ addPeephole('ArrayPattern',
             ud));
 
 /**
+ * Convert all array patterns to object patterns
+ */
+addPeephole('ObjectPatternElement',
+    \node -> !node.target,
+    \node#{loc key} -> {
+        switch(key.type) {
+        case 'IdentifierPattern':
+            return ast_pattern.ObjectPatternElement.create(null,
+                ast_value.Literal.create(null, 'string', key.id.name),
+                key);
+            
+        case 'AsPattern':
+            return ast_pattern.ObjectPatternElement.create(null,
+                ast_value.Literal.create(null, 'string', key.id.id.name),
+                key);
+            
+        default:
+            return node;
+        }
+    });
+
+/**
  * Curry nothing is identity.
  */
 addPeephole('CurryExpression',

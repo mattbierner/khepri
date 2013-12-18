@@ -64,6 +64,23 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
                 null, "number", i), x);
         }), elements)), ud);
     }));
+    addPeephole("ObjectPatternElement", (function(node) {
+        return !node.target;
+    }), (function(node) {
+        var node = node,
+            loc = node["loc"],
+            key = node["key"];
+        switch (key.type) {
+            case "IdentifierPattern":
+                return ast_pattern.ObjectPatternElement.create(null, ast_value.Literal.create(null,
+                    "string", key.id.name), key);
+            case "AsPattern":
+                return ast_pattern.ObjectPatternElement.create(null, ast_value.Literal.create(null,
+                    "string", key.id.id.name), key);
+            default:
+                return node;
+        }
+    }));
     addPeephole("CurryExpression", (function(node) {
         return !node.args.length;
     }), (function(node) {
