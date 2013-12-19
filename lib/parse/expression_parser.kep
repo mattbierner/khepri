@@ -119,6 +119,8 @@ conditionalExpression = \args(...) -> conditionalExpression.apply(undefined, arg
 
 newExpression = \args(...) -> newExpression.apply(undefined, args);
 
+memberExpression = \args(...) -> memberExpression.apply(undefined, args);
+
 /* Parsers
  ******************************************************************************/
 // Array Literal
@@ -190,7 +192,7 @@ var functionBody = node(
     ast_statement.BlockStatement.create);
 
 var lambdaBody = node(
-    conditionalExpression |> (expected, "lambda body expression"),
+    expression |> (expected, "lambda body expression"),
     \loc, x ->
         ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)]));
 
@@ -375,6 +377,19 @@ args = (Parser, 'Arguments') <|
             args.argument = true;
             return args;
         });
+// At Expression
+////////////////////////////////////////
+var atExpression = (Parser, 'AtExpression') <|
+    nodea(
+        next(
+            punctuator('@'),
+            enumeration(
+                memberExpression,
+                eager <| many(
+                    next(
+                        punctuator(':'),
+                        expression)))),
+        ast_expression.CallExpression.create);
 
 // Accessor
 ////////////////////////////////////////
@@ -416,7 +431,8 @@ var accessorReducer = \p, c ->
 memberExpression = (Parser, 'Member Expression') <|
     binds(
         enumeration(
-            either(
+            choice(
+                atExpression,
                 newExpression,
                 primaryExpression),
             many(accessor)),

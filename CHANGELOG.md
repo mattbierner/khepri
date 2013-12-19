@@ -12,6 +12,7 @@
 ** Only expression statements and the for init and update expressions can use 
   deletion or assignment.
 * Added more specific parser error messages.
+* Changed lambda to capture all expressions, including compose and pipe.
 
 ## 0.7.2 - December 17, 2013
 * Rewrote to eliminate most AST mutation.

@@ -80,6 +80,10 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         var args = arguments;
         return newExpression.apply(undefined, args);
     }));
+    (memberExpression = (function() {
+        var args = arguments;
+        return memberExpression.apply(undefined, args);
+    }));
     (arrayElement = Parser("Array Element", expression));
     (arrayElements = expected("array element", Parser("Array Elements", eager(sepBy(punctuator(","),
         arrayElement)))));
@@ -94,7 +98,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     var formalParameterList = pattern.argumentsPattern;
     var functionBody = node(between(punctuator("{"), punctuator("}"), sourceElements), ast_statement.BlockStatement
         .create);
-    var lambdaBody = node(expected("lambda body expression", conditionalExpression), (function(loc, x) {
+    var lambdaBody = node(expected("lambda body expression", expression), (function(loc, x) {
         return ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)]);
     }));
     var lambdaFunctionBody = either(functionBody, lambdaBody);
@@ -170,6 +174,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         (args.argument = true);
         return args;
     }))));
+    var atExpression = Parser("AtExpression", nodea(next(punctuator("@"), enumeration(memberExpression, eager(
+        many(next(punctuator(":"), expression))))), ast_expression.CallExpression.create));
     (dotAccessor = Parser("Dot Accessor", node(next(punctuator("."), identifier), (function(loc, x) {
         return ({
             "loc": loc,
@@ -189,8 +195,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     var accessorReducer = (function(p, c) {
         return ast_expression.MemberExpression.create(SourceLocation.merge(p.loc, c.loc), p, c.property, c.computed);
     });
-    (memberExpression = Parser("Member Expression", binds(enumeration(either(newExpression, primaryExpression),
-        many(accessor)), (function(f, g) {
+    (memberExpression = Parser("Member Expression", binds(enumeration(choice(atExpression, newExpression,
+        primaryExpression), many(accessor)), (function(f, g) {
         return (function() {
             return f(g.apply(null, arguments));
         });
