@@ -29,16 +29,21 @@ with
         enumeration
         expected
         many
-        memo
         next
         optional
         Parser},
-    import 'parse/lang' {between, sepBy1, then},
+    import 'parse/lang' {
+        between
+        sepBy1
+        then},
+    
     import 'khepri_ast/clause' ast_clause,
     import 'khepri_ast/declaration' ast_declaration,
     import 'khepri_ast/statement' ast_statement,
     
-    import 'khepri/parse/common' {node, nodea},
+    import 'khepri/parse/common' {
+        node
+        nodea},
     import 'khepri/parse/token_parser' {keyword punctuator},
     import 'khepri/parse/expression_parser' {
         expression
@@ -245,7 +250,7 @@ var forStatement = Parser('For Statement', let
             node(
                 next(
                     keyword('var'),
-                    memo(variableDeclarationList)),
+                    variableDeclarationList),
                 ast_declaration.VariableDeclaration.create),
             topLevelExpression)),
     
@@ -271,49 +276,49 @@ in
                     statement))),
         ast_statement.ForStatement.create));
 
-iterationStatement = Parser('Iteration Statement',
-    choice(
-        doWhileStatement,
-        whileStatement,
-        forStatement));
+iterationStatement = @Parser :'Iteration Statement'
+    :@choice
+        :doWhileStatement
+        :whileStatement
+        :forStatement;
 
 // Continue Statement
 ////////////////////////////////////////
-continueStatement = Parser('Continue Statement',
-    node(
+continueStatement = @Parser :'Continue Statement'
+    :node(
         next(
             keyword('continue'),
             logicalSemiColon),
-        ast_statement.ContinueStatement.create));
+        ast_statement.ContinueStatement.create);
 
 // Break Statement
 ////////////////////////////////////////
-breakStatement = Parser('Break Statement',
-    node(
+breakStatement = @Parser :'Break Statement'
+    :node(
         next(
             keyword('break'),
             logicalSemiColon),
-        ast_statement.BreakStatement.create));
+        ast_statement.BreakStatement.create);
 
 // Return Statement
 ////////////////////////////////////////
-returnStatement = Parser('Return Statement',
-    node(
+returnStatement = @Parser :'Return Statement'
+    :node(
         between(keyword('return'), logicalSemiColon,
             optional(null, expression)),
-        ast_statement.ReturnStatement.create));
+        ast_statement.ReturnStatement.create);
 
 // Throw Statement
 ////////////////////////////////////////
-throwStatement = Parser('Throw Statement',
-    node(
+throwStatement = @Parser :'Throw Statement'
+    :node(
         between(keyword('throw'), logicalSemiColon,
             expression),
-        ast_statement.ThrowStatement.create));
+        ast_statement.ThrowStatement.create);
 
 // Try Statement
 ////////////////////////////////////////
-tryStatement = Parser('Try Statement', let
+tryStatement = @Parser :'Try Statement' :let
     catchBlock = nodea(
         next(
             keyword('catch'),
@@ -334,13 +339,12 @@ in
                 blockStatement,
                 optional(null, catchBlock),
                 optional(null, finallyBlock))),
-        ast_statement.TryStatement.create));
-
+        ast_statement.TryStatement.create);
 
 // Statement
 ////////////////////////////////////////
 statement = @Parser :'Statement'
-    (@choice
+    :(@choice
         :blockStatement
         :staticStatement
         :variableStatement
