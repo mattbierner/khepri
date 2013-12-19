@@ -57,7 +57,7 @@ define(["require", "exports", "parse/parse", "parse/text", "parse/lang", "nu/str
     (doubleQuote = Parser("Double Quote Lexer", character("\"")));
     (singleQuote = Parser("Single Quote Lexer", character("'")));
     (escape = Parser("String Escape Lexer", character("\\")));
-    (lineContinuation = Parser("String Line Continuation Lexer", next(next(escape, lineTerminatorSequence),
+    (lineContinuation = Parser("String Line Continuation Lexer", sequence(escape, lineTerminatorSequence,
         always(""))));
     var singleEscapeCharacter = choice(character("'"), character("\""), character("\\"), next(character("b"),
         always("\b")), next(character("f"), always("\f")), next(character("n"), always("\n")), next(

@@ -339,22 +339,23 @@ in
 
 // Statement
 ////////////////////////////////////////
-statement = Parser('Statement',
-    expected("statement", choice(
-        blockStatement,
-        staticStatement,
-        variableStatement,
-        emptyStatement,
-        ifStatement,
-        withStatement,
-        iterationStatement,
-        continueStatement,
-        breakStatement,
-        returnStatement,
-        switchStatement,
-        throwStatement,
-        tryStatement,
-        debuggerStatement,
-        expressionStatement)));
+statement = @Parser :'Statement'
+    (@choice
+        :blockStatement
+        :staticStatement
+        :variableStatement
+        :emptyStatement
+        :ifStatement
+        :withStatement
+        :iterationStatement
+        :continueStatement
+        :breakStatement
+        :returnStatement
+        :switchStatement
+        :throwStatement
+        :tryStatement
+        :debuggerStatement
+        :expressionStatement)
+    |> (expected, 'statement');
 
 }

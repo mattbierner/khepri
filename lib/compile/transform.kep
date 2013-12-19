@@ -197,7 +197,7 @@ var functionExpression = \loc, id, parameters, body -> let
             case 'AsPattern':
                 return innerPattern(transform(x.id), x.target, (variableDeclarator, null));
             default:
-                return innerPattern(transform(x.ud.id), x, (variableDeclarator, null));
+                return innerPattern(transform(x), x, (variableDeclarator, null));
             }
         })
         |> flatten,

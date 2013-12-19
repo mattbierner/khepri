@@ -22,7 +22,6 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         khepri_declaration = khepri_declaration,
         khepri_expression = khepri_expression,
         khepri_node = khepri_node,
-        khepri_node = khepri_node,
         setUserData = khepri_node["setUserData"],
         khepri_pattern = khepri_pattern,
         khepri_program = khepri_program,
@@ -56,53 +55,43 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return ecma_value.Literal.create(loc, "null", null);
     });
     var variableDeclaration = (function(loc, declarations) {
-        return (function() {
-            {
-                var decls = map(declarations, transform)
-                    .filter(identity);
-                return (!decls.length ? decls : ecma_declaration.VariableDeclaration.create(loc, decls));
-            }
-        })
-            .call(this);
+        var decls = map(declarations, transform)
+            .filter(identity);
+        return (!decls.length ? decls : ecma_declaration.VariableDeclaration.create(loc, decls));
     });
     var variableDeclarator = (function(loc, id, init) {
         return (!id ? null : ecma_declaration.VariableDeclarator.create(loc, transform(id), transform(init)));
     });
     var innerPattern = (function() {
-        {
-            var objectElementUnpack = (function(base, pattern, key, f) {
-                var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
-                return (pattern ? flatten(innerPattern(innerBase, pattern, f)) : f(identifier(null, key
-                    .value), innerBase));
-            });
-            return (function(base, pattern, f) {
-                switch (pattern.type) {
-                    case "IdentifierPattern":
-                        return f(identifier(null, pattern.id.name), base);
-                    case "AsPattern":
-                        return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target,
-                            f)));
-                    case "ObjectPattern":
-                        return flatten(maps((function(__o) {
-                            var __o = __o,
-                                target = __o["target"],
-                                key = __o["key"];
-                            return objectElementUnpack(pattern.ud.id, target, key, f);
-                        }), pattern.elements));
-                    default:
-                        return [];
-                }
-            });
-        }
+        var objectElementUnpack = (function(base, pattern, key, f) {
+            var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
+            return (pattern ? flatten(innerPattern(innerBase, pattern, f)) : f(identifier(null, key.value),
+                innerBase));
+        });
+        return (function(base, pattern, f) {
+            switch (pattern.type) {
+                case "IdentifierPattern":
+                    return f(identifier(null, pattern.id.name), base);
+                case "AsPattern":
+                    return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target,
+                        f)));
+                case "ObjectPattern":
+                    return flatten(maps((function(__o) {
+                        var target = __o["target"],
+                            key = __o["key"];
+                        return objectElementUnpack(pattern.ud.id, target, key, f);
+                    }), pattern.elements));
+                default:
+                    return [];
+            }
+        });
     })
         .call(this);
     var unpack = (function() {
-        {
-            var make = variableDeclarator.bind(null, null);
-            return flatten((function(pattern, value) {
-                return innerPattern(value, pattern, make);
-            }));
-        }
+        var make = variableDeclarator.bind(null, null);
+        return (function(pattern, value) {
+            return flatten(innerPattern(value, pattern, make));
+        });
     })
         .call(this);
     var identifierPattern = (function(loc, name) {
@@ -125,49 +114,37 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return ecma_statement.ReturnStatement.create(loc, transform(argument));
     });
     var withStatement = (function(loc, bindings, body) {
-        return (function() {
-            {
-                var vars = flatten(map(bindings, (function(imp) {
-                    if ((imp.type === "ImportPattern")) {
-                        var base = callExpression(null, identifier(null, "require"), [imp.from]);
-                        return unpack(imp.pattern, base);
-                    }
-                    return unpack(imp.pattern, imp.value);
-                }))),
-                    prefix = (vars.length ? variableDeclaration(null, vars) : []);
-                return blockStatement(loc, concat(prefix, body.body));
+        var vars = flatten(map(bindings, (function(imp) {
+            if ((imp.type === "ImportPattern")) {
+                var base = callExpression(null, identifier(null, "require"), [imp.from]);
+                return unpack(imp.pattern, base);
             }
-        })
-            .call(this);
+            return unpack(imp.pattern, imp.value);
+        }))),
+            prefix = (vars.length ? variableDeclaration(null, vars) : []);
+        return blockStatement(loc, concat(prefix, body.body));
     });
     var functionExpression = (function(loc, id, parameters, body) {
-        return (function() {
-            {
-                var params = maps(transform, filter((function(x) {
-                    return (x.type !== "EllipsisPattern");
-                }), parameters.elements)),
-                    elementsPrefix = flatten(maps((function(x) {
-                        switch (x.type) {
-                            case "IdentifierPattern":
-                                return [];
-                            case "AsPattern":
-                                return innerPattern(transform(x.id), x.target,
-                                    variableDeclarator.bind(null, null));
-                            default:
-                                return innerPattern(transform(x.ud.id), x,
-                                    variableDeclarator.bind(null, null));
-                        }
-                    }), parameters.elements)),
-                    argumentsPrefix = (parameters.id ? variableDeclarator(null, transform(parameters.id),
-                        identifier(null, "arguments")) : []),
-                    prefix = concat(elementsPrefix, argumentsPrefix);
-                return ecma_expression.FunctionExpression.create(loc, transform(id), params,
-                    blockStatement(body.loc, concat((prefix.length ? variableDeclaration(null, prefix) : []),
-                        transform(body)
-                        .body)));
-            }
-        })
-            .call(this);
+        var params = maps(transform, filter((function(x) {
+            return (x.type !== "EllipsisPattern");
+        }), parameters.elements)),
+            elementsPrefix = flatten(maps((function(x) {
+                switch (x.type) {
+                    case "IdentifierPattern":
+                        return [];
+                    case "AsPattern":
+                        return innerPattern(transform(x.id), x.target, variableDeclarator.bind(
+                            null, null));
+                    default:
+                        return innerPattern(transform(x), x, variableDeclarator.bind(null, null));
+                }
+            }), parameters.elements)),
+            argumentsPrefix = (parameters.id ? variableDeclarator(null, transform(parameters.id),
+                identifier(null, "arguments")) : []),
+            prefix = concat(elementsPrefix, argumentsPrefix);
+        return ecma_expression.FunctionExpression.create(loc, transform(id), params, blockStatement(body.loc,
+            concat((prefix.length ? variableDeclaration(null, prefix) : []), transform(body)
+                .body)));
     });
     var letExpression = (function(loc, bindings, body) {
         return callExpression(loc, memberExpression(null, functionExpression(null, null, khepri_pattern.ArgumentsPattern
@@ -212,45 +189,37 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             ])))])), [f, g]);
     });
     var packageBlock = (function(loc, exports, body) {
-        return (function() {
-            {
-                var imp = ((body.type === "WithStatement") ? body.bindings.filter((function(x) {
-                    return (x.type === "ImportPattern");
-                })) : []),
-                    imports = map(imp, (function(x) {
-                        return x.from;
-                    })),
-                    exportList = map(exports.exports, (function(x) {
-                        return transform(x.id);
-                    })),
-                    exportHeader = (exportList.length ? ecma_declaration.VariableDeclaration.create(
-                        null, map(exportList, (function(x) {
-                            return variableDeclarator(null, x);
-                        }))) : ecma_statement.EmptyStatement.create(null)),
-                    exportBody = exportList.map((function(x) {
-                        return expressionStatement(null, ecma_expression.AssignmentExpression.create(
-                            null, "=", memberExpression(null, identifier(null, "exports"),
-                                identifier(null, x.name)), identifier(null, x.name)));
-                    })),
-                    fBody = ((body.type === "WithStatement") ? withStatement(null, map(body.bindings, (
-                        function(x) {
-                            return ((x.type !== "ImportPattern") ? x : khepri_declaration.Binding
-                                .create(null, x.pattern, x.pattern.id));
-                        })), body.body) : transform(body)),
-                    packageBody = ecma_expression.FunctionExpression.create(null, null, concat(
-                        identifier(null, "require"), identifier(null, "exports"), imp.map((function(
-                            x) {
-                            return transform(x.pattern.id);
-                        }))), blockStatement(fBody.loc, concat(expressionStatement(null,
-                            stringLiteral(null, "use strict")), exportHeader, fBody.body,
-                        exportBody)));
-                return callExpression(loc, identifier(null, "define"), [ecma_expression.ArrayExpression
-                    .create(null, concat(stringLiteral(null, "require"), stringLiteral(null,
-                        "exports"), imports)), packageBody
-                ]);
-            }
-        })
-            .call(this);
+        var imp = ((body.type === "WithStatement") ? body.bindings.filter((function(x) {
+            return (x.type === "ImportPattern");
+        })) : []),
+            imports = map(imp, (function(x) {
+                return x.from;
+            })),
+            exportList = map(exports.exports, (function(x) {
+                return transform(x.id);
+            })),
+            exportHeader = (exportList.length ? ecma_declaration.VariableDeclaration.create(null, map(
+                exportList, (function(x) {
+                    return variableDeclarator(null, x);
+                }))) : ecma_statement.EmptyStatement.create(null)),
+            exportBody = exportList.map((function(x) {
+                return expressionStatement(null, ecma_expression.AssignmentExpression.create(null,
+                    "=", memberExpression(null, identifier(null, "exports"), identifier(null, x
+                        .name)), identifier(null, x.name)));
+            })),
+            fBody = ((body.type === "WithStatement") ? withStatement(null, map(body.bindings, (function(x) {
+                return ((x.type !== "ImportPattern") ? x : khepri_declaration.Binding.create(
+                    null, x.pattern, x.pattern.id));
+            })), body.body) : transform(body)),
+            packageBody = ecma_expression.FunctionExpression.create(null, null, concat(identifier(null,
+                "require"), identifier(null, "exports"), imp.map((function(x) {
+                return transform(x.pattern.id);
+            }))), blockStatement(fBody.loc, concat(expressionStatement(null, stringLiteral(null,
+                "use strict")), exportHeader, fBody.body, exportBody)));
+        return callExpression(loc, identifier(null, "define"), [ecma_expression.ArrayExpression.create(null,
+                concat(stringLiteral(null, "require"), stringLiteral(null, "exports"), imports)),
+            packageBody
+        ]);
     });
     (transform = (function(node) {
         if ((!node || !(node instanceof khepri_node.Node))) return node;

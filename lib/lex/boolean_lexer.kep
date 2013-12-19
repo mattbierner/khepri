@@ -10,18 +10,18 @@ with
     import 'parse/text' {string}
 in {
 
-trueLiteral = (Parser, 'True Literal Lexer') <|
-    next(
+trueLiteral = @Parser :'True Literal Lexer'
+    :next(
         string('true'),
         always(true));
 
-falseLiteral = (Parser, 'False Literal Lexer') <|
-    next(
+falseLiteral = @Parser :'False Literal Lexer'
+    :next(
         string('false'),
         always(false));
 
-booleanLiteral = (Parser, 'Boolean Literal Lexer') <|
-    either(
+booleanLiteral = @Parser :'Boolean Literal Lexer'
+    :either(
         trueLiteral,
         falseLiteral);
 

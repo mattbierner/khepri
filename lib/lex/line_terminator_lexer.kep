@@ -55,15 +55,15 @@ lineTerminator = Parser('Line Terminator Lexer',
  * 
  * crlf sequences are returned as a single token.
  */
-lineTerminatorSequence = (Parser, 'Line Terminator Sequence Lexer') <|
-    choice(
-        lf,
-        ls,
-        ps,
-        next(
+lineTerminatorSequence = @Parser :'Line Terminator Sequence Lexer'
+    :@choice
+        :lf
+        :ls
+        :ps
+        :next(
             cr,
             optional(crChar,
                 next(lf,
-                    always(crChar + lfChar)))));
+                    always(crChar + lfChar))));
 
 }
