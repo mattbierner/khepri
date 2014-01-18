@@ -220,7 +220,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             })), body.body) : _transform(body)),
             packageBody = ecma_expression.FunctionExpression.create(null, null, concat(identifier(null,
                 "require"), identifier(null, "exports"), imp.map((function(x) {
-                return _transform(x.pattern.id);
+                return _transform(x.pattern);
             }))), blockStatement(fBody.loc, concat(expressionStatement(null, stringLiteral(null,
                 "use strict")), exportHeader, fBody.body, exportBody)));
         return callExpression(loc, identifier(null, "define"), [ecma_expression.ArrayExpression.create(null,

@@ -360,7 +360,7 @@ var packageBlock = \loc, exports, body -> let
         concat(
             identifier(null, 'require'),
             identifier(null, 'exports'),
-            imp.map(\x -> _transform(x.pattern.id))),
+            imp.map(\x -> _transform(x.pattern))),
         blockStatement(fBody.loc,
             concat(
                 expressionStatement(null,
