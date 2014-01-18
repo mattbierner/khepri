@@ -619,11 +619,11 @@ addTransform('FunctionExpression', \node ->
 
 addTransform('ArrayExpression', \node ->
     ecma_expression.ArrayExpression.create(node.loc,
-        map(node.elements, _transform)));
+        _transform(node.elements)));
 
 addTransform('ObjectExpression', \node ->
     ecma_expression.ObjectExpression.create(node.loc,
-        map(node.properties, _transform)));
+        _transform(node.properties)));
 
 addTransform('ObjectValue', \node ->
     ecma_value.ObjectValue.create(node.loc,
@@ -662,7 +662,7 @@ addTransform('SinkPattern', \node ->
 addTransform('Program', \node ->
     ecma_program.Program.create(node.loc,
         Array.isArray(node.body) ?
-            map(node.body, _transform) :
+            _transform(node.body) :
             [_transform(node.body)]));
 
 // Package
@@ -671,11 +671,15 @@ addTransform('Package', \node ->
         node.exports,
         node.body));
 
-    
-    
+/*
+ * 
+ *****************************************************************************/
 _transform = function(node) {
     if (!node || !(node instanceof khepri_node.Node))
         return node;
+    
+    if (Array.isArray(node))
+        return map(node, _transform);
     
     var t = transformers[node.type];
     
@@ -683,9 +687,11 @@ _transform = function(node) {
     return t(node);
 };
 
-transform = \{options ast} ->
+transform = \{options ast} -> {
     ({
         'options': options,
         'ast': _transform(ast)
     });
+};
+
 }

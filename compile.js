@@ -22,16 +22,12 @@ requirejs.config({
     }
 });
 
-requirejs(['nu/stream',
-           'parse/parse',
-           'ecma_unparse/unparse',
+requirejs(['ecma_unparse/unparse',
            'ecma_unparse/print',
            'khepri/compile/compile',
            'khepri/lex/lexer',
            'khepri/parse/parser'],
-function(stream,
-        parse,
-        unparse,
+function(unparse,
         unparse_print,
         khepri_compile,
         lexer,
@@ -49,27 +45,22 @@ function(stream,
         }
     };
     
-    var inFile = argv._[0];
-    var outFile = argv['o'];
-    var header = (argv['header'] ? argv['header'] + '\n' : '');
+    // Arguments
+    var inFile = argv._[0],
+        outFile = argv['o'],
+        header = (argv['header'] ? argv['header'] + '\n' : '');
 	console.log(inFile)
 
     fs.realpath(inFile, function(err, resolvedPath) {
-        if (err) {
-            throw err;
-        }
+        if (err) throw err;
 
         fs.readFile(resolvedPath, 'utf8', function(err, data) {
-            if (err) {
-                throw err;
-            }
-            var out = header + compile(data);
+            if (err) throw err;
             
+            var out = header + compile(data);
             if (outFile) {
                 fs.writeFile(outFile, out, 'utf8', function(err) {
-                    if (err) {
-                        throw err;
-                    }
+                    if (err) throw err;
                     console.log("Compiled '" + inFile + "' to '" + outFile + "'");
                 });
             } else {

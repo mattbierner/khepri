@@ -368,10 +368,10 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return functionExpression(node.loc, node.id, node.params, node.body);
     }));
     addTransform("ArrayExpression", (function(node) {
-        return ecma_expression.ArrayExpression.create(node.loc, map(node.elements, _transform));
+        return ecma_expression.ArrayExpression.create(node.loc, _transform(node.elements));
     }));
     addTransform("ObjectExpression", (function(node) {
-        return ecma_expression.ObjectExpression.create(node.loc, map(node.properties, _transform));
+        return ecma_expression.ObjectExpression.create(node.loc, _transform(node.properties));
     }));
     addTransform("ObjectValue", (function(node) {
         return ecma_value.ObjectValue.create(node.loc, _transform(node.key), _transform(node.value));
@@ -398,14 +398,16 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return ((node.ud && node.ud.id) ? _transform(node.ud.id) : null);
     }));
     addTransform("Program", (function(node) {
-        return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? map(node.body,
-            _transform) : [_transform(node.body)]));
+        return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? _transform(node.body) : [
+            _transform(node.body)
+        ]));
     }));
     addTransform("Package", (function(node) {
         return packageBlock(node.loc, node.exports, node.body);
     }));
     (_transform = (function(node) {
         if ((!node || !(node instanceof khepri_node.Node))) return node;
+        if (Array.isArray(node)) return map(node, _transform);
         var t = transformers[node.type];
         if (!t) return node;
         return t(node);
@@ -413,7 +415,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     (transform = (function(__o) {
         var options = __o["options"],
             ast = __o["ast"];
-        return ({
+        ({
             "options": options,
             "ast": _transform(ast)
         });
