@@ -41,17 +41,12 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
     addPeephole("VariableDeclaration", (function(_) {
         return true;
     }), (function(node) {
-        return (function() {
-            {
-                var declarations = node.declarations.filter((function(x) {
-                    return !!x;
-                }));
-                return modify(node, ({
-                    "declarations": declarations
-                }), ({}));
-            }
-        })
-            .call(this);
+        var declarations = node.declarations.filter((function(x) {
+            return !!x;
+        }));
+        return modify(node, ({
+            "declarations": declarations
+        }), ({}));
     }));
     addPeephole("VariableDeclaration", (function(node) {
         return !node.declarations.length;
@@ -77,15 +72,13 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
         }), ({}));
     }));
     addPeephole("BinaryExpression", (function(__o1) {
-        var __o1 = __o1,
-            operator = __o1["operator"],
+        var operator = __o1["operator"],
             left = __o1["left"],
             right = __o1["right"];
         return (((((operator === "+") && (left.type === "Literal")) && (left.kind === "string")) && (
             right.type === "Literal")) && (right.kind === "string"));
     }), (function(__o1) {
-        var __o1 = __o1,
-            left = __o1["left"],
+        var left = __o1["left"],
             right = __o1["right"];
         return ast_value.Literal.create(null, "string", (left.value + right.value));
     }));
@@ -103,8 +96,13 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
         var next = zipper.nextDfs(t);
         return (next ? opt(next) : t);
     });
-    (optimize = (function(node) {
-        return tree.node(zipper.root(opt(ecmaZipper(node))));
+    (optimize = (function(__o1) {
+        var options = __o1["options"],
+            ast = __o1["ast"];
+        return ({
+            "options": options,
+            "ast": tree.node(zipper.root(opt(ecmaZipper(ast))))
+        });
     }));
     (exports.optimize = optimize);
 }))

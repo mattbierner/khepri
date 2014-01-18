@@ -15,6 +15,13 @@ define(["require", "exports", "khepri/compile/lexical", "khepri/compile/transfor
         return (function(x) {
             return f(g(x));
         });
+    })((function(__o) {
+        var ast = __o["ast"];
+        return ast;
+    }), (function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
     })(ecma_peep.optimize, (function(f, g) {
         return (function(x) {
             return f(g(x));
@@ -23,6 +30,15 @@ define(["require", "exports", "khepri/compile/lexical", "khepri/compile/transfor
         return (function(x) {
             return f(g(x));
         });
-    })(khepri_peep.optimize, lexical.check))));
+    })(khepri_peep.optimize, (function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })(lexical.checkStage, (function(root, options) {
+        return ({
+            "ast": root,
+            "options": options
+        });
+    })))))));
     (exports.compile = compile);
 }))

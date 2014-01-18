@@ -4,7 +4,7 @@
 */
 define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package", "khepri/parse/common",
     "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/statement_parser"
-], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, _) {
+], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, ) {
     "use strict";
     var khepriPackage;
     var __o = __o,
@@ -28,18 +28,16 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/package",
         __o3 = __o3,
         identifier = __o3["identifier"];
     var withStatement = (function() {
-        var args = arguments; {
-            var __o4 = require("khepri/parse/statement_parser"),
-                withStatement = __o4["withStatement"];
-            return withStatement.apply(undefined, args);
-        }
+        var args = arguments;
+        var __o4 = require("khepri/parse/statement_parser"),
+            withStatement = __o4["withStatement"];
+        return withStatement.apply(undefined, args);
     });
     var blockStatement = (function() {
-        var args = arguments; {
-            var __o4 = require("khepri/parse/statement_parser"),
-                blockStatement = __o4["blockStatement"];
-            return blockStatement.apply(undefined, args);
-        }
+        var args = arguments;
+        var __o4 = require("khepri/parse/statement_parser"),
+            blockStatement = __o4["blockStatement"];
+        return blockStatement.apply(undefined, args);
     });
     var packageExport = Parser("Package Export", node(identifier, ast_package.PackageExport.create));
     var packageExports = Parser("Package Exports", node(between(punctuator("("), punctuator(")"), eager(sepBy(

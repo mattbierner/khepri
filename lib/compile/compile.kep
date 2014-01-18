@@ -7,9 +7,13 @@ with
     import 'khepri/compile/ecma_peep' ecma_peep
 in {
 
-compile = lexical.check
+compile =
+    (\root options ->
+        ({'ast': root, 'options': options}))
+    \> lexical.checkStage
     \> khepri_peep.optimize
     \> transform.transform
-    \> ecma_peep.optimize;
+    \> ecma_peep.optimize
+    \> \{ast} -> ast;
 
 }

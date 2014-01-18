@@ -33,7 +33,12 @@ with
         Parser
         testStream
         token},
-    import 'parse/text' {character, characters, digit, letter, string},
+    import 'parse/text' {
+        character
+        characters
+        digit
+        letter
+        string},
     import 'nu/stream' {foldl},
     import 'khepri/lex/reserved_word_lexer' {reservedWord},
     import 'khepri/lex/string_lexer' {escape, unicodeEscapeSequence}

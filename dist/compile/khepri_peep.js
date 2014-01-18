@@ -55,8 +55,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
     addPeephole("ArrayPattern", (function(_) {
         return true;
     }), (function(__o1) {
-        var __o1 = __o1,
-            loc = __o1["loc"],
+        var loc = __o1["loc"],
             elements = __o1["elements"],
             ud = __o1["ud"];
         return setUserData(ast_pattern.ObjectPattern.create(loc, map((function(x, i) {
@@ -67,8 +66,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
     addPeephole("ObjectPatternElement", (function(node) {
         return !node.target;
     }), (function(node) {
-        var node = node,
-            loc = node["loc"],
+        var loc = node["loc"],
             key = node["key"];
         switch (key.type) {
             case "IdentifierPattern":
@@ -116,8 +114,13 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
         var next = zipper.nextDfs(t);
         return (next ? opt(next) : t);
     });
-    (optimize = (function(node) {
-        return tree.node(zipper.root(opt(khepriZipper(node))));
+    (optimize = (function(__o1) {
+        var options = __o1["options"],
+            ast = __o1["ast"];
+        return ({
+            "options": options,
+            "ast": tree.node(zipper.root(opt(khepriZipper(ast))))
+        });
     }));
     (exports.optimize = optimize);
 }))

@@ -48,7 +48,9 @@ with
     import 'khepri/parse/expression_parser' {
         expression
         topLevelExpression},
-    import 'khepri/parse/pattern_parser' {importPattern, pattern},
+    import 'khepri/parse/pattern_parser' {
+        importPattern
+        pattern},
     import 'khepri/parse/value_parser' {identifier}
 in {
 

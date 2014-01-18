@@ -4,7 +4,8 @@
  * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 package (
-    check)
+    check
+    checkStage)
 with
     import 'khepri_ast/node' ast_node#{setUserData},
     import 'khepri_ast/pattern' ast_pattern,
@@ -589,11 +590,20 @@ var builtins = [
     'undefined',
     'URIError'];
 
-check = function(root, globals) {
+check = \ast globals -> {
     var g = globals || builtins;
     var scope = reduce(g, Scope.addImmutableBinding, new Scope({}, null, {}));
-    var state = new State(khepriZipper(root), scope, scope);
+    var state = new State(khepriZipper(ast), scope, scope);
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };
 
+checkStage = \{options, ast}, globals -> {
+    var g = globals || builtins;
+    var scope = reduce(g, Scope.addImmutableBinding, new Scope({}, null, {}));
+    var state = new State(khepriZipper(ast), scope, scope);
+    return {
+        'ast': trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; })),
+        'options': options
+    };
+};
 }

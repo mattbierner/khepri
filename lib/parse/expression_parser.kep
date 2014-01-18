@@ -377,6 +377,7 @@ args = (Parser, 'Arguments') <|
             args.argument = true;
             return args;
         });
+
 // At Expression
 ////////////////////////////////////////
 var atExpression = (Parser, 'AtExpression') <|
@@ -387,7 +388,7 @@ var atExpression = (Parser, 'AtExpression') <|
                 memberExpression,
                 eager <| many(
                     next(
-                        punctuator(':'),
+                        optional(null, punctuator(':')),
                         expression)))),
         ast_expression.CallExpression.create);
 

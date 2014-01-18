@@ -6,9 +6,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     "khepri_ast_zipper/khepri_zipper", "khepri/compile/scope"
 ], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, __o0) {
     "use strict";
-    var check;
+    var check, checkStage;
     var ast_node = ast_node,
-        ast_node = ast_node,
         setUserData = ast_node["setUserData"],
         ast_pattern = ast_pattern,
         ast_value = ast_value,
@@ -107,26 +106,16 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     });
     var modifyScope = (function(f) {
         return (function(s, ok, err) {
-            return (function() {
-                {
-                    var scope = f(s.scope),
-                        newState = State.setScope(s, scope);
-                    return ok(scope, newState);
-                }
-            })
-                .call(this);
+            var scope = f(s.scope),
+                newState = State.setScope(s, scope);
+            return ok(scope, newState);
         });
     });
     var modifyRealScope = (function(f) {
         return (function(s, ok, err) {
-            return (function() {
-                {
-                    var scope = f(s.realScope),
-                        newState = State.setRealScope(s, scope);
-                    return ok(scope, newState);
-                }
-            })
-                .call(this);
+            var scope = f(s.realScope),
+                newState = State.setRealScope(s, scope);
+            return ok(scope, newState);
         });
     });
     var setScope = (function(s) {
@@ -162,13 +151,11 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     var checkCanAddOwnBinding = (function(id, loc) {
         return examineScope((function(s) {
             return (!s.hasOwnBinding(id) ? pass : (function() {
-                    {
-                        var start = (loc && loc.start),
-                            binding = s.getBinding(id),
-                            end = (binding.loc && binding.loc.start);
-                        return error(((((("'" + id) + "' at:") + start) +
-                            " already bound for scope from:") + end));
-                    }
+                    var start = (loc && loc.start),
+                        binding = s.getBinding(id),
+                        end = (binding.loc && binding.loc.start);
+                    return error(((((("'" + id) + "' at:") + start) +
+                        " already bound for scope from:") + end));
                 })
                 .call(this));
         }));
@@ -181,24 +168,17 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     });
     var hasFreeBinding = (function(id, loc) {
         return seq(hasBinding(id, loc), examineScope((function(s) {
-            return (function() {
-                {
-                    var current = s.getBinding(id);
-                    return (current.reserved ? error(((("Undeclared identifier:'" + id) +
-                        "' at:") + loc)) : pass);
-                }
-            })
-                .call(this);
+            var current = s.getBinding(id);
+            return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") +
+                loc)) : pass);
         })));
     });
     var checkCanAssign = (function(id, loc) {
         return examineScope((function(s) {
             return (s.hasBinding(id) ? (function() {
-                    {
-                        var b = s.getBinding(id);
-                        return (b.mutable ? pass : error(((("Assign to immutable variable:'" +
-                            id) + "' at:") + loc)));
-                    }
+                    var b = s.getBinding(id);
+                    return (b.mutable ? pass : error(((("Assign to immutable variable:'" + id) +
+                        "' at:") + loc)));
                 })
                 .call(this) : pass);
         }));
@@ -230,11 +210,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     var addUniqueMutableBinding = (function(id, loc) {
         return next(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
             return (s.hasOwnBinding(id) ? (function() {
-                    {
-                        var new_id = s.getUnusedId(id);
-                        return seq(addMutableBinding(id, loc), addMutableBinding(new_id,
-                            loc), addMapping(id, new_id));
-                    }
+                    var new_id = s.getUnusedId(id);
+                    return seq(addMutableBinding(id, loc), addMutableBinding(new_id, loc),
+                        addMapping(id, new_id));
                 })
                 .call(this) : addMutableBinding(id, loc));
         })));
@@ -248,11 +226,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     var addUnusedImmutableBinding = (function(id, loc) {
         return seq(examineRealScope((function(s) {
             return (s.hasOwnBinding(id) ? (function() {
-                    {
-                        var new_id = s.getUnusedId(id);
-                        return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
-                            loc), addMapping(id, new_id));
-                    }
+                    var new_id = s.getUnusedId(id);
+                    return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
+                        loc), addMapping(id, new_id));
                 })
                 .call(this) : addImmutableBindingInRealBlock(id, loc));
         })));
@@ -421,26 +397,20 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "ObjectValue":
                 return checkChild("value");
             case "Identifier":
-                return (function() {
-                    {
-                        var name = node.name;
-                        return examineScope((function(s) {
-                            return (s.hasMapping(name) ? (function() {
-                                    {
-                                        var mappedName = s.getMapping(name);
-                                        return seq(move(tree.modifyNode.bind(null, (
-                                            function(x) {
-                                                return ast_node.modify(x, ({}), ({
-                                                    "name": mappedName
-                                                }));
-                                            }))), hasFreeBinding(mappedName, node.loc));
-                                    }
-                                })
-                                .call(this) : hasFreeBinding(name, node.loc));
-                        }));
-                    }
-                })
-                    .call(this);
+                {
+                    var name = node.name;
+                    return examineScope((function(s) {
+                        return (s.hasMapping(name) ? (function() {
+                                var mappedName = s.getMapping(name);
+                                return seq(move(tree.modifyNode.bind(null, (function(x) {
+                                    return ast_node.modify(x, ({}), ({
+                                        "name": mappedName
+                                    }));
+                                }))), hasFreeBinding(mappedName, node.loc));
+                            })
+                            .call(this) : hasFreeBinding(name, node.loc));
+                    }));
+                }
         }
         return pass;
     }));
@@ -449,15 +419,31 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         "Math", "NaN", "Number", "Object", "parseInt", "parseFloat", "RangeError", "ReferenceError", "RegExp",
         "String", "SyntaxError", "TypeError", "undefined", "URIError"
     ];
-    (check = (function(root, globals) {
+    (check = (function(ast, globals) {
         var g = (globals || builtins);
         var scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({})));
-        var state = new(State)(khepriZipper(root), scope, scope);
+        var state = new(State)(khepriZipper(ast), scope, scope);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));
         }), (function(err, s) {
             throw err;
         })));
     }));
+    (checkStage = (function(__o1, globals) {
+        var options = __o1["options"],
+            ast = __o1["ast"];
+        var g = (globals || builtins);
+        var scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({})));
+        var state = new(State)(khepriZipper(ast), scope, scope);
+        return ({
+            "ast": trampoline(checkTop(state, (function(x, s) {
+                return tree.node(zipper.root(s.ctx));
+            }), (function(err, s) {
+                throw err;
+            }))),
+            "options": options
+        });
+    }));
     (exports.check = check);
+    (exports.checkStage = checkStage);
 }))

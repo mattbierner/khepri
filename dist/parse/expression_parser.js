@@ -62,11 +62,10 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         stringLiteral = __o5["stringLiteral"],
         pattern = pattern;
     var sourceElements = (function() {
-        var args = arguments; {
-            var __o6 = require("khepri/parse/program_parser"),
-                sourceElements = __o6["sourceElements"];
-            return sourceElements.apply(undefined, args);
-        }
+        var args = arguments;
+        var __o6 = require("khepri/parse/program_parser"),
+            sourceElements = __o6["sourceElements"];
+        return sourceElements.apply(undefined, args);
     });
     (expression = (function() {
         var args = arguments;
@@ -116,56 +115,47 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     var letBinding = Parser("Let Binding", nodea(enumeration(then(expected("pattern", pattern.topLevelPattern),
         punctuator("=")), expected("let binding expression", expression)), ast_declaration.Binding.create));
     (letExpression = Parser("Let Expression", (function() {
-            {
-                var letBindings = expected("let bindings", sepBy1(punctuator(","), letBinding)),
-                    letBody = expected("let body expression", expression);
-                return nodea(next(keyword("let"), enumeration(eager(letBindings), next(keyword("in"),
-                    letBody))), ast_expression.LetExpression.create);
-            }
+            var letBindings = expected("let bindings", sepBy1(punctuator(","), letBinding)),
+                letBody = expected("let body expression", expression);
+            return nodea(next(keyword("let"), enumeration(eager(letBindings), next(keyword("in"),
+                letBody))), ast_expression.LetExpression.create);
         })
         .call(this)));
     var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(keyword("typeof"), punctuator(
         "void", "~", "!")), (function(__o6) {
-        var __o6 = __o6,
-            loc = __o6["loc"],
+        var loc = __o6["loc"],
             value = __o6["value"];
         return always(ast_expression.UnaryOperatorExpression.create(loc, value));
     })));
     var binaryOperatorExpression = Parser("Binary Operator Expression", bind(either(keyword("instanceof"),
         punctuator("*", "/", "+", "-", "%", "<<", ">>", ">>>", "<", ">", "<=", ">=", "==", "!=", "===",
             "!==", "&", "^", "|", "||", "&&", "\\>", "|>")), (function(__o6) {
-        var __o6 = __o6,
-            loc = __o6["loc"],
+        var loc = __o6["loc"],
             value = __o6["value"];
         return always(ast_expression.BinaryOperatorExpression.create(loc, value));
     })));
     var ternayOperatorExpression = Parser("Ternary Operator Expression", bind(punctuator("?"), (function(__o6) {
-        var __o6 = __o6,
-            loc = __o6["loc"],
+        var loc = __o6["loc"],
             value = __o6["value"];
         return always(ast_expression.TernaryOperatorExpression.create(loc, value));
     })));
     var operatorExpression = Parser("Operator Expression", choice(unaryOperatorExpression,
         binaryOperatorExpression, ternayOperatorExpression));
     (curryExpression = Parser("Curry Expression", (function() {
-            {
-                var base = either(attempt(expression), operatorExpression);
-                return between(punctuator("("), punctuator(")"), nodea(enumeration(base, optional([],
-                    next(punctuator(","), eager(sepBy1(punctuator(","), expression))))), (
-                    function(loc, base, elements) {
-                        return (elements.length ? ast_expression.CurryExpression.create(loc,
-                            base, elements) : base);
-                    })));
-            }
+            var base = either(attempt(expression), operatorExpression);
+            return between(punctuator("("), punctuator(")"), nodea(enumeration(base, optional([], next(
+                punctuator(","), eager(sepBy1(punctuator(","), expression))))), (function(loc,
+                base, elements) {
+                return (elements.length ? ast_expression.CurryExpression.create(loc, base,
+                    elements) : base);
+            })));
         })
         .call(this)));
     (primaryExpression = Parser("Primary Expression", choice(thisExpression, letExpression, identifier,
         curryExpression, literal, arrayLiteral, objectLiteral, functionExpression)));
     (argumentList = Parser("Argument List", (function() {
-            {
-                var argument = expected("argument", expression);
-                return eager(sepBy(punctuator(","), argument));
-            }
+            var argument = expected("argument", expression);
+            return eager(sepBy(punctuator(","), argument));
         })
         .call(this)));
     (args = Parser("Arguments", node(between(punctuator("("), punctuator(")"), argumentList), (function(loc,
@@ -175,7 +165,7 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         return args;
     }))));
     var atExpression = Parser("AtExpression", nodea(next(punctuator("@"), enumeration(memberExpression, eager(
-        many(next(punctuator(":"), expression))))), ast_expression.CallExpression.create));
+        many(next(optional(null, punctuator(":")), expression))))), ast_expression.CallExpression.create));
     (dotAccessor = Parser("Dot Accessor", node(next(punctuator("."), identifier), (function(loc, x) {
         return ({
             "loc": loc,
@@ -204,18 +194,16 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     (newExpression = Parser("New Expression", nodea(next(keyword("new"), enumeration(expected(
         "member expression", memberExpression), optional([], args))), ast_expression.NewExpression.create)));
     (leftHandSideExpression = Parser("Left Hand Side Expression", (function() {
-            {
-                var reducer = (function(p, c) {
-                    return ((c && c.hasOwnProperty("argument")) ? ast_expression.CallExpression.create(
-                        SourceLocation.merge(p.loc, c.loc), p, c) : accessorReducer(p, c));
+            var reducer = (function(p, c) {
+                return ((c && c.hasOwnProperty("argument")) ? ast_expression.CallExpression.create(
+                    SourceLocation.merge(p.loc, c.loc), p, c) : accessorReducer(p, c));
+            });
+            return binds(enumeration(memo(memberExpression), many(either(args, accessor))), (function(f,
+                g) {
+                return (function() {
+                    return f(g.apply(null, arguments));
                 });
-                return binds(enumeration(memo(memberExpression), many(either(args, accessor))), (
-                    function(f, g) {
-                        return (function() {
-                            return f(g.apply(null, arguments));
-                        });
-                    })(always, foldl.bind(null, reducer)));
-            }
+            })(always, foldl.bind(null, reducer)));
         })
         .call(this)));
     (leftHandReferenceExpression = Parser("Left Hand Reference Expression", binds(enumeration(either(
@@ -226,16 +214,14 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     })(always, foldl.bind(null, accessorReducer)))));
     (unaryOperator = Parser("Unary Operator", either(keyword("typeof", "void"), punctuator("+", "-", "~", "!"))));
     (unaryExpression = Parser("Unary Expression", (function() {
-            {
-                var reducer = (function(argument, op) {
-                    return ast_expression.UnaryExpression.create(SourceLocation.merge(op.loc,
-                        argument.loc), op.value, argument);
-                });
-                return binds(enumeration(many(unaryOperator), expected("unary argument",
-                    leftHandSideExpression)), (function(ops, expression) {
-                    return always(foldr(reducer, expression, ops));
-                }));
-            }
+            var reducer0 = (function(argument, op) {
+                return ast_expression.UnaryExpression.create(SourceLocation.merge(op.loc, argument.loc),
+                    op.value, argument);
+            });
+            return binds(enumeration(many(unaryOperator), expected("unary argument",
+                leftHandSideExpression)), (function(ops, expression) {
+                return always(foldr(reducer0, expression, ops));
+            }));
         })
         .call(this)));
     var multiplicativeOperator = punctuator("*", "/", "%");
@@ -291,13 +277,11 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     })];
     (binaryExpression = Parser("Binary Expression", precedence(memo(unaryExpression), precedenceTable)));
     (conditionalExpression = Parser("Conditional Expression", (function() {
-            {
-                var binExpr = memo(binaryExpression);
-                return either(nodea(enumeration(attempt(then(binExpr, punctuator("?"))), expected(
-                    "conditional consequent expression", then(conditionalExpression,
-                        punctuator(":"))), expected("conditional alternate expression",
-                    conditionalExpression)), ast_expression.ConditionalExpression.create), binExpr);
-            }
+            var binExpr = memo(binaryExpression);
+            return either(nodea(enumeration(attempt(then(binExpr, punctuator("?"))), expected(
+                "conditional consequent expression", then(conditionalExpression, punctuator(
+                    ":"))), expected("conditional alternate expression",
+                conditionalExpression)), ast_expression.ConditionalExpression.create), binExpr);
         })
         .call(this)));
     var composeOperator = punctuator("\\>", "\\>>");
@@ -333,16 +317,14 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     }))));
     var deleteOperator = keyword("delete");
     var deleteExpression = Parser("Delete Expression", (function() {
-            {
-                var reducer = (function(argument, op) {
-                    return ast_expression.UnaryExpression.create(SourceLocation.merge(op.loc, argument.loc),
-                        op.value, argument);
-                });
-                return nodea(enumeration(deleteOperator, expected("reference expression",
-                    leftHandReferenceExpression)), (function(loc, op, expression) {
-                    return ast_expression.UnaryExpression.create(loc, op.value, expression);
-                }));
-            }
+            var reducer1 = (function(argument, op) {
+                return ast_expression.UnaryExpression.create(SourceLocation.merge(op.loc, argument.loc),
+                    op.value, argument);
+            });
+            return nodea(enumeration(deleteOperator, expected("reference expression",
+                leftHandReferenceExpression)), (function(loc, op, expression) {
+                return ast_expression.UnaryExpression.create(loc, op.value, expression);
+            }));
         })
         .call(this));
     (expression = composeExpression);

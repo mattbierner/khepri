@@ -111,9 +111,11 @@ var opt = \z -> {
     return (next ? opt(next) : t);
 };
 
-optimize = \node -> 
-    (opt(ecmaZipper(node))
-        |> zipper.root
-        |> tree.node);
+optimize = \{options ast} ->
+    ({
+        'options': options,
+        'ast': opt(ecmaZipper(ast))
+            |> zipper.root
+            |> tree.node});
 
 }

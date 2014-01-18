@@ -13,6 +13,8 @@
   deletion or assignment.
 * Added more specific parser error messages.
 * Changed lambda to capture all expressions, including compose and pipe.
+* Added the `@` expression for unparenthesized function calls.
+** Takes arbitrary number of arguments separated by `:`.
 
 ## 0.7.2 - December 17, 2013
 * Rewrote to eliminate most AST mutation.
