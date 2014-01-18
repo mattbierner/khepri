@@ -415,7 +415,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     (transform = (function(__o) {
         var options = __o["options"],
             ast = __o["ast"];
-        ({
+        return ({
             "options": options,
             "ast": _transform(ast)
         });

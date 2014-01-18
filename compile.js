@@ -49,7 +49,6 @@ function(unparse,
     var inFile = argv._[0],
         outFile = argv['o'],
         header = (argv['header'] ? argv['header'] + '\n' : '');
-	console.log(inFile)
 
     fs.realpath(inFile, function(err, resolvedPath) {
         if (err) throw err;

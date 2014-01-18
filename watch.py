@@ -20,6 +20,7 @@ class KhepriMatchingEventHandler(PatternMatchingEventHandler):
             ignore_directories=True)
         self.relative = relative
         self.out = out
+        self.other_args = other_args
     
     def _compile(self, path):
         rel = os.path.relpath(path, self.relative)
@@ -35,7 +36,15 @@ class KhepriMatchingEventHandler(PatternMatchingEventHandler):
                     raise
         
         header = "/*\n * THIS FILE IS AUTO GENERATED from '%s'\n * DO NOT EDIT\n*/" % os.path.relpath(path)
-        call('%s --header "%s" -o %s %s' % (KHEPRI, header, out_path, os.path.relpath(path)), shell=True)
+        
+        call(
+            '%s --header "%s" -o %s %s %s' % (
+                KHEPRI,
+                header,
+                out_path,
+                self.other_args,
+                os.path.relpath(path)),
+            shell=True)
     
     def on_moved(self, event):
         self._compile(event.dest_path)
@@ -70,5 +79,4 @@ parser.add_argument('out', nargs='?', default=None,
 
 if __name__ == "__main__":
     args, other = parser.parse_known_args()
-    print other
-    watch(args.path[0], args.out, other)
+    watch(args.path[0], args.out, ' '.join(other))

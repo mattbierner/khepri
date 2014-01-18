@@ -688,7 +688,7 @@ _transform = function(node) {
 };
 
 transform = \{options ast} -> {
-    ({
+    return ({
         'options': options,
         'ast': _transform(ast)
     });
