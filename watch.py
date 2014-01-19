@@ -22,11 +22,14 @@ class KhepriMatchingEventHandler(PatternMatchingEventHandler):
         self.out = out
         self.other_args = other_args
     
-    def _compile(self, path):
+    def _out_path(self, path):
         rel = os.path.relpath(path, self.relative)
-        out_path = os.path.join(
+        return os.path.join(
             self.out if self.out is not None else self.relative,
             "%s.js" % splitext(rel)[0])
+    
+    def _compile(self, path):
+        out_path = self._out_path(path)
         out_dir = os.path.split(out_path)[0]
         if out_dir:
             try: 
@@ -56,7 +59,10 @@ class KhepriMatchingEventHandler(PatternMatchingEventHandler):
         self._compile(event.src_path)
         
     def on_deleted(self, event):
-        pass
+        out_path = _self._out_path(event.src_path)
+        if os.path.isfile(out_path):
+            os.remove(out_path)
+
 
 
 def watch(path, out, other_args):
