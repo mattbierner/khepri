@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.8.1 - January 19, 2014
+* improvements to `watch.py`
+
+
 ## 0.8.0 - December 18, 2013
 * Updated pattern grammar to disallow some weird forms including:
 ** `{'a': ...}`, `{'a': _}` for object patterns

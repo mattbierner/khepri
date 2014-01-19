@@ -22,7 +22,10 @@ with
     import 'khepri_ast/pattern' khepri_pattern,
     import 'khepri_ast/program' khepri_program,
     import 'khepri_ast/statement' khepri_statement,
-    import 'khepri_ast/value' khepri_value
+    import 'khepri_ast/value' khepri_value,
+    
+    import 'khepri/compile/package_manager/amd' _,
+    import 'khepri/compile/package_manager/node' _
 in {
 
 var concat = Function.prototype.call.bind(Array.prototype.concat);
@@ -323,29 +326,15 @@ var multiCompose = \loc, f, g ->
 
 /* Package
  ******************************************************************************/
+// @TODO: evil
+var packageManager;
+    
 var packageBlock = \loc, exports, body -> let
-    imp = (body.type === 'WithStatement' ?
+    imports = (body.type === 'WithStatement' ?
         body.bindings.filter(\x -> x.type === 'ImportPattern') :
         []),
     
-    imports = map(imp, \x -> x.from),
-    
-    __exports = map(exports.exports, \x -> x.id.names),
-
-    exportList = map(exports.exports, \x -> _transform(x.id)),
-
-    exportHeader = (exportList.length ?
-        ecma_declaration.VariableDeclaration.create(null,
-            map(exportList, \x -> variableDeclarator(null, x))) :
-        ecma_statement.EmptyStatement.create(null)),
-    
-    exportBody = exportList.map(\x ->
-        expressionStatement(null,
-            ecma_expression.AssignmentExpression.create(null, '=',
-                memberExpression(null,
-                    identifier(null, 'exports'),
-                    identifier(null, x.name)),
-                identifier(null, x.name)))),
+    __exports = map(exports.exports, \x -> x.id.name),
     
     fBody = (body.type === 'WithStatement' ?
         withStatement(null,
@@ -354,29 +343,9 @@ var packageBlock = \loc, exports, body -> let
                     x.pattern,
                     x.pattern.id))),
             body.body) :
-        _transform(body)),
-    
-    packageBody = ecma_expression.FunctionExpression.create(null, null,
-        concat(
-            identifier(null, 'require'),
-            identifier(null, 'exports'),
-            imp.map(\x -> _transform(x.pattern))),
-        blockStatement(fBody.loc,
-            concat(
-                expressionStatement(null,
-                    stringLiteral(null, "use strict")),
-                exportHeader,
-                fBody.body,
-                exportBody)))
+        _transform(body))
 in
-    callExpression(loc,
-        identifier(null, 'define'),
-        [ecma_expression.ArrayExpression.create(null,
-            concat(
-                stringLiteral(null, 'require'),
-                stringLiteral(null, 'exports'),
-                imports)),
-            packageBody]);
+    _transform(packageManager(loc, __exports, imports, fBody));
 
 /* Transform
  ******************************************************************************/
@@ -675,7 +644,7 @@ addTransform('Package', \node ->
  * 
  *****************************************************************************/
 _transform = function(node) {
-    if (!node || !(node instanceof khepri_node.Node))
+    if (!node)
         return node;
     
     if (Array.isArray(node))
@@ -688,6 +657,7 @@ _transform = function(node) {
 };
 
 transform = \{options ast} -> {
+    packageManager = require('khepri/compile/package_manager/node').amdPackage;
     return ({
         'options': options,
         'ast': _transform(ast)

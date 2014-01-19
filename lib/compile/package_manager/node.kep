@@ -1,0 +1,53 @@
+/**
+ * @fileOverview
+ */
+package (
+    amdPackage)
+with
+    import 'khepri_ast/declaration' khepri_declaration,
+    import 'khepri_ast/expression' khepri_expression,
+    import 'khepri_ast/pattern' khepri_pattern,
+    import 'khepri_ast/program' khepri_program,
+    import 'khepri_ast/statement' khepri_statement,
+    import 'khepri_ast/value' khepri_value
+in {
+
+var concat = Function.prototype.call.bind(Array.prototype.concat);
+var map = Function.prototype.call.bind(Array.prototype.map);
+var reduce = Function.prototype.call.bind(Array.prototype.reduce);
+
+/* Package Manager
+ ******************************************************************************/
+amdPackage = \loc exports imports body -> let
+    exportHeader = (exports.length ?
+        khepri_declaration.VariableDeclaration.create(null,
+            map(exports, \x ->
+                khepri_declaration.VariableDeclarator.create(null,
+                    khepri_value.Identifier.create(null, x)))) :
+        khepri_statement.EmptyStatement.create(null)),
+    
+    exportBody = map(exports, \x ->
+        khepri_statement.ExpressionStatement.create(null,
+            khepri_expression.AssignmentExpression.create(null, '=',
+                khepri_expression.MemberExpression.create(null,
+                    khepri_value.Identifier.create(null, 'exports'),
+                    khepri_value.Identifier.create(null, x)),
+                khepri_value.Identifier.create(null, x))))
+in
+    khepri_statement.BlockStatement.create(body.loc,
+        concat(
+            khepri_statement.ExpressionStatement.create(null,
+                khepri_value.Literal.create(null, 'string', "use strict")),
+            khepri_statement.WithStatement.create(null,
+                map(imports, \x ->
+                    khepri_declaration.Binding.create(null,
+                        x.pattern,
+                        khepri_expression.CallExpression.create(null,
+                            khepri_value.Identifier.create(null, 'require'), [x.from]))),
+                khepri_statement.BlockStatement.create(null,
+                    concat(
+                        exportHeader,
+                        body.body,
+                        exportBody)))));
+
+}

@@ -5,10 +5,10 @@
 define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_ast/expression", "ecma_ast/node",
     "ecma_ast/program", "ecma_ast/statement", "ecma_ast/value", "khepri_ast/clause", "khepri_ast/declaration",
     "khepri_ast/expression", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/program", "khepri_ast/statement",
-    "khepri_ast/value"
+    "khepri_ast/value", "khepri/compile/package_manager/amd", "khepri/compile/package_manager/node"
 ], (function(require, exports, ecma_clause, ecma_declaration, ecma_expression, ecma_node, ecma_program,
     ecma_statement, ecma_value, khepri_clause, khepri_declaration, khepri_expression, khepri_node,
-    khepri_pattern, khepri_program, khepri_statement, khepri_value) {
+    khepri_pattern, khepri_program, khepri_statement, khepri_value, _, _0) {
     "use strict";
     var transform, transformStage;
     var ecma_clause = ecma_clause,
@@ -192,41 +192,19 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                 ]))
             ])))])), [f, g]);
     });
+    var packageManager;
     var packageBlock = (function(loc, exports, body) {
-        var imp = ((body.type === "WithStatement") ? body.bindings.filter((function(x) {
+        var imports = ((body.type === "WithStatement") ? body.bindings.filter((function(x) {
             return (x.type === "ImportPattern");
         })) : []),
-            imports = map(imp, (function(x) {
-                return x.from;
-            })),
             __exports = map(exports.exports, (function(x) {
-                return x.id.names;
-            })),
-            exportList = map(exports.exports, (function(x) {
-                return _transform(x.id);
-            })),
-            exportHeader = (exportList.length ? ecma_declaration.VariableDeclaration.create(null, map(
-                exportList, (function(x) {
-                    return variableDeclarator(null, x);
-                }))) : ecma_statement.EmptyStatement.create(null)),
-            exportBody = exportList.map((function(x) {
-                return expressionStatement(null, ecma_expression.AssignmentExpression.create(null,
-                    "=", memberExpression(null, identifier(null, "exports"), identifier(null, x
-                        .name)), identifier(null, x.name)));
+                return x.id.name;
             })),
             fBody = ((body.type === "WithStatement") ? withStatement(null, map(body.bindings, (function(x) {
                 return ((x.type !== "ImportPattern") ? x : khepri_declaration.Binding.create(
                     null, x.pattern, x.pattern.id));
-            })), body.body) : _transform(body)),
-            packageBody = ecma_expression.FunctionExpression.create(null, null, concat(identifier(null,
-                "require"), identifier(null, "exports"), imp.map((function(x) {
-                return _transform(x.pattern);
-            }))), blockStatement(fBody.loc, concat(expressionStatement(null, stringLiteral(null,
-                "use strict")), exportHeader, fBody.body, exportBody)));
-        return callExpression(loc, identifier(null, "define"), [ecma_expression.ArrayExpression.create(null,
-                concat(stringLiteral(null, "require"), stringLiteral(null, "exports"), imports)),
-            packageBody
-        ]);
+            })), body.body) : _transform(body));
+        return _transform(packageManager(loc, __exports, imports, fBody));
     });
     var transformers = ({});
     var addTransform = (function(target, f) {
@@ -406,7 +384,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return packageBlock(node.loc, node.exports, node.body);
     }));
     (_transform = (function(node) {
-        if ((!node || !(node instanceof khepri_node.Node))) return node;
+        if (!node) return node;
         if (Array.isArray(node)) return map(node, _transform);
         var t = transformers[node.type];
         if (!t) return node;
@@ -415,6 +393,8 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     (transform = (function(__o) {
         var options = __o["options"],
             ast = __o["ast"];
+        (packageManager = require("khepri/compile/package_manager/node")
+            .amdPackage);
         return ({
             "options": options,
             "ast": _transform(ast)

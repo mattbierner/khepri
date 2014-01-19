@@ -1,0 +1,63 @@
+/**
+ * @fileOverview
+ */
+package (
+    amdPackage)
+with
+    import 'khepri_ast/declaration' khepri_declaration,
+    import 'khepri_ast/expression' khepri_expression,
+    import 'khepri_ast/pattern' khepri_pattern,
+    import 'khepri_ast/program' khepri_program,
+    import 'khepri_ast/statement' khepri_statement,
+    import 'khepri_ast/value' khepri_value
+in {
+
+var concat = Function.prototype.call.bind(Array.prototype.concat);
+var map = Function.prototype.call.bind(Array.prototype.map);
+var reduce = Function.prototype.call.bind(Array.prototype.reduce);
+
+/* Package Manager
+ ******************************************************************************/
+amdPackage = \loc exports imports body -> let
+    exportHeader = (exports.length ?
+        khepri_declaration.VariableDeclaration.create(null,
+            map(exports, \x ->
+                khepri_declaration.VariableDeclarator.create(null,
+                    khepri_value.Identifier.create(null, x)))) :
+        khepri_statement.EmptyStatement.create(null)),
+    
+    exportBody = map(exports, \x ->
+        khepri_statement.ExpressionStatement.create(null,
+            khepri_expression.AssignmentExpression.create(null, '=',
+                khepri_expression.MemberExpression.create(null,
+                    khepri_value.Identifier.create(null, 'exports'),
+                    khepri_value.Identifier.create(null, x)),
+                khepri_value.Identifier.create(null, x)))),
+    
+    packageBody = khepri_expression.FunctionExpression.create(null, null,
+        khepri_pattern.ArgumentsPattern.create(null, null,
+            concat(
+                khepri_pattern.IdentifierPattern.create(null,
+                    khepri_value.Identifier.create(null, 'require')),
+                khepri_pattern.IdentifierPattern.create(null,
+                    khepri_value.Identifier.create(null, 'exports')),
+                map(imports, \x -> khepri_pattern.IdentifierPattern.create(null, x.to)))),
+        khepri_statement.BlockStatement.create(body.loc,
+            concat(
+                khepri_statement.ExpressionStatement.create(null,
+                    khepri_value.Literal.create(null, 'string', "use strict")),
+                exportHeader,
+                body.body,
+                exportBody)))
+in
+    khepri_statement.ExpressionStatement.create(loc,
+        khepri_expression.CallExpression.create(loc,
+            khepri_value.Identifier.create(null, 'define'),
+            [khepri_expression.ArrayExpression.create(null,
+                concat(
+                    khepri_value.Literal.create(null, 'string', 'require'),
+                    khepri_value.Literal.create(null, 'string', 'exports'),
+                    map(imports, \x -> khepri_value.Literal.create(null, 'string', x.from)))),
+                packageBody]));
+
+}
