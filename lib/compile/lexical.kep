@@ -597,7 +597,7 @@ check = \ast globals -> {
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };
 
-checkStage = \{options, ast}, globals -> {
+checkStage = \{options ast}, globals -> {
     var g = globals || builtins;
     var scope = reduce(g, Scope.addImmutableBinding, new Scope({}, null, {}));
     var state = new State(khepriZipper(ast), scope, scope);

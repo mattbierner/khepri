@@ -71,15 +71,16 @@
             <h2>Input</h2>
             <div>
                 <textarea rows='20'></textarea>
-                <button>Tokenize</button>
+                <button>Transform</button>
+                <select id='package_manager'>
+                    <option value="amd">AMD</option>
+                    <option value="node">Node</option>
+                </select>
             </div>
         </div>
         <div class='output'>
             <h2>Output</h2>
             <span class="ParseError"></span>
-            <p>
-                <span id='parse_out'></span>
-            </p>
             <pre id='text_out'></pre>
         </div>
     </div>
@@ -126,11 +127,15 @@
                     $('.ParseError').text('');
                     $('#text_out').text('');
                     
+                    var options = {
+                        'package_manager': $('#package_manager').val()
+                    };
+                    
                     try {
                         var lex = lexer.lex(input);
                         var ast = parser.parseStream(lex);
                         
-                        var ecam_ast = compile.compile(ast);
+                        var ecam_ast = compile.compile(ast, options);
                         var unparsed = unparse.unparse(ecam_ast);
                         var s = unparse_print.print(unparsed);
                         

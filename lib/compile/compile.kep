@@ -9,11 +9,11 @@ in {
 
 compile =
     (\root options ->
-        ({'ast': root, 'options': options}))
-    \> lexical.checkStage
-    \> khepri_peep.optimize
-    \> transform.transform
-    \> ecma_peep.optimize
-    \> \{ast} -> ast;
+        ({'ast': root, 'options': options || {}}))
+    \>> lexical.checkStage
+    \>> khepri_peep.optimize
+    \>> transform.transform
+    \>> ecma_peep.optimize
+    \>> \{ast} -> ast;
 
 }

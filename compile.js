@@ -50,13 +50,16 @@ function(unparse,
         outFile = argv['o'],
         header = (argv['header'] ? argv['header'] + '\n' : '');
 
+    var options = {};
+    if ('package_manager' in argv) options.package_manager = argv.package_manager;
+    
     fs.realpath(inFile, function(err, resolvedPath) {
         if (err) throw err;
 
         fs.readFile(resolvedPath, 'utf8', function(err, data) {
             if (err) throw err;
             
-            var out = header + compile(data);
+            var out = header + compile(data, options);
             if (outFile) {
                 fs.writeFile(outFile, out, 'utf8', function(err) {
                     if (err) throw err;

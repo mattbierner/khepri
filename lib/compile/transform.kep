@@ -681,8 +681,10 @@ _transform = function(node) {
 
 transform = \{options ast} -> {
     // @TODO: Much evil
-    packageManager = require('khepri/compile/package_manager/node');
-    
+    packageManager = require('khepri/compile/package_manager/amd');
+    if (options.package_manager === 'node')
+        packageManager = require('khepri/compile/package_manager/node');
+
     return ({
         'options': options,
         'ast': _transform(ast)

@@ -413,7 +413,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     (transform = (function(__o) {
         var options = __o["options"],
             ast = __o["ast"];
-        (packageManager = require("khepri/compile/package_manager/node"));
+        (packageManager = require("khepri/compile/package_manager/amd"));
+        if ((options.package_manager === "node"))(packageManager = require(
+            "khepri/compile/package_manager/node"));
         return ({
             "options": options,
             "ast": _transform(ast)
