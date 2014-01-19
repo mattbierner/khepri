@@ -39,6 +39,18 @@ var maps = \f, a ->  Array.prototype.map.call(a, f);
 
 var flatten = \x -> (Array.isArray(x) ? reduce(x, \p, c -> p.concat(c), []) : x);
 
+/**
+ * Is an array of source elements strict code?
+ */
+var isStrict = \elems -> {
+    if (elems && elems.length && elems[0].type === 'ExpressionStatement') {
+        var first = elems[0].expression;
+        return (first && first.type === 'Literal' && first.kind ==='string' && first.value === 'use strict');
+    }
+    return false;
+};
+
+
 /* Forward
  ******************************************************************************/
 var expressionStatement;
@@ -213,6 +225,8 @@ var functionExpression = \loc, id, parameters, body -> let
             identifier(null, 'arguments')) :
         []),
     
+    strict = isStrict(body.body),
+    
     prefix = concat(
         elementsPrefix,
         argumentsPrefix)
@@ -222,8 +236,12 @@ in
         params,
         blockStatement(body.loc,
             concat(
+                (!strict ? [] :
+                    khepri_statement.ExpressionStatement.create(null,
+                        khepri_value.Literal.create(null, 'string', "use strict"))),
                 (prefix.length ? variableDeclaration(null, prefix) : []),
-                _transform(body).body)));
+                let block = _transform(body).body in
+                    (strict ? block.slice(1): block))));
 
 /**
  * 
@@ -331,21 +349,23 @@ var packageManager;
     
 var packageBlock = \loc, exports, body -> let
     imports = (body.type === 'WithStatement' ?
-        body.bindings.filter(\x -> x.type === 'ImportPattern') :
+        filter(\x -> x.type === 'ImportPattern', body.bindings) :
         []),
     
-    __exports = map(exports.exports, \x -> x.id.name),
+    exportedNames = map(exports.exports, \x -> x.id.name),
+    
+    targets = reduce(imports, \p c -> {
+        p[c.from] = c.pattern;
+        return p;
+    }, {}),
     
     fBody = (body.type === 'WithStatement' ?
-        withStatement(null,
-            map(body.bindings, \x -> (x.type !== 'ImportPattern' ? x :
-                khepri_declaration.Binding.create(null,
-                    x.pattern,
-                    x.pattern.id))),
+        khepri_statement.WithStatement.create(null,
+            filter(\x -> x.type !== 'ImportPattern', body.bindings),
             body.body) :
-        _transform(body))
+        body)
 in
-    _transform(packageManager(loc, __exports, imports, fBody));
+    _transform(packageManager.definePackage(loc, exportedNames, imports, targets, fBody));
 
 /* Transform
  ******************************************************************************/
@@ -536,9 +556,9 @@ addTransform('CurryExpression', \node ->
 
 addTransform('UnaryOperatorExpression', \node ->
     functionExpression(node.loc, null,
-            khepri_pattern.ArgumentsPattern.create(null, null, [
-                khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'x'))]),
+        khepri_pattern.ArgumentsPattern.create(null, null, [
+            khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'x'))]),
         blockStatement(null, [
             returnStatement(null, 
                 khepri_expression.UnaryExpression.create(null,
@@ -650,6 +670,9 @@ _transform = function(node) {
     if (Array.isArray(node))
         return map(node, _transform);
     
+    if (!(node instanceof khepri_node.Node))
+        return node;
+    
     var t = transformers[node.type];
     
     if (!t) return node;
@@ -657,7 +680,9 @@ _transform = function(node) {
 };
 
 transform = \{options ast} -> {
-    packageManager = require('khepri/compile/package_manager/node').amdPackage;
+    // @TODO: Much evil
+    packageManager = require('khepri/compile/package_manager/node');
+    
     return ({
         'options': options,
         'ast': _transform(ast)

@@ -1,7 +1,13 @@
 # ChangeLog #
 
 ## 0.8.1 - January 19, 2014
-* improvements to `watch.py`
+* Improvements to `watch.py`.
+** Fixed double compiling.
+** Auto delete files.
+** Clearer output.
+** Argument forwarding.
+* Added experimental support for node package manager.
+** Use the `--package_manager=node` flag.
 
 
 ## 0.8.0 - December 18, 2013
