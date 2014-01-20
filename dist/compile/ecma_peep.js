@@ -26,9 +26,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
     });
     var reduce = Function.prototype.call.bind(Array.prototype.reduce);
     var flatten = (function(x) {
-        return (Array.isArray(x) ? reduce(x, (function(p, c) {
-            return p.concat(c);
-        }), []) : x);
+        return (!Array.isArray(x) ? x : [].concat.apply([], x.map(flatten)));
     });
     var peepholes = ({});
     var addPeephole = (function(type, condition, f) {
@@ -55,19 +53,21 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
     }));
     addPeephole("BlockStatement", (function(_) {
         return true;
-    }), (function(node) {
+    }), (function(node, t) {
         return modify(node, ({
             "body": flatten(node.body.map((function(x) {
-                return ((x && (x.type === "BlockStatement")) ? x.body : x);
+                return ((x && (x.type === "BlockStatement")) ? t(x)
+                    .body : x);
             })))
         }), ({}));
     }));
     addPeephole("Program", (function(_) {
         return true;
-    }), (function(node) {
+    }), (function(node, t) {
         return modify(node, ({
             "body": flatten(node.body.map((function(x) {
-                return ((x && (x.type === "BlockStatement")) ? x.body : x);
+                return ((x && (x.type === "BlockStatement")) ? t(x)
+                    .body : x);
             })))
         }), ({}));
     }));
@@ -82,16 +82,19 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
             right = __o1["right"];
         return ast_value.Literal.create(null, "string", (left.value + right.value));
     }));
+    var transform = (function(node) {
+        var transforms = (peepholes[node.type] || [])
+            .filter((function(x) {
+                return x.condition(node);
+            }));
+        return transforms.reduce((function(p, c) {
+            return c.map(p, transform);
+        }), node);
+    });
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {
             if (!node) return node;
-            var transforms = (peepholes[node.type] || [])
-                .filter((function(x) {
-                    return x.condition(node);
-                }));
-            return transforms.reduce((function(p, c) {
-                return c.map(p);
-            }), node);
+            return transform(node);
         }), z);
         var next = zipper.nextDfs(t);
         return (next ? opt(next) : t);

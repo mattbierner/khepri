@@ -7,8 +7,8 @@
 ** Clearer output.
 ** Argument forwarding.
 * Added experimental support for node package manager.
-** Use the `--package_manager=node` flag.
-
+** Use the `--package_manager=node` flag to generate node style packages.
+* Fixed function expressions discarding `"use strict"` if used with patterns.
 
 ## 0.8.0 - December 18, 2013
 * Updated pattern grammar to disallow some weird forms including:

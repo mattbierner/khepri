@@ -13,6 +13,19 @@ in {
 var concat = Function.prototype.call.bind(Array.prototype.concat);
 var map = Function.prototype.call.bind(Array.prototype.map);
 
+var path = \path -> let
+    segs = path.split('::')
+in
+    segs.slice(1).reduce(
+        \p c -> 
+            ast_expression.MemberExpression.create(null,
+                p,
+                ast_value.Literal.create(null, 'string', c),
+                true),
+        ast_expression.CallExpression.create(null,
+            ast_value.Identifier.create(null, 'require'), [
+            ast_value.Literal.create(null, 'string', segs[0])]));
+
 /* Package Manager
  ******************************************************************************/
 definePackage = \loc exports imports targets body -> let
@@ -38,8 +51,7 @@ in
             map(imports, \x ->
                 ast_declaration.Binding.create(null,
                     x.pattern,
-                    ast_expression.CallExpression.create(null,
-                        ast_value.Identifier.create(null, 'require'), [x.from]))),
+                    path(x.from.value))),
             ast_statement.BlockStatement.create(null,
                 concat(
                     exportHeader,

@@ -22,8 +22,8 @@ var concat = \args(...) ->
 var map = \f, x -> [].map.call(x, f);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
-var flatten = \x -> (Array.isArray(x) ? reduce(x, \p, c -> p.concat(c), []) : x);
-
+var flatten = \x -> (!Array.isArray(x) ? x :
+    [].concat.apply([], x.map(flatten)));
 
 /*
  ******************************************************************************/
@@ -71,10 +71,10 @@ addPeephole('VariableDeclaration',
  */
 addPeephole('BlockStatement',
     \_ -> true,
-    \node ->
+    \node t ->
         modify(node, {
             'body': flatten(node.body.map(\x ->
-                (x && x.type === 'BlockStatement' ? x.body : x)))
+                (x && x.type === 'BlockStatement' ? t(x).body : x)))
         }, {}));
 
 /**
@@ -82,10 +82,10 @@ addPeephole('BlockStatement',
  */
 addPeephole('Program',
     \_ -> true,
-    \node ->
+    \node t ->
         modify(node, {
             'body': flatten(node.body.map(\x ->
-                (x && x.type === 'BlockStatement' ? x.body : x)))
+                (x && x.type === 'BlockStatement' ? t(x).body : x)))
         }, {}));
 
 /**
@@ -100,11 +100,15 @@ addPeephole('BinaryExpression',
 
 /* Interface
  ******************************************************************************/
+var transform = \node -> {
+    var transforms = (peepholes[node.type] || []).filter(\x -> x.condition(node));
+    return transforms.reduce(\p c -> c.map(p, transform), node);
+};
+
 var opt = \z -> {
     var t = tree.modifyNode(\node -> {
         if (!node) return node;
-        var transforms = (peepholes[node.type] || []).filter(\x -> x.condition(node));
-        return transforms.reduce(\p c -> c.map(p), node);
+        return transform(node);
     }, z);
     
     var next = zipper.nextDfs(t);

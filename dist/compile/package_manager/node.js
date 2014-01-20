@@ -13,6 +13,16 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
         ast_value = ast_value;
     var concat = Function.prototype.call.bind(Array.prototype.concat);
     var map = Function.prototype.call.bind(Array.prototype.map);
+    var path = (function(path) {
+        var segs = path.split("::");
+        return segs.slice(1)
+            .reduce((function(p, c) {
+                return ast_expression.MemberExpression.create(null, p, ast_value.Literal.create(
+                    null, "string", c), true);
+            }), ast_expression.CallExpression.create(null, ast_value.Identifier.create(null, "require"), [
+                ast_value.Literal.create(null, "string", segs[0])
+            ]));
+    });
     (definePackage = (function(loc, exports, imports, targets, body) {
         var exportHeader = (exports.length ? ast_declaration.VariableDeclaration.create(null, map(
             exports, (function(x) {
@@ -28,9 +38,7 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
         return ast_statement.BlockStatement.create(body.loc, [ast_statement.ExpressionStatement.create(
                 null, ast_value.Literal.create(null, "string", "use strict")), ast_statement.WithStatement
             .create(null, map(imports, (function(x) {
-                return ast_declaration.Binding.create(null, x.pattern, ast_expression.CallExpression
-                    .create(null, ast_value.Identifier.create(null, "require"), [x.from])
-                );
+                return ast_declaration.Binding.create(null, x.pattern, path(x.from.value));
             })), ast_statement.BlockStatement.create(null, concat(exportHeader, body.body,
                 exportBody)))
         ]);

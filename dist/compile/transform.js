@@ -216,7 +216,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                 return x.id.name;
             })),
             targets = reduce(imports, (function(p, c) {
-                (p[c.from] = c.pattern);
+                (p[c.from.value] = c.pattern);
                 return p;
             }), ({})),
             fBody = ((body.type === "WithStatement") ? khepri_statement.WithStatement.create(null, filter((

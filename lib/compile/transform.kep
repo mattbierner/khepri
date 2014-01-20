@@ -355,7 +355,7 @@ var packageBlock = \loc, exports, body -> let
     exportedNames = map(exports.exports, \x -> x.id.name),
     
     targets = reduce(imports, \p c -> {
-        p[c.from] = c.pattern;
+        p[c.from.value] = c.pattern;
         return p;
     }, {}),
     

@@ -14,6 +14,10 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
         ast_value = ast_value;
     var concat = Function.prototype.call.bind(Array.prototype.concat);
     var map = Function.prototype.call.bind(Array.prototype.map);
+    var path = (function(path) {
+        return path.split("::")
+            .join("/");
+    });
     (definePackage = (function(loc, exports, imports, targets, body) {
         var exportHeader = (exports.length ? ast_declaration.VariableDeclaration.create(null, map(
             exports, (function(x) {
@@ -30,7 +34,7 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
                 .create(null, null, concat(ast_pattern.IdentifierPattern.create(null, ast_value.Identifier
                     .create(null, "require")), ast_pattern.IdentifierPattern.create(null,
                     ast_value.Identifier.create(null, "exports")), map(imports, (function(x) {
-                    return targets[x.from];
+                    return targets[x.from.value];
                 })))), ast_statement.BlockStatement.create(body.loc, concat(ast_statement.ExpressionStatement
                     .create(null, ast_value.Literal.create(null, "string", "use strict")),
                     exportHeader, body, exportBody)));
@@ -38,7 +42,7 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
             ast_value.Identifier.create(null, "define"), [ast_expression.ArrayExpression.create(
                 null, concat(ast_value.Literal.create(null, "string", "require"), ast_value.Literal
                     .create(null, "string", "exports"), map(imports, (function(x) {
-                        return x.from;
+                        return ast_value.Literal.create(null, "string", path(x.from.value));
                     })))), packageBody]));
     }));
     (exports.definePackage = definePackage);

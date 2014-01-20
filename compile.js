@@ -33,16 +33,37 @@ function(unparse,
         lexer,
         parser){
     
-    var compile = function(input) {
+    var compile = function(input, options) {
         try {
             var lex = lexer.lex(input);
             var ast = parser.parseStream(lex);
-            var unparsed = unparse.unparse(khepri_compile.compile(ast));
+            var unparsed = unparse.unparse(khepri_compile.compile(ast, options));
             return unparse_print.print(unparsed);
         } catch (e) {
             console.error(e + '');
             process.exit(1);
         }
+    };
+    
+    var compileFile = function(inFile, outFile, header, options) {
+        fs.realpath(inFile, function(err, resolvedPath) {
+            if (err) throw err;
+            
+            fs.readFile(resolvedPath, 'utf8', function(err, data) {
+                if (err) throw err;
+                
+                var out = header + compile(data, options);
+                if (outFile) {
+                    fs.writeFile(outFile, out, 'utf8', function(err) {
+                        if (err) throw err;
+                        console.log("Compiled '" + inFile + "' to '" + outFile + "'");
+                    });
+                } else {
+                    process.stdout.write(out);
+                    console.log("Compiled '" + inFile + "' to stdout");
+                }
+            });
+        });
     };
     
     // Arguments
@@ -52,23 +73,6 @@ function(unparse,
 
     var options = {};
     if ('package_manager' in argv) options.package_manager = argv.package_manager;
-    
-    fs.realpath(inFile, function(err, resolvedPath) {
-        if (err) throw err;
 
-        fs.readFile(resolvedPath, 'utf8', function(err, data) {
-            if (err) throw err;
-            
-            var out = header + compile(data, options);
-            if (outFile) {
-                fs.writeFile(outFile, out, 'utf8', function(err) {
-                    if (err) throw err;
-                    console.log("Compiled '" + inFile + "' to '" + outFile + "'");
-                });
-            } else {
-                process.stdout.write(out);
-                console.log("Compiled '" + inFile + "' to stdout");
-            }
-        });
-    });
+    compileFile(inFile, outFile, header, options);
 });
