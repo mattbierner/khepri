@@ -15,13 +15,8 @@ function(parse,
     return {
         'module': "Expression Tests",
         'tests': [
-            ["This Expression",
-            function(){
-                var expr = testParser(lexer.lex("this;;"));
-                assert.equal(expr.type, 'ThisExpression');
-            }],
-            
-            ["Assignment Expression",
+
+            ["Assignment Exression",
             function(){
                 var expr = testParser(lexer.lex("a = b + 3;"));
                 assert.equal(expr.type, 'AssignmentExpression');

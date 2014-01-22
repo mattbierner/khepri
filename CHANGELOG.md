@@ -8,6 +8,7 @@
 * Removed standard ECMAScript function syntax: `function(x) {...}`
 ** Use `function\ x -> {...}` instead.
 * Improvements to generated code.
+* Added support for generic separator for package `::`.
 
 ## 0.8.1 - January 19, 2014
 * Improvements to `watch.py`.
