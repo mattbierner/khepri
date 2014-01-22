@@ -6,8 +6,8 @@ package (
     falseLiteral
     booleanLiteral)
 with
-    import 'parse/parse' {always either next Parser},
-    import 'parse/text' {string}
+    import 'bennu/parse' {always either next Parser},
+    import 'bennu/text' {string}
 in {
 
 trueLiteral = @Parser :'True Literal Lexer'

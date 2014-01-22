@@ -63,8 +63,8 @@ package (
 // Punctuators
     punctuator)
 with
-    import 'parse/parse' {Parser},
-    import 'parse/text' {character string trie}
+    import 'bennu/parse' {Parser},
+    import 'bennu/text' {character string trie}
 in {
     
 /* Objects

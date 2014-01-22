@@ -13,8 +13,8 @@ package (
    // whitespaceCharacter,
     whitespace)
 with
-    import 'parse/parse' {always, bind many1 Parser},
-    import 'parse/text' {character characters match},
+    import 'bennu/parse' {always, bind many1 Parser},
+    import 'bennu/text' {character characters match},
     import 'nu-stream/stream' {foldl}
 in {
 

@@ -14,8 +14,8 @@ package (
    
     comment)
 with
-    import 'parse/parse' {anyToken always bind cons either many next Parser RecParser test token},
-    import 'parse/text' {character string},
+    import 'bennu/parse' {anyToken always bind cons either many next Parser RecParser test token},
+    import 'bennu/text' {character string},
     import 'nu-stream/stream' {foldl NIL},
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {

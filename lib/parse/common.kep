@@ -7,7 +7,7 @@ package (
     nodea,
     positionParser)
 with
-    import 'parse/parse' parse#{
+    import 'bennu/parse' parse#{
         always,
         bind},
     import 'khepri/position' {SourceLocation},

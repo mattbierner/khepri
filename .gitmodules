@@ -28,3 +28,6 @@
 [submodule "dependencies/seshet"]
 	path = dependencies/seshet
 	url = git@github.com:mattbierner/seshet.git
+[submodule "dependencies/bennu"]
+	path = dependencies/bennu
+	url = git@github.com:mattbierner/bennu.git

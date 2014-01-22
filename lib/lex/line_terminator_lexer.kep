@@ -9,8 +9,8 @@ package (
     lineTerminator
     lineTerminatorSequence)
 with
-    import 'parse/parse' {always choice next optional Parser token},
-    import 'parse/text' {character characters}
+    import 'bennu/parse' {always choice next optional Parser token},
+    import 'bennu/text' {character characters}
 in {
 
 var lfChar = '\u000A',

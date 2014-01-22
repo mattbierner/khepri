@@ -1,4 +1,4 @@
-define(['parse/parse', 'khepri/lex/string_lexer'], function(parse, string_lexer){
+define(['bennu/parse', 'khepri/lex/string_lexer'], function(parse, string_lexer){
     return {
         'module': "String Tests",
         'tests': [

@@ -93,9 +93,9 @@
             paths: {
                 'khepri': 'dist',
                 
-                'parse': 'dependencies/parse/dist',
+                'bennu': 'dependencies/bennu/dist',
                 'nu-stream': 'dependencies/nu/dist',
-                'seshet': 'dependencies/seshet/lib/seshet',
+                'seshet': 'dependencies/seshet/dist/seshet',
                 
                 'ecma': 'dependencies/parse-ecma/lib',
                 'ecma_unparse': 'dependencies/ecma-unparse/lib',
@@ -109,16 +109,14 @@
         });
 
         $(function () {
-            require(['parse/parse',
-               'nu-stream/stream',
+            require(['nu-stream/stream',
                'khepri/lex/lexer',
                'khepri/parse/parser',
                'khepri/compile/transform',
                'khepri/compile/lexical',
                'khepri/compile/compile',
                'ecma_unparse/unparse', 'ecma_unparse/print'],
-            function(parse,
-                    stream,
+            function(stream,
                     lexer, parser, transform, lexical, compile,
                     unparse, unparse_print) {
                     

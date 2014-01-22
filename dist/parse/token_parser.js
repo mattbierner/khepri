@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/token_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse"], (function(require, exports, parse) {
+define(["require", "exports", "bennu/parse"], (function(require, exports, parse) {
     "use strict";
     var punctuator, keyword, identifier, anyIdentifier, nullLiteral, booleanLiteral, numericLiteral,
             stringLiteral, regularExpressionLiteral;

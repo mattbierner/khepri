@@ -9,7 +9,7 @@ package (
     lexManyState
     lex)
 with
-    import 'parse/parse' {
+    import 'bennu/parse' parse#{
         always
         attempt
         binds
@@ -26,7 +26,7 @@ with
         runState
         Parser
         ParserState},
-    import 'parse/lang' {then},
+    import 'bennu/lang' {then},
     import 'nu-stream/stream' {memoStream, NIL, 'from': streamFrom},
     import 'khepri_ast/token' lexToken,
     import 'khepri/position' {SourceLocation, SourcePosition},
@@ -105,9 +105,8 @@ lexer = then(
 /* Running
  ******************************************************************************/
 lexManyState = \p, state -> let 
-    manyP = either(
-        bind(p, \x, state, m ->
-            always(memoStream(x, (runState, manyP, state, m)))),
+    manyP = parse.append(
+        many(p),
         next(eof, always(NIL)))
 in
     runState(manyP, state);

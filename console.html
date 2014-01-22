@@ -186,9 +186,9 @@
     <script type="application/javascript">
         requirejs.config({
             paths: {
-                'parse': 'dependencies/parse/dist',
+                'bennu': 'dependencies/bennu/dist',
                 'nu-stream': 'dependencies/nu/dist',
-                'seshet': 'dependencies/seshet/lib/seshet',
+                'seshet': 'dependencies/seshet/dist/seshet',
                 
                 'ecma': 'dependencies/parse-ecma/lib',
                 'ecma_unparse': 'dependencies/ecma-unparse/lib',
@@ -202,8 +202,8 @@
             }
         });
         $(function(){
-            require(['parse/parse', 'nu/stream', 'khepri/compile/lexical', 'khepri/lex/lexer', 'khepri/parse/parser', 'khepri_ast/node'],
-                function(parse, stream,lexical, lexer, parser, node)
+            require(['nu-stream/stream', 'khepri/compile/lexical', 'khepri/lex/lexer', 'khepri/parse/parser', 'khepri_ast/node'],
+                function(stream,lexical, lexer, parser, node)
             {
                 var lexOut = $('.LexOut');
                 

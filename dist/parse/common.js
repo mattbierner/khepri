@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/common.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "khepri/position", "nu-stream/stream"], (function(require, exports, parse,
+define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/stream"], (function(require, exports, parse,
     __o, stream) {
     "use strict";
     var precedence, node, nodea, positionParser;

@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/punctuator_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/text"], (function(require, exports, __o, __o0) {
+define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, exports, __o, __o0) {
     "use strict";
     var openBrace, closeBrace, openParenthesis, closeParenthesis, openBracket, closeBracket, period, semicolon,
             comma, colon, questionMark, logicalAnd, logicalOr, leftShift, signedRightShift, unsignedRightShift,

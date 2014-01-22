@@ -9,8 +9,8 @@ requirejs.config({
     paths: {
         'khepri': 'dist',
 
-        'parse': 'dependencies/parse/dist',
-        'seshet': 'dependencies/seshet/lib/seshet',
+        'parse': 'dependencies/bennu/dist',
+        'seshet': 'dependencies/seshet/dist/seshet',
         'nu-stream': 'dependencies/nu/dist',
         
         'ecma': 'dependencies/parse-ecma/lib',
@@ -25,7 +25,6 @@ requirejs.config({
 });
 
 var KHEPRI_EXT = /^\.kep$/i;
-
 
 requirejs(['ecma_unparse/unparse',
            'ecma_unparse/print',

@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/value_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "khepri_ast/value", "khepri/parse/token_parser"], (function(require,
+define(["require", "exports", "bennu/parse", "khepri_ast/value", "khepri/parse/token_parser"], (function(require,
     exports, __o, ast_value, token) {
     "use strict";
     var literal, nullLiteral, booleanLiteral, numericLiteral, stringLiteral, regularExpressionLiteral,

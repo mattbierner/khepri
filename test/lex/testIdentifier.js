@@ -1,4 +1,4 @@
-define(['parse/parse', 'khepri/lex/identifier_lexer'], function(parse, identifier_lexer){
+define(['bennu/parse', 'khepri/lex/identifier_lexer'], function(parse, identifier_lexer){
     return {
         'module': "Indentifier Tests",
         'tests': [

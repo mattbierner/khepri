@@ -1,4 +1,4 @@
-define(['parse/parse',
+define(['bennu/parse',
         'khepri/lex/lexer',
         'khepri/parse/parser',
         'khepri/parse/program_parser'],

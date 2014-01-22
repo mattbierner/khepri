@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/program_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "nu-stream/stream", "khepri_ast/program",
+define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri_ast/program",
     "khepri/parse/common", "khepri/parse/statement_parser", "khepri/parse/package_parser"
 ], (function(require, exports, __o, __o0, __o1, ast_program, __o2, _, _0) {
     "use strict";

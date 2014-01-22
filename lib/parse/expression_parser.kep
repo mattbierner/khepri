@@ -61,7 +61,7 @@ package (
     
     topLevelExpression)
 with
-    import 'parse/parse' {
+    import 'bennu/parse' {
         always
         append
         attempt
@@ -79,7 +79,7 @@ with
         next
         optional
         Parser},
-    import'parse/lang' {
+    import 'bennu/lang' {
         between
         sepBy
         sepBy1
@@ -149,8 +149,8 @@ arrayLiteral = (Parser, 'Array Literal') <|
 /**
  * Parser for an object property name.
  */
-propertyName = Parser('Property Name',
-    stringLiteral);
+propertyName = //(Parser, 'Property Name') <|
+    stringLiteral;
 
 /**
  * Parser for any property initializer.

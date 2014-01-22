@@ -18,7 +18,7 @@ package (
 // Identifier
     identifier)
 with
-    import 'parse/parse' {
+    import 'bennu/parse' {
         always
         attempt 
         bind
@@ -33,7 +33,7 @@ with
         Parser
         testStream
         token},
-    import 'parse/text' {
+    import 'bennu/text' {
         character
         characters
         digit

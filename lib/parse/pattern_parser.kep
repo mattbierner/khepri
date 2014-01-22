@@ -20,7 +20,7 @@ package (
     
     subPattern)
 with
-    import 'parse/parse' {
+    import 'bennu/parse' {
         always
         attempt
         bind
@@ -33,7 +33,7 @@ with
         next
         optional
         Parser},
-    import 'parse/lang' {between sepBy sepBy1 then},
+    import 'bennu/lang' {between sepBy sepBy1 then},
     import 'khepri_ast/pattern' ast_pattern,
     import 'khepri/parse/common' {node nodea},
     import 'khepri/parse/token_parser' {keyword punctuator},

@@ -3,59 +3,62 @@
  */
 package (
    reservedWord,
-   futureReservedWord,
+   futureReservedWord
     
 //keywords
-   breakKeyword,
-   caseKeyword,
-   catchKeyword,
-   continueKeyword,
-   debuggerKeyword,
-   defaultKeyword,
-   deleteKeyword,
-   doKeyword,
-   elseKeyword,
-   finallyKeyword,
-   forKeyword,
-   functionKeyword,
-   ifKeyword,
-   inKeyword,
-   instanceofKeyword,
-   typeofKeyword,
-   newKeyword,
-   Keyword,
-   returnKeyword,
-   voidKeyword,
-   switchKeyword,
-   whileKeyword,
-   thisKeyword,
-   withKeyword,
-   throwKeyword,
-   tryKeyword,
-   keyword,
-   getKeyword,
-   setKeyword,
+   breakKeyword
+   caseKeyword
+   catchKeyword
+   continueKeyword
+   debuggerKeyword
+   defaultKeyword
+   deleteKeyword
+   doKeyword
+   elseKeyword
+   finallyKeyword
+   forKeyword
+   functionKeyword
+   ifKeyword
+   inKeyword
+   instanceofKeyword
+   typeofKeyword
+   newKeyword
+   Keyword
+   returnKeyword
+   voidKeyword
+   switchKeyword
+   whileKeyword
+   thisKeyword
+   withKeyword
+   throwKeyword
+   tryKeyword
+   keyword
+   getKeyword
+   setKeyword
 
 //FutureReservedWord
-   classKeyword,
-   enumKeyword,
-   extendsKeyword,
-   superKeyword,
-   constKeyword,
-   exportKeyword,
-   importKeyword,
-   implementsKeyword,
-   letKeyword,
-   privateKeyword,
-   publicKeyword,
-   interfaceKeyword,
-   packageKeyword,
-   protectedKeyword,
-   staticKeyword,
+   classKeyword
+   enumKeyword
+   extendsKeyword
+   superKeyword
+   constKeyword
+   exportKeyword
+   importKeyword
+   implementsKeyword
+   letKeyword
+   privateKeyword
+   publicKeyword
+   interfaceKeyword
+   packageKeyword
+   protectedKeyword
+   staticKeyword
    yieldKeyword)
 with
-   import 'parse/parse'parse {attempt,choice,Parser},
-   import 'parse/text' {string,trie},
+   import 'bennu/parse' parse#{
+        attempt
+        choice
+        Parser},
+   import 'bennu/text' {string,trie},
    import 'khepri/lex/boolean_lexer' {booleanLiteral},
    import 'khepri/lex/null_lexer' {nullLiteral}
 in {

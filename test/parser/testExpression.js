@@ -1,5 +1,5 @@
-define(['parse/parse',
-        'nu/stream',
+define(['bennu/parse',
+        'nu-stream/stream',
         'khepri/lex/lexer',
         'khepri/parse/parser'],
 function(parse,
