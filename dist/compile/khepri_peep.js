@@ -1,45 +1,32 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/khepri_peep.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/khepri_zipper", "khepri_ast/node",
     "khepri_ast/statement", "khepri_ast/expression", "khepri_ast/pattern", "khepri_ast/value"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_statement, ast_expression, ast_pattern, ast_value) {
     "use strict";
-    var optimize;
-    var tree = tree,
-        zipper = zipper,
-        __o = __o,
-        khepriZipper = __o["khepriZipper"],
-        __o0 = __o0,
+    var khepriZipper = __o["khepriZipper"],
         modify = __o0["modify"],
         Node = __o0["Node"],
         setUserData = __o0["setUserData"],
-        ast_statement = ast_statement,
-        ast_expression = ast_expression,
-        ast_pattern = ast_pattern,
-        ast_value = ast_value;
-    var concat = (function() {
-        var args = arguments;
-        return [].concat.apply([], args);
-    });
-    var map = (function(f, x) {
-        return [].map.call(x, f);
-    });
-    var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-    var flatten = (function(x) {
-        return (Array.isArray(x) ? reduce(x, (function(p, c) {
-            return p.concat(c);
-        }), []) : x);
-    });
-    var peepholes = ({});
-    var addPeephole = (function(type, condition, f) {
-        var entry = ({
-            "condition": condition,
-            "map": f
+        optimize, concat = (function() {
+            var args = arguments;
+            return [].concat.apply([], args);
+        }),
+        map = (function(f, x) {
+            return [].map.call(x, f);
+        }),
+        reduce = Function.prototype.call.bind(Array.prototype.reduce),
+        flatten = (function(x) {
+            return (Array.isArray(x) ? reduce(x, (function(p, c) {
+                return p.concat(c);
+            }), []) : x);
+        }),
+        peepholes = ({}),
+        addPeephole = (function(type, condition, f) {
+            var entry = ({
+                "condition": condition,
+                "map": f
+            });
+            (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
         });
-        (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
-    });
     addPeephole("ReturnStatement", (function(node) {
         return (node.argument && (node.argument.type === "LetExpression"));
     }), (function(node) {
@@ -121,8 +108,8 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
             return transforms.reduce((function(p, c) {
                 return c.map(p);
             }), node);
-        }), z);
-        var next = zipper.nextDfs(t);
+        }), z),
+            next = zipper.nextDfs(t);
         return (next ? opt(next) : t);
     });
     (optimize = (function(__o1) {
@@ -134,4 +121,4 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
         });
     }));
     (exports.optimize = optimize);
-}))
+}));

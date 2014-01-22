@@ -1,17 +1,8 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/string_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-stream/stream",
     "khepri/lex/line_terminator_lexer", "khepri/lex/number_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
     "use strict";
-    var doubleQuote, escape, singleQuote, lineContinuation, unicodeEscapeSequence, hexEscapeSequence,
-            characterEscapeSequence, escapeSequence, singleStringCharacter, singleStringCharacters,
-            singleStringLiteral, doubleStringCharacter, doubleStringCharacters, doubleStringLiteral,
-            stringLiteral;
-    var __o = __o,
-        always = __o["always"],
+    var always = __o["always"],
         attempt = __o["attempt"],
         bind = __o["bind"],
         choice = __o["choice"],
@@ -23,37 +14,35 @@ define(["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-str
         Parser = __o["Parser"],
         test = __o["test"],
         token = __o["token"],
-        __o0 = __o0,
         character = __o0["character"],
-        __o1 = __o1,
         between = __o1["between"],
         times = __o1["times"],
-        __o2 = __o2,
         foldl = __o2["foldl"],
-        __o3 = __o3,
         lineTerminatorSequence = __o3["lineTerminatorSequence"],
         lineTerminator = __o3["lineTerminator"],
-        __o4 = __o4,
         decimalDigit = __o4["decimalDigit"],
-        hexDigit = __o4["hexDigit"];
-    var join = foldl.bind(null, (function(x, y) {
-        return (x + y);
-    }), "");
-    var fromCharCodeParser = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(always, (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(String.fromCharCode, (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })((function(x) {
-        return parseInt(x, 16);
-    }), join)));
+        hexDigit = __o4["hexDigit"],
+        doubleQuote, escape, singleQuote, lineContinuation, unicodeEscapeSequence, hexEscapeSequence,
+            characterEscapeSequence, escapeSequence, singleStringCharacter, singleStringCharacters,
+            singleStringLiteral, doubleStringCharacter, doubleStringCharacters, doubleStringLiteral,
+            stringLiteral, join = foldl.bind(null, (function(x, y) {
+                return (x + y);
+            }), ""),
+        fromCharCodeParser = (function(f, g) {
+            return (function(x) {
+                return f(g(x));
+            });
+        })(always, (function(f, g) {
+            return (function(x) {
+                return f(g(x));
+            });
+        })(String.fromCharCode, (function(f, g) {
+            return (function(x) {
+                return f(g(x));
+            });
+        })((function(x) {
+            return parseInt(x, 16);
+        }), join)));
     (doubleQuote = Parser("Double Quote Lexer", character("\"")));
     (singleQuote = Parser("Single Quote Lexer", character("'")));
     (escape = Parser("String Escape Lexer", character("\\")));
@@ -62,11 +51,11 @@ define(["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-str
     var singleEscapeCharacter = choice(character("'"), character("\""), character("\\"), next(character("b"),
         always("\b")), next(character("f"), always("\f")), next(character("n"), always("\n")), next(
         character("r"), always("\r")), next(character("t"), always("\t")), next(character("v"), always(
-        "\u000b")));
-    var escapeCharacter = choice(singleEscapeCharacter, decimalDigit, character("u"), character("x"));
-    var nonEscapeCharacter = token((function(tok) {
-        return !(test(escapeCharacter, tok) || test(lineTerminator, tok));
-    }));
+        "\u000b"))),
+        escapeCharacter = choice(singleEscapeCharacter, decimalDigit, character("u"), character("x")),
+        nonEscapeCharacter = token((function(tok) {
+            return !(test(escapeCharacter, tok) || test(lineTerminator, tok));
+        }));
     (hexEscapeSequence = next(character("x"), bind(times(2, hexDigit), fromCharCodeParser)));
     (unicodeEscapeSequence = next(character("u"), bind(times(4, hexDigit), fromCharCodeParser)));
     (characterEscapeSequence = either(singleEscapeCharacter, nonEscapeCharacter));
@@ -115,4 +104,4 @@ define(["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-str
     (exports.doubleStringCharacters = doubleStringCharacters);
     (exports.doubleStringLiteral = doubleStringLiteral);
     (exports.stringLiteral = stringLiteral);
-}))
+}));

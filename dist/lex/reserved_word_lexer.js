@@ -1,35 +1,26 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/reserved_word_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/text", "khepri/lex/boolean_lexer", "khepri/lex/null_lexer"], (
     function(require, exports, parse, __o, __o0, __o1) {
         "use strict";
-        var reservedWord, futureReservedWord, breakKeyword, caseKeyword, catchKeyword, continueKeyword,
+        var attempt = parse["attempt"],
+            choice = parse["choice"],
+            Parser = parse["Parser"],
+            string = __o["string"],
+            trie = __o["trie"],
+            booleanLiteral = __o0["booleanLiteral"],
+            nullLiteral = __o1["nullLiteral"],
+            reservedWord, futureReservedWord, breakKeyword, caseKeyword, catchKeyword, continueKeyword,
                 debuggerKeyword, defaultKeyword, deleteKeyword, doKeyword, elseKeyword, finallyKeyword, forKeyword,
                 functionKeyword, ifKeyword, inKeyword, instanceofKeyword, typeofKeyword, newKeyword, Keyword,
                 returnKeyword, voidKeyword, switchKeyword, whileKeyword, thisKeyword, withKeyword, throwKeyword,
                 tryKeyword, keyword, getKeyword, setKeyword, classKeyword, enumKeyword, extendsKeyword,
                 superKeyword, constKeyword, exportKeyword, importKeyword, implementsKeyword, letKeyword,
                 privateKeyword, publicKeyword, interfaceKeyword, packageKeyword, protectedKeyword, staticKeyword,
-                yieldKeyword;
-        var parse = parse,
-            attempt = parse["attempt"],
-            choice = parse["choice"],
-            Parser = parse["Parser"],
-            __o = __o,
-            string = __o["string"],
-            trie = __o["trie"],
-            __o0 = __o0,
-            booleanLiteral = __o0["booleanLiteral"],
-            __o1 = __o1,
-            nullLiteral = __o1["nullLiteral"];
-        var keywordList = ["break", "case", "catch", "continue", "debugger", "default", "delete", "do", "else",
-            "finally", "for", "function", "if", "in", "instanceof", "typeof", "new", "var", "return", "void",
-            "switch", "while", "this", "with", "throw", "try", "export", "package", "class", "enum", "interface",
-            "extends", "implements", "private", "public", "protected", "super", "const", "yield", "import", "let",
-            "static", "_"
-        ];
+                yieldKeyword, keywordList = ["break", "case", "catch", "continue", "debugger", "default", "delete",
+                    "do", "else", "finally", "for", "function", "if", "in", "instanceof", "typeof", "new", "var",
+                    "return", "void", "switch", "while", "this", "with", "throw", "try", "export", "package",
+                    "class", "enum", "interface", "extends", "implements", "private", "public", "protected",
+                    "super", "const", "yield", "import", "let", "static", "_"
+            ];
         (breakKeyword = string("break"));
         (caseKeyword = string("case"));
         (catchKeyword = string("catch"));
@@ -134,4 +125,4 @@ define(["require", "exports", "bennu/parse", "bennu/text", "khepri/lex/boolean_l
         (exports.protectedKeyword = protectedKeyword);
         (exports.staticKeyword = staticKeyword);
         (exports.yieldKeyword = yieldKeyword);
-    }))
+    }));

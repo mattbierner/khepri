@@ -6,35 +6,28 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     "khepri_ast_zipper/khepri_zipper", "khepri/compile/scope"
 ], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, __o0) {
     "use strict";
-    var check, checkStage;
-    var ast_node = ast_node,
-        setUserData = ast_node["setUserData"],
-        ast_pattern = ast_pattern,
-        ast_value = ast_value,
-        zipper = zipper,
-        tree = tree,
-        __o = __o,
+    var setUserData = ast_node["setUserData"],
         khepriZipper = __o["khepriZipper"],
-        __o0 = __o0,
-        Scope = __o0["Scope"];
-    var map = Function.prototype.call.bind(Array.prototype.map);
-    var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-    var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
-    var cont = (function(f, args) {
-        var c = [f, args];
-        (c._next = true);
-        return c;
-    });
-    var trampoline = (function(f) {
-        var value = f;
-        while ((value && value._next))(value = value[0].apply(undefined, value[1]));
-        return value;
-    });
-    var State = (function(ctx, realScope, scope) {
-        (this.ctx = ctx);
-        (this.realScope = realScope);
-        (this.scope = scope);
-    });
+        Scope = __o0["Scope"],
+        check, checkStage, map = Function.prototype.call.bind(Array.prototype.map),
+        reduce = Function.prototype.call.bind(Array.prototype.reduce),
+        reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
+        cont = (function(f, args) {
+            var c = [f, args];
+            (c._next = true);
+            return c;
+        }),
+        trampoline = (function(f) {
+            var value = f;
+            while ((value && value._next))(value = value[0].apply(undefined, value[1]));
+            return value;
+        }),
+        State = (function(ctx, realScope, scope) {
+            var self = this;
+            (self.ctx = ctx);
+            (self.realScope = realScope);
+            (self.scope = scope);
+        });
     (State.setCtx = (function(s, ctx) {
         return new(State)(ctx, s.realScope, s.scope);
     }));
@@ -48,215 +41,214 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         return (function(s, ok, _) {
             return ok(x, s);
         });
-    });
-    var error = (function(x) {
-        return (function(s, _, err) {
-            return err(x, s);
-        });
-    });
-    var bind = (function(p, f) {
-        return (function(s, ok, err) {
-            return cont(p, [s, (function(x, s) {
-                return f(x)(s, ok, err);
-            }), err]);
-        });
-    });
-    var next = (function(p, n) {
-        return bind(p, (function(_) {
-            return n;
-        }));
-    });
-    var seqa = (function(arr) {
-        return reduceRight(arr, (function(p, c) {
-            return next(c, p);
-        }), ok());
-    });
-    var seq = (function() {
-        var args = arguments;
-        return seqa(args);
-    });
-    var extract = (function(s, ok, _) {
-        return ok(s, s);
-    });
-    var setState = (function(s) {
-        return (function(_, ok, _0) {
+    }),
+        error = (function(x) {
+            return (function(s, _, err) {
+                return err(x, s);
+            });
+        }),
+        bind = (function(p, f) {
+            return (function(s, ok, err) {
+                return cont(p, [s, (function(x, s) {
+                    return f(x)(s, ok, err);
+                }), err]);
+            });
+        }),
+        next = (function(p, n) {
+            return bind(p, (function(_) {
+                return n;
+            }));
+        }),
+        seqa = (function(arr) {
+            return reduceRight(arr, (function(p, c) {
+                return next(c, p);
+            }), ok());
+        }),
+        seq = (function() {
+            var args = arguments;
+            return seqa(args);
+        }),
+        extract = (function(s, ok, _) {
             return ok(s, s);
+        }),
+        setState = (function(s) {
+            return (function(_, ok, _0) {
+                return ok(s, s);
+            });
+        }),
+        modifyState = (function(f) {
+            return bind(extract, (function(s) {
+                return setState(f(s));
+            }));
+        }),
+        move = (function(op) {
+            return modifyState((function(s) {
+                var c = op(s.ctx);
+                return State.setCtx(s, c);
+            }));
+        }),
+        examineScope = (function(f) {
+            return bind(extract, (function(s) {
+                return f(s.scope);
+            }));
+        }),
+        examineRealScope = (function(f) {
+            return bind(extract, (function(s) {
+                return f(s.realScope);
+            }));
+        }),
+        modifyScope = (function(f) {
+            return (function(s, ok, err) {
+                var scope = f(s.scope),
+                    newState = State.setScope(s, scope);
+                return ok(scope, newState);
+            });
+        }),
+        modifyRealScope = (function(f) {
+            return (function(s, ok, err) {
+                var scope = f(s.realScope),
+                    newState = State.setRealScope(s, scope);
+                return ok(scope, newState);
+            });
+        }),
+        setScope = (function(s) {
+            return modifyScope((function() {
+                return s;
+            }));
+        }),
+        setRealScope = (function(s) {
+            return modifyRealScope((function() {
+                return s;
+            }));
+        }),
+        pass = ok(),
+        block = (function() {
+            var body = arguments;
+            return examineScope((function(s) {
+                return seq(setScope(new(Scope)(({}), s, s.mapping)), seqa(body), setScope(s));
+            }));
+        }),
+        emptyBlock = (function() {
+            var body = arguments;
+            return examineScope((function(s) {
+                return seq(setScope(new(Scope)(({}), s, ({}))), seqa(body), setScope(s));
+            }));
+        }),
+        realBlock = (function() {
+            var body = arguments;
+            return examineRealScope((function(s) {
+                return seq(setRealScope(new(Scope)(({}), s, ({}))), emptyBlock.apply(undefined,
+                    body), setRealScope(s));
+            }));
+        }),
+        checkCanAddOwnBinding = (function(id, loc) {
+            return examineScope((function(s) {
+                return (!s.hasOwnBinding(id) ? pass : (function() {
+                        var start = (loc && loc.start),
+                            binding = s.getBinding(id),
+                            end = (binding.loc && binding.loc.start);
+                        return error(((((("'" + id) + "' at:") + start) +
+                            " already bound for scope from:") + end));
+                    })
+                    .call(this));
+            }));
+        }),
+        hasBinding = (function(id, loc) {
+            return examineScope((function(s) {
+                return (s.hasBinding(id) ? pass : error(((("Undeclared identifier:'" + id) +
+                    "' at:") + loc)));
+            }));
+        }),
+        hasFreeBinding = (function(id, loc) {
+            return seq(hasBinding(id, loc), examineScope((function(s) {
+                var current = s.getBinding(id);
+                return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") +
+                    loc)) : pass);
+            })));
+        }),
+        checkCanAssign = (function(id, loc) {
+            return examineScope((function(s) {
+                return (s.hasBinding(id) ? (function() {
+                        var b = s.getBinding(id);
+                        return (b.mutable ? pass : error(((("Assign to immutable variable:'" +
+                            id) + "' at:") + loc)));
+                    })
+                    .call(this) : pass);
+            }));
+        }),
+        getUnusedId = (function(id, loc) {
+            return examineRealScope((function(s) {
+                return ok((s.hasOwnBinding(id) ? s.getUnusedId(id) : id));
+            }));
+        }),
+        addMapping = (function(id, newId) {
+            return modifyScope((function(s) {
+                return Scope.addMapping(s, id, newId);
+            }));
+        }),
+        addMutableBinding = (function(id, loc) {
+            return seq(modifyScope((function(s) {
+                return Scope.addMutableBinding(s, id, loc);
+            })), modifyRealScope((function(s) {
+                return Scope.addMutableBinding(s, id, loc);
+            })), addMapping(id, id));
+        }),
+        addImmutableBinding = (function(id, loc) {
+            return seq(modifyScope((function(s) {
+                return Scope.addImmutableBinding(s, id, loc);
+            })), modifyRealScope((function(s) {
+                return Scope.addImmutableBinding(s, id, loc);
+            })), addMapping(id, id));
+        }),
+        addUniqueMutableBinding = (function(id, loc) {
+            return next(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
+                return (s.hasOwnBinding(id) ? (function() {
+                        var new_id = s.getUnusedId(id);
+                        return seq(addMutableBinding(id, loc), addMutableBinding(new_id,
+                            loc), addMapping(id, new_id));
+                    })
+                    .call(this) : addMutableBinding(id, loc));
+            })));
+        }),
+        addMutableBindingInRealBlock = (function(id, loc) {
+            return next(checkCanAddOwnBinding(id, loc), addUniqueMutableBinding(id, loc));
+        }),
+        addImmutableBindingInRealBlock = (function(id, loc) {
+            return next(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
+        }),
+        addUnusedImmutableBinding = (function(id, loc) {
+            return seq(examineRealScope((function(s) {
+                return (s.hasOwnBinding(id) ? (function() {
+                        var new_id = s.getUnusedId(id);
+                        return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
+                            loc), addMapping(id, new_id));
+                    })
+                    .call(this) : addImmutableBindingInRealBlock(id, loc));
+            })));
+        }),
+        addUniqueImmutableBinding = (function(id, loc) {
+            return seq(checkCanAddOwnBinding(id, loc), addUnusedImmutableBinding(id, loc));
+        }),
+        addReservedBinding = (function(id, loc) {
+            return seq(modifyScope((function(s) {
+                return Scope.addReservedBinding(s, id, loc);
+            })), modifyRealScope((function(s) {
+                return Scope.addReservedBinding(s, id, loc);
+            })), addMapping(id, id));
+        }),
+        _check, child = (function(f, edge) {
+            return seq(move(tree.child.bind(null, edge)), f, move(zipper.up));
+        }),
+        checkCtx = (function(node) {
+            return _check(tree.node(node));
+        }),
+        checkTop = (function(s, ok, err) {
+            return checkCtx(s.ctx)(s, ok, err);
+        }),
+        checkChild = child.bind(null, checkTop),
+        modifyNode = (function(f) {
+            return move(tree.modifyNode.bind(null, f));
         });
-    });
-    var modifyState = (function(f) {
-        return bind(extract, (function(s) {
-            return setState(f(s));
-        }));
-    });
-    var move = (function(op) {
-        return modifyState((function(s) {
-            var c = op(s.ctx);
-            return State.setCtx(s, c);
-        }));
-    });
-    var examineScope = (function(f) {
-        return bind(extract, (function(s) {
-            return f(s.scope);
-        }));
-    });
-    var examineRealScope = (function(f) {
-        return bind(extract, (function(s) {
-            return f(s.realScope);
-        }));
-    });
-    var modifyScope = (function(f) {
-        return (function(s, ok, err) {
-            var scope = f(s.scope),
-                newState = State.setScope(s, scope);
-            return ok(scope, newState);
-        });
-    });
-    var modifyRealScope = (function(f) {
-        return (function(s, ok, err) {
-            var scope = f(s.realScope),
-                newState = State.setRealScope(s, scope);
-            return ok(scope, newState);
-        });
-    });
-    var setScope = (function(s) {
-        return modifyScope((function() {
-            return s;
-        }));
-    });
-    var setRealScope = (function(s) {
-        return modifyRealScope((function() {
-            return s;
-        }));
-    });
-    var pass = ok();
-    var block = (function() {
-        var body = arguments;
-        return examineScope((function(s) {
-            return seq(setScope(new(Scope)(({}), s, s.mapping)), seqa(body), setScope(s));
-        }));
-    });
-    var emptyBlock = (function() {
-        var body = arguments;
-        return examineScope((function(s) {
-            return seq(setScope(new(Scope)(({}), s, ({}))), seqa(body), setScope(s));
-        }));
-    });
-    var realBlock = (function() {
-        var body = arguments;
-        return examineRealScope((function(s) {
-            return seq(setRealScope(new(Scope)(({}), s, ({}))), emptyBlock.apply(undefined, body),
-                setRealScope(s));
-        }));
-    });
-    var checkCanAddOwnBinding = (function(id, loc) {
-        return examineScope((function(s) {
-            return (!s.hasOwnBinding(id) ? pass : (function() {
-                    var start = (loc && loc.start),
-                        binding = s.getBinding(id),
-                        end = (binding.loc && binding.loc.start);
-                    return error(((((("'" + id) + "' at:") + start) +
-                        " already bound for scope from:") + end));
-                })
-                .call(this));
-        }));
-    });
-    var hasBinding = (function(id, loc) {
-        return examineScope((function(s) {
-            return (s.hasBinding(id) ? pass : error(((("Undeclared identifier:'" + id) + "' at:") +
-                loc)));
-        }));
-    });
-    var hasFreeBinding = (function(id, loc) {
-        return seq(hasBinding(id, loc), examineScope((function(s) {
-            var current = s.getBinding(id);
-            return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") +
-                loc)) : pass);
-        })));
-    });
-    var checkCanAssign = (function(id, loc) {
-        return examineScope((function(s) {
-            return (s.hasBinding(id) ? (function() {
-                    var b = s.getBinding(id);
-                    return (b.mutable ? pass : error(((("Assign to immutable variable:'" + id) +
-                        "' at:") + loc)));
-                })
-                .call(this) : pass);
-        }));
-    });
-    var getUnusedId = (function(id, loc) {
-        return examineRealScope((function(s) {
-            return ok((s.hasOwnBinding(id) ? s.getUnusedId(id) : id));
-        }));
-    });
-    var addMapping = (function(id, newId) {
-        return modifyScope((function(s) {
-            return Scope.addMapping(s, id, newId);
-        }));
-    });
-    var addMutableBinding = (function(id, loc) {
-        return seq(modifyScope((function(s) {
-            return Scope.addMutableBinding(s, id, loc);
-        })), modifyRealScope((function(s) {
-            return Scope.addMutableBinding(s, id, loc);
-        })), addMapping(id, id));
-    });
-    var addImmutableBinding = (function(id, loc) {
-        return seq(modifyScope((function(s) {
-            return Scope.addImmutableBinding(s, id, loc);
-        })), modifyRealScope((function(s) {
-            return Scope.addImmutableBinding(s, id, loc);
-        })), addMapping(id, id));
-    });
-    var addUniqueMutableBinding = (function(id, loc) {
-        return next(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
-            return (s.hasOwnBinding(id) ? (function() {
-                    var new_id = s.getUnusedId(id);
-                    return seq(addMutableBinding(id, loc), addMutableBinding(new_id, loc),
-                        addMapping(id, new_id));
-                })
-                .call(this) : addMutableBinding(id, loc));
-        })));
-    });
-    var addMutableBindingInRealBlock = (function(id, loc) {
-        return next(checkCanAddOwnBinding(id, loc), addUniqueMutableBinding(id, loc));
-    });
-    var addImmutableBindingInRealBlock = (function(id, loc) {
-        return next(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
-    });
-    var addUnusedImmutableBinding = (function(id, loc) {
-        return seq(examineRealScope((function(s) {
-            return (s.hasOwnBinding(id) ? (function() {
-                    var new_id = s.getUnusedId(id);
-                    return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
-                        loc), addMapping(id, new_id));
-                })
-                .call(this) : addImmutableBindingInRealBlock(id, loc));
-        })));
-    });
-    var addUniqueImmutableBinding = (function(id, loc) {
-        return seq(checkCanAddOwnBinding(id, loc), addUnusedImmutableBinding(id, loc));
-    });
-    var addReservedBinding = (function(id, loc) {
-        return seq(modifyScope((function(s) {
-            return Scope.addReservedBinding(s, id, loc);
-        })), modifyRealScope((function(s) {
-            return Scope.addReservedBinding(s, id, loc);
-        })), addMapping(id, id));
-    });
-    var _check;
-    var child = (function(f, edge) {
-        return seq(move(tree.child.bind(null, edge)), f, move(zipper.up));
-    });
-    var checkCtx = (function(node) {
-        return _check(tree.node(node));
-    });
-    var checkTop = (function(s, ok, err) {
-        return checkCtx(s.ctx)(s, ok, err);
-    });
-    var checkChild = child.bind(null, checkTop);
-    var modifyNode = (function(f) {
-        return move(tree.modifyNode.bind(null, f));
-    });
     (_check = (function(node) {
         if (Array.isArray(node)) {
             if (!node.length) return pass;
@@ -353,8 +345,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "SinkPattern":
                 return bind(getUnusedId("_"), (function(x) {
                     return seq(modifyNode((function(node) {
-                        var n = setUserData(node, (node.ud || ({})));
-                        var id = ast_value.Identifier.create(null, x);
+                        var n = setUserData(node, (node.ud || ({}))),
+                            id = ast_value.Identifier.create(null, x);
                         (n.ud.id = id);
                         return n;
                     })), addReservedBinding(x, node.loc));
@@ -379,9 +371,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "ObjectPattern":
                 return examineScope((function(s) {
                     if ((!node.ud || !node.ud.id)) {
-                        var unused = s.getUnusedId("__o");
-                        var id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
-                            .create(null, unused));
+                        var unused = s.getUnusedId("__o"),
+                            id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
+                                .create(null, unused));
                         (id.reserved = true);
                         var n = setUserData(node, (node.ud || ({})));
                         (n.ud.id = id);
@@ -420,9 +412,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         "String", "SyntaxError", "TypeError", "undefined", "URIError"
     ];
     (check = (function(ast, globals) {
-        var g = (globals || builtins);
-        var scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({})));
-        var state = new(State)(khepriZipper(ast), scope, scope);
+        var g = (globals || builtins),
+            scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({}))),
+            state = new(State)(khepriZipper(ast), scope, scope);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));
         }), (function(err, s) {
@@ -431,10 +423,10 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     }));
     (checkStage = (function(__o1, globals) {
         var options = __o1["options"],
-            ast = __o1["ast"];
-        var g = (globals || builtins);
-        var scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({})));
-        var state = new(State)(khepriZipper(ast), scope, scope);
+            ast = __o1["ast"],
+            g = (globals || builtins),
+            scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({}))),
+            state = new(State)(khepriZipper(ast), scope, scope);
         return ({
             "ast": trampoline(checkTop(state, (function(x, s) {
                 return tree.node(zipper.root(s.ctx));
@@ -446,4 +438,4 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
     }));
     (exports.check = check);
     (exports.checkStage = checkStage);
-}))
+}));

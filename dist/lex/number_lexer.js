@@ -1,15 +1,7 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/number_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-stream/stream"], (function(require,
     exports, __o, __o0, __o1, __o2) {
     "use strict";
-    var decimal, negativeSign, positiveSign, exponentIndicator, hexIndicator, decimalDigit, nonZeroDigit,
-            hexDigit, decimalDigits, hexDigits, unsignedInteger, signedInteger, exponentPart, hexIntegerLiteral,
-            decimalIntegerLiteral, decimalLiteral, numericLiteral;
-    var __o = __o,
-        always = __o["always"],
+    var always = __o["always"],
         attempt = __o["attempt"],
         bind = __o["bind"],
         binds = __o["binds"],
@@ -22,24 +14,23 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
         next = __o["next"],
         optional = __o["optional"],
         Parser = __o["Parser"],
-        __o0 = __o0,
         then = __o0["then"],
-        __o1 = __o1,
         character = __o1["character"],
         characters = __o1["characters"],
         match = __o1["match"],
         string = __o1["string"],
-        __o2 = __o2,
-        foldl = __o2["foldl"];
-    var join = (function(p) {
-        return bind(p, (function(f, g) {
-            return (function(x) {
-                return f(g(x));
+        foldl = __o2["foldl"],
+        decimal, negativeSign, positiveSign, exponentIndicator, hexIndicator, decimalDigit, nonZeroDigit,
+            hexDigit, decimalDigits, hexDigits, unsignedInteger, signedInteger, exponentPart, hexIntegerLiteral,
+            decimalIntegerLiteral, decimalLiteral, numericLiteral, join = (function(p) {
+                return bind(p, (function(f, g) {
+                    return (function(x) {
+                        return f(g(x));
+                    });
+                })(always, foldl.bind(null, (function(x, y) {
+                    return (x + y);
+                }), "")));
             });
-        })(always, foldl.bind(null, (function(x, y) {
-            return (x + y);
-        }), "")));
-    });
     (decimal = Parser("Decimal Lexer", character(".")));
     (negativeSign = Parser("Negative Sign Lexer", character("-")));
     (positiveSign = Parser("Positive Sign Lexer", character("+")));
@@ -100,4 +91,4 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
     (exports.decimalIntegerLiteral = decimalIntegerLiteral);
     (exports.decimalLiteral = decimalLiteral);
     (exports.numericLiteral = numericLiteral);
-}))
+}));

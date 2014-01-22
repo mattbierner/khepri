@@ -1,16 +1,8 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/regular_expression_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-stream/stream",
     "khepri/lex/identifier_lexer", "khepri/lex/line_terminator_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
     "use strict";
-    var regularExpressionNonTerminator, regularExpressionBackslashSequence, regularExpressionClassChar,
-            regularExpressionClassChars, regularExpressionClass, regularExpressionChar, regularExpressionChars,
-            regularExpressionFirstChar, regularExpressionFlags, regularExpressionBody, regularExpressionLiteral;
-    var __o = __o,
-        always = __o["always"],
+    var always = __o["always"],
         attempt = __o["attempt"],
         bind = __o["bind"],
         binds = __o["binds"],
@@ -23,19 +15,17 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
         Parser = __o["Parser"],
         token = __o["token"],
         test = __o["test"],
-        __o0 = __o0,
         between = __o0["between"],
-        __o1 = __o1,
         character = __o1["character"],
-        __o2 = __o2,
         foldl = __o2["foldl"],
-        __o3 = __o3,
         identifierPart = __o3["identifierPart"],
-        __o4 = __o4,
-        lineTerminator = __o4["lineTerminator"];
-    var join = foldl.bind(null, (function(x, y) {
-        return (x + y);
-    }), "");
+        lineTerminator = __o4["lineTerminator"],
+        regularExpressionNonTerminator, regularExpressionBackslashSequence, regularExpressionClassChar,
+            regularExpressionClassChars, regularExpressionClass, regularExpressionChar, regularExpressionChars,
+            regularExpressionFirstChar, regularExpressionFlags, regularExpressionBody, regularExpressionLiteral,
+            join = foldl.bind(null, (function(x, y) {
+                return (x + y);
+            }), "");
     (regularExpressionNonTerminator = token((function(f, g) {
         return (function(x) {
             return f(g(x));
@@ -90,4 +80,4 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
     (exports.regularExpressionFlags = regularExpressionFlags);
     (exports.regularExpressionBody = regularExpressionBody);
     (exports.regularExpressionLiteral = regularExpressionLiteral);
-}))
+}));

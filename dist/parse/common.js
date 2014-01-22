@@ -1,18 +1,11 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/common.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/stream"], (function(require, exports, parse,
     __o, stream) {
     "use strict";
-    var precedence, node, nodea, positionParser;
-    var parse = parse,
-        always = parse["always"],
+    var always = parse["always"],
         bind = parse["bind"],
-        __o = __o,
         SourceLocation = __o["SourceLocation"],
-        stream = stream,
-        NIL = stream["NIL"];
+        NIL = stream["NIL"],
+        precedence, node, nodea, positionParser;
     (precedence = (function(p, table) {
         var sep = parse.choicea(table.map((function(entry) {
             return bind(entry.sep, (function(__o0) {
@@ -53,8 +46,8 @@ define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/strea
                 }
             }
             while ((stack.length > 0)) {
-                var o = stack.pop();
-                var rt0 = out.pop(),
+                var o = stack.pop(),
+                    rt0 = out.pop(),
                     lf0 = out.pop();
                 out.push(new(o.node)(SourceLocation.merge(lf0.loc, rt0.loc), o.value, lf0, rt0));
             }
@@ -68,11 +61,11 @@ define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/strea
     var locParser = parse.extract((function(__o0) {
         var loc = __o0["loc"];
         return loc;
-    }));
-    var prevEnd = parse.extract((function(__o0) {
-        var _prevEnd = __o0["_prevEnd"];
-        return _prevEnd;
-    }));
+    })),
+        prevEnd = parse.extract((function(__o0) {
+            var _prevEnd = __o0["_prevEnd"];
+            return _prevEnd;
+        }));
     (node = (function(p, f) {
         return parse.binds(parse.enumeration(locParser, p, prevEnd), (function(o, x, c) {
             return always(f(new(SourceLocation)((o && o.start), c), x));
@@ -88,4 +81,4 @@ define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/strea
     (exports.node = node);
     (exports.nodea = nodea);
     (exports.positionParser = positionParser);
-}))
+}));

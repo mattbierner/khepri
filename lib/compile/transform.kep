@@ -669,7 +669,7 @@ addTransform('Package', \node ->
 /*
  * 
  *****************************************************************************/
-_transform = function(node) {
+_transform = \(node)-> {
     if (!node)
         return node;
     

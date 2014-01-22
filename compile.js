@@ -82,12 +82,13 @@ function(unparse,
                 console.log("Khepri'" + inFile + "' to:'" + outFile + "'");
                 var out = header + compile(data, options);
                 if (outFile) {
+
                     // create output directory if not exists
                     mkdirp(path.dirname(outFile), function(err) {
                         fs.writeFile(outFile, out, 'utf8', function(err) {
                             if (err) throw err;
                         });
-                    })
+                    });
                     console.log("Compiled '" + inFile + "' to '" + outFile + "'");
                 } else {
                     process.stdout.write(out);

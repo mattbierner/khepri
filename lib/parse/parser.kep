@@ -10,7 +10,7 @@ package (
     parseStream)
 with
     import 'bennu/parse' parse,
-    import 'nu-stream/stream' {first filter isEmpty rest NIL 'from': streamFrom},
+    import 'nu-stream/stream' stream#{first filter isEmpty rest NIL 'from': streamFrom},
     import 'khepri/position' {SourceLocation SourcePosition},
     import 'khepri/parse/program_parser' {program}
 in {
@@ -43,9 +43,9 @@ parserStream = (filter,
  * 
  * Tracks position in lex stream and source positions.
  */
-ParserPosition = function(tokenPosition, sourcePosition) {
-    this.tokenPosition = tokenPosition;
-    this.sourcePosition = sourcePosition;
+ParserPosition = function\tokenPosition, sourcePosition =self-> {
+    self.tokenPosition = tokenPosition;
+    self.sourcePosition = sourcePosition;
 };
 ParserPosition.prototype = new parse.Position;
 ParserPosition.prototype.constructor = ParserPosition;
@@ -54,20 +54,20 @@ ParserPosition.initial = new ParserPosition(
     parse.Position.initial,
     SourcePosition.initial);
 
-ParserPosition.prototype.increment = \tok, end ->
-    new ParserPosition(this.tokenPosition.increment(tok), end);
+ParserPosition.prototype.increment = \tok, end =self->
+    new ParserPosition(self.tokenPosition.increment(tok), end);
 
-ParserPosition.prototype.toString = \() ->
-    '' + this.sourcePosition;
+ParserPosition.prototype.toString = \() =self->
+    '' + self.sourcePosition;
 
-ParserPosition.prototype.compare = \pos ->
-    this.tokenPosition.compare(pos.tokenPosition);
+ParserPosition.prototype.compare = \pos =self->
+    self.tokenPosition.compare(pos.tokenPosition);
 
 /* State
  ******************************************************************************/
-ParserState = function(input, pos, prevEnd) {
-    parse.ParserState.call(this, input, pos);
-    this._prevEnd = prevEnd;
+ParserState = function\input, pos, prevEnd =self-> {
+    parse.ParserState.call(self, input, pos);
+    self._prevEnd = prevEnd;
 };
 ParserState.prototype = new parse.ParserState;
 
@@ -75,33 +75,33 @@ ParserState.initial = new ParserState(NIL,
     ParserPosition.initial,
     SourcePosition.initial);
 
-ParserState.prototype.setInput = \input ->
+ParserState.prototype.setInput = \input =self->
     new ParserState(
         input,
-        this.position,
-        this._prevEnd);
+        self.position,
+        self._prevEnd);
     
-ParserState.prototype.setPosition = \position ->
+ParserState.prototype.setPosition = \position =self->
     new ParserState(
-        this.input,
+        self.input,
         position,
-        this._prevEnd);
+        self._prevEnd);
     
-ParserState.prototype.next = \tok -> {
-    if (!this._next) {
-        var r = rest(this.input);
+ParserState.prototype.next = \tok =self-> {
+    if (!self._next) {
+        var r = rest(self.input);
         var end = (isEmpty(r) ? tok.loc.end : first(r).loc.start);
-        var s = new ParserState(r, this.position.increment(tok, end), this.loc.end);
-        this._next = \_, m, cok -> cok(tok, s, m);
+        var s = new ParserState(r, self.position.increment(tok, end), self.loc.end);
+        self._next = \_, m, cok -> cok(tok, s, m);
     }
-    return this._next;
+    return self._next;
 };
 
 Object.defineProperty(ParserState.prototype, 'loc', {
-    'get': \() ->
-        (isEmpty(this.input) ?
-            new SourceLocation(this._prevEnd, this._prevEnd) :
-            first(this.input).loc)
+    'get': \() =self->
+        (isEmpty(self.input) ?
+            new SourceLocation(self._prevEnd, self._prevEnd) :
+            first(self.input).loc)
 });
 
 /* Running
@@ -115,7 +115,7 @@ Object.defineProperty(ParserState.prototype, 'loc', {
  * 
  * @return AST.
  */
-parseStream = \s ->
+parseStream = \s -> 
     parse.runState(
         program,
         new ParserState(

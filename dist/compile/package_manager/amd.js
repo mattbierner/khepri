@@ -1,23 +1,13 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/package_manager/amd.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression", "khepri_ast/pattern",
     "khepri_ast/statement", "khepri_ast/value"
 ], (function(require, exports, ast_declaration, ast_expression, ast_pattern, ast_statement, ast_value) {
     "use strict";
-    var definePackage;
-    var ast_declaration = ast_declaration,
-        ast_expression = ast_expression,
-        ast_pattern = ast_pattern,
-        ast_statement = ast_statement,
-        ast_value = ast_value;
-    var concat = Function.prototype.call.bind(Array.prototype.concat);
-    var map = Function.prototype.call.bind(Array.prototype.map);
-    var path = (function(path) {
-        return path.split("::")
-            .join("/");
-    });
+    var definePackage, concat = Function.prototype.call.bind(Array.prototype.concat),
+        map = Function.prototype.call.bind(Array.prototype.map),
+        path = (function(path) {
+            return path.split("::")
+                .join("/");
+        });
     (definePackage = (function(loc, exports, imports, targets, body) {
         var exportHeader = (exports.length ? ast_declaration.VariableDeclaration.create(null, map(
             exports, (function(x) {
@@ -46,4 +36,4 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
                     })))), packageBody]));
     }));
     (exports.definePackage = definePackage);
-}))
+}));

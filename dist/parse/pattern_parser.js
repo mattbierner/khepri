@@ -1,15 +1,8 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/pattern_parser.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/pattern", "khepri/parse/common",
     "khepri/parse/token_parser", "khepri/parse/value_parser"
 ], (function(require, exports, __o, __o0, ast_pattern, __o1, __o2, __o3) {
     "use strict";
-    var pattern, topLevelPattern, identifierPattern, sinkPattern, ellipsisPattern, importPattern, arrayPattern,
-            objectPattern, argumentList, argumentsPattern, asPattern, subPattern;
-    var __o = __o,
-        always = __o["always"],
+    var always = __o["always"],
         attempt = __o["attempt"],
         bind = __o["bind"],
         binds = __o["binds"],
@@ -21,21 +14,18 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/pattern",
         next = __o["next"],
         optional = __o["optional"],
         Parser = __o["Parser"],
-        __o0 = __o0,
         between = __o0["between"],
         sepBy = __o0["sepBy"],
         sepBy1 = __o0["sepBy1"],
         then = __o0["then"],
-        ast_pattern = ast_pattern,
-        __o1 = __o1,
         node = __o1["node"],
         nodea = __o1["nodea"],
-        __o2 = __o2,
         keyword = __o2["keyword"],
         punctuator = __o2["punctuator"],
-        __o3 = __o3,
         identifier = __o3["identifier"],
-        stringLiteral = __o3["stringLiteral"];
+        stringLiteral = __o3["stringLiteral"],
+        pattern, topLevelPattern, identifierPattern, sinkPattern, ellipsisPattern, importPattern, arrayPattern,
+            objectPattern, argumentList, argumentsPattern, asPattern, subPattern;
     (topLevelPattern = (function() {
         var args = arguments;
         return topLevelPattern.apply(undefined, args);
@@ -82,8 +72,8 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/pattern",
     var subPatternElements = eager(sepBy1(sep, either(topLevelPattern, subPattern)));
     (subPattern = Parser("Sub Pattern", attempt(nodea(enumeration(identifierPattern, between(punctuator("("),
         punctuator(")"), subPatternElements)), ast_pattern.ArgumentsPattern.create))));
-    var argumentElements = eager(sepBy(sep, topLevelPattern));
-    var selfPattern = next(punctuator("="), identifierPattern);
+    var argumentElements = eager(sepBy(sep, topLevelPattern)),
+        selfPattern = next(punctuator("="), identifierPattern);
     (argumentList = Parser("Argument List", nodea(enumeration(argumentElements, optional(null, selfPattern)), (
         function(loc, elements, self) {
             return ast_pattern.ArgumentsPattern.create(loc, null, elements, self);
@@ -104,4 +94,4 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/pattern",
     (exports.argumentsPattern = argumentsPattern);
     (exports.asPattern = asPattern);
     (exports.subPattern = subPattern);
-}))
+}));

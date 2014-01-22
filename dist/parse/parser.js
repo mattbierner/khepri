@@ -3,22 +3,18 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "bennu/parse", "nu-stream/stream", "khepri/position", "khepri/parse/program_parser"], (
-    function(require, exports, parse, __o, __o0, __o1) {
+    function(require, exports, parse, stream, __o, __o0) {
         "use strict";
-        var parserStream, ParserPosition, ParserState, parseInput, parseStream;
-        var parse = parse,
-            __o = __o,
-            first = __o["first"],
-            filter = __o["filter"],
-            isEmpty = __o["isEmpty"],
-            rest = __o["rest"],
-            NIL = __o["NIL"],
-            streamFrom = __o["from"],
-            __o0 = __o0,
-            SourceLocation = __o0["SourceLocation"],
-            SourcePosition = __o0["SourcePosition"],
-            __o1 = __o1,
-            program = __o1["program"];
+        var first = stream["first"],
+            filter = stream["filter"],
+            isEmpty = stream["isEmpty"],
+            rest = stream["rest"],
+            NIL = stream["NIL"],
+            streamFrom = stream["from"],
+            SourceLocation = __o["SourceLocation"],
+            SourcePosition = __o["SourcePosition"],
+            program = __o0["program"],
+            parserStream, ParserPosition, ParserState, parseInput, parseStream;
         (parserStream = filter.bind(null, (function(x) {
             switch (x.type) {
                 case "Whitespace":
@@ -30,49 +26,58 @@ define(["require", "exports", "bennu/parse", "nu-stream/stream", "khepri/positio
             }
         })));
         (ParserPosition = (function(tokenPosition, sourcePosition) {
-            (this.tokenPosition = tokenPosition);
-            (this.sourcePosition = sourcePosition);
+            var self = this;
+            (self.tokenPosition = tokenPosition);
+            (self.sourcePosition = sourcePosition);
         }));
         (ParserPosition.prototype = new(parse.Position)());
         (ParserPosition.prototype.constructor = ParserPosition);
         (ParserPosition.initial = new(ParserPosition)(parse.Position.initial, SourcePosition.initial));
         (ParserPosition.prototype.increment = (function(tok, end) {
-            return new(ParserPosition)(this.tokenPosition.increment(tok), end);
+            var self = this;
+            return new(ParserPosition)(self.tokenPosition.increment(tok), end);
         }));
         (ParserPosition.prototype.toString = (function() {
-            return ("" + this.sourcePosition);
+            var self = this;
+            return ("" + self.sourcePosition);
         }));
         (ParserPosition.prototype.compare = (function(pos) {
-            return this.tokenPosition.compare(pos.tokenPosition);
+            var self = this;
+            return self.tokenPosition.compare(pos.tokenPosition);
         }));
         (ParserState = (function(input, pos, prevEnd) {
-            parse.ParserState.call(this, input, pos);
-            (this._prevEnd = prevEnd);
+            var self = this;
+            parse.ParserState.call(self, input, pos);
+            (self._prevEnd = prevEnd);
         }));
         (ParserState.prototype = new(parse.ParserState)());
         (ParserState.initial = new(ParserState)(NIL, ParserPosition.initial, SourcePosition.initial));
         (ParserState.prototype.setInput = (function(input) {
-            return new(ParserState)(input, this.position, this._prevEnd);
+            var self = this;
+            return new(ParserState)(input, self.position, self._prevEnd);
         }));
         (ParserState.prototype.setPosition = (function(position) {
-            return new(ParserState)(this.input, position, this._prevEnd);
+            var self = this;
+            return new(ParserState)(self.input, position, self._prevEnd);
         }));
         (ParserState.prototype.next = (function(tok) {
-            if (!this._next) {
-                var r = rest(this.input);
-                var end = (isEmpty(r) ? tok.loc.end : first(r)
-                    .loc.start);
-                var s = new(ParserState)(r, this.position.increment(tok, end), this.loc.end);
-                (this._next = (function(_, m, cok) {
+            var self = this;
+            if (!self._next) {
+                var r = rest(self.input),
+                    end = (isEmpty(r) ? tok.loc.end : first(r)
+                        .loc.start),
+                    s = new(ParserState)(r, self.position.increment(tok, end), self.loc.end);
+                (self._next = (function(_, m, cok) {
                     return cok(tok, s, m);
                 }));
             }
-            return this._next;
+            return self._next;
         }));
         Object.defineProperty(ParserState.prototype, "loc", ({
             "get": (function() {
-                return (isEmpty(this.input) ? new(SourceLocation)(this._prevEnd, this._prevEnd) : first(
-                        this.input)
+                var self = this;
+                return (isEmpty(self.input) ? new(SourceLocation)(self._prevEnd, self._prevEnd) : first(
+                        self.input)
                     .loc);
             })
         }));
@@ -89,4 +94,4 @@ define(["require", "exports", "bennu/parse", "nu-stream/stream", "khepri/positio
         (exports.ParserState = ParserState);
         (exports.parseInput = parseInput);
         (exports.parseStream = parseStream);
-    }))
+    }));

@@ -1,24 +1,16 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/value_parser.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "khepri_ast/value", "khepri/parse/token_parser"], (function(require,
     exports, __o, ast_value, token) {
     "use strict";
-    var literal, nullLiteral, booleanLiteral, numericLiteral, stringLiteral, regularExpressionLiteral,
-            identifier;
-    var __o = __o,
-        always = __o["always"],
+    var always = __o["always"],
         bind = __o["bind"],
         choice = __o["choice"],
         Parser = __o["Parser"],
-        ast_value = ast_value,
-        token = token;
-    var literalParser = (function(kind, p) {
-        return bind(p, (function(x) {
-            return always(ast_value.Literal.create(x.loc, kind, x.value));
-        }));
-    });
+        literal, nullLiteral, booleanLiteral, numericLiteral, stringLiteral, regularExpressionLiteral,
+            identifier, literalParser = (function(kind, p) {
+                return bind(p, (function(x) {
+                    return always(ast_value.Literal.create(x.loc, kind, x.value));
+                }));
+            });
     (nullLiteral = Parser("Null Literal", literalParser("null", token.nullLiteral)));
     (booleanLiteral = Parser("Boolean Literal", literalParser("boolean", token.booleanLiteral)));
     (numericLiteral = Parser("Numeric Literal", literalParser("number", token.numericLiteral)));
@@ -36,4 +28,4 @@ define(["require", "exports", "bennu/parse", "khepri_ast/value", "khepri/parse/t
     (exports.stringLiteral = stringLiteral);
     (exports.regularExpressionLiteral = regularExpressionLiteral);
     (exports.identifier = identifier);
-}))
+}));

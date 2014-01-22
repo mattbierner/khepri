@@ -39,10 +39,10 @@ var trampoline = \f -> {
 
 /* State
  ******************************************************************************/
-var State = function(ctx, realScope, scope) {
-    this.ctx = ctx;
-    this.realScope = realScope;
-    this.scope = scope;
+var State = function\ctx, realScope, scope =self-> {
+    self.ctx = ctx;
+    self.realScope = realScope;
+    self.scope = scope;
 };
 
 State.setCtx = \s ctx ->
@@ -281,7 +281,7 @@ var modifyNode = \f ->
 
 /*
  ******************************************************************************/
-_check = function(node) {
+_check = \node -> {
     
     if (Array.isArray(node)) {
         if (!node.length)

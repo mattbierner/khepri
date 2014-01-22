@@ -1,17 +1,9 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/statement_parser.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/clause", "khepri_ast/declaration",
     "khepri_ast/statement", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/expression_parser",
     "khepri/parse/pattern_parser", "khepri/parse/value_parser"
 ], (function(require, exports, __o, __o0, ast_clause, ast_declaration, ast_statement, __o1, __o2, __o3, __o4, __o5) {
     "use strict";
-    var blockStatement, staticStatement, variableStatement, emptyStatement, expressionStatement, ifStatement,
-            withStatement, iterationStatement, continueStatement, breakStatement, returnStatement,
-            switchStatement, throwStatement, tryStatement, debuggerStatement, statement;
-    var __o = __o,
-        always = __o["always"],
+    var always = __o["always"],
         attempt = __o["attempt"],
         binds = __o["binds"],
         choice = __o["choice"],
@@ -23,33 +15,27 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/clause", 
         next = __o["next"],
         optional = __o["optional"],
         Parser = __o["Parser"],
-        __o0 = __o0,
         between = __o0["between"],
         sepBy1 = __o0["sepBy1"],
         then = __o0["then"],
-        ast_clause = ast_clause,
-        ast_declaration = ast_declaration,
-        ast_statement = ast_statement,
-        __o1 = __o1,
         node = __o1["node"],
         nodea = __o1["nodea"],
-        __o2 = __o2,
         keyword = __o2["keyword"],
         punctuator = __o2["punctuator"],
-        __o3 = __o3,
         expression = __o3["expression"],
         topLevelExpression = __o3["topLevelExpression"],
-        __o4 = __o4,
         importPattern = __o4["importPattern"],
         pattern = __o4["pattern"],
-        __o5 = __o5,
-        identifier = __o5["identifier"];
+        identifier = __o5["identifier"],
+        blockStatement, staticStatement, variableStatement, emptyStatement, expressionStatement, ifStatement,
+            withStatement, iterationStatement, continueStatement, breakStatement, returnStatement,
+            switchStatement, throwStatement, tryStatement, debuggerStatement, statement;
     (statement = (function() {
         var args = arguments;
         return statement.apply(undefined, args);
     }));
-    var logicalSemiColon = punctuator(";");
-    var statementList = eager(many(statement));
+    var logicalSemiColon = punctuator(";"),
+        statementList = eager(many(statement));
     (blockStatement = Parser("Block Statement", node(between(punctuator("{"), punctuator("}"), statementList),
         ast_statement.BlockStatement.create)));
     (emptyStatement = Parser("Empty Statement", node(punctuator(";"), ast_statement.EmptyStatement.create)));
@@ -104,20 +90,22 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/clause", 
         })
         .call(this)));
     var whileStatement = Parser("While Statement", nodea(next(keyword("while"), enumeration(between(punctuator(
-        "("), punctuator(")"), expression), statement)), ast_statement.WhileStatement.create));
-    var doWhileStatement = Parser("Do While Statement", nodea(next(keyword("do"), enumeration(then(statement,
-        keyword("while")), between(punctuator("("), punctuator(")"), expression), punctuator(
-        ";"))), ast_statement.DoWhileStatement.create));
-    var forStatement = Parser("For Statement", (function() {
-            var forInitExpression = optional(null, either(node(next(keyword("var"), variableDeclarationList),
-                ast_declaration.VariableDeclaration.create), topLevelExpression)),
-                forTestExpression = optional(null, expression),
-                forUpdateExpression = optional(null, topLevelExpression);
-            return nodea(next(keyword("for"), enumeration(next(punctuator("("), forInitExpression), next(
-                    punctuator(";"), forTestExpression), next(punctuator(";"), forUpdateExpression),
-                next(punctuator(")"), statement))), ast_statement.ForStatement.create);
-        })
-        .call(this));
+        "("), punctuator(")"), expression), statement)), ast_statement.WhileStatement.create)),
+        doWhileStatement = Parser("Do While Statement", nodea(next(keyword("do"), enumeration(then(statement,
+                keyword("while")), between(punctuator("("), punctuator(")"), expression),
+            punctuator(";"))), ast_statement.DoWhileStatement.create)),
+        forStatement = Parser("For Statement", (function() {
+                var forInitExpression = optional(null, either(node(next(keyword("var"),
+                        variableDeclarationList), ast_declaration.VariableDeclaration.create),
+                    topLevelExpression)),
+                    forTestExpression = optional(null, expression),
+                    forUpdateExpression = optional(null, topLevelExpression);
+                return nodea(next(keyword("for"), enumeration(next(punctuator("("), forInitExpression),
+                        next(punctuator(";"), forTestExpression), next(punctuator(";"),
+                            forUpdateExpression), next(punctuator(")"), statement))), ast_statement.ForStatement
+                    .create);
+            })
+            .call(this));
     (iterationStatement = Parser("Iteration Statement", choice(doWhileStatement, whileStatement, forStatement)));
     (continueStatement = Parser("Continue Statement", node(next(keyword("continue"), logicalSemiColon),
         ast_statement.ContinueStatement.create)));
@@ -155,4 +143,4 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/clause", 
     (exports.tryStatement = tryStatement);
     (exports.debuggerStatement = debuggerStatement);
     (exports.statement = statement);
-}))
+}));

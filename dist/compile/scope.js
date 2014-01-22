@@ -4,46 +4,53 @@
 */
 define(["require", "exports"], (function(require, exports) {
     "use strict";
-    var Scope;
-    var copy = (function(obj) {
-        return Object.keys(obj)
-            .reduce((function(p, c) {
-                (p[c] = obj[c]);
-                return p;
-            }), new(obj.constructor)());
-    });
-    var defineProperty = (function(obj, prop, descriptor) {
-        return Object.defineProperty(copy(obj), prop, descriptor);
-    });
+    var Scope, copy = (function(obj) {
+            return Object.keys(obj)
+                .reduce((function(p, c) {
+                    (p[c] = obj[c]);
+                    return p;
+                }), new(obj.constructor)());
+        }),
+        defineProperty = (function(obj, prop, descriptor) {
+            return Object.defineProperty(copy(obj), prop, descriptor);
+        });
     (Scope = (function(record, outer, mapping) {
-        (this.record = record);
-        (this.outer = outer);
-        (this.mapping = mapping);
+        var self = this;
+        (self.record = record);
+        (self.outer = outer);
+        (self.mapping = mapping);
     }));
     (Scope.prototype.hasOwnBinding = (function(id) {
-        return Object.prototype.hasOwnProperty.call(this.record, id);
+        var self = this;
+        return Object.prototype.hasOwnProperty.call(self.record, id);
     }));
     (Scope.prototype.hasBinding = (function(id) {
-        return (this.hasOwnBinding(id) || (this.outer && this.outer.hasBinding(id)));
+        var self = this;
+        return (self.hasOwnBinding(id) || (self.outer && self.outer.hasBinding(id)));
     }));
     (Scope.prototype.getBinding = (function(id) {
-        return (this.hasOwnBinding(id) ? this.record[id] : (this.outer ? this.outer.getBinding(id) :
+        var self = this;
+        return (self.hasOwnBinding(id) ? self.record[id] : (self.outer ? self.outer.getBinding(id) :
             null));
     }));
     (Scope.prototype.hasOwnMapping = (function(id) {
-        return Object.prototype.hasOwnProperty.call(this.mapping, id);
+        var self = this;
+        return Object.prototype.hasOwnProperty.call(self.mapping, id);
     }));
     (Scope.prototype.hasMapping = (function(id) {
-        return (this.hasOwnMapping(id) || (this.outer && this.outer.hasMapping(id)));
+        var self = this;
+        return (self.hasOwnMapping(id) || (self.outer && self.outer.hasMapping(id)));
     }));
     (Scope.prototype.getMapping = (function(id) {
-        return (this.hasOwnMapping(id) ? this.mapping[id] : (this.outer && this.outer.getMapping(id)));
+        var self = this;
+        return (self.hasOwnMapping(id) ? self.mapping[id] : (self.outer && self.outer.getMapping(id)));
     }));
     (Scope.prototype.getUnusedId = (function(id) {
-        if (!this.hasBinding(id)) return id;
+        var self = this;
+        if (!self.hasBinding(id)) return id;
         for (var i = 0;;
             (i = (i + 1)))
-            if (!this.hasBinding((id + i))) return (id + i);
+            if (!self.hasBinding((id + i))) return (id + i);
     }));
     (Scope.addBinding = (function(s, id, info) {
         return new(Scope)(defineProperty(s.record, id, ({
@@ -81,4 +88,4 @@ define(["require", "exports"], (function(require, exports) {
         })));
     }));
     (exports.Scope = Scope);
-}))
+}));

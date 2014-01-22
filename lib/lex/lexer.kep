@@ -104,16 +104,8 @@ lexer = then(
 
 /* Running
  ******************************************************************************/
-lexManyState = \p, state -> let 
-    manyP = parse.append(
-        many(p),
-        next(eof, always(NIL)))
-in
-    runState(manyP, state);
-
-lex = \input ->
-    lexManyState(
-        inputElement,
+lex = \input -> 
+    runState(lexer,
         new ParserState(
             streamFrom(input),
             SourcePosition.initial));

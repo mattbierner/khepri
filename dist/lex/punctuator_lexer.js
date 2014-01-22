@@ -1,24 +1,18 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/punctuator_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, exports, __o, __o0) {
     "use strict";
-    var openBrace, closeBrace, openParenthesis, closeParenthesis, openBracket, closeBracket, period, semicolon,
+    var Parser = __o["Parser"],
+        character = __o0["character"],
+        string = __o0["string"],
+        trie = __o0["trie"],
+        openBrace, closeBrace, openParenthesis, closeParenthesis, openBracket, closeBracket, period, semicolon,
             comma, colon, questionMark, logicalAnd, logicalOr, leftShift, signedRightShift, unsignedRightShift,
             lessThanOrEqualTo, lessThan, greaterThanOrEqualTo, greaterThan, strictEquals, strictDoesNotEqual,
             equals, doesNotEqual, and, or, xor, assign, logicalNot, bitwiseNot, addition, subtration,
-            multiplication, mod, division, lambda, punctuator;
-    var __o = __o,
-        Parser = __o["Parser"],
-        __o0 = __o0,
-        character = __o0["character"],
-        string = __o0["string"],
-        trie = __o0["trie"];
-    var punctuators = ["{", "}", "(", ")", "[", "]", ",", ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>",
-        "<=", "<", ">=", ">", "===", "!==", "==", "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%",
-        "...", "\\", "->", "\\>", "\\>>", "<\\", "<<\\", "|>", "<|", "@", "#"
-    ];
+            multiplication, mod, division, lambda, punctuator, punctuators = ["{", "}", "(", ")", "[", "]", ",",
+                ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>", "<=", "<", ">=", ">", "===", "!==", "==",
+                "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%", "...", "\\", "->", "\\>", "\\>>",
+                "<\\", "<<\\", "|>", "<|", "@", "#"
+        ];
     (openBrace = character("{"));
     (closeBrace = character("}"));
     (openParenthesis = character("("));
@@ -93,4 +87,4 @@ define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, e
     (exports.division = division);
     (exports.lambda = lambda);
     (exports.punctuator = punctuator);
-}))
+}));

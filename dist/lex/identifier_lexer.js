@@ -1,15 +1,8 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/identifier_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "khepri/lex/reserved_word_lexer",
     "khepri/lex/string_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3) {
     "use strict";
-    var zwnj, zwj, unicodeLetter, unicodeDigit, unicodeConnectorPunctuation, unicodeCombiningMark,
-            identifierStart, identifierPart, identifierParts, identifierName, identifier;
-    var __o = __o,
-        always = __o["always"],
+    var always = __o["always"],
         attempt = __o["attempt"],
         bind = __o["bind"],
         cons = __o["cons"],
@@ -23,22 +16,20 @@ define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "
         Parser = __o["Parser"],
         testStream = __o["testStream"],
         token = __o["token"],
-        __o0 = __o0,
         character = __o0["character"],
         characters = __o0["characters"],
         digit = __o0["digit"],
         letter = __o0["letter"],
         string = __o0["string"],
-        __o1 = __o1,
         foldl = __o1["foldl"],
-        __o2 = __o2,
         reservedWord = __o2["reservedWord"],
-        __o3 = __o3,
         escape = __o3["escape"],
-        unicodeEscapeSequence = __o3["unicodeEscapeSequence"];
-    var join = foldl.bind(null, (function(x, y) {
-        return (x + y);
-    }), "");
+        unicodeEscapeSequence = __o3["unicodeEscapeSequence"],
+        zwnj, zwj, unicodeLetter, unicodeDigit, unicodeConnectorPunctuation, unicodeCombiningMark,
+            identifierStart, identifierPart, identifierParts, identifierName, identifier, join = foldl.bind(
+                null, (function(x, y) {
+                    return (x + y);
+                }), "");
     (zwnj = character("‌"));
     (zwj = character("‍"));
     (unicodeLetter = letter);
@@ -65,4 +56,4 @@ define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "
     (exports.identifierParts = identifierParts);
     (exports.identifierName = identifierName);
     (exports.identifier = identifier);
-}))
+}));

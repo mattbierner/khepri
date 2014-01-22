@@ -1,15 +1,7 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/comment_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "khepri/lex/line_terminator_lexer"], (
     function(require, exports, __o, __o0, __o1, __o2) {
         "use strict";
-        var singleLineCommentMarker, singleLineCommentChar, singleLineCommentChars, singleLineComment,
-                multiLineCommentStartMarker, multiLineCommentEndMarker, multiLineCommentChars, multiLineComment,
-                comment;
-        var __o = __o,
-            anyToken = __o["anyToken"],
+        var anyToken = __o["anyToken"],
             always = __o["always"],
             bind = __o["bind"],
             cons = __o["cons"],
@@ -20,23 +12,22 @@ define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "
             RecParser = __o["RecParser"],
             test = __o["test"],
             token = __o["token"],
-            __o0 = __o0,
             character = __o0["character"],
             string = __o0["string"],
-            __o1 = __o1,
             foldl = __o1["foldl"],
             NIL = __o1["NIL"],
-            __o2 = __o2,
-            lineTerminator = __o2["lineTerminator"];
-        var join = (function(p) {
-            return bind(p, (function(f, g) {
-                return (function(x) {
-                    return f(g(x));
+            lineTerminator = __o2["lineTerminator"],
+            singleLineCommentMarker, singleLineCommentChar, singleLineCommentChars, singleLineComment,
+                multiLineCommentStartMarker, multiLineCommentEndMarker, multiLineCommentChars, multiLineComment,
+                comment, join = (function(p) {
+                    return bind(p, (function(f, g) {
+                        return (function(x) {
+                            return f(g(x));
+                        });
+                    })(always, foldl.bind(null, (function(x, y) {
+                        return (x + y);
+                    }), "")));
                 });
-            })(always, foldl.bind(null, (function(x, y) {
-                return (x + y);
-            }), "")));
-        });
         (singleLineCommentMarker = string("//"));
         (singleLineCommentChar = token((function(f, g) {
             return (function(x) {
@@ -66,4 +57,4 @@ define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "
         (exports.multiLineCommentChars = multiLineCommentChars);
         (exports.multiLineComment = multiLineComment);
         (exports.comment = comment);
-    }))
+    }));

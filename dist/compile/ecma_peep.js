@@ -1,45 +1,32 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/ecma_peep.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecma_zipper", "ecma_ast/node",
     "ecma_ast/value", "ecma_ast/declaration", "ecma_ast/statement", "ecma_ast/expression"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_value, ast_declaration, ast_statement, ast_expression) {
     "use strict";
-    var optimize;
-    var tree = tree,
-        zipper = zipper,
-        __o = __o,
-        ecmaZipper = __o["ecmaZipper"],
-        __o0 = __o0,
+    var ecmaZipper = __o["ecmaZipper"],
         modify = __o0["modify"],
         Node = __o0["Node"],
-        ast_value = ast_value,
-        ast_declaration = ast_declaration,
-        ast_statement = ast_statement,
-        ast_expression = ast_expression;
-    var concat = (function() {
-        var args = arguments;
-        return [].concat.apply([], args);
-    });
-    var map = (function(f, x) {
-        return [].map.call(x, f);
-    });
-    var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-    var flatten = (function(x) {
-        return (!Array.isArray(x) ? x : [].concat.apply([], x.map(flatten)));
-    });
-    var peepholes = ({});
-    var addPeephole = (function(types, up, condition, f) {
-        var entry = ({
-            "condition": condition,
-            "map": f,
-            "up": up
+        optimize, concat = (function() {
+            var args = arguments;
+            return [].concat.apply([], args);
+        }),
+        map = (function(f, x) {
+            return [].map.call(x, f);
+        }),
+        reduce = Function.prototype.call.bind(Array.prototype.reduce),
+        flatten = (function(x) {
+            return (!Array.isArray(x) ? x : [].concat.apply([], x.map(flatten)));
+        }),
+        peepholes = ({}),
+        addPeephole = (function(types, up, condition, f) {
+            var entry = ({
+                "condition": condition,
+                "map": f,
+                "up": up
+            });
+            types.forEach((function(type) {
+                (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
+            }));
         });
-        types.forEach((function(type) {
-            (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
-        }));
-    });
     addPeephole(["VariableDeclaration"], false, (function(_) {
         return true;
     }), (function(node) {
@@ -139,8 +126,8 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
     }), (function(__o1) {
         var operator = __o1["operator"],
             left = __o1["left"],
-            right = __o1["right"];
-        var value = arithmetic[operator](left.value, right.value);
+            right = __o1["right"],
+            value = arithmetic[operator](left.value, right.value);
         return ast_value.Literal.create(null, typeof value, value);
     }));
     var arithmetic0 = ({
@@ -170,61 +157,61 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
         return (arithmetic0[operator] && isPrimitive0(argument));
     }), (function(__o1) {
         var operator = __o1["operator"],
-            argument = __o1["argument"];
-        var value = arithmetic0[operator](argument.value);
+            argument = __o1["argument"],
+            value = arithmetic0[operator](argument.value);
         return ast_value.Literal.create(null, typeof value, value);
     }));
     var transform = (function(node) {
         var transforms = (peepholes[node.type] || [])
             .filter((function(x) {
                 return x.condition(node);
+            })),
+            down = transforms.filter((function(x) {
+                return !x.up;
+            })),
+            up = transforms.filter((function(x) {
+                return x.up;
             }));
-        var down = transforms.filter((function(x) {
-            return !x.up;
-        }));
-        var up = transforms.filter((function(x) {
-            return x.up;
-        }));
         return down.reduce((function(p, c) {
             return c.map(p, transform);
         }), node);
-    });
-    var transformDown = (function(node) {
-        var transforms = (peepholes[node.type] || [])
-            .filter((function(x) {
-                return (!x.up && x.condition(node));
-            }));
-        return transforms.reduce((function(p, c) {
-            return c.map(p, transformDown);
-        }), node);
-    });
-    var transformUp = (function(node) {
-        var transforms = (peepholes[node.type] || [])
-            .filter((function(x) {
-                return (x.up && x.condition(node));
-            }));
-        return transforms.reduce((function(p, c) {
-            return c.map(p, transformUp);
-        }), node);
-    });
-    var opt = (function(z) {
-        var t = tree.modifyNode((function(node) {
-            return (node && transformDown(node));
-        }), z);
-        if (zipper.isLeaf(t)) {
-            do {
-                (t = tree.modifyNode((function(node) {
-                    return (node && transformUp(node));
-                }), t));
-                if (zipper.isLast(t)) {
-                    if (zipper.isRoot(t)) return t;
-                    (t = zipper.up(t));
-                } else return opt(zipper.right(t));
+    }),
+        transformDown = (function(node) {
+            var transforms = (peepholes[node.type] || [])
+                .filter((function(x) {
+                    return (!x.up && x.condition(node));
+                }));
+            return transforms.reduce((function(p, c) {
+                return c.map(p, transformDown);
+            }), node);
+        }),
+        transformUp = (function(node) {
+            var transforms = (peepholes[node.type] || [])
+                .filter((function(x) {
+                    return (x.up && x.condition(node));
+                }));
+            return transforms.reduce((function(p, c) {
+                return c.map(p, transformUp);
+            }), node);
+        }),
+        opt = (function(z) {
+            var t = tree.modifyNode((function(node) {
+                return (node && transformDown(node));
+            }), z);
+            if (zipper.isLeaf(t)) {
+                do {
+                    (t = tree.modifyNode((function(node) {
+                        return (node && transformUp(node));
+                    }), t));
+                    if (zipper.isLast(t)) {
+                        if (zipper.isRoot(t)) return t;
+                        (t = zipper.up(t));
+                    } else return opt(zipper.right(t));
+                }
+                while (true);
             }
-            while (true);
-        }
-        return opt(zipper.down(t));
-    });
+            return opt(zipper.down(t));
+        });
     (optimize = (function(__o1) {
         var options = __o1["options"],
             ast = __o1["ast"];
@@ -234,4 +221,4 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
         });
     }));
     (exports.optimize = optimize);
-}))
+}));
