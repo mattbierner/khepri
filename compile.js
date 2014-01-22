@@ -11,7 +11,7 @@ requirejs.config({
 
         'parse': 'dependencies/parse/dist',
         'seshet': 'dependencies/seshet/lib/seshet',
-        'nu': 'dependencies/nu/dist',
+        'nu-stream': 'dependencies/nu/dist',
         
         'ecma': 'dependencies/parse-ecma/lib',
         'ecma_unparse': 'dependencies/ecma-unparse/lib',

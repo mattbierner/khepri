@@ -2,8 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/program_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_ast/program", "khepri/parse/common",
-    "khepri/parse/statement_parser", "khepri/parse/package_parser"
+define(["require", "exports", "parse/parse", "parse/lang", "nu-stream/stream", "khepri_ast/program",
+    "khepri/parse/common", "khepri/parse/statement_parser", "khepri/parse/package_parser"
 ], (function(require, exports, __o, __o0, __o1, ast_program, __o2, _, _0) {
     "use strict";
     var sourceElement, sourceElements, program;
@@ -25,18 +25,16 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         __o2 = __o2,
         node = __o2["node"];
     var statementParser = (function() {
-        var args = arguments; {
-            var __o3 = require("khepri/parse/statement_parser"),
-                statement = __o3["statement"];
-            return statement.apply(undefined, args);
-        }
+        var args = arguments;
+        var __o3 = require("khepri/parse/statement_parser"),
+            statement = __o3["statement"];
+        return statement.apply(undefined, args);
     });
     var khepriPackage = (function() {
-        var args = arguments; {
-            var __o3 = require("khepri/parse/package_parser"),
-                khepriPackage = __o3["khepriPackage"];
-            return khepriPackage.apply(undefined, args);
-        }
+        var args = arguments;
+        var __o3 = require("khepri/parse/package_parser"),
+            khepriPackage = __o3["khepriPackage"];
+        return khepriPackage.apply(undefined, args);
     });
     (sourceElement = statementParser);
     (sourceElements = eager(many(sourceElement)));

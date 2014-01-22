@@ -38,7 +38,7 @@ with
         test},
     import 'parse/lang' {between},
     import 'parse/text' {character},
-    import 'nu/stream' {foldl},
+    import 'nu-stream/stream' {foldl},
     import 'khepri/lex/identifier_lexer' {identifierPart},
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {

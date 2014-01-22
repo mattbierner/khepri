@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_ast/token", "khepri/position",
+define(["require", "exports", "parse/parse", "parse/lang", "nu-stream/stream", "khepri_ast/token", "khepri/position",
     "khepri/lex/boolean_lexer", "khepri/lex/comment_lexer", "khepri/lex/identifier_lexer",
     "khepri/lex/line_terminator_lexer", "khepri/lex/null_lexer", "khepri/lex/number_lexer",
     "khepri/lex/punctuator_lexer", "khepri/lex/reserved_word_lexer", "khepri/lex/string_lexer",
@@ -67,9 +67,9 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         }));
     });
     var buildToken = (function(p) {
-        return binds(enumeration(getPosition, p, getPosition), (function(start, __a, end) {
-            var type = __a[0],
-                value = __a[1];
+        return binds(enumeration(getPosition, p, getPosition), (function(start, __o14, end) {
+            var type = __o14[0],
+                value = __o14[1];
             return always(new(type)(new(SourceLocation)(start, end), value));
         }));
     });
@@ -89,15 +89,10 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     (inputElement = buildToken(inputElementImpl));
     (lexer = then(many(inputElement), eof));
     (lexManyState = (function(p, state) {
-        return (function() {
-            {
-                var manyP = either(bind(p, (function(x, state, m) {
-                    return always(memoStream(x, runState.bind(null, manyP, state, m)));
-                })), next(eof, always(NIL)));
-                return runState(manyP, state);
-            }
-        })
-            .call(this);
+        var manyP = either(bind(p, (function(x, state, m) {
+            return always(memoStream(x, runState.bind(null, manyP, state, m)));
+        })), next(eof, always(NIL)));
+        return runState(manyP, state);
     }));
     (lex = (function(input) {
         return lexManyState(inputElement, new(ParserState)(streamFrom(input), SourcePosition.initial));

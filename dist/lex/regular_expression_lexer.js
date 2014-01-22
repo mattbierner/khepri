@@ -2,9 +2,13 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/regular_expression_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/stream", "khepri/lex/identifier_lexer", "khepri/lex/line_terminator_lexer"], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
+define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu-stream/stream",
+    "khepri/lex/identifier_lexer", "khepri/lex/line_terminator_lexer"
+], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
     "use strict";
-    var regularExpressionNonTerminator, regularExpressionBackslashSequence, regularExpressionClassChar, regularExpressionClassChars, regularExpressionClass, regularExpressionChar, regularExpressionChars, regularExpressionFirstChar, regularExpressionFlags, regularExpressionBody, regularExpressionLiteral;
+    var regularExpressionNonTerminator, regularExpressionBackslashSequence, regularExpressionClassChar,
+            regularExpressionClassChars, regularExpressionClass, regularExpressionChar, regularExpressionChars,
+            regularExpressionFirstChar, regularExpressionFlags, regularExpressionBody, regularExpressionLiteral;
     var __o = __o,
         always = __o["always"],
         attempt = __o["attempt"],
@@ -39,25 +43,30 @@ define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/str
     })((function(x) {
         return !x;
     }), test.bind(null, lineTerminator))));
-    (regularExpressionBackslashSequence = next(character("\\"), bind(regularExpressionNonTerminator, (function(f, g) {
+    (regularExpressionBackslashSequence = next(character("\\"), bind(regularExpressionNonTerminator, (function(
+        f, g) {
         return (function(x) {
             return f(g(x));
         });
     })(always, (function(x, y) {
-        return (x + y);
-    }).bind(null, "\\")))));
+            return (x + y);
+        })
+        .bind(null, "\\")))));
     (regularExpressionClassChar = either(attempt(token((function(tok) {
         return ((!test(lineTerminator, tok) && (tok !== "]")) && (tok !== "\\"));
     }))), regularExpressionBackslashSequence));
     (regularExpressionClassChars = many(regularExpressionClassChar));
-    (regularExpressionClass = between(character("["), character("]"), bind(regularExpressionClassChars, (function(body) {
-        return always((("[" + join(body)) + "]"));
-    }))));
+    (regularExpressionClass = between(character("["), character("]"), bind(regularExpressionClassChars, (
+        function(body) {
+            return always((("[" + join(body)) + "]"));
+        }))));
     (regularExpressionFirstChar = choice(token((function(tok) {
-        return ((((!test(lineTerminator, tok) && (tok !== "*")) && (tok !== "\\")) && (tok !== "`")) && (tok !== "["));
+        return ((((!test(lineTerminator, tok) && (tok !== "*")) && (tok !== "\\")) && (tok !==
+            "`")) && (tok !== "["));
     })), regularExpressionBackslashSequence, regularExpressionClass));
     (regularExpressionChar = choice(token((function(tok) {
-        return (((!test(lineTerminator, tok) && (tok !== "\\")) && (tok !== "`")) && (tok !== "["));
+        return (((!test(lineTerminator, tok) && (tok !== "\\")) && (tok !== "`")) && (tok !==
+            "["));
     })), regularExpressionBackslashSequence, regularExpressionClass));
     (regularExpressionChars = many(regularExpressionChar));
     (regularExpressionFlags = many(identifierPart));
@@ -66,7 +75,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "parse/text", "nu/str
             return f(g(x));
         });
     })(always, join)));
-    (regularExpressionLiteral = Parser("Regular Expression Lexer", binds(enumeration(between(character("`"), character("`"), regularExpressionBody), regularExpressionFlags), (function(body, flags) {
+    (regularExpressionLiteral = Parser("Regular Expression Lexer", binds(enumeration(between(character("`"),
+        character("`"), regularExpressionBody), regularExpressionFlags), (function(body, flags) {
         return always(new(RegExp)(body, join(flags)));
     }))));
     (exports.regularExpressionNonTerminator = regularExpressionNonTerminator);

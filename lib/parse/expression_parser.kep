@@ -84,7 +84,7 @@ with
         sepBy
         sepBy1
         then},
-    import 'nu/stream' {foldl foldr},
+    import 'nu-stream/stream' {foldl foldr},
     import 'khepri_ast/declaration' ast_declaration,
     import 'khepri_ast/expression' ast_expression,
     import 'khepri_ast/statement' ast_statement,

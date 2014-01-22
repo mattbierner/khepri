@@ -8,7 +8,7 @@ package (
 with
     import 'parse/parse' {always, cons, eager, either, eof, many, next, Parser, rec},
     import 'parse/lang' {then},
-    import 'nu/stream' {NIL},
+    import 'nu-stream/stream' {NIL},
     import 'khepri_ast/program' ast_program,
     import 'khepri/parse/common' {node},
     import 'khepri/parse/statement_parser' _,

@@ -15,7 +15,7 @@ package (
 with
     import 'parse/parse' {always, bind many1 Parser},
     import 'parse/text' {character characters match},
-    import 'nu/stream' {foldl}
+    import 'nu-stream/stream' {foldl}
 in {
 
 var join = \p ->

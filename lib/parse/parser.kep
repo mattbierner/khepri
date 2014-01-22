@@ -10,7 +10,7 @@ package (
     parseStream)
 with
     import 'parse/parse' parse,
-    import 'nu/stream' {first filter isEmpty rest NIL 'from': streamFrom},
+    import 'nu-stream/stream' {first filter isEmpty rest NIL 'from': streamFrom},
     import 'khepri/position' {SourceLocation SourcePosition},
     import 'khepri/parse/program_parser' {program}
 in {

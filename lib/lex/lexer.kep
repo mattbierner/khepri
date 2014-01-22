@@ -27,7 +27,7 @@ with
         Parser
         ParserState},
     import 'parse/lang' {then},
-    import 'nu/stream' {memoStream, NIL, 'from': streamFrom},
+    import 'nu-stream/stream' {memoStream, NIL, 'from': streamFrom},
     import 'khepri_ast/token' lexToken,
     import 'khepri/position' {SourceLocation, SourcePosition},
     import 'khepri/lex/boolean_lexer' {booleanLiteral},

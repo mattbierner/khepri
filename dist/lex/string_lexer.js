@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/string_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/text", "parse/lang", "nu/stream",
+define(["require", "exports", "parse/parse", "parse/text", "parse/lang", "nu-stream/stream",
     "khepri/lex/line_terminator_lexer", "khepri/lex/number_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
     "use strict";

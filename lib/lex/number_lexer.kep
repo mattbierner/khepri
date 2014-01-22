@@ -46,7 +46,7 @@ with
         Parser},
     import 'parse/lang' {then},
     import 'parse/text' {character characters match string},
-    import 'nu/stream' {foldl}
+    import 'nu-stream/stream' {foldl}
 in {
 
 var join = \p ->

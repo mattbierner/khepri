@@ -2,7 +2,7 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_ast/declaration",
+define(["require", "exports", "parse/parse", "parse/lang", "nu-stream/stream", "khepri_ast/declaration",
     "khepri_ast/expression", "khepri_ast/statement", "khepri_ast/pattern", "khepri_ast/value", "khepri/position",
     "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/program_parser", "khepri/parse/value_parser",
     "khepri/parse/pattern_parser"

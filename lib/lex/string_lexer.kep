@@ -42,7 +42,7 @@ with
         token},
     import 'parse/text' {character},
     import 'parse/lang' {between times},
-    import 'nu/stream' {foldl},
+    import 'nu-stream/stream' {foldl},
     import 'khepri/lex/line_terminator_lexer' {lineTerminatorSequence lineTerminator},
     import 'khepri/lex/number_lexer' {decimalDigit hexDigit}
 in {

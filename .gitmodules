@@ -25,3 +25,6 @@
 [submodule "dependencies/khepri-ast-zipper"]
 	path = dependencies/khepri-ast-zipper
 	url = git@github.com:mattbierner/khepri-ast-zipper.git
+[submodule "dependencies/seshet"]
+	path = dependencies/seshet
+	url = git@github.com:mattbierner/seshet.git

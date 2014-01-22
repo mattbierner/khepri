@@ -2,8 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/common.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "parse/parse", "khepri/position", "nu/stream"], (function(require, exports, parse, __o,
-    stream) {
+define(["require", "exports", "parse/parse", "khepri/position", "nu-stream/stream"], (function(require, exports, parse,
+    __o, stream) {
     "use strict";
     var precedence, node, nodea, positionParser;
     var parse = parse,
@@ -16,8 +16,7 @@ define(["require", "exports", "parse/parse", "khepri/position", "nu/stream"], (f
     (precedence = (function(p, table) {
         var sep = parse.choicea(table.map((function(entry) {
             return bind(entry.sep, (function(__o0) {
-                var __o0 = __o0,
-                    value = __o0["value"];
+                var value = __o0["value"];
                 return always(({
                     "value": value,
                     "node": entry.node,
@@ -63,18 +62,15 @@ define(["require", "exports", "parse/parse", "khepri/position", "nu/stream"], (f
         }));
     }));
     (positionParser = parse.extract((function(__o0) {
-        var __o0 = __o0,
-            position = __o0["position"];
+        var position = __o0["position"];
         return position;
     })));
     var locParser = parse.extract((function(__o0) {
-        var __o0 = __o0,
-            loc = __o0["loc"];
+        var loc = __o0["loc"];
         return loc;
     }));
     var prevEnd = parse.extract((function(__o0) {
-        var __o0 = __o0,
-            _prevEnd = __o0["_prevEnd"];
+        var _prevEnd = __o0["_prevEnd"];
         return _prevEnd;
     }));
     (node = (function(p, f) {
