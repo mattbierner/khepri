@@ -150,8 +150,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                             null));
                 }
             }), parameters.elements)),
-            argumentsPrefix = (parameters.id ? variableDeclarator(null, _transform(parameters.id),
-                identifier(null, "arguments")) : []),
+            argumentsPrefix = concat((parameters.self ? variableDeclarator(null, _transform(parameters.self),
+                ecma_expression.ThisExpression.create(null)) : []), (parameters.id ? variableDeclarator(
+                null, _transform(parameters.id), identifier(null, "arguments")) : [])),
             strict = isStrict(body.body),
             prefix = concat(elementsPrefix, argumentsPrefix);
         return ecma_expression.FunctionExpression.create(loc, _transform(id), params, blockStatement(body.loc,

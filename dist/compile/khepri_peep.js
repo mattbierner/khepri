@@ -52,6 +52,15 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
         return ast_statement.WithStatement.create(null, node.expression.bindings, ast_statement.BlockStatement
             .create(null, [ast_statement.ExpressionStatement.create(node.loc, node.expression.body)]));
     }));
+    addPeephole("ExpressionStatement", (function(node) {
+        return ((node.expression && (node.expression.type === "AssignmentExpression")) && (node.expression
+            .right.type === "LetExpression"));
+    }), (function(node) {
+        return ast_statement.WithStatement.create(null, node.expression.right.bindings, ast_statement.BlockStatement
+            .create(null, [ast_statement.ExpressionStatement.create(node.loc, ast_expression.AssignmentExpression
+                .create(node.expression.loc, node.expression.operator, node.expression.left,
+                    node.expression.right.body))]));
+    }));
     addPeephole("ArrayPattern", (function(_) {
         return true;
     }), (function(__o1) {

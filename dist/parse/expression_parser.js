@@ -10,11 +10,10 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     ast_value, __o2, __o3, __o4, program_parser, __o5, pattern) {
     "use strict";
     var arrayElement, arrayElements, arrayLiteral, propertyName, propertyInitializer, objectProperties,
-            objectLiteral, curryExpression, primaryExpression, thisExpression, args, argumentList, dotAccessor,
-            bracketAccessor, accessor, memberExpression, newExpression, leftHandSideExpression,
-            leftHandReferenceExpression, unaryOperator, unaryExpression, binaryExpression,
-            conditionalExpression, letExpression, assignmentOperator, assignmentExpression, composeExpression,
-            expression, topLevelExpression;
+            objectLiteral, curryExpression, primaryExpression, args, argumentList, dotAccessor, bracketAccessor,
+            accessor, memberExpression, newExpression, leftHandSideExpression, leftHandReferenceExpression,
+            unaryOperator, unaryExpression, binaryExpression, conditionalExpression, letExpression,
+            assignmentOperator, assignmentExpression, composeExpression, expression, topLevelExpression;
     var __o = __o,
         always = __o["always"],
         append = __o["append"],
@@ -105,13 +104,11 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
         punctuator("->"), expected("lambda body", lambdaFunctionBody)))), (function(loc, parameters, body) {
         return ast_expression.FunctionExpression.create(loc, null, parameters, body);
     }));
-    var ecmaFunctionExpression = nodea(next(keyword("function"), cons(optional(null, identifier), either(
-        enumeration(between(punctuator("("), punctuator(")"), pattern.argumentList), functionBody),
-        next(punctuator("\\"), enumeration(formalParameterList, next(punctuator("->"),
-            lambdaFunctionBody)))))), ast_expression.FunctionExpression.create);
+    var ecmaFunctionExpression = nodea(next(keyword("function"), cons(optional(null, identifier), next(
+        punctuator("\\"), enumeration(formalParameterList, next(punctuator("->"),
+            lambdaFunctionBody))))), ast_expression.FunctionExpression.create);
     var functionExpression = Parser("Function Expression", either(ecmaFunctionExpression,
         lambdaFunctionExpression));
-    (thisExpression = node(keyword("this"), ast_expression.ThisExpression.create));
     var letBinding = Parser("Let Binding", nodea(enumeration(then(expected("pattern", pattern.topLevelPattern),
         punctuator("=")), expected("let binding expression", expression)), ast_declaration.Binding.create));
     (letExpression = Parser("Let Expression", (function() {
@@ -151,8 +148,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
             })));
         })
         .call(this)));
-    (primaryExpression = Parser("Primary Expression", choice(thisExpression, letExpression, identifier,
-        curryExpression, literal, arrayLiteral, objectLiteral, functionExpression)));
+    (primaryExpression = Parser("Primary Expression", choice(letExpression, identifier, curryExpression,
+        literal, arrayLiteral, objectLiteral, functionExpression)));
     (argumentList = Parser("Argument List", (function() {
             var argument = expected("argument", expression);
             return eager(sepBy(punctuator(","), argument));
@@ -206,8 +203,8 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
             })(always, foldl.bind(null, reducer)));
         })
         .call(this)));
-    (leftHandReferenceExpression = Parser("Left Hand Reference Expression", binds(enumeration(either(
-        thisExpression, identifier), many(accessor)), (function(f, g) {
+    (leftHandReferenceExpression = Parser("Left Hand Reference Expression", binds(enumeration(identifier, many(
+        accessor)), (function(f, g) {
         return (function() {
             return f(g.apply(null, arguments));
         });
@@ -338,7 +335,6 @@ define(["require", "exports", "parse/parse", "parse/lang", "nu/stream", "khepri_
     (exports.objectLiteral = objectLiteral);
     (exports.curryExpression = curryExpression);
     (exports.primaryExpression = primaryExpression);
-    (exports.thisExpression = thisExpression);
     (exports.args = args);
     (exports.argumentList = argumentList);
     (exports.dotAccessor = dotAccessor);

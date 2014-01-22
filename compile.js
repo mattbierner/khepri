@@ -1,6 +1,8 @@
 var requirejs = require('requirejs');
 var fs = require('fs');
+var path = require('path');
 var argv = require('optimist').argv;
+var mkdirp = require('mkdirp');
 
 requirejs.config({
     nodeRequire: require,
@@ -8,7 +10,7 @@ requirejs.config({
         'khepri': 'dist',
 
         'parse': 'dependencies/parse/dist',
-        'seshat': 'dependencies/seshat/lib/seshat',
+        'seshet': 'dependencies/seshet/lib/seshet',
         'nu': 'dependencies/nu/dist',
         
         'ecma': 'dependencies/parse-ecma/lib',
@@ -21,6 +23,9 @@ requirejs.config({
         'khepri_ast_zipper': 'dependencies/khepri-ast-zipper/dist'
     }
 });
+
+var KHEPRI_EXT = /^\.kep$/i;
+
 
 requirejs(['ecma_unparse/unparse',
            'ecma_unparse/print',
@@ -49,15 +54,42 @@ function(unparse,
         fs.realpath(inFile, function(err, resolvedPath) {
             if (err) throw err;
             
+            // Walk sub directories and compile all `*.kep` files.
+            if (fs.lstatSync(resolvedPath).isDirectory())
+                return fs.readdir(resolvedPath, function(err, files) {
+                    files.forEach(function(file) {
+                        var subPath = path.join(inFile, file);
+                        
+                        if (fs.lstatSync(subPath).isDirectory()){
+                            return compileFile(
+                                subPath,
+                                outFile && path.join(outFile, file),
+                                header,
+                                options);
+                        }
+                        
+                        if (path.extname(file).match(KHEPRI_EXT))
+                            return compileFile(
+                                subPath,
+                                outFile && path.join(outFile, path.basename(file, '.kep') + '.js'),
+                                header,
+                                options);
+                    });
+                });
+            
             fs.readFile(resolvedPath, 'utf8', function(err, data) {
                 if (err) throw err;
                 
+                console.log("Khepri'" + inFile + "' to:'" + outFile + "'");
                 var out = header + compile(data, options);
                 if (outFile) {
-                    fs.writeFile(outFile, out, 'utf8', function(err) {
-                        if (err) throw err;
-                        console.log("Compiled '" + inFile + "' to '" + outFile + "'");
-                    });
+                    // create output directory if not exists
+                    mkdirp(path.dirname(outFile), function(err) {
+                        fs.writeFile(outFile, out, 'utf8', function(err) {
+                            if (err) throw err;
+                        });
+                    })
+                    console.log("Compiled '" + inFile + "' to '" + outFile + "'");
                 } else {
                     process.stdout.write(out);
                     console.log("Compiled '" + inFile + "' to stdout");

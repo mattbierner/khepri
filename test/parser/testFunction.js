@@ -17,7 +17,7 @@ function(parse,
         'tests': [
             ["Empty Function Expression",
             function(){
-                var result = testParser(lexer.lex("z = function(){};"));
+                var result = testParser(lexer.lex("z = function \\() -> {};"));
                 assert.equal(result.right.type, 'FunctionExpression');
                 assert.equal(result.right.params.elements.length, 0);
                 assert.equal(result.right.name, null);
@@ -25,7 +25,7 @@ function(parse,
             }],
             ["Simple Function Expression",
             function(){
-                var result = testParser(lexer.lex("z = function(x){ return x; };"));
+                var result = testParser(lexer.lex("z = function\\ x ->{ return x; };"));
                 assert.equal(result.right.type, 'FunctionExpression');
                 assert.equal(result.right.name, null);
                 assert.equal(result.right.params.elements.length, 1);
@@ -34,7 +34,7 @@ function(parse,
             }],
             ["Named Function Expression",
             function(){
-                var result = testParser(lexer.lex("z = function z(x){ return x; };"));
+                var result = testParser(lexer.lex("z = function z\\x -> { return x; };"));
                 assert.equal(result.right.type, 'FunctionExpression');
                 assert.equal(result.right.id.name, 'z');
                 assert.equal(result.right.params.elements.length, 1);

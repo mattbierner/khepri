@@ -18,10 +18,7 @@ package (
     
 // Primary Expression
     primaryExpression
-    
-// This Expression
-    thisExpression
-    
+
 // Call Expression
     args
     argumentList
@@ -194,7 +191,8 @@ var functionBody = node(
 var lambdaBody = node(
     expression |> (expected, "lambda body expression"),
     \loc, x ->
-        ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null, x)]));
+        ast_statement.BlockStatement.create(loc, [
+            ast_statement.ReturnStatement.create(null, x)]));
 
 var lambdaFunctionBody = either(
     functionBody,
@@ -216,18 +214,13 @@ var ecmaFunctionExpression = nodea(
         keyword('function'),
         cons(
             optional(null, identifier),
-            either(
+            next(
+                punctuator('\\'),
                 enumeration(
-                    between(punctuator('('), punctuator(')'), 
-                        pattern.argumentList),
-                    functionBody),
-                next(
-                    punctuator('\\'),
-                    enumeration(
-                        formalParameterList,
-                        next(
-                            punctuator('->'),
-                            lambdaFunctionBody)))))),
+                    formalParameterList,
+                    next(
+                        punctuator('->'),
+                        lambdaFunctionBody))))),
     ast_expression.FunctionExpression.create);
 
 /**
@@ -239,12 +232,6 @@ var functionExpression = (Parser, 'Function Expression') <|
     either(
         ecmaFunctionExpression,
         lambdaFunctionExpression);
-
-// This Expression
-////////////////////////////////////////
-thisExpression = node(
-    keyword('this'),
-    ast_expression.ThisExpression.create);
 
 // Let Expression
 ////////////////////////////////////////
@@ -352,7 +339,6 @@ in
 ////////////////////////////////////////
 primaryExpression = (Parser, 'Primary Expression') <|
     choice(
-        thisExpression,
         letExpression,
         identifier,
         curryExpression,
@@ -471,9 +457,7 @@ in
 leftHandReferenceExpression = (Parser, 'Left Hand Reference Expression') <|
     binds(
         enumeration(
-            either(
-                thisExpression,
-                identifier),
+            identifier,
             many(accessor)),
         (foldl, accessorReducer) \>> always);
 

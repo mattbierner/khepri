@@ -393,7 +393,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "ObjectPatternElement":
                 return seq(checkChild("target"), checkChild("key"));
             case "ArgumentsPattern":
-                return seq(checkChild("id"), checkChild("elements"));
+                return seq(checkChild("id"), checkChild("elements"), checkChild("self"));
             case "ObjectValue":
                 return checkChild("value");
             case "Identifier":

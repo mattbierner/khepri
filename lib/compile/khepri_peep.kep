@@ -66,6 +66,24 @@ addPeephole('ExpressionStatement',
                 [ast_statement.ExpressionStatement.create(node.loc, node.expression.body)])));
 
 /**
+ * Rewrite top level let expressions to with statements.
+ */
+addPeephole('ExpressionStatement',
+    \node ->
+        (  node.expression
+        && node.expression.type === 'AssignmentExpression'
+        && node.expression.right.type === 'LetExpression'),
+    \node ->
+        ast_statement.WithStatement.create(null,
+            node.expression.right.bindings,
+            ast_statement.BlockStatement.create(null, 
+                [ast_statement.ExpressionStatement.create(node.loc,
+                    ast_expression.AssignmentExpression.create(node.expression.loc, node.expression.operator,
+                        node.expression.left,
+                        node.expression.right.body))])));
+
+
+/**
  * Convert all array patterns to object patterns
  */
 addPeephole('ArrayPattern',

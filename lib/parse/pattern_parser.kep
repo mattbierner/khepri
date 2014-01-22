@@ -176,10 +176,16 @@ subPattern = (Parser, 'Sub Pattern') <|
 ////////////////////////////////////////
 var argumentElements = eager <| sepBy(sep, topLevelPattern);
 
+var selfPattern = next(
+    punctuator('='),
+    identifierPattern);
+
 argumentList = (Parser, 'Argument List') <|
-    node(
-        argumentElements,
-        \loc, elements -> ast_pattern.ArgumentsPattern.create(loc, null, elements));
+    nodea(
+        enumeration(
+            argumentElements,
+            optional(null, selfPattern)),
+        \loc, elements, self -> ast_pattern.ArgumentsPattern.create(loc, null, elements, self));
 
 argumentsPattern = (Parser, 'Arguments Pattern') <|
     either(
@@ -190,7 +196,8 @@ argumentsPattern = (Parser, 'Arguments Pattern') <|
                     punctuator('(')),
                 then(
                     argumentElements,
-                    punctuator(')'))),
+                    punctuator(')')),
+                optional(null, selfPattern)),
             ast_pattern.ArgumentsPattern.create),
         argumentList);
 

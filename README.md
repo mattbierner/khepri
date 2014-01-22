@@ -29,7 +29,7 @@ more fun, with a focus on functional style programming.
 # Differences with ECMAScript
 
 ### Lambda Function Expression Syntax
-Available syntaxes, along with the also valid ECMAScript translation as last item, are shown here: 
+Available syntaxes, along with the ECMAScript translation as last item, are shown here: 
 
     // single argument
     \x -> x + 3;
@@ -74,9 +74,30 @@ Available syntaxes, along with the also valid ECMAScript translation as last ite
     function f \x -> (x < 10 ? f(x + 1) : x);
     function f \x -> { return (x < 10 ? f(x + 1) : x); };
     function f (x) { return (x < 10 ? f(x + 1) : x); };
-
-
+    
+    
 All scoping remains the same as in the translated version.
+
+#### Fat Arrows For this Unpacks
+Khepri remove the `this` expression (`this` is still a keyword) in favor of using
+explicit `this` bindings. The last element of an arguments pattern can optional be
+a `this` unpack of the form `= ID_PATTERN`:
+
+    \x =self-> self.z + x;
+    function(x) { return this.z + x; };
+
+The fat arrow ensures that you always explicitly state what `this` you are using:
+
+    var Obj = function\ x =self-> { self.x = x; };
+    Obj.prototype.getXGetter = \=self-> \() -> self.x;
+    
+    new Obj(3).getXGetter()(); // 3 in khepri
+    
+    // ECMAScript normally would be:
+    var Obj = function(x) { this.x = x; };
+    Obj.prototype.getXGetter = function() { return function() { return this.x; }; };
+    new Obj(3).getXGetter()(); // undefined since uses `this` of inner function.
+
 
 ### Unpack Patterns
 Khepri allows writing more concise expressions with a pattern syntax to unpack
@@ -592,6 +613,9 @@ ECMAScript are not supported.
 
 
 ## Removed ##
+
+### This expression
+Use fat arrow this unpacks.
 
 ### Function Declarations
 Function declarations are not necessary. Use function expressions instead.

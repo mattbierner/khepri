@@ -537,7 +537,8 @@ _check = function(node) {
     case 'ArgumentsPattern':
         return seq(
             checkChild('id'),
-            checkChild('elements'));
+            checkChild('elements'),
+            checkChild('self'));
     
 // Value
     case 'ObjectValue':

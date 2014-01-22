@@ -219,11 +219,17 @@ var functionExpression = \loc, id, parameters, body -> let
         })
         |> flatten,
     
-    argumentsPrefix = (parameters.id ?
-        variableDeclarator(null,
-            _transform(parameters.id),
-            identifier(null, 'arguments')) :
-        []),
+    argumentsPrefix = concat(
+        (parameters.self ?
+            variableDeclarator(null,
+                _transform(parameters.self),
+                ecma_expression.ThisExpression.create(null)) :
+            []),
+        (parameters.id ?
+            variableDeclarator(null,
+                _transform(parameters.id),
+                identifier(null, 'arguments')) :
+            [])),
     
     strict = isStrict(body.body),
     

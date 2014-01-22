@@ -1,5 +1,14 @@
 # ChangeLog #
 
+## 0.9.0 - January 19, 2014
+* Fat arrow `this` unpacks.
+** `\x y =self-> self.z + x + y;`
+* Removed `this` expressions.
+** Always use explicit fat arrow to unpack `this`.
+* Removed standard ECMAScript function syntax: `function(x) {...}`
+** Use `function\ x -> {...}` instead.
+* Improvements to generated code.
+
 ## 0.8.1 - January 19, 2014
 * Improvements to `watch.py`.
 ** Fixed double compiling.

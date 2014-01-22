@@ -83,12 +83,14 @@ define(["require", "exports", "parse/parse", "parse/lang", "khepri_ast/pattern",
     (subPattern = Parser("Sub Pattern", attempt(nodea(enumeration(identifierPattern, between(punctuator("("),
         punctuator(")"), subPatternElements)), ast_pattern.ArgumentsPattern.create))));
     var argumentElements = eager(sepBy(sep, topLevelPattern));
-    (argumentList = Parser("Argument List", node(argumentElements, (function(loc, elements) {
-        return ast_pattern.ArgumentsPattern.create(loc, null, elements);
-    }))));
+    var selfPattern = next(punctuator("="), identifierPattern);
+    (argumentList = Parser("Argument List", nodea(enumeration(argumentElements, optional(null, selfPattern)), (
+        function(loc, elements, self) {
+            return ast_pattern.ArgumentsPattern.create(loc, null, elements, self);
+        }))));
     (argumentsPattern = Parser("Arguments Pattern", either(nodea(enumeration(attempt(then(optional(null,
-            identifierPattern), punctuator("("))), then(argumentElements, punctuator(")"))),
-        ast_pattern.ArgumentsPattern.create), argumentList)));
+            identifierPattern), punctuator("("))), then(argumentElements, punctuator(")")),
+        optional(null, selfPattern)), ast_pattern.ArgumentsPattern.create), argumentList)));
     (pattern = Parser("Pattern", choice(importPattern, topLevelPattern)));
     (exports.pattern = pattern);
     (exports.topLevelPattern = topLevelPattern);
