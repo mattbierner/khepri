@@ -9,7 +9,7 @@ requirejs.config({
     paths: {
         'khepri': 'dist',
 
-        'parse': 'dependencies/bennu/dist',
+        'bennu': 'dependencies/bennu/dist',
         'seshet': 'dependencies/seshet/dist/seshet',
         'nu-stream': 'dependencies/nu/dist',
         
