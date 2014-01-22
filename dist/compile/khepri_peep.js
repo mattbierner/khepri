@@ -92,10 +92,12 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
         return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ?
             node.right.base : node.right), concat((node.right.args || []), node.left));
     }));
-    addPeephole("BinaryExpression", (function(node) {
-        return ((node.operator === "<|") && ((((node.left.type === "CurryExpression") || (node.left.type ===
-                "BinaryOperatorExpression")) || (node.left.type === "UnaryOperatorExpression")) ||
-            (node.left.type === "TernaryOperatorExpression")));
+    addPeephole("BinaryExpression", (function(__o1) {
+        var operator = __o1["operator"],
+            left = __o1["left"];
+        return ((operator === "<|") && ((((left.type === "CurryExpression") || (left.type ===
+            "BinaryOperatorExpression")) || (left.type === "UnaryOperatorExpression")) || (left
+            .type === "TernaryOperatorExpression")));
     }), (function(node) {
         return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ?
             node.left.base : node.left), concat((node.left.args || []), node.right));

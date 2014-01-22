@@ -127,10 +127,13 @@ addPeephole('BinaryExpression',
  * Rewrite right pipe of curried expression to a call.
  */
 addPeephole('BinaryExpression',
-    \node ->
-        (node.operator === '<|' &&
-            node.left.type === 'CurryExpression' || node.left.type === 'BinaryOperatorExpression' ||
-            node.left.type === 'UnaryOperatorExpression' || node.left.type === 'TernaryOperatorExpression'),
+    \{operator left} ->
+        (operator === '<|'
+        &&  (  left.type === 'CurryExpression'
+            || left.type === 'BinaryOperatorExpression'
+            || left.type === 'UnaryOperatorExpression'
+            || left.type === 'TernaryOperatorExpression')),
+    
     \node ->
         ast_expression.CallExpression.create(null,
             (node.left.type === 'CurryExpression' ? node.left.base : node.left),
