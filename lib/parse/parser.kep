@@ -90,7 +90,9 @@ ParserState.prototype.setPosition = \position =self->
 ParserState.prototype.next = \tok =self-> {
     if (!self._next) {
         var r = rest(self.input);
-        var end = (isEmpty(r) ? tok.loc.end : first(r).loc.start);
+        var end =? isEmpty(r)
+            :tok.loc.end
+            :first(r).loc.start;
         var s = new ParserState(r, self.position.increment(tok, end), self.loc.end);
         self._next = \_, m, cok -> cok(tok, s, m);
     }
@@ -99,9 +101,9 @@ ParserState.prototype.next = \tok =self-> {
 
 Object.defineProperty(ParserState.prototype, 'loc', {
     'get': \() =self->
-        (isEmpty(self.input) ?
-            new SourceLocation(self._prevEnd, self._prevEnd) :
-            first(self.input).loc)
+        ?isEmpty(self.input)
+            :new SourceLocation(self._prevEnd, self._prevEnd)
+            :first(self.input).loc
 });
 
 /* Running

@@ -1,7 +1,5 @@
 /**
  * @fileOverview
- * 
- * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 package (
     Scope)
@@ -47,9 +45,11 @@ Scope.prototype.hasBinding = \id =self->
  * Get information for a given binding. Returns null if binding does not exist.
  */
 Scope.prototype.getBinding = \id =self->
-    self.hasOwnBinding(id) ?
-        self.record[id] :
-        (self.outer ? self.outer.getBinding(id) : null);
+    ?self.hasOwnBinding(id)
+        :self.record[id]
+        :?self.outer
+            :self.outer.getBinding(id)
+            :null;
 
 /**
  * Does this scope have its own a mapping for a given identifier.
@@ -67,9 +67,9 @@ Scope.prototype.hasMapping = \id =self->
  * Get the mapped value for a given identifier.
  */
 Scope.prototype.getMapping = \id =self->
-    (self.hasOwnMapping(id) ?
-        self.mapping[id] :
-        self.outer && self.outer.getMapping(id));
+    ?self.hasOwnMapping(id)
+        :self.mapping[id]
+        :self.outer && self.outer.getMapping(id);
 
 /**
  * Get an unused identifier in this scope.

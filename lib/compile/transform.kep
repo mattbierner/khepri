@@ -35,9 +35,9 @@ var filter = \f, a -> Array.prototype.filter.call(a, f);
 var map = \f, a ->  Array.prototype.map.call(a, f);
 
 var flatten = \x ->
-    (Array.isArray(x) ?
-        reduce(x, \p c _ -> p.concat(c), []) :
-        x);
+    ?Array.isArray(x)
+        :reduce(x, \p c _ -> p.concat(c), [])
+        :x;
 
 /**
  * Is an array of source elements strict code?
@@ -85,9 +85,9 @@ var innerPattern = let
     objectElementUnpack = \base, pattern, key, f -> let
         innerBase = khepri_expression.MemberExpression.create(null, base, key, true)
     in
-        (pattern ?
-            (flatten <| innerPattern(innerBase, pattern, f)) :
-            f(identifier(null, key.value), innerBase))
+        ?pattern
+            :(flatten <| innerPattern(innerBase, pattern, f))
+            :f(identifier(null, key.value), innerBase)
 in
     \base, pattern, f -> {
         switch (pattern.type) {
@@ -174,18 +174,16 @@ var returnStatement = \loc, argument ->
 var withStatement = \loc, bindings, body -> let
     vars = bindings
         |> (map, \imp -> {
-            var base = (imp.type === 'ImportPattern' ?
-                callExpression(null,
+            var base = ?imp.type === 'ImportPattern'
+                :callExpression(null,
                     identifier(null, 'require'),
-                    [imp.from]) :
-                imp.value);
+                    [imp.from])
+                :imp.value;
             return unpack(imp.pattern, base);
         })
         |> flatten,
     
-    prefix = (vars.length ?
-        variableDeclaration(null, vars) :
-        [])
+    prefix = variableDeclaration(null, vars)
 in
     blockStatement(loc,
         concat(
@@ -217,16 +215,16 @@ var functionExpression = \loc, id, parameters, body -> let
         |> flatten,
     
     argumentsPrefix = concat(
-        (parameters.self ?
-            variableDeclarator(null,
+        ?parameters.self
+            :variableDeclarator(null,
                 _transform(parameters.self),
-                ecma_expression.ThisExpression.create(null)) :
-            []),
-        (parameters.id ?
-            variableDeclarator(null,
+                ecma_expression.ThisExpression.create(null))
+            :[],
+        ?parameters.id
+            :variableDeclarator(null,
                 _transform(parameters.id),
-                identifier(null, 'arguments')) :
-            [])),
+                identifier(null, 'arguments'))
+            :[]),
     
     strict = isStrict(body.body),
     
@@ -239,12 +237,12 @@ in
         params,
         blockStatement(body.loc,
             concat(
-                (!strict ? [] :
-                    khepri_statement.ExpressionStatement.create(null,
+                ?!strict :[]
+                    :khepri_statement.ExpressionStatement.create(null,
                         khepri_value.Literal.create(null, 'string', "use strict"))),
-                (prefix.length ? variableDeclaration(null, prefix) : []),
+                variableDeclaration(null, prefix),
                 let block = _transform(body).body in
-                    (strict ? block.slice(1): block))));
+                    ?strict :block.slice(1) :block));
 
 /**
  * 
@@ -349,9 +347,9 @@ var multiCompose = \loc, f, g ->
 var packageManager;
     
 var packageBlock = \loc, exports, body -> let
-    imports = (body.type === 'WithStatement' ?
-        filter(\x -> x.type === 'ImportPattern', body.bindings) :
-        []),
+    imports = ?body.type === 'WithStatement'
+        :filter(\x -> x.type === 'ImportPattern', body.bindings)
+        :[],
     
     exportedNames = map(\x -> x.id.name, exports.exports),
     
@@ -360,11 +358,11 @@ var packageBlock = \loc, exports, body -> let
         return p;
     }, {}),
     
-    fBody = (body.type === 'WithStatement' ?
-        khepri_statement.WithStatement.create(null,
+    fBody = ?body.type === 'WithStatement'
+        :khepri_statement.WithStatement.create(null,
             filter(\x -> x.type !== 'ImportPattern', body.bindings),
-            body.body) :
-        body)
+            body.body)
+        :body
 in
     _transform(packageManager.definePackage(loc, exportedNames, imports, targets, fBody));
 
@@ -566,9 +564,9 @@ addTransform('UnaryOperatorExpression', \node ->
                     identifier(null, 'x')))])));
 
 addTransform('BinaryOperatorExpression', \node -> {
-    var kind = (node.op === '||' || node.op === '&&' ?
-        khepri_expression.LogicalExpression :
-        khepri_expression.BinaryExpression);
+    var kind = ?(node.op === '||' || node.op === '&&')
+        :khepri_expression.LogicalExpression
+        :khepri_expression.BinaryExpression;
     
     return functionExpression(node.loc, null,
         khepri_pattern.ArgumentsPattern.create(null, null, [
@@ -638,21 +636,21 @@ addTransform('ObjectPattern', \node ->
     _transform(node.ud.id));
 
 addTransform('EllipsisPattern', \node ->
-    (node.ud && node.ud.id ?
-        _transform(node.ud.id) :
-        null));
+    ?(node.ud && node.ud.id)
+        :_transform(node.ud.id)
+        :null);
 
 addTransform('SinkPattern', \node ->
-    (node.ud && node.ud.id ?
-        _transform(node.ud.id) :
-        null));
+    ?(node.ud && node.ud.id)
+        :_transform(node.ud.id)
+        :null);
 
 // Program
 addTransform('Program', \node ->
     ecma_program.Program.create(node.loc,
-        (Array.isArray(node.body) ?
-            _transform(node.body) :
-            [_transform(node.body)])));
+        ?Array.isArray(node.body)
+            :_transform(node.body)
+            :[_transform(node.body)]));
 
 // Package
 addTransform('Package', \node ->

@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/package_manager/node.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression", "khepri_ast/statement",
     "khepri_ast/value"
 ], (function(require, exports, ast_declaration, ast_expression, ast_statement, ast_value) {
@@ -14,11 +18,10 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
                     "require"), [ast_value.Literal.create(null, "string", segs[0])]));
         });
     (definePackage = (function(loc, exports, imports, targets, body) {
-        var exportHeader = (exports.length ? ast_declaration.VariableDeclaration.create(null, map(
-            exports, (function(x) {
-                return ast_declaration.VariableDeclarator.create(null, ast_value.Identifier
-                    .create(null, x));
-            }))) : ast_statement.EmptyStatement.create(null)),
+        var exportHeader = ast_declaration.VariableDeclaration.create(null, map(exports, (function(x) {
+            return ast_declaration.VariableDeclarator.create(null, ast_value.Identifier.create(
+                null, x));
+        }))),
             exportBody = map(exports, (function(x) {
                 return ast_statement.ExpressionStatement.create(null, ast_expression.AssignmentExpression
                     .create(null, "=", ast_expression.MemberExpression.create(null, ast_value.Identifier

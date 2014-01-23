@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/ecma_peep.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecma_zipper", "ecma_ast/node",
     "ecma_ast/value", "ecma_ast/declaration", "ecma_ast/statement", "ecma_ast/expression"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_value, ast_declaration, ast_statement, ast_expression) {
@@ -14,7 +18,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
         }),
         reduce = Function.prototype.call.bind(Array.prototype.reduce),
         flatten = (function(x) {
-            return (!Array.isArray(x) ? x : [].concat.apply([], x.map(flatten)));
+            return (Array.isArray(x) ? [].concat.apply([], x.map(flatten)) : x);
         }),
         peepholes = ({}),
         addPeephole = (function(types, up, condition, f) {
@@ -56,8 +60,8 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
     }), (function(node) {
         return modify(node, ({
             "body": node.body.reduceRight((function(p, c) {
-                return ((((c.type === "VariableDeclaration") && p.length) && (p[0].type ===
-                    "VariableDeclaration")) ? concat(modify(c, ({
+                return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p[
+                    0].type === "VariableDeclaration")) ? concat(modify(c, ({
                     "declarations": concat(c.declarations, p[0].declarations)
                 }), ({})), p.slice(1)) : concat(c, p));
             }), [])
@@ -68,7 +72,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecm
     }), (function(node) {
         return modify(node, ({
             "body": flatten(node.body.map((function(x) {
-                return ((x.type === "EmptyStatement") ? [] : x);
+                return ((!x || (x.type === "EmptyStatement")) ? [] : x);
             })))
         }), ({}));
     }));

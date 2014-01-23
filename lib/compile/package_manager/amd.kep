@@ -20,12 +20,10 @@ var path = \path ->
 /* Package Manager
  ******************************************************************************/
 definePackage = \loc exports imports targets body -> let
-    exportHeader = (exports.length ?
-        ast_declaration.VariableDeclaration.create(null,
-            map(exports, \x ->
-                ast_declaration.VariableDeclarator.create(null,
-                    ast_value.Identifier.create(null, x)))) :
-        ast_statement.EmptyStatement.create(null)),
+    exportHeader = ast_declaration.VariableDeclaration.create(null,
+        map(exports, \x ->
+            ast_declaration.VariableDeclarator.create(null,
+                ast_value.Identifier.create(null, x)))),
     
     exportBody = map(exports, \x ->
         ast_statement.ExpressionStatement.create(null,

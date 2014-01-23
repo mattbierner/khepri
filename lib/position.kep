@@ -27,17 +27,17 @@ SourcePosition.prototype.constructor = SourcePosition;
 SourcePosition.initial = new SourcePosition(1, 0);
 
 SourcePosition.prototype.increment = \tok =self->
-    (tok === '\n' ?
-        new SourcePosition(self.line + 1, 0):
-        new SourcePosition(self.line, self.column + 1));
+    ?tok === '\n'
+        :new SourcePosition(self.line + 1, 0)
+        :new SourcePosition(self.line, self.column + 1);
 
 SourcePosition.prototype.toString = \() =self->
     "{line:" + self.line + " col:" + self.column + "}";
 
 SourcePosition.prototype.compare = \pos =self->
-    (self.line === pos.line ?
-        (self.column - pos.column) :
-        (self.line - pos.line));
+    ? self.line === pos.line
+        :(self.column - pos.column)
+        :(self.line - pos.line);
 
 // SourceLocation
 ////////////////////////////////////////
@@ -55,7 +55,7 @@ SourceLocation.prototype.toString = \() =self->
 
 SourceLocation.merge = \s1, s2 ->
     new SourceLocation(
-        (s1.start.compare(s2.start) > 0 ? s2.start : s1.start),
-        (s1.end.compare(s2.end) > 0 ? s1.end : s2.end));
+        ?(s1.start.compare(s2.start) > 0) :s2.start :s1.start,
+        ?(s1.end.compare(s2.end) > 0) :s1.end :s2.end);
 
 }

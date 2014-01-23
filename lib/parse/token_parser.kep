@@ -22,7 +22,7 @@ var join = Function.prototype.call.bind(Array.prototype.join);
 
 var expectError = \msg ->
     \pos, tok ->
-        new parse.ExpectError(pos, msg, (tok === null ? "end of input" : tok.value));
+        new parse.ExpectError(pos, msg, ?tok === null :"end of input" :tok.value);
 
 var typeParser = \type, msg ->
     parse.token(

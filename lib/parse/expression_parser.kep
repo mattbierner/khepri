@@ -183,6 +183,7 @@ var statementBody = node(
          sourceElements),
     ast_statement.BlockStatement.create);
 
+/// @TODO: this mapping should probably not be here.
 var lambdaBody = node(
     expression,
     \loc, x ->
@@ -329,9 +330,9 @@ in
                     eager <| sepBy1(punctuator(','),
                         expression)))),
             \loc, base, elements -> 
-                (elements.length ?
-                    ast_expression.CurryExpression.create(loc, base, elements) :
-                    base)));
+                ?elements.length
+                    :ast_expression.CurryExpression.create(loc, base, elements)
+                    :base));
 
 // Primary Expression
 ////////////////////////////////////////
@@ -439,9 +440,9 @@ newExpression = (Parser, 'New Expression') <|
 ////////////////////////////////////////
 leftHandSideExpression = (Parser, 'Left Hand Side Expression') <| let
     reducer = \p, c ->
-        (c && c.hasOwnProperty('argument') ?
-             ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c) :
-             accessorReducer(p, c))
+        ?c && c.hasOwnProperty('argument')
+             :ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c)
+             :accessorReducer(p, c)
 in
     binds(
         enumeration(

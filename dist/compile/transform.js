@@ -102,7 +102,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                     null, "require"), [imp.from]) : imp.value);
                 return unpack(imp.pattern, base);
             }), bindings)),
-                prefix = (vars.length ? variableDeclaration(null, vars) : []);
+                prefix = variableDeclaration(null, vars);
             return blockStatement(loc, concat(prefix, body.body));
         }),
         functionExpression = (function(loc, id, parameters, body) {
@@ -129,12 +129,12 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                 prefix = concat(elementsPrefix, argumentsPrefix);
             return ecma_expression.FunctionExpression.create(loc, _transform(id), params, blockStatement(
                 body.loc, concat((!strict ? [] : khepri_statement.ExpressionStatement.create(null,
-                    khepri_value.Literal.create(null, "string", "use strict"))), (prefix.length ?
-                    variableDeclaration(null, prefix) : []), (function() {
+                    khepri_value.Literal.create(null, "string", "use strict")))), variableDeclaration(
+                    null, prefix), (function() {
                     var block = _transform(body)
                         .body;
                     return (strict ? block.slice(1) : block);
-                })())));
+                })()));
         }),
         letExpression = (function(loc, bindings, body) {
             return callExpression(loc, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(

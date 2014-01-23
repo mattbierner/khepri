@@ -155,10 +155,10 @@ var reservedWordTest = next(
  * 
  * Checks to make sure returned identifier is not a keyword.
  */
-identifier = Parser('Identifier Lexer',
+identifier = (Parser, 'Identifier Lexer') <|
     bind(identifierName, \name ->
-        (testStream(reservedWordTest, name) ?
-            fail() :
-            always(join(name)))));
+        ?testStream(reservedWordTest, name)
+            :fail()
+            :always(join(name)));
 
 }

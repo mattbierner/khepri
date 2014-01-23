@@ -209,9 +209,9 @@ switchStatement = (Parser, 'Switch Statement') <| let
                 optional([], caseClauses),
                 optional(null, defaultClause)),
             \first, defaultClause ->
-                always(defaultClause ?
-                    first.concat([defaultClause]) :
-                    first)))
+                always(?defaultClause
+                    :first.concat([defaultClause])
+                    :first)))
 in
     nodea(
         next(

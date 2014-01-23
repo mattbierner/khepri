@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/scope.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports"], (function(require, exports) {
     "use strict";
     var Scope, copy = (function(obj) {
