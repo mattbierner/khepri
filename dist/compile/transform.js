@@ -128,13 +128,13 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                 strict = isStrict(body.body),
                 prefix = concat(elementsPrefix, argumentsPrefix);
             return ecma_expression.FunctionExpression.create(loc, _transform(id), params, blockStatement(
-                body.loc, concat((!strict ? [] : khepri_statement.ExpressionStatement.create(null,
-                    khepri_value.Literal.create(null, "string", "use strict")))), variableDeclaration(
-                    null, prefix), (function() {
-                    var block = _transform(body)
-                        .body;
-                    return (strict ? block.slice(1) : block);
-                })()));
+                body.loc, concat((strict ? khepri_statement.ExpressionStatement.create(null,
+                        khepri_value.Literal.create(null, "string", "use strict")) : []),
+                    variableDeclaration(null, prefix), (function() {
+                        var block = _transform(body)
+                            .body;
+                        return (strict ? block.slice(1) : block);
+                    })())));
         }),
         letExpression = (function(loc, bindings, body) {
             return callExpression(loc, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(

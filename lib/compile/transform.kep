@@ -237,12 +237,13 @@ in
         params,
         blockStatement(body.loc,
             concat(
-                ?!strict :[]
+                ?strict
                     :khepri_statement.ExpressionStatement.create(null,
-                        khepri_value.Literal.create(null, 'string', "use strict"))),
+                        khepri_value.Literal.create(null, 'string', "use strict"))
+                     :[],
                 variableDeclaration(null, prefix),
                 let block = _transform(body).body in
-                    ?strict :block.slice(1) :block));
+                    ?strict :block.slice(1) :block)));
 
 /**
  * 
