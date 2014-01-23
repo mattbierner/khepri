@@ -175,14 +175,12 @@ var returnStatement = \loc, argument ->
  */
 var withStatement = \loc, bindings, body -> let
     vars = flatten(map(bindings, \imp -> {
-        if (imp.type === 'ImportPattern') {
-            var base = callExpression(null,
+        var base = (imp.type === 'ImportPattern' ?
+            callExpression(null,
                 identifier(null, 'require'),
-                [imp.from]);
-            
-            return unpack(imp.pattern, base);
-        }
-        return unpack(imp.pattern, imp.value);
+                [imp.from]) :
+            imp.value);
+        return unpack(imp.pattern, base);
     })),
     
     prefix = (vars.length ?
@@ -193,7 +191,6 @@ in
         concat(
             prefix,
             body.body));
-
 
 /* Expressions
  ******************************************************************************/
@@ -254,17 +251,15 @@ in
  */
 var letExpression = \loc, bindings, body ->
     callExpression(loc,
-        memberExpression(null, 
-            functionExpression(null,
-                null,
-                khepri_pattern.ArgumentsPattern.create(null, null, []),
-                blockStatement(null, [
-                     withStatement(null,
-                         bindings,
-                         blockStatement(null, [
-                             returnStatement(null, body)]))])),
-         identifier(null, 'call')),
-     [ecma_expression.ThisExpression.create(null)]);
+        functionExpression(null,
+            null,
+            khepri_pattern.ArgumentsPattern.create(null, null, []),
+            blockStatement(null, [
+                 withStatement(null,
+                     bindings,
+                     blockStatement(null, [
+                         returnStatement(null, body)]))])),
+     []);
 
 /**
  * 
@@ -577,11 +572,11 @@ addTransform('BinaryOperatorExpression', \node -> {
         khepri_expression.BinaryExpression);
     
     return functionExpression(node.loc, null,
-            khepri_pattern.ArgumentsPattern.create(null, null, [
-                khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'x')),
-                khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'y'))]),
+        khepri_pattern.ArgumentsPattern.create(null, null, [
+            khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'x')),
+            khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'y'))]),
         blockStatement(null, [
             returnStatement(null, 
                 kind.create(null,

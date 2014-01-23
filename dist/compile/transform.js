@@ -107,11 +107,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     }),
         withStatement = (function(loc, bindings, body) {
             var vars = flatten(map(bindings, (function(imp) {
-                if ((imp.type === "ImportPattern")) {
-                    var base = callExpression(null, identifier(null, "require"), [imp.from]);
-                    return unpack(imp.pattern, base);
-                }
-                return unpack(imp.pattern, imp.value);
+                var base = ((imp.type === "ImportPattern") ? callExpression(null, identifier(
+                    null, "require"), [imp.from]) : imp.value);
+                return unpack(imp.pattern, base);
             }))),
                 prefix = (vars.length ? variableDeclaration(null, vars) : []);
             return blockStatement(loc, concat(prefix, body.body));
@@ -149,10 +147,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                     .call(this))));
         }),
         letExpression = (function(loc, bindings, body) {
-            return callExpression(loc, memberExpression(null, functionExpression(null, null, khepri_pattern
-                .ArgumentsPattern.create(null, null, []), blockStatement(null, [withStatement(null,
-                    bindings, blockStatement(null, [returnStatement(null, body)]))])), identifier(
-                null, "call")), [ecma_expression.ThisExpression.create(null)]);
+            return callExpression(loc, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(
+                null, null, []), blockStatement(null, [withStatement(null, bindings, blockStatement(
+                null, [returnStatement(null, body)]))])), []);
         }),
         curryExpression = (function(loc, base, args) {
             return callExpression(null, memberExpression(null, base, identifier(null, "bind")), concat(
