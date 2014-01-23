@@ -199,7 +199,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             })), addMapping(id, id));
         }),
         addUniqueMutableBinding = (function(id, loc) {
-            return next(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
+            return seq(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
                 return (s.hasOwnBinding(id) ? (function() {
                     var new_id = s.getUnusedId(id);
                     return seq(addMutableBinding(id, loc), addMutableBinding(new_id,
@@ -208,19 +208,19 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             })));
         }),
         addMutableBindingChecked = (function(id, loc) {
-            return next(checkCanAddOwnBinding(id, loc), addUniqueMutableBinding(id, loc));
+            return seq(checkCanAddOwnBinding(id, loc), addUniqueMutableBinding(id, loc));
         }),
         addImmutableBindingChecked = (function(id, loc) {
-            return next(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
+            return seq(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
         }),
         addUnusedImmutableBinding = (function(id, loc) {
-            return seq(examineRealScope((function(s) {
+            return examineRealScope((function(s) {
                 return (s.hasOwnBinding(id) ? (function() {
                     var new_id = s.getUnusedId(id);
                     return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
                         loc), addMapping(id, new_id));
                 })() : addImmutableBindingChecked(id, loc));
-            })));
+            }));
         }),
         addUniqueImmutableBinding = (function(id, loc) {
             return seq(checkCanAddOwnBinding(id, loc), addUnusedImmutableBinding(id, loc));

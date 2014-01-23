@@ -59,7 +59,7 @@ class KhepriMatchingEventHandler(PatternMatchingEventHandler):
         self._compile(event.src_path)
         
     def on_deleted(self, event):
-        out_path = _self._out_path(event.src_path)
+        out_path = self._out_path(event.src_path)
         if os.path.isfile(out_path):
             os.remove(out_path)
 

@@ -139,23 +139,24 @@ var realBlock = \body(...) ->
  * Test to see if the current scope already contains a binding for id.
  */
 var checkCanAddOwnBinding = \id, loc -> 
-    (examineScope <|\ s ->
-        (!s.hasOwnBinding(id) ? pass :
-            let
+    examineScope <|\ s ->
+        ?!s.hasOwnBinding(id)
+            :pass
+            :let
                 start = loc && loc.start,
                 binding = s.getBinding(id),
                 end = binding.loc && binding.loc.start
             in
-                error("'" + id + "' at:" + start + " already bound for scope from:" + end)));
+                error("'" + id + "' at:" + start + " already bound for scope from:" + end);
 
 /**
  * 
  */
 var hasBinding = \id, loc ->
-    (examineScope <|\ s ->
-        (s.hasBinding(id) ?
-            pass :
-            error("Undeclared identifier:'" + id + "' at:" + loc)));
+    examineScope <|\ s ->
+        ?s.hasBinding(id)
+            :pass
+            :error("Undeclared identifier:'" + id + "' at:" + loc);
 
 /**
  * 
@@ -163,27 +164,30 @@ var hasBinding = \id, loc ->
 var hasFreeBinding = \id, loc ->
     seq(
         hasBinding(id, loc),
-        examineScope(\s ->
+        examineScope <|\ s ->
             let current = s.getBinding(id) in
-                (current.reserved ?
-                    error("Undeclared identifier:'" + id + "' at:" + loc) :
-                    pass)));
+                ?current.reserved
+                    :error("Undeclared identifier:'" + id + "' at:" + loc)
+                    :pass);
 
 /**
  * 
  */
 var checkCanAssign = \id, loc -> 
-    examineScope(\s -> s.hasBinding(id) ?
-        let b = s.getBinding(id) in
-            b.mutable ? pass : error("Assign to immutable variable:'" + id + "' at:"+ loc) :
-        pass);
+    examineScope <|\ s ->
+        ?s.hasBinding(id)
+            :let b = s.getBinding(id) in
+                ?b.mutable
+                    :pass
+                    :error("Assign to immutable variable:'" + id + "' at:"+ loc)
+            :pass;
 
 /**
  * 
  */
 var getUnusedId = \id, loc -> 
-    examineRealScope(\s ->
-        ok(s.hasOwnBinding(id) ? s.getUnusedId(id) : id));
+    examineRealScope <|\ s ->
+        ok(?s.hasOwnBinding(id) :s.getUnusedId(id) :id);
 
 /**
  * 
@@ -213,37 +217,39 @@ var addImmutableBinding = \id, loc ->
  * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
  */
 var addUniqueMutableBinding = \id, loc ->
-    next(
+    seq(
         checkCanAddOwnBinding(id, loc),
-        examineRealScope(\s -> s.hasOwnBinding(id) ?
-            let new_id = s.getUnusedId(id) in
-                seq(
-                     addMutableBinding(id, loc),
-                     addMutableBinding(new_id, loc),
-                     addMapping(id, new_id)) :
-            addMutableBinding(id, loc)));
+        examineRealScope <|\ s ->
+            ?s.hasOwnBinding(id)
+                :let new_id = s.getUnusedId(id) in
+                    seq(
+                         addMutableBinding(id, loc),
+                         addMutableBinding(new_id, loc),
+                         addMapping(id, new_id))
+                :addMutableBinding(id, loc));
 
 /**
  * 
  */
 var addMutableBindingChecked = \id, loc ->
-    next(
+    seq(
         checkCanAddOwnBinding(id, loc),
         addUniqueMutableBinding(id, loc));
 
 var addImmutableBindingChecked = \id, loc ->
-    next(
+    seq(
         checkCanAddOwnBinding(id, loc),
         addImmutableBinding(id, loc));
 
-var addUnusedImmutableBinding = \id, loc -> seq(
-    examineRealScope(\s -> s.hasOwnBinding(id) ?
-        let new_id = s.getUnusedId(id) in
-            seq(
-                addImmutableBinding(id, loc),
-                addImmutableBinding(new_id, loc),
-                addMapping(id, new_id)):
-        addImmutableBindingChecked(id, loc)));
+var addUnusedImmutableBinding = \id, loc ->
+    examineRealScope <|\ s ->
+        ?s.hasOwnBinding(id)
+            :let new_id = s.getUnusedId(id) in
+                seq(
+                    addImmutableBinding(id, loc),
+                    addImmutableBinding(new_id, loc),
+                    addMapping(id, new_id))
+            :addImmutableBindingChecked(id, loc);
 
 var addUniqueImmutableBinding = \id, loc ->
     seq(
@@ -288,7 +294,10 @@ _check = \node -> {
             return pass;
         return seq(
             move(zipper.down),
-            seqa(map(node, \_ i -> (i === node.length - 1 ? checkTop : next(checkTop, move(zipper.right))))),
+            seqa(map(node, \_ i -> 
+                ?i === node.length - 1
+                    :checkTop
+                    :next(checkTop, move(zipper.right)))),
             move(zipper.up));
     }
     
@@ -308,12 +317,12 @@ _check = \node -> {
             addImmutableBindingChecked('exports', null),
             addImmutableBindingChecked('module', null),
             checkChild('exports'),
-            (node.body.type === 'WithStatement' ?
-                child(
+            ?node.body.type === 'WithStatement'
+                :child(
                     seq(
                         checkChild('bindings'),
-                        child(checkChild('body'), 'body')), 'body') :
-                child(checkChild('body'), 'body')));
+                        child(checkChild('body'), 'body')), 'body')
+                :child(checkChild('body'), 'body'));
         
     case 'PackageExports':
         return checkChild('exports');
@@ -415,9 +424,9 @@ _check = \node -> {
      case 'AssignmentExpression':
         return seq(
             checkChild('left'),
-            (node.left.type === 'Identifier' ?
-                checkCanAssign(node.left.name, node.left.loc.start) :
-                pass),
+            ?node.left.type === 'Identifier'
+                :checkCanAssign(node.left.name, node.left.loc.start)
+                :pass,
             checkChild('right'));
     
     case 'LogicalExpression':
@@ -441,7 +450,9 @@ _check = \node -> {
     case 'MemberExpression':
         return seq(
             checkChild('object'),
-            (node.computed ? checkChild('property') : pass));
+            ?node.computed 
+                :checkChild('property')
+                :pass);
         
     case 'ArrayExpression':
         return checkChild('elements');
@@ -467,7 +478,9 @@ _check = \node -> {
 // Function
     case 'FunctionExpression':
         return realBlock(
-             (node.id ? addImmutableBinding(node.id.name, node.loc) : pass),
+             ?node.id
+                 :addImmutableBinding(node.id.name, node.loc)
+                 :pass,
              checkChild('params'),
              child(checkChild('body'), 'body'));
 
@@ -550,14 +563,14 @@ _check = \node -> {
         return checkChild('value');
     
     case 'Identifier':
-        return let name = node.name in examineScope<|\ s ->
-            (s.hasMapping(name) ?
-                let mappedName = s.getMapping(name) in
+        return let name = node.name in examineScope <|\ s ->
+            ?s.hasMapping(name)
+                :let mappedName = s.getMapping(name) in
                     seq(
                         modifyNode(\x -> 
                             ast_node.modify(x, {}, {'name': mappedName})),
-                        hasFreeBinding(mappedName, node.loc)) :
-                hasFreeBinding(name, node.loc));
+                        hasFreeBinding(mappedName, node.loc))
+                :hasFreeBinding(name, node.loc);
     }
     
     return pass;
