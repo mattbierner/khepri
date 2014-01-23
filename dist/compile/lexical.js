@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value", "neith/zipper", "neith/tree",
     "khepri_ast_zipper/khepri_zipper", "khepri/compile/scope"
 ], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, __o0) {
@@ -144,13 +140,12 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         checkCanAddOwnBinding = (function(id, loc) {
             return examineScope((function(s) {
                 return (!s.hasOwnBinding(id) ? pass : (function() {
-                        var start = (loc && loc.start),
-                            binding = s.getBinding(id),
-                            end = (binding.loc && binding.loc.start);
-                        return error(((((("'" + id) + "' at:") + start) +
-                            " already bound for scope from:") + end));
-                    })
-                    .call(this));
+                    var start = (loc && loc.start),
+                        binding = s.getBinding(id),
+                        end = (binding.loc && binding.loc.start);
+                    return error(((((("'" + id) + "' at:") + start) +
+                        " already bound for scope from:") + end));
+                })());
             }));
         }),
         hasBinding = (function(id, loc) {
@@ -169,11 +164,10 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         checkCanAssign = (function(id, loc) {
             return examineScope((function(s) {
                 return (s.hasBinding(id) ? (function() {
-                        var b = s.getBinding(id);
-                        return (b.mutable ? pass : error(((("Assign to immutable variable:'" +
-                            id) + "' at:") + loc)));
-                    })
-                    .call(this) : pass);
+                    var b = s.getBinding(id);
+                    return (b.mutable ? pass : error(((("Assign to immutable variable:'" +
+                        id) + "' at:") + loc)));
+                })() : pass);
             }));
         }),
         getUnusedId = (function(id, loc) {
@@ -203,11 +197,10 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         addUniqueMutableBinding = (function(id, loc) {
             return next(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
                 return (s.hasOwnBinding(id) ? (function() {
-                        var new_id = s.getUnusedId(id);
-                        return seq(addMutableBinding(id, loc), addMutableBinding(new_id,
-                            loc), addMapping(id, new_id));
-                    })
-                    .call(this) : addMutableBinding(id, loc));
+                    var new_id = s.getUnusedId(id);
+                    return seq(addMutableBinding(id, loc), addMutableBinding(new_id,
+                        loc), addMapping(id, new_id));
+                })() : addMutableBinding(id, loc));
             })));
         }),
         addMutableBindingInRealBlock = (function(id, loc) {
@@ -219,11 +212,10 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         addUnusedImmutableBinding = (function(id, loc) {
             return seq(examineRealScope((function(s) {
                 return (s.hasOwnBinding(id) ? (function() {
-                        var new_id = s.getUnusedId(id);
-                        return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
-                            loc), addMapping(id, new_id));
-                    })
-                    .call(this) : addImmutableBindingInRealBlock(id, loc));
+                    var new_id = s.getUnusedId(id);
+                    return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
+                        loc), addMapping(id, new_id));
+                })() : addImmutableBindingInRealBlock(id, loc));
             })));
         }),
         addUniqueImmutableBinding = (function(id, loc) {
@@ -393,14 +385,13 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                     var name = node.name;
                     return examineScope((function(s) {
                         return (s.hasMapping(name) ? (function() {
-                                var mappedName = s.getMapping(name);
-                                return seq(move(tree.modifyNode.bind(null, (function(x) {
-                                    return ast_node.modify(x, ({}), ({
-                                        "name": mappedName
-                                    }));
-                                }))), hasFreeBinding(mappedName, node.loc));
-                            })
-                            .call(this) : hasFreeBinding(name, node.loc));
+                            var mappedName = s.getMapping(name);
+                            return seq(move(tree.modifyNode.bind(null, (function(x) {
+                                return ast_node.modify(x, ({}), ({
+                                    "name": mappedName
+                                }));
+                            }))), hasFreeBinding(mappedName, node.loc));
+                        })() : hasFreeBinding(name, node.loc));
                     }));
                 }
         }

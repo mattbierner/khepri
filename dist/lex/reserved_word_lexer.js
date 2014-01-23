@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/reserved_word_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/text", "khepri/lex/boolean_lexer", "khepri/lex/null_lexer"], (
     function(require, exports, parse, __o, __o0, __o1) {
         "use strict";

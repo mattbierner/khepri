@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/package_parser.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/package", "khepri/parse/common",
     "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/statement_parser"
 ], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, _) {

@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/transform.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_ast/expression", "ecma_ast/node",
     "ecma_ast/program", "ecma_ast/statement", "ecma_ast/value", "khepri_ast/clause", "khepri_ast/declaration",
     "khepri_ast/expression", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/program", "khepri_ast/statement",
@@ -77,15 +73,13 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                         return [];
                 }
             });
-        })
-            .call(this),
+        })(),
         unpack = (function() {
             var make = variableDeclarator.bind(null, null);
             return (function(pattern, value) {
                 return flatten(innerPattern(value, pattern, make));
             });
-        })
-            .call(this),
+        })(),
         identifierPattern = (function(loc, name) {
             return identifier(loc, name);
         }),
@@ -138,13 +132,12 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                 prefix = concat(elementsPrefix, argumentsPrefix);
             return ecma_expression.FunctionExpression.create(loc, _transform(id), params, blockStatement(
                 body.loc, concat((!strict ? [] : khepri_statement.ExpressionStatement.create(null,
-                        khepri_value.Literal.create(null, "string", "use strict"))), (prefix.length ?
-                        variableDeclaration(null, prefix) : []), (function() {
-                        var block = _transform(body)
-                            .body;
-                        return (strict ? block.slice(1) : block);
-                    })
-                    .call(this))));
+                    khepri_value.Literal.create(null, "string", "use strict"))), (prefix.length ?
+                    variableDeclaration(null, prefix) : []), (function() {
+                    var block = _transform(body)
+                        .body;
+                    return (strict ? block.slice(1) : block);
+                })())));
         }),
         letExpression = (function(loc, bindings, body) {
             return callExpression(loc, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(
