@@ -30,7 +30,7 @@ function(parse,
             
             ["Simple Conditional Expression",
             function(){
-                var expr = testParser(lexer.lex("a ? b : c;"));
+                var expr = testParser(lexer.lex("?a :b :c;"));
                 assert.equal(expr.type, 'ConditionalExpression');
                 assert.equal(expr.test.name, 'a');
                 assert.equal(expr.consequent.name, 'b');
@@ -38,7 +38,7 @@ function(parse,
             }],
             ["Conditional Expression Associativity",
             function(){
-                var expr = testParser(lexer.lex("a ? b : c ? d : e;"));
+                var expr = testParser(lexer.lex("?a :b :?c :d :e;"));
                 assert.equal(expr.type, 'ConditionalExpression');
                 assert.equal(expr.test.name, 'a');
                 assert.equal(expr.consequent.name, 'b');
@@ -49,7 +49,7 @@ function(parse,
             }],
             ["Conditional Expression ConditionalExpression in Consequent",
             function(){
-                var expr = testParser(lexer.lex("a ? b ? c : d : e;"));
+                var expr = testParser(lexer.lex("?a :?b :c :d :e;"));
                 assert.equal(expr.type, 'ConditionalExpression');
                 assert.equal(expr.test.name, 'a');
                 assert.equal(expr.consequent.type, 'ConditionalExpression');
@@ -60,7 +60,7 @@ function(parse,
             }],
             ["Conditional Expression ConditionalExpression in test",
             function(){
-                var expr = testParser(lexer.lex("(a ? b : c) ? d : e;"));
+                var expr = testParser(lexer.lex("?(?a :b :c) :d :e;"));
                 assert.equal(expr.type, 'ConditionalExpression');
                 assert.equal(expr.test.type, 'ConditionalExpression');
                 assert.equal(expr.test.test.name, 'a');

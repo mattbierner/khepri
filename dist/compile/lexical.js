@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value", "neith/zipper", "neith/tree",
     "khepri_ast_zipper/khepri_zipper", "khepri/compile/scope"
 ], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, __o0) {
@@ -203,10 +207,10 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 })() : addMutableBinding(id, loc));
             })));
         }),
-        addMutableBindingInRealBlock = (function(id, loc) {
+        addMutableBindingChecked = (function(id, loc) {
             return next(checkCanAddOwnBinding(id, loc), addUniqueMutableBinding(id, loc));
         }),
-        addImmutableBindingInRealBlock = (function(id, loc) {
+        addImmutableBindingChecked = (function(id, loc) {
             return next(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
         }),
         addUnusedImmutableBinding = (function(id, loc) {
@@ -215,7 +219,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                     var new_id = s.getUnusedId(id);
                     return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
                         loc), addMapping(id, new_id));
-                })() : addImmutableBindingInRealBlock(id, loc));
+                })() : addImmutableBindingChecked(id, loc));
             })));
         }),
         addUniqueImmutableBinding = (function(id, loc) {
@@ -254,17 +258,17 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "Program":
                 return checkChild("body");
             case "Package":
-                return seq(addImmutableBindingInRealBlock("require", null),
-                    addImmutableBindingInRealBlock("exports", null), addImmutableBindingInRealBlock(
-                        "module", null), checkChild("exports"), ((node.body.type === "WithStatement") ?
-                        child(seq(checkChild("bindings"), child(checkChild("body"), "body")), "body") :
-                        child(checkChild("body"), "body")));
+                return seq(addImmutableBindingChecked("require", null), addImmutableBindingChecked(
+                    "exports", null), addImmutableBindingChecked("module", null), checkChild(
+                    "exports"), ((node.body.type === "WithStatement") ? child(seq(checkChild(
+                    "bindings"), child(checkChild("body"), "body")), "body") : child(checkChild(
+                    "body"), "body")));
             case "PackageExports":
                 return checkChild("exports");
             case "PackageExport":
-                return addMutableBindingInRealBlock(node.id.name, node.loc);
+                return addMutableBindingChecked(node.id.name, node.loc);
             case "CatchClause":
-                return block(addImmutableBindingInRealBlock(node.param.name, node.param.loc), child(
+                return block(addImmutableBindingChecked(node.param.name, node.param.loc), child(
                     checkChild("body"), "body"));
             case "SwitchCase":
                 return seq(checkChild("test"), checkChild("consequent"));
@@ -272,9 +276,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "VariableDeclaration":
                 return checkChild("declarations");
             case "StaticDeclarator":
-                return addImmutableBindingInRealBlock(node.id.name, node.loc);
+                return addImmutableBindingChecked(node.id.name, node.loc);
             case "VariableDeclarator":
-                return seq(addMutableBindingInRealBlock(node.id.name, node.loc), checkChild("id"),
+                return seq(addMutableBindingChecked(node.id.name, node.loc), checkChild("id"),
                     checkChild("init"));
             case "Binding":
                 return seq(checkChild("pattern"), checkChild("value"));
@@ -386,11 +390,11 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                     return examineScope((function(s) {
                         return (s.hasMapping(name) ? (function() {
                             var mappedName = s.getMapping(name);
-                            return seq(move(tree.modifyNode.bind(null, (function(x) {
+                            return seq(modifyNode((function(x) {
                                 return ast_node.modify(x, ({}), ({
                                     "name": mappedName
                                 }));
-                            }))), hasFreeBinding(mappedName, node.loc));
+                            })), hasFreeBinding(mappedName, node.loc));
                         })() : hasFreeBinding(name, node.loc));
                     }));
                 }
@@ -401,29 +405,24 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         "encodeURIComponent", "Error", "eval", "EvalError", "Function", "Infinity", "isFinite", "isNaN", "JSON",
         "Math", "NaN", "Number", "Object", "parseInt", "parseFloat", "RangeError", "ReferenceError", "RegExp",
         "String", "SyntaxError", "TypeError", "undefined", "URIError"
-    ];
-    (check = (function(ast, globals) {
-        var g = (globals || builtins),
-            scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({}))),
-            state = new(State)(khepriZipper(ast), scope, scope);
-        return trampoline(checkTop(state, (function(x, s) {
-            return tree.node(zipper.root(s.ctx));
-        }), (function(err, s) {
-            throw err;
-        })));
-    }));
-    (checkStage = (function(__o1, globals) {
-        var options = __o1["options"],
-            ast = __o1["ast"],
-            g = (globals || builtins),
-            scope = reduce(g, Scope.addImmutableBinding, new(Scope)(({}), null, ({}))),
-            state = new(State)(khepriZipper(ast), scope, scope);
-        return ({
-            "ast": trampoline(checkTop(state, (function(x, s) {
+    ],
+        checkAst = (function(ast, globals) {
+            var scope = reduce(globals, Scope.addImmutableBinding, new(Scope)(({}), null, ({}))),
+                state = new(State)(khepriZipper(ast), scope, scope);
+            return trampoline(checkTop(state, (function(x, s) {
                 return tree.node(zipper.root(s.ctx));
             }), (function(err, s) {
                 throw err;
-            }))),
+            })));
+        });
+    (check = (function(ast, globals) {
+        return checkAst(ast, (globals || builtins));
+    }));
+    (checkStage = (function(__o1) {
+        var options = __o1["options"],
+            ast = __o1["ast"];
+        return ({
+            "ast": check(ast, ((options && options.globals) || builtins)),
             "options": options
         });
     }));

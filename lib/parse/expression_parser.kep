@@ -53,9 +53,6 @@ package (
     assignmentOperator
     assignmentExpression
 
-// Compose
-    composeExpression
-    
 // Expression
     expression
     
@@ -111,8 +108,6 @@ var sourceElements = \args(...) -> {
 /* Forward Declarations
  ******************************************************************************/
 expression = \args(...) -> expression.apply(undefined, args);
-
-conditionalExpression = \args(...) -> conditionalExpression.apply(undefined, args);
 
 newExpression = \args(...) -> newExpression.apply(undefined, args);
 
@@ -216,7 +211,7 @@ var functionExpression = (Parser, 'Function Expression') <|
                     next(
                         punctuator('->'),
                         functionBody |> (expected, "function body"))))),
-    ast_expression.FunctionExpression.create);
+        ast_expression.FunctionExpression.create);
 
 // Let Expression
 ////////////////////////////////////////
@@ -246,6 +241,24 @@ in
                     keyword('in'),
                     letBody))),
         ast_expression.LetExpression.create);
+
+// Conditional Expression
+////////////////////////////////////////
+conditionalExpression = (Parser, 'Conditional Expression') <|
+    nodea(
+        next(
+            punctuator('?'),
+            enumeration(
+                expression,
+                next(
+                    punctuator(':'),
+                    expression
+                    |> (expected, "conditional consequent expression")),
+                next(
+                    punctuator(':'),
+                    expression
+                    |> (expected, "conditional alternate expression")))),
+        ast_expression.ConditionalExpression.create);
 
 // Operators Expression
 ////////////////////////////////////////
@@ -304,8 +317,8 @@ var operatorExpression = (Parser, 'Operator Expression') <|
 ////////////////////////////////////////
 curryExpression = (Parser, 'Curry Expression') <| let
     base = either(
-        attempt <| expression,
-        operatorExpression)
+        attempt <| expression |> (expected, 'expression'),
+        operatorExpression |> (expected, 'curryable operator'))
 in
     between(punctuator('('), punctuator(')'),
         nodea(
@@ -325,6 +338,7 @@ in
 primaryExpression = (Parser, 'Primary Expression') <|
     choice(
         letExpression,
+        conditionalExpression,
         identifier,
         curryExpression,
         literal,
@@ -442,8 +456,8 @@ in
 leftHandReferenceExpression = (Parser, 'Left Hand Reference Expression') <|
     binds(
         enumeration(
-            identifier,
-            many(accessor)),
+            identifier |> memo,
+            many(accessor) |> memo),
         (foldl, accessorReducer) \>> always);
 
 // Unary Expression
@@ -491,86 +505,6 @@ var logicalANDOperator = punctuator('&&');
 
 var logicalOROperator = punctuator('||');
 
-var precedenceTable = [
-    {
-        'sep': multiplicativeOperator,
-        'precedence': 1,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': additiveOperator,
-        'precedence': 2,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': shiftOperator,
-        'precedence': 3,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': relationalOperator,
-        'precedence': 4,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': equalityOperator,
-        'precedence': 5,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': bitwiseANDOperator,
-        'precedence': 6,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': bitwiseXOROperator,
-        'precedence': 7,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': bitwiseOROperator,
-        'precedence': 8,
-        'node': ast_expression.BinaryExpression
-    },
-    {
-        'sep': logicalOROperator,
-        'precedence': 12,
-        'node': ast_expression.LogicalExpression
-    },
-    {
-        'sep': logicalANDOperator,
-        'precedence': 13,
-        'node': ast_expression.LogicalExpression
-    }
-];
-
-binaryExpression = (Parser, 'Binary Expression') <|
-    precedence(
-        unaryExpression |> memo,
-        precedenceTable);
-
-// Conditional Expression
-////////////////////////////////////////
-conditionalExpression = (Parser, 'Conditional Expression') <| let
-    binExpr = binaryExpression |> memo
-in
-    either(
-        nodea(
-            enumeration(
-                attempt <| then(
-                    binExpr,
-                    punctuator('?')),
-                then(
-                    conditionalExpression,
-                    punctuator(':'))
-                    |> (expected, "conditional consequent expression"),
-                conditionalExpression
-                    |> (expected, "conditional alternate expression")),
-            ast_expression.ConditionalExpression.create),
-        binExpr);
-
-// Compose Operator
-////////////////////////////////////////
 var composeOperator = punctuator(
     '\\>',
     '\\>>');
@@ -583,35 +517,72 @@ var pipeOperator = punctuator('|>');
 
 var reversePipeOperator = punctuator('<|');
 
-var composePrecedenceTable = [
+var precedenceTable = [
     {
-        'sep': composeOperator,
+        'sep': multiplicativeOperator,
         'precedence': 1,
         'node': ast_expression.BinaryExpression
-    },
-    {
+    }, {
+        'sep': additiveOperator,
+        'precedence': 2,
+        'node': ast_expression.BinaryExpression
+    }, {
+        'sep': shiftOperator,
+        'precedence': 3,
+        'node': ast_expression.BinaryExpression
+    }, {
+        'sep': relationalOperator,
+        'precedence': 4,
+        'node': ast_expression.BinaryExpression
+    }, {
+        'sep': equalityOperator,
+        'precedence': 5,
+        'node': ast_expression.BinaryExpression
+    }, {
+        'sep': bitwiseANDOperator,
+        'precedence': 6,
+        'node': ast_expression.BinaryExpression
+    }, {
+        'sep': bitwiseXOROperator,
+        'precedence': 7,
+        'node': ast_expression.BinaryExpression
+    }, {
+        'sep': bitwiseOROperator,
+        'precedence': 8,
+        'node': ast_expression.BinaryExpression
+    }, {
+        'sep': logicalOROperator,
+        'precedence': 12,
+        'node': ast_expression.LogicalExpression
+    }, {
+        'sep': logicalANDOperator,
+        'precedence': 13,
+        'node': ast_expression.LogicalExpression
+    }, {
+        'sep': composeOperator,
+        'precedence': 14,
+        'node': ast_expression.BinaryExpression
+    }, {
         'sep': reverseComposeOperator,
-        'precedence': 1,
+        'precedence': 14,
         'right': true,
         'node': ast_expression.BinaryExpression
-    },
-    {
+    }, {
         'sep': pipeOperator,
-        'precedence': 2,
+        'precedence': 15,
         'node': ast_expression.BinaryExpression
-    },
-    {
+    }, {
         'sep': reversePipeOperator,
-        'precedence': 2,
+        'precedence': 15,
         'right': true,
         'node': ast_expression.BinaryExpression
     }
 ];
 
-composeExpression = (Parser, 'Compose Expression') <|
+binaryExpression = (Parser, 'Binary Expression') <|
     precedence(
-        conditionalExpression |> memo,
-        composePrecedenceTable);
+        unaryExpression |> memo,
+        precedenceTable);
 
 // Assignment Expression
 ////////////////////////////////////////
@@ -632,23 +603,17 @@ assignmentExpression = (Parser, 'Assignment Expression') <|
 ////////////////////////////////////////
 var deleteOperator = keyword('delete');
 
-var deleteExpression = (Parser, 'Delete Expression') <| let
-    reducer = \argument, op -> 
-        ast_expression.UnaryExpression.create(
-            SourceLocation.merge(op.loc, argument.loc),
-            op.value,
-            argument)
-in
+var deleteExpression = (Parser, 'Delete Expression') <|
     nodea(
         enumeration(
             deleteOperator,
             leftHandReferenceExpression |> (expected, 'reference expression')),
-        \loc, op, expression ->
+        \loc op expression ->
             ast_expression.UnaryExpression.create(loc, op.value, expression));
 
 // Expression
 ////////////////////////////////////////
-expression = composeExpression;
+expression = binaryExpression;
 
 // Top Level Expression
 ////////////////////////////////////////

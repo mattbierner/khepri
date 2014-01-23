@@ -17,6 +17,7 @@ package (
     throwStatement
     tryStatement
     debuggerStatement
+    
     statement)
 with
     import 'bennu::parse' {

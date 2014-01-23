@@ -203,7 +203,7 @@
         });
         $(function(){
             require(['nu-stream/stream', 'khepri/compile/lexical', 'khepri/lex/lexer', 'khepri/parse/parser', 'khepri_ast/node'],
-                function(stream,lexical, lexer, parser, node)
+                function(stream, lexical, lexer, parser, node)
             {
                 var lexOut = $('.LexOut');
                 
@@ -280,7 +280,7 @@
                         console.profile();
                        
                         var ast = parser.parseStream(nodes);
-                        lexical.check(ast);
+                        lexical.checkStage(ast);
                         console.profileEnd();
                         var end = new Date().getTime();
                         var diff = end - start;

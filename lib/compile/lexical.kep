@@ -226,12 +226,12 @@ var addUniqueMutableBinding = \id, loc ->
 /**
  * 
  */
-var addMutableBindingInRealBlock = \id, loc ->
+var addMutableBindingChecked = \id, loc ->
     next(
         checkCanAddOwnBinding(id, loc),
         addUniqueMutableBinding(id, loc));
 
-var addImmutableBindingInRealBlock = \id, loc ->
+var addImmutableBindingChecked = \id, loc ->
     next(
         checkCanAddOwnBinding(id, loc),
         addImmutableBinding(id, loc));
@@ -243,7 +243,7 @@ var addUnusedImmutableBinding = \id, loc -> seq(
                 addImmutableBinding(id, loc),
                 addImmutableBinding(new_id, loc),
                 addMapping(id, new_id)):
-        addImmutableBindingInRealBlock(id, loc)));
+        addImmutableBindingChecked(id, loc)));
 
 var addUniqueImmutableBinding = \id, loc ->
     seq(
@@ -304,9 +304,9 @@ _check = \node -> {
 // Package
     case 'Package':
         return seq(
-            addImmutableBindingInRealBlock('require', null),
-            addImmutableBindingInRealBlock('exports', null),
-            addImmutableBindingInRealBlock('module', null),
+            addImmutableBindingChecked('require', null),
+            addImmutableBindingChecked('exports', null),
+            addImmutableBindingChecked('module', null),
             checkChild('exports'),
             (node.body.type === 'WithStatement' ?
                 child(
@@ -319,12 +319,12 @@ _check = \node -> {
         return checkChild('exports');
         
     case 'PackageExport':
-        return addMutableBindingInRealBlock(node.id.name, node.loc);
+        return addMutableBindingChecked(node.id.name, node.loc);
 
 // Clause
     case 'CatchClause':
         return block(
-            addImmutableBindingInRealBlock(node.param.name, node.param.loc),
+            addImmutableBindingChecked(node.param.name, node.param.loc),
             child(checkChild('body'), 'body'));
     
     case 'SwitchCase':
@@ -338,11 +338,11 @@ _check = \node -> {
         return checkChild('declarations');
     
     case 'StaticDeclarator':
-        return addImmutableBindingInRealBlock(node.id.name, node.loc);
+        return addImmutableBindingChecked(node.id.name, node.loc);
         
     case 'VariableDeclarator':
         return seq(
-            addMutableBindingInRealBlock(node.id.name, node.loc),
+            addMutableBindingChecked(node.id.name, node.loc),
             checkChild('id'),
             checkChild('init'));
         
@@ -383,17 +383,21 @@ _check = \node -> {
     case 'TryStatement':
         return seq(
             checkChild('block'),
-            block(checkChild('handler')),
-            block(checkChild('finalizer')));
+            block(
+                checkChild('handler')),
+            block(
+                checkChild('finalizer')));
     
     case 'WhileStatement':
         return seq(
             checkChild('test'),
-            block(checkChild('body')));
+            block(
+                checkChild('body')));
     
     case 'DoWhileStatement':
         return seq(
-            block(checkChild('body')),
+            block(
+                checkChild('body')),
             checkChild('test'));
     
     case 'ForStatement':
@@ -401,7 +405,8 @@ _check = \node -> {
             checkChild('init'),
             checkChild('test'),
             checkChild('update'),
-            block(checkChild('body')));
+            block(
+                checkChild('body')));
     
 // Expression
     case 'UnaryExpression':
@@ -549,16 +554,14 @@ _check = \node -> {
             (s.hasMapping(name) ?
                 let mappedName = s.getMapping(name) in
                     seq(
-                        move((tree.modifyNode, \x -> 
-                            ast_node.modify(x, {}, {'name': mappedName}))),
+                        modifyNode(\x -> 
+                            ast_node.modify(x, {}, {'name': mappedName})),
                         hasFreeBinding(mappedName, node.loc)) :
                 hasFreeBinding(name, node.loc));
     }
     
     return pass;
 };
-
-
 
 var builtins = [
     'Array',
@@ -591,20 +594,27 @@ var builtins = [
     'undefined',
     'URIError'];
 
-check = \ast globals -> {
-    var g = globals || builtins;
-    var scope = reduce(g, Scope.addImmutableBinding, new Scope({}, null, {}));
+/**
+ * 
+ */
+var checkAst = \ast globals -> {
+    var scope = reduce(globals, Scope.addImmutableBinding, new Scope({}, null, {}));
     var state = new State(khepriZipper(ast), scope, scope);
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };
 
-checkStage = \{options ast}, globals -> {
-    var g = globals || builtins;
-    var scope = reduce(g, Scope.addImmutableBinding, new Scope({}, null, {}));
-    var state = new State(khepriZipper(ast), scope, scope);
-    return {
-        'ast': trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; })),
-        'options': options
-    };
-};
+/**
+ * 
+ */
+check = \ast globals ->
+    checkAst(ast, globals || builtins);
+
+/**
+ * 
+ */
+checkStage = \{options ast} -> ({
+    'ast': check(ast, ((options && options.globals) || builtins)),
+    'options': options
+});
+
 }
