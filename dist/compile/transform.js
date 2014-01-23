@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/transform.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_ast/expression", "ecma_ast/node",
     "ecma_ast/program", "ecma_ast/statement", "ecma_ast/value", "khepri_ast/clause", "khepri_ast/declaration",
     "khepri_ast/expression", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/program", "khepri_ast/statement",
@@ -8,21 +12,15 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     "use strict";
     var setUserData = khepri_node["setUserData"],
         transform, transformStage, concat = Function.prototype.call.bind(Array.prototype.concat),
-        map = Function.prototype.call.bind(Array.prototype.map),
         reduce = Function.prototype.call.bind(Array.prototype.reduce),
-        identity = (function(x) {
-            return x;
-        }),
         filter = (function(f, a) {
             return Array.prototype.filter.call(a, f);
         }),
-        maps = (function(f, a) {
+        map = (function(f, a) {
             return Array.prototype.map.call(a, f);
         }),
         flatten = (function(x) {
-            return (Array.isArray(x) ? reduce(x, (function(p, c) {
-                return p.concat(c);
-            }), []) : x);
+            return (Array.isArray(x) ? reduce(x, concat, []) : x);
         }),
         isStrict = (function(elems) {
             if (((elems && elems.length) && (elems[0].type === "ExpressionStatement"))) {
@@ -42,13 +40,10 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             return ecma_value.Literal.create(loc, "null", null);
         }),
         variableDeclaration = (function(loc, declarations) {
-            var decls = map(declarations, _transform)
-                .filter(identity);
-            return (!decls.length ? decls : ecma_declaration.VariableDeclaration.create(loc, decls));
+            return ecma_declaration.VariableDeclaration.create(loc, _transform(declarations));
         }),
         variableDeclarator = (function(loc, id, init) {
-            return (!id ? null : ecma_declaration.VariableDeclarator.create(loc, _transform(id), _transform(
-                init)));
+            return ecma_declaration.VariableDeclarator.create(loc, _transform(id), _transform(init));
         }),
         innerPattern = (function() {
             var objectElementUnpack = (function(base, pattern, key, f) {
@@ -64,7 +59,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
                         return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target,
                             f)));
                     case "ObjectPattern":
-                        return flatten(maps((function(__o) {
+                        return flatten(map((function(__o) {
                             var target = __o["target"],
                                 key = __o["key"];
                             return objectElementUnpack(pattern.ud.id, target, key, f);
@@ -84,14 +79,14 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             return identifier(loc, name);
         }),
         callExpression = (function(loc, callee, args) {
-            return ecma_expression.CallExpression.create(loc, _transform(callee), map(args, _transform));
+            return ecma_expression.CallExpression.create(loc, _transform(callee), _transform(args));
         }),
         memberExpression = (function(loc, object, property, computed) {
             return ecma_expression.MemberExpression.create(loc, _transform(object), _transform(property),
                 computed);
         }),
         blockStatement = (function(loc, body) {
-            return ecma_statement.BlockStatement.create(loc, map(body, _transform));
+            return ecma_statement.BlockStatement.create(loc, _transform(body));
         });
     (expressionStatement = (function(loc, expression) {
         return ecma_statement.ExpressionStatement.create(loc, _transform(expression));
@@ -100,19 +95,19 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return ecma_statement.ReturnStatement.create(loc, _transform(argument));
     }),
         withStatement = (function(loc, bindings, body) {
-            var vars = flatten(map(bindings, (function(imp) {
+            var vars = flatten(map((function(imp) {
                 var base = ((imp.type === "ImportPattern") ? callExpression(null, identifier(
                     null, "require"), [imp.from]) : imp.value);
                 return unpack(imp.pattern, base);
-            }))),
+            }), bindings)),
                 prefix = (vars.length ? variableDeclaration(null, vars) : []);
             return blockStatement(loc, concat(prefix, body.body));
         }),
         functionExpression = (function(loc, id, parameters, body) {
-            var params = maps(_transform, filter((function(x) {
+            var params = _transform(filter((function(x) {
                 return (x.type !== "EllipsisPattern");
             }), parameters.elements)),
-                elementsPrefix = flatten(maps((function(x) {
+                elementsPrefix = flatten(map((function(x) {
                     switch (x.type) {
                         case "IdentifierPattern":
                             return [];
@@ -183,9 +178,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             var imports = ((body.type === "WithStatement") ? filter((function(x) {
                 return (x.type === "ImportPattern");
             }), body.bindings) : []),
-                exportedNames = map(exports.exports, (function(x) {
+                exportedNames = map((function(x) {
                     return x.id.name;
-                })),
+                }), exports.exports),
                 targets = reduce(imports, (function(p, c) {
                     (p[c.from.value] = c.pattern);
                     return p;
@@ -213,8 +208,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return ecma_clause.CatchClause.create(node.loc, _transform(node.param), _transform(node.body));
     }));
     addTransform("SwitchCase", (function(node) {
-        return ecma_clause.SwitchCase.create(node.loc, _transform(node.test), map(node.consequent,
-            _transform));
+        return ecma_clause.SwitchCase.create(node.loc, _transform(node.test), _transform(node.consequent));
     }));
     addTransform("BlockStatement", (function(node) {
         return blockStatement(node.loc, node.body);
@@ -230,8 +224,8 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
         return withStatement(node.loc, node.bindings, node.body);
     }));
     addTransform("SwitchStatement", (function(node) {
-        return ecma_statement.SwitchStatement.create(node.loc, _transform(node.discriminant), map(node.cases,
-            _transform));
+        return ecma_statement.SwitchStatement.create(node.loc, _transform(node.discriminant),
+            _transform(node.cases));
     }));
     addTransform("ReturnStatement", (function(node) {
         return returnStatement(node.loc, node.argument);
@@ -293,8 +287,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             node.consequent), _transform(node.alternate));
     }));
     addTransform("NewExpression", (function(node) {
-        return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), map(node.args,
-            _transform));
+        return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args));
     }));
     addTransform("CallExpression", (function(node) {
         return callExpression(node.loc, node.callee, node.args);
@@ -375,7 +368,7 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
     }));
     (_transform = (function(node) {
         if (!node) return node;
-        if (Array.isArray(node)) return map(node, _transform);
+        if (Array.isArray(node)) return map(_transform, node);
         if (!(node instanceof khepri_node.Node)) return node;
         var t = transformers[node.type];
         if (!t) return node;

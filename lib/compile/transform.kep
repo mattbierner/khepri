@@ -29,15 +29,15 @@ with
 in {
 
 var concat = Function.prototype.call.bind(Array.prototype.concat);
-var map = Function.prototype.call.bind(Array.prototype.map);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
-var identity = \x -> x;
-
 var filter = \f, a ->  Array.prototype.filter.call(a, f);
-var maps = \f, a ->  Array.prototype.map.call(a, f);
+var map = \f, a ->  Array.prototype.map.call(a, f);
 
-var flatten = \x -> (Array.isArray(x) ? reduce(x, \p, c -> p.concat(c), []) : x);
+var flatten = \x ->
+    (Array.isArray(x) ?
+        reduce(x, concat, []) :
+        x);
 
 /**
  * Is an array of source elements strict code?
@@ -71,25 +71,23 @@ var nullLiteral = \loc ->
 /* Declaration
  ******************************************************************************/
 var variableDeclaration = \loc, declarations ->
-    let decls = map(declarations, _transform).filter(identity) in
-        (!decls.length ? decls :
-            ecma_declaration.VariableDeclaration.create(loc, decls));
+    ecma_declaration.VariableDeclaration.create(loc,
+        _transform(declarations));
 
 var variableDeclarator = \loc, id, init ->
-    (!id ? null :
-        ecma_declaration.VariableDeclarator.create(loc,
+    ecma_declaration.VariableDeclarator.create(loc,
         _transform(id),
-        _transform(init)));
+        _transform(init));
 
 /* Unpacks
  ******************************************************************************/
 var innerPattern = let
-    objectElementUnpack = \base, pattern, key, f ->  {
-        var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
-        return (pattern ?
+    objectElementUnpack = \base, pattern, key, f -> let
+        innerBase = khepri_expression.MemberExpression.create(null, base, key, true)
+    in
+        (pattern ?
             (flatten <| innerPattern(innerBase, pattern, f)) :
-            f(identifier(null, key.value), innerBase));
-    }
+            f(identifier(null, key.value), innerBase))
 in
     \base, pattern, f -> {
         switch (pattern.type) {
@@ -105,7 +103,7 @@ in
         
         case 'ObjectPattern':
             return pattern.elements
-                |> (maps, \{target key} -> objectElementUnpack(pattern.ud.id, target, key, f))
+                |> (map, \{target key} -> objectElementUnpack(pattern.ud.id, target, key, f))
                 |> flatten;
         
         default:
@@ -136,7 +134,7 @@ var identifierPattern = \loc, name ->
 var callExpression = \loc, callee, args ->
     ecma_expression.CallExpression.create(loc,
         _transform(callee),
-        map(args, _transform));
+        _transform(args));
 
 /**
  * 
@@ -154,7 +152,7 @@ var memberExpression = \loc, object, property, computed ->
  */
 var blockStatement = \loc, body ->
     ecma_statement.BlockStatement.create(loc,
-        map(body, _transform));
+        _transform(body));
 
 /**
  * 
@@ -174,14 +172,16 @@ var returnStatement = \loc, argument ->
  * 
  */
 var withStatement = \loc, bindings, body -> let
-    vars = flatten(map(bindings, \imp -> {
-        var base = (imp.type === 'ImportPattern' ?
-            callExpression(null,
-                identifier(null, 'require'),
-                [imp.from]) :
-            imp.value);
-        return unpack(imp.pattern, base);
-    })),
+    vars = bindings
+        |> (map, \imp -> {
+            var base = (imp.type === 'ImportPattern' ?
+                callExpression(null,
+                    identifier(null, 'require'),
+                    [imp.from]) :
+                imp.value);
+            return unpack(imp.pattern, base);
+        })
+        |> flatten,
     
     prefix = (vars.length ?
         variableDeclaration(null, vars) :
@@ -200,10 +200,10 @@ in
 var functionExpression = \loc, id, parameters, body -> let
     params = parameters.elements
         |> (filter, \x -> x.type !== 'EllipsisPattern')
-        |> (maps, _transform),
+        |> _transform,
     
     elementsPrefix = parameters.elements
-        |> (maps, \x -> {
+        |> (map, \x -> {
             // Avoid generating redundant unpacks for parameters names.
             switch (x.type) {
             case 'IdentifierPattern':
@@ -255,10 +255,10 @@ var letExpression = \loc, bindings, body ->
             null,
             khepri_pattern.ArgumentsPattern.create(null, null, []),
             blockStatement(null, [
-                 withStatement(null,
-                     bindings,
-                     blockStatement(null, [
-                         returnStatement(null, body)]))])),
+                withStatement(null,
+                    bindings,
+                    blockStatement(null, [
+                        returnStatement(null, body)]))])),
      []);
 
 /**
@@ -353,7 +353,7 @@ var packageBlock = \loc, exports, body -> let
         filter(\x -> x.type === 'ImportPattern', body.bindings) :
         []),
     
-    exportedNames = map(exports.exports, \x -> x.id.name),
+    exportedNames = map(\x -> x.id.name, exports.exports),
     
     targets = reduce(imports, \p c -> {
         p[c.from.value] = c.pattern;
@@ -398,7 +398,7 @@ addTransform('CatchClause', \node ->
 addTransform('SwitchCase', \node ->
     ecma_clause.SwitchCase.create(node.loc,
         _transform(node.test),
-        map(node.consequent, _transform)));
+        _transform(node.consequent)));
 
 // Statement
 addTransform('BlockStatement', \node ->
@@ -423,7 +423,7 @@ addTransform('WithStatement', \node ->
 addTransform('SwitchStatement', \node ->
     ecma_statement.SwitchStatement.create(node.loc,
         _transform(node.discriminant),
-        map(node.cases, _transform)));
+        _transform(node.cases)));
 
 addTransform('ReturnStatement', \node ->
     returnStatement(node.loc,
@@ -531,7 +531,7 @@ addTransform('ConditionalExpression', \node ->
 addTransform('NewExpression', \node ->
     ecma_expression.NewExpression.create(node.loc,
         _transform(node.callee),
-        map(node.args, _transform)));
+        _transform(node.args)));
 
 addTransform('CallExpression', \node ->
     callExpression(node.loc,
@@ -541,7 +541,6 @@ addTransform('CallExpression', \node ->
 addTransform('MemberExpression', \node ->
     ecma_expression.MemberExpression.create(node.loc,
         _transform(node.object),
-        
         _transform(node.property),
         node.computed));
 
@@ -651,9 +650,9 @@ addTransform('SinkPattern', \node ->
 // Program
 addTransform('Program', \node ->
     ecma_program.Program.create(node.loc,
-        Array.isArray(node.body) ?
+        (Array.isArray(node.body) ?
             _transform(node.body) :
-            [_transform(node.body)]));
+            [_transform(node.body)])));
 
 // Package
 addTransform('Package', \node ->
@@ -669,7 +668,7 @@ _transform = \node -> {
         return node;
     
     if (Array.isArray(node))
-        return map(node, _transform);
+        return map(_transform, node);
     
     if (!(node instanceof khepri_node.Node))
         return node;
