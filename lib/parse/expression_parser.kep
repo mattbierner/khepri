@@ -183,45 +183,20 @@ objectLiteral = (Parser, 'Object Literal') <|
 ////////////////////////////////////////
 var formalParameterList = pattern.argumentsPattern;
 
-var functionBody = node(
+var statementBody = node(
      between(punctuator('{'), punctuator('}'),
          sourceElements),
     ast_statement.BlockStatement.create);
 
 var lambdaBody = node(
-    expression |> (expected, "lambda body expression"),
+    expression,
     \loc, x ->
         ast_statement.BlockStatement.create(loc, [
             ast_statement.ReturnStatement.create(null, x)]));
 
-var lambdaFunctionBody = either(
-    functionBody,
+var functionBody = either(
+    statementBody,
     lambdaBody);
-
-var lambdaFunctionExpression = nodea(
-    next(
-        punctuator('\\'),
-        enumeration(
-            formalParameterList,
-            next(
-                punctuator('->'),
-                lambdaFunctionBody |> (expected, "lambda body")))),
-    \loc, parameters, body ->
-        ast_expression.FunctionExpression.create(loc, null, parameters, body));
-
-var ecmaFunctionExpression = nodea(
-    next(
-        keyword('function'),
-        cons(
-            optional(null, identifier),
-            next(
-                punctuator('\\'),
-                enumeration(
-                    formalParameterList,
-                    next(
-                        punctuator('->'),
-                        lambdaFunctionBody))))),
-    ast_expression.FunctionExpression.create);
 
 /**
  * Parser for an function expression.
@@ -229,9 +204,19 @@ var ecmaFunctionExpression = nodea(
  * May be named or anon.
  */
 var functionExpression = (Parser, 'Function Expression') <|
-    either(
-        ecmaFunctionExpression,
-        lambdaFunctionExpression);
+    nodea(
+        cons(
+            optional(null, next(
+                keyword('function'),
+                optional(null, identifier))),
+            next(
+                punctuator('\\'),
+                enumeration(
+                    formalParameterList,
+                    next(
+                        punctuator('->'),
+                        functionBody |> (expected, "function body"))))),
+    ast_expression.FunctionExpression.create);
 
 // Let Expression
 ////////////////////////////////////////

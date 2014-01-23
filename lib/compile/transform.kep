@@ -31,12 +31,12 @@ in {
 var concat = Function.prototype.call.bind(Array.prototype.concat);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
-var filter = \f, a ->  Array.prototype.filter.call(a, f);
+var filter = \f, a -> Array.prototype.filter.call(a, f);
 var map = \f, a ->  Array.prototype.map.call(a, f);
 
 var flatten = \x ->
     (Array.isArray(x) ?
-        reduce(x, concat, []) :
+        reduce(x, \p c _ -> p.concat(c), []) :
         x);
 
 /**

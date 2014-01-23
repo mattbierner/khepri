@@ -20,7 +20,9 @@ define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_a
             return Array.prototype.map.call(a, f);
         }),
         flatten = (function(x) {
-            return (Array.isArray(x) ? reduce(x, concat, []) : x);
+            return (Array.isArray(x) ? reduce(x, (function(p, c, _) {
+                return p.concat(c);
+            }), []) : x);
         }),
         isStrict = (function(elems) {
             if (((elems && elems.length) && (elems[0].type === "ExpressionStatement"))) {

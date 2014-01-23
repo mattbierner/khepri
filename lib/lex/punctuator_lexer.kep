@@ -9,66 +9,70 @@ package (
     closeParenthesis
     openBracket
     closeBracket
+// Separators
     period
     semicolon
     comma
     colon
     questionMark
     
-// Logical
+// Operators
     logicalAnd
     logicalOr
 
-// Shifts
     leftShift
     signedRightShift
     unsignedRightShift
 
-// Relational
     lessThanOrEqualTo
     lessThan
     greaterThanOrEqualTo
     greaterThan
 
-// Equality
     strictEquals
     strictDoesNotEqual
     equals
     doesNotEqual
     
-// bitwise
     and
     or
     xor
     
-// Assignment Operators
     assign
 
-// Additive Operators
     logicalNot
     bitwiseNot
 
-// Additive Operators
     addition
     subtration
     
-// Multiplicative Operators
     multiplication
     mod
     division
 
-// lambda
-    lambda
+    compose
+    composeNary
+    reverseCompose
+    reverseComposeNary
     
+    pipe
+    reversePipe
+    
+// Pattern
+    ellipsis
+    as
+    
+// lambda
+    argumentList
+    lambda
+
 // Punctuators
     punctuator)
 with
     import 'bennu::parse' {Parser},
     import 'bennu::text' {character string trie}
 in {
-    
-/* Objects
- ******************************************************************************/
+
 var punctuators = [
     '{', '}', '(', ')', '[', ']',
     ',',  '.', ';', ':',
@@ -80,10 +84,11 @@ var punctuators = [
     '!', '~',
     '&', '|', '^', 
     '+', '-', '*', '/', '%',
-    '...',
-    '\\',  '->',
-    '\\>', '\\>>', '<\\', '<<\\', '|>', '<|', '@',
-    '#'];
+    '@',
+    '\\>', '\\>>', '<\\', '<<\\',
+    '|>', '<|',
+    '...', '#',
+    '\\', '->'];
 
 /* Lexers
  ******************************************************************************/
@@ -98,7 +103,7 @@ closeParenthesis = character(')');
 openBracket= character('[');
 closeBracket= character(']');
 
-// Punctuation
+// Separators
 ////////////////////////////////////////
 period = character('.');
 
@@ -106,81 +111,60 @@ semicolon = character(';');
 
 comma = character(',');
 
-// Conditional
-////////////////////////////////////////
 colon = character(':');
 
+// Operators
+////////////////////////////////////////
 questionMark = character('?');
 
-// Logical
-////////////////////////////////////////
 logicalAnd = string('&&');
-
 logicalOr = string('||');
 
-// Shifts
-////////////////////////////////////////
 leftShift = string('<<');
-
 signedRightShift = string('>>');
-
 unsignedRightShift = string('>>>');
 
-// Relational
-////////////////////////////////////////
 lessThanOrEqualTo = string('<=');
 lessThan = character('<');
 
 greaterThanOrEqualTo = string('>=');
 greaterThan = character('>');
 
-// Equality
-////////////////////////////////////////
 strictEquals = string('===');
 strictDoesNotEqual = string('!==');
 
 equals = string('==');
 doesNotEqual = string('!=');
 
-// Assignment
-////////////////////////////////////////
 assign = character('=');
 
-// Unary
-////////////////////////////////////////
 logicalNot = character('!');
-
 bitwiseNot = character('~');
 
-// Bitwise
-////////////////////////////////////////
 and = character('&');
 or = character('|');
 xor = character('^');
 
-// Additive Operators
-////////////////////////////////////////
 addition = character('+');
-
 subtration = character('-');
 
-// Multiplicative Operators
-////////////////////////////////////////
 multiplication = character('*');
-
 division = character('/');
-
 mod = character('%');
 
-// Lambda Expression
+// Patterns
 ////////////////////////////////////////
+as = character('#');
+ellipsis = string('...');
+
+// Lambda
+////////////////////////////////////////
+argumentList = character('\\');
+
 lambda = string('->');
 
 // Punctuators
 ////////////////////////////////////////
-/**
- * Lexer for punctuators excluding division punctuators.
- */
 punctuator = Parser('Punctuator Lexer',
     trie(punctuators));
 

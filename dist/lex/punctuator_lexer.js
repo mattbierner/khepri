@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/lex/punctuator_lexer.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, exports, __o, __o0) {
     "use strict";
     var Parser = __o["Parser"],
@@ -8,10 +12,11 @@ define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, e
             comma, colon, questionMark, logicalAnd, logicalOr, leftShift, signedRightShift, unsignedRightShift,
             lessThanOrEqualTo, lessThan, greaterThanOrEqualTo, greaterThan, strictEquals, strictDoesNotEqual,
             equals, doesNotEqual, and, or, xor, assign, logicalNot, bitwiseNot, addition, subtration,
-            multiplication, mod, division, lambda, punctuator, punctuators = ["{", "}", "(", ")", "[", "]", ",",
-                ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>", "<=", "<", ">=", ">", "===", "!==", "==",
-                "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%", "...", "\\", "->", "\\>", "\\>>",
-                "<\\", "<<\\", "|>", "<|", "@", "#"
+            multiplication, mod, division, compose, composeNary, reverseCompose, reverseComposeNary, pipe,
+            reversePipe, ellipsis, as, argumentList, lambda, punctuator, punctuators = ["{", "}", "(", ")", "[",
+                "]", ",", ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>", "<=", "<", ">=", ">", "===", "!==",
+                "==", "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%", "@", "\\>", "\\>>", "<\\",
+                "<<\\", "|>", "<|", "...", "#", "\\", "->"
         ];
     (openBrace = character("{"));
     (closeBrace = character("}"));
@@ -48,6 +53,9 @@ define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, e
     (multiplication = character("*"));
     (division = character("/"));
     (mod = character("%"));
+    (as = character("#"));
+    (ellipsis = string("..."));
+    (argumentList = character("\\"));
     (lambda = string("->"));
     (punctuator = Parser("Punctuator Lexer", trie(punctuators)));
     (exports.openBrace = openBrace);
@@ -85,6 +93,15 @@ define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, e
     (exports.multiplication = multiplication);
     (exports.mod = mod);
     (exports.division = division);
+    (exports.compose = compose);
+    (exports.composeNary = composeNary);
+    (exports.reverseCompose = reverseCompose);
+    (exports.reverseComposeNary = reverseComposeNary);
+    (exports.pipe = pipe);
+    (exports.reversePipe = reversePipe);
+    (exports.ellipsis = ellipsis);
+    (exports.as = as);
+    (exports.argumentList = argumentList);
     (exports.lambda = lambda);
     (exports.punctuator = punctuator);
 }));

@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri_ast/declaration",
     "khepri_ast/expression", "khepri_ast/statement", "khepri_ast/pattern", "khepri_ast/value", "khepri/position",
     "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/program_parser", "khepri/parse/value_parser",
@@ -76,23 +80,17 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
     (objectLiteral = Parser("Object Literal", node(between(punctuator("{"), punctuator("}"), objectProperties),
         ast_expression.ObjectExpression.create)));
     var formalParameterList = pattern.argumentsPattern,
-        functionBody = node(between(punctuator("{"), punctuator("}"), sourceElements), ast_statement.BlockStatement
+        statementBody = node(between(punctuator("{"), punctuator("}"), sourceElements), ast_statement.BlockStatement
             .create),
-        lambdaBody = node(expected("lambda body expression", expression), (function(loc, x) {
+        lambdaBody = node(expression, (function(loc, x) {
             return ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null,
                 x)]);
         })),
-        lambdaFunctionBody = either(functionBody, lambdaBody),
-        lambdaFunctionExpression = nodea(next(punctuator("\\"), enumeration(formalParameterList, next(
-            punctuator("->"), expected("lambda body", lambdaFunctionBody)))), (function(loc, parameters,
-            body) {
-            return ast_expression.FunctionExpression.create(loc, null, parameters, body);
-        })),
-        ecmaFunctionExpression = nodea(next(keyword("function"), cons(optional(null, identifier), next(
-            punctuator("\\"), enumeration(formalParameterList, next(punctuator("->"),
-                lambdaFunctionBody))))), ast_expression.FunctionExpression.create),
-        functionExpression = Parser("Function Expression", either(ecmaFunctionExpression,
-            lambdaFunctionExpression)),
+        functionBody = either(statementBody, lambdaBody),
+        functionExpression = Parser("Function Expression", nodea(cons(optional(null, next(keyword("function"),
+                optional(null, identifier))), next(punctuator("\\"), enumeration(formalParameterList,
+                next(punctuator("->"), expected("function body", functionBody))))), ast_expression.FunctionExpression
+            .create)),
         letBinding = Parser("Let Binding", nodea(enumeration(then(expected("pattern", pattern.topLevelPattern),
             punctuator("=")), expected("let binding expression", expression)), ast_declaration.Binding.create));
     (letExpression = Parser("Let Expression", (function() {

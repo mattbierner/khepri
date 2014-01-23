@@ -60,7 +60,8 @@ regularExpressionNonTerminator = token(
  */
 regularExpressionBackslashSequence = next(
     character('\\'),
-    bind(regularExpressionNonTerminator,
+    bind(
+        regularExpressionNonTerminator,
         (+, '\\') \> always));
 
 // Class
