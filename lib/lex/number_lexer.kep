@@ -30,7 +30,7 @@ package (
 
     numericLiteral)
 with
-    import 'bennu/parse' {
+    import 'bennu::parse' {
         always
         attempt
         bind
@@ -44,9 +44,9 @@ with
         next
         optional
         Parser},
-    import 'bennu/lang' {then},
-    import 'bennu/text' {character characters match string},
-    import 'nu-stream/stream' {foldl}
+    import 'bennu::lang' {then},
+    import 'bennu::text' {character characters match string},
+    import 'nu-stream::stream' {foldl}
 in {
 
 var join = \p ->

@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/parse/statement_parser.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/clause", "khepri_ast/declaration",
     "khepri_ast/statement", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/expression_parser",
     "khepri/parse/pattern_parser", "khepri/parse/value_parser"

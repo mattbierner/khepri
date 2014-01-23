@@ -13,7 +13,7 @@ package (
     stringLiteral,
     regularExpressionLiteral)
 with
-    import 'bennu/parse' parse
+    import 'bennu::parse' parse
 in {
 
 var indexOf = Function.prototype.call.bind(Array.prototype.indexOf);

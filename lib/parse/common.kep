@@ -7,11 +7,11 @@ package (
     nodea,
     positionParser)
 with
-    import 'bennu/parse' parse#{
+    import 'bennu::parse' parse#{
         always,
         bind},
     import 'khepri/position' {SourceLocation},
-    import 'nu-stream/stream' stream#{NIL}
+    import 'nu-stream::stream' stream#{NIL}
 in {
 
 // Operator Precedence

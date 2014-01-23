@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/ecma_peep.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecma_zipper", "ecma_ast/node",
     "ecma_ast/value", "ecma_ast/declaration", "ecma_ast/statement", "ecma_ast/expression"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_value, ast_declaration, ast_statement, ast_expression) {

@@ -18,7 +18,7 @@ package (
 // Identifier
     identifier)
 with
-    import 'bennu/parse' {
+    import 'bennu::parse' {
         always
         attempt 
         bind
@@ -33,13 +33,13 @@ with
         Parser
         testStream
         token},
-    import 'bennu/text' {
+    import 'bennu::text' {
         character
         characters
         digit
         letter
         string},
-    import 'nu-stream/stream' {foldl},
+    import 'nu-stream::stream' {foldl},
     import 'khepri/lex/reserved_word_lexer' {reservedWord},
     import 'khepri/lex/string_lexer' {escape, unicodeEscapeSequence}
 in {

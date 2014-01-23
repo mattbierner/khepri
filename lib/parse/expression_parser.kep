@@ -61,7 +61,7 @@ package (
     
     topLevelExpression)
 with
-    import 'bennu/parse' {
+    import 'bennu::parse' {
         always
         append
         attempt
@@ -79,17 +79,17 @@ with
         next
         optional
         Parser},
-    import 'bennu/lang' {
+    import 'bennu::lang' {
         between
         sepBy
         sepBy1
         then},
-    import 'nu-stream/stream' {foldl foldr},
-    import 'khepri_ast/declaration' ast_declaration,
-    import 'khepri_ast/expression' ast_expression,
-    import 'khepri_ast/statement' ast_statement,
-    import 'khepri_ast/pattern' ast_pattern,
-    import 'khepri_ast/value' ast_value,
+    import 'nu-stream::stream' {foldl foldr},
+    import 'khepri_ast::declaration' ast_declaration,
+    import 'khepri_ast::expression' ast_expression,
+    import 'khepri_ast::statement' ast_statement,
+    import 'khepri_ast::pattern' ast_pattern,
+    import 'khepri_ast::value' ast_value,
     import 'khepri/position' {SourceLocation},
     import 'khepri/parse/common' {node nodea precedence},
     import 'khepri/parse/token_parser' {keyword punctuator},
@@ -149,7 +149,7 @@ arrayLiteral = (Parser, 'Array Literal') <|
 /**
  * Parser for an object property name.
  */
-propertyName = //(Parser, 'Property Name') <|
+propertyName = (Parser, 'Property Name') <|
     stringLiteral;
 
 /**

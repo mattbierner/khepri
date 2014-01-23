@@ -9,8 +9,8 @@ package (
     parseInput
     parseStream)
 with
-    import 'bennu/parse' parse,
-    import 'nu-stream/stream' stream#{first filter isEmpty rest NIL 'from': streamFrom},
+    import 'bennu::parse' parse,
+    import 'nu-stream::stream' stream#{first filter isEmpty rest NIL 'from': streamFrom},
     import 'khepri/position' {SourceLocation SourcePosition},
     import 'khepri/parse/program_parser' {program}
 in {

@@ -22,7 +22,7 @@ package (
 // Regex Literal
     regularExpressionLiteral)
 with
-    import 'bennu/parse' {
+    import 'bennu::parse' {
         always,
         attempt,
         bind,
@@ -36,9 +36,9 @@ with
         Parser,
         token,
         test},
-    import 'bennu/lang' {between},
-    import 'bennu/text' {character},
-    import 'nu-stream/stream' {foldl},
+    import 'bennu::lang' {between},
+    import 'bennu::text' {character},
+    import 'nu-stream::stream' {foldl},
     import 'khepri/lex/identifier_lexer' {identifierPart},
     import 'khepri/lex/line_terminator_lexer' {lineTerminator}
 in {

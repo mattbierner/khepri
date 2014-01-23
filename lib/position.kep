@@ -6,7 +6,7 @@ package (
     SourcePosition
     SourceLocation)
 with
-    import 'bennu/parse' parse
+    import 'bennu::parse' parse
 in {
 
 // SourcePosition

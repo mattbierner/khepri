@@ -9,7 +9,7 @@ package (
     lexManyState
     lex)
 with
-    import 'bennu/parse' parse#{
+    import 'bennu::parse' parse#{
         always
         attempt
         binds
@@ -26,9 +26,9 @@ with
         runState
         Parser
         ParserState},
-    import 'bennu/lang' {then},
-    import 'nu-stream/stream' {memoStream, NIL, 'from': streamFrom},
-    import 'khepri_ast/token' lexToken,
+    import 'bennu::lang' {then},
+    import 'nu-stream::stream' {memoStream, NIL, 'from': streamFrom},
+    import 'khepri_ast::token' lexToken,
     import 'khepri/position' {SourceLocation, SourcePosition},
     import 'khepri/lex/boolean_lexer' {booleanLiteral},
     import 'khepri/lex/comment_lexer' {comment},

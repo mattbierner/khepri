@@ -13,9 +13,9 @@ package (
    // whitespaceCharacter,
     whitespace)
 with
-    import 'bennu/parse' {always, bind many1 Parser},
-    import 'bennu/text' {character characters match},
-    import 'nu-stream/stream' {foldl}
+    import 'bennu::parse' {always, bind many1 Parser},
+    import 'bennu::text' {character characters match},
+    import 'nu-stream::stream' {foldl}
 in {
 
 var join = \p ->

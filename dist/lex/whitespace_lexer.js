@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/lex/whitespace_lexer.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream"], (function(require, exports, __o, __o0,
     __o1) {
     "use strict";

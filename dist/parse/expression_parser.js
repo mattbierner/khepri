@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri_ast/declaration",
     "khepri_ast/expression", "khepri_ast/statement", "khepri_ast/pattern", "khepri_ast/value", "khepri/position",
     "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/program_parser", "khepri/parse/value_parser",
@@ -69,7 +73,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
         arrayElement)))));
     (arrayLiteral = Parser("Array Literal", node(between(punctuator("["), punctuator("]"), arrayElements),
         ast_expression.ArrayExpression.create)));
-    (propertyName = stringLiteral);
+    (propertyName = Parser("Property Name", stringLiteral));
     (propertyInitializer = Parser("Property Initializer", nodea(enumeration(then(propertyName, punctuator(":")),
         expression), ast_value.ObjectValue.create)));
     (objectProperties = Parser("Object Properties", eager(sepBy(punctuator(","), propertyInitializer))));

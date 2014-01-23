@@ -4,8 +4,8 @@
 package (
     nullLiteral)
 with
-    import 'bennu/parse' {always next Parser},
-    import 'bennu/text' {string}
+    import 'bennu::parse' {always next Parser},
+    import 'bennu::text' {string}
 in {
 
 nullLiteral = (Parser, 'Null Lexer') <|

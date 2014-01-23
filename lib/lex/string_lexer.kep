@@ -27,7 +27,7 @@ package (
 // Literal
     stringLiteral)
 with
-    import 'bennu/parse' {
+    import 'bennu::parse' {
         always
         attempt
         bind
@@ -40,9 +40,9 @@ with
         Parser
         test
         token},
-    import 'bennu/text' {character},
-    import 'bennu/lang' {between times},
-    import 'nu-stream/stream' {foldl},
+    import 'bennu::text' {character},
+    import 'bennu::lang' {between times},
+    import 'nu-stream::stream' {foldl},
     import 'khepri/lex/line_terminator_lexer' {lineTerminatorSequence lineTerminator},
     import 'khepri/lex/number_lexer' {decimalDigit hexDigit}
 in {
