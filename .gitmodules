@@ -31,3 +31,6 @@
 [submodule "dependencies/bennu"]
 	path = dependencies/bennu
 	url = git@github.com:mattbierner/bennu.git
+[submodule "dependencies/bes"]
+	path = dependencies/bes
+	url = git@github.com:mattbierner/bes.git

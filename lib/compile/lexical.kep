@@ -13,7 +13,11 @@ with
     
     import 'neith/zipper' zipper,
     import 'neith/tree' tree,
+    
     import 'khepri_ast_zipper/khepri_zipper' {khepriZipper},
+    
+    import 'bes::record' record,
+    import 'bes::object' object,
     
     import 'khepri/compile/scope' {Scope}
 in {
@@ -39,20 +43,15 @@ var trampoline = \f -> {
 
 /* State
  ******************************************************************************/
-var State = function\ctx, realScope, scope =self-> {
-    self.ctx = ctx;
-    self.realScope = realScope;
-    self.scope = scope;
-};
+var State = record.declare(null, [
+    'ctx',
+    'realScope',
+    'scope',
+    'vars',
+    'unique']);
 
-State.setCtx = \s ctx ->
-    new State(ctx, s.realScope, s.scope);
-
-State.setScope = \s scope ->
-    new State(s.ctx, s.realScope, scope);
-
-State.setRealScope = \s realScope ->
-    new State(s.ctx, realScope, s.scope);
+State.addVar = \s id v ->
+    s.setVars(object.setProperty(s.vars, id, v, true));
 
 /*
  ******************************************************************************/
@@ -75,6 +74,8 @@ var extract = \s ok, _ -> ok(s, s);
 var setState = \s -> \_ ok _ -> ok(s, s);
 
 var modifyState = \f -> bind(extract, \s -> setState(f(s)));
+
+var examineState = \f -> bind(extract, \s -> f(s));
 
 var move = \op -> modifyState(\s -> {
     var c = op(s.ctx);
@@ -104,6 +105,12 @@ var setRealScope = \s -> modifyRealScope(\() -> s);
 /* Operations
  ******************************************************************************/
 var pass = ok();
+
+var registerVar = \name ->
+    bind(examineState(\s -> ok(s.unique)), \uid ->
+        seq(
+            modifyState(\s -> s.setUnique(uid + 1)),
+            ok(uid)));
 
 /**
  * Create a new lexical block for body.
@@ -284,6 +291,9 @@ var checkChild = (child, checkTop);
 
 var modifyNode = \f ->
     move((tree.modifyNode, f));
+
+var setNode = \x ->
+    move((tree.setNode, x));
 
 /*
  ******************************************************************************/
@@ -541,7 +551,7 @@ _check = \node -> {
                 var n = setUserData(node, node.ud || {});
                 n.ud.id = id;
                 return seq(
-                    move((tree.setNode, ast_pattern.AsPattern.create(null, id, node))),
+                    setNode(ast_pattern.AsPattern.create(null, id, node)),
                     checkTop);
             }
             return checkChild('elements');

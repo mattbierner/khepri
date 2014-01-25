@@ -12,6 +12,7 @@ requirejs.config({
         'bennu': 'dependencies/bennu/dist',
         'seshet': 'dependencies/seshet/dist/seshet',
         'nu-stream': 'dependencies/nu/dist',
+        'bes': 'dependencies/bes/dist',
         
         'ecma': 'dependencies/parse-ecma/lib',
         'ecma_unparse': 'dependencies/ecma-unparse/lib',

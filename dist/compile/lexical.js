@@ -3,8 +3,8 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value", "neith/zipper", "neith/tree",
-    "khepri_ast_zipper/khepri_zipper", "khepri/compile/scope"
-], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, __o0) {
+    "khepri_ast_zipper/khepri_zipper", "bes/record", "bes/object", "khepri/compile/scope"
+], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, record, object, __o0) {
     "use strict";
     var setUserData = ast_node["setUserData"],
         khepriZipper = __o["khepriZipper"],
@@ -22,20 +22,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             while ((value && value._next))(value = value[0].apply(undefined, value[1]));
             return value;
         }),
-        State = (function(ctx, realScope, scope) {
-            var self = this;
-            (self.ctx = ctx);
-            (self.realScope = realScope);
-            (self.scope = scope);
-        });
-    (State.setCtx = (function(s, ctx) {
-        return new(State)(ctx, s.realScope, s.scope);
-    }));
-    (State.setScope = (function(s, scope) {
-        return new(State)(s.ctx, s.realScope, scope);
-    }));
-    (State.setRealScope = (function(s, realScope) {
-        return new(State)(s.ctx, realScope, s.scope);
+        State = record.declare(null, ["ctx", "realScope", "scope", "vars", "unique"]);
+    (State.addVar = (function(s, id, v) {
+        return s.setVars(object.setProperty(s.vars, id, v, true));
     }));
     var ok = (function(x) {
         return (function(s, ok, _) {
@@ -81,6 +70,11 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                 return setState(f(s));
             }));
         }),
+        examineState = (function(f) {
+            return bind(extract, (function(s) {
+                return f(s);
+            }));
+        }),
         move = (function(op) {
             return modifyState((function(s) {
                 var c = op(s.ctx);
@@ -122,6 +116,15 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             }));
         }),
         pass = ok(),
+        registerVar = (function(name) {
+            return bind(examineState((function(s) {
+                return ok(s.unique);
+            })), (function(uid) {
+                return seq(modifyState((function(s) {
+                    return s.setUnique((uid + 1));
+                })), ok(uid));
+            }));
+        }),
         block = (function() {
             var body = arguments;
             return examineScope((function(s) {
@@ -244,6 +247,9 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         checkChild = child.bind(null, checkTop),
         modifyNode = (function(f) {
             return move(tree.modifyNode.bind(null, f));
+        }),
+        setNode = (function(x) {
+            return move(tree.setNode.bind(null, x));
         });
     (_check = (function(node) {
         if (Array.isArray(node)) {
@@ -373,8 +379,8 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
                         (id.reserved = true);
                         var n = setUserData(node, (node.ud || ({})));
                         (n.ud.id = id);
-                        return seq(move(tree.setNode.bind(null, ast_pattern.AsPattern.create(
-                            null, id, node))), checkTop);
+                        return seq(setNode(ast_pattern.AsPattern.create(null, id, node)),
+                            checkTop);
                     }
                     return checkChild("elements");
                 }));
