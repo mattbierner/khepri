@@ -7044,7 +7044,7 @@ return {
 /**
  * @fileOverview Transforming an AST into a stream of tokens.
  */
-define('ecma_unparse/unparse',['nu-stream/stream',
+define('ecma-unparse/unparse',['nu-stream/stream',
         'nu-stream/gen',
         'ecma_ast/token',
         'ecma_ast/node'],
@@ -9501,9 +9501,7 @@ return {
 
 }());
 
-define("ecma_unparse/beautify", function(){});
-
-define('ecma_unparse/print',['nu-stream/stream', './beautify'],
+define('ecma-unparse/print',['nu-stream/stream', './beautify'],
 function(stream, beautify){
 
 /**
@@ -9553,8 +9551,8 @@ require(['nu-stream/stream',
          'khepri/compile/transform',
          'khepri/compile/lexical',
          'khepri/compile/compile',
-         'ecma_unparse/unparse',
-         'ecma_unparse/print'],
+         'ecma-unparse/unparse',
+         'ecma-unparse/print'],
 function(stream,
         lexer,
         parser,
@@ -9578,7 +9576,7 @@ var output = CodeMirror.fromTextArea(document.getElementById('javascript-console
 
 $(function () {
     $('button').click(function () {
-        var input = $('textarea').val();
+        var input = editor.doc.getValue('\n');
         $('.ParseError').text('');
         $('#text_out').text('');
         
@@ -9594,7 +9592,7 @@ $(function () {
             var unparsed = unparse.unparse(ecam_ast);
             var s = unparse_print.print(unparsed);
             
-            $('#text_out').text(s);
+            output.doc.setValue(s);
         } catch (e) {
             $('.ParseError').text(e);
         }

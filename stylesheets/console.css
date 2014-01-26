@@ -1,15 +1,86 @@
+article.wrapper {
+    max-width: 1600px;
+    width: auto;
+}
+
 #khepri-input,
 #javascript-output {
     width: 50%;
     float: left;
+    height: auto;
+    min-height: 300px;
+        position: relative;
+}
+
+#console {
+    position: relative;
 }
 
 #console h2 {
     text-align: center;
+    font-size: 1.2em;
+}
+
+#console button {
+    background: none;
+    border-style: solid;
 }
 
 
-article.wrapper {
-    max-width: 1600px;
-    width: auto;
+
+#console-output {
+    width: 100%;
+    clear: both;
+}
+
+#khepri-input {
+    border-right: 1px solid #e5e5e5;
+}
+
+#javascript-output {
+}
+
+
+#console {
+    padding: 8px 15px;
+  background: #f8f8f8;
+  border-radius:5px;
+  border:1px solid #e5e5e5;
+  overflow-x: auto;
+}
+
+#khepri-input > *,
+#javascript-output > * {
+    width: 100%;
+    display: block;
+}
+
+
+
+.CodeMirror {
+    position: relative;
+    height: auto;
+    min-height: 100%;
+}
+
+.CodeMirror-scroll {
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
+
+.CodeMirror {
+    height: auto;
+    min-height: inherit;
+    max-height: inherit;
+    width: 100%;
+}
+
+.CodeMirror-scroll {
+    
+    min-height: inherit;
+    max-height: inherit;
+    
+    overflow-y: auto;
+    overflow-x: scroll;
 }

@@ -6,37 +6,33 @@ extra_css:
   - stylesheets/console.css
 ---
 
-<div id="console" class='cf'>
+<div  class='cf'>
 
-    <div class='cf'>
+    <div id="console" class='cf'>
         <div id='khepri-input'>
             <h2>Khepri</h2>
-            <div>
-                <textarea id='khepri-console-input'></textarea>
-                <button>Transform</button>
-            </div>
+            <textarea id='khepri-console-input'></textarea>
+            <button>Transform</button>
         </div>
         
         <div id='javascript-output'>
             <h2>Javascript</h2>
-            <span class="ParseError"></span>
             <textarea id='javascript-console-output'></textarea>
+            <button>Evaluate</button>
         </div>
-    </div>
-    
-    <div class='wrapper'>
+        
         <div id='console-output'>
             <h2>Output</h2>
             <span class="ParseError"></span>
             <pre id='text_out'></pre>
         </div>
-        
-        <div class='wrapper'>
-            <select id='package_manager'>
-                <option value="amd">AMD</option>
-                <option value="node">Node</option>
-            </select>
-        </div>
+    </div>
+  
+    <div class='wrapper'>
+        <select id='package_manager'>
+            <option value="amd">AMD</option>
+            <option value="node">Node</option>
+        </select>
     </div>
 </div>
 

@@ -764,11 +764,23 @@ section #title .credits.right {
   float: right;
 }
 
-footer {
-    border-bottom: 2px solid #333;
+
+#footer-lines {
+    width: 100%;
+    padding-top: 6px;
+    border-top: 2px solid #333;
+    
 }
 
-footer > * {
+#footer-lines div {
+    width: 60%;
+    opacity: 0.50;
+    margin: 0 auto;
+    padding-top: 6px;
+    border-top: 1px solid #333;
+}
+
+#footer-credits > * {
     display: table-cell;
     vertical-align: middle;
 }
