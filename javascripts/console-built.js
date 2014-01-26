@@ -7863,6 +7863,7 @@ return {
 
 });
 /*jshint curly:true, eqeqeq:true, laxbreak:true, noempty:false */
+/*NOTE: the exports at the end of this file were modified to make it work with r.js */
 /*
 
   The MIT License (MIT)
@@ -8027,7 +8028,6 @@ return {
                 indentation_level: next_indent_level,
                 line_indent_level: flags_base ? flags_base.line_indent_level : next_indent_level,
                 start_line_index: output_lines.length,
-                had_comment: false,
                 ternary_depth: 0
             }
             return next_flags;
@@ -8156,13 +8156,11 @@ return {
                 // Just continue formatting and the behavior should be logical.
                 // Also ignore unknown tokens.  Again, this should result in better behavior.
                 if (token_type !== 'TK_INLINE_COMMENT' && token_type !== 'TK_COMMENT' &&
-                    token_type !== 'TK_BLOCK_COMMENT' && token_type !== 'TK_UNKNOWN') {
+                    token_type !== 'TK_UNKNOWN') {
                     last_last_text = flags.last_text;
                     last_type = token_type;
                     flags.last_text = token_text;
                 }
-                flags.had_comment = (token_type === 'TK_INLINE_COMMENT' || token_type === 'TK_COMMENT'
-                    || token_type === 'TK_BLOCK_COMMENT');
             }
 
 
@@ -9112,10 +9110,11 @@ return {
                 if (flags.var_line && last_type !== 'TK_EQUALS') {
                     flags.var_line_reindented = true;
                 }
-                if (in_array(flags.last_text, ['}', ';']) || (just_added_newline() && ! in_array(flags.last_text, ['{', ':', '=', ',']))) {
+                if ((just_added_newline() || flags.last_text === ';' || flags.last_text === '}') &&
+                    flags.last_text !== '{' && !is_array(flags.mode)) {
                     // make sure there is a nice clean space of at least one blank line
-                    // before a new function definition
-                    if ( ! just_added_blankline() && ! flags.had_comment) {
+                    // before a new function definition, except in arrays
+                    if (!just_added_blankline()) {
                         print_newline();
                         print_newline(true);
                     }
@@ -9478,12 +9477,12 @@ return {
     if (typeof define === "function") {
         // Add support for require.js
         if (typeof define.amd === "undefined") {
-            define(function(require, exports, module) {
+            define('ecma-unparse/beautify', ['require','exports','module'],function(require, exports, module) {
                 exports.js_beautify = js_beautify;
             });
         } else {
             // if is AMD ( https://github.com/amdjs/amdjs-api/wiki/AMD#defineamd-property- )
-            define([], function() {
+            define('ecma-unparse/beautify', [], function() {
                 return js_beautify;
             });
         }
@@ -9502,7 +9501,9 @@ return {
 
 }());
 
-define('ecma_unparse/print',['nu-stream/stream', 'beautify'],
+define("ecma_unparse/beautify", function(){});
+
+define('ecma_unparse/print',['nu-stream/stream', './beautify'],
 function(stream, beautify){
 
 /**

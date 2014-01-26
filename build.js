@@ -10,7 +10,6 @@
         'bes': 'dependencies/bes/dist',
 
         'ecma_unparse': 'dependencies/ecma-unparse/lib',
-        'beautify': 'dependencies/beautify/js/lib/beautify',
 
         'ecma_ast': 'dependencies/ecma-ast/lib',
         'khepri_ast': 'dependencies/khepri-ast/dist',
