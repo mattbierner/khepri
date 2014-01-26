@@ -1,0 +1,33 @@
+---
+layout: base
+
+extra_css:
+  - stylesheets/codemirror.css
+  - stylesheets/console.css
+---
+
+<div id="console">
+    <div >
+        <h2>Input</h2>
+        <div>
+            <textarea id='console-input'></textarea>
+            <button>Transform</button>
+            <select id='package_manager'>
+                <option value="amd">AMD</option>
+                <option value="node">Node</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class='output'>
+        <h2>Output</h2>
+        <span class="ParseError"></span>
+        <pre id='text_out'></pre>
+    </div>
+</div>
+
+<script type="application/javascript" src="javascripts/require.js"></script>
+<script type="application/javascript" src="javascripts/codemirror.js"></script>
+<script type="application/javascript" src="javascripts/javascript.js"></script>
+<script type="application/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.0.min.js"></script>
+<script type="application/javascript" src="javascripts/console-built.js"></script>

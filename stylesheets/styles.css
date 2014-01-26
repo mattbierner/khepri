@@ -10,6 +10,16 @@
     box-sizing: border-box;
 }
 
+.cf:before,
+.cf:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.cf:after {
+    clear: both;
+}
+
 
 /* normalize.css 2012-02-07T12:37 UTC - http://github.com/necolas/normalize.css */
 /* =============================================================================
@@ -544,7 +554,7 @@ header {
     padding-bottom: 0.6em;
 }
 header > .group {
-    padding-bottom: 1.2em;
+    padding-bottom: 1em;
 }
 
 header #title {
@@ -562,6 +572,12 @@ header #kep-logo {
     height: 80px;
     padding: 0 0.6em 0 0;
 }
+
+header #blurb {
+    margin: 0;
+    padding: 0;
+}
+
 
 header #links a span {
     display: block;
@@ -598,25 +614,18 @@ header #pages li:last-child {
 }
 
 
-header ul#links {
-  height:40px;
-  width:270px;
-}
-
 header #links li {
   float:left;
   width:89px;
   height:40px;
 }
 
-header ul#links a {
-  line-height:1;
-  font-size:11px;
-  color:#999;
-  display:block;
-  text-align:center;
-  margin: 6px 4px;
-  height:28px;
+header #links ul {
+    margin-bottom: 1em;
+}
+
+header #npm-code {
+    margin: 0;
 }
 
 header #pages {
@@ -762,14 +771,19 @@ footer {
 #bottom-logo {
     position: relative;
     width: 100%;
-    border-bottom: 2px solid #222;
+    border-bottom: 2px solid #333;
 }
 
 #bottom-logo img {
     display: block;
+    width: 100px;
     margin: 0 auto -2px auto;
 }
 
+#credits {
+    padding-top: 0.2rem;
+    padding-bottom: 1.8rem;
+} 
 
 @media print, screen and (max-width: 580px) {
   #title .credits {
@@ -800,27 +814,23 @@ footer {
         padding-bottom: 0.6em;
     }
     
-     header #links ul, header #links ul li > a {
-        width: 100%;
-     }
-     
-     header #links li {
-        width: 100%;
-        height: auto;
+    header #links {
         text-align: center;
+    }
+    
+     header #links ul {
+        display: inline-block;
+        width: auto;
+        margin-bottom: 0;
      }
      
-     #link-zip,
-     #link-tar {
+     header #npm-code {
         display: none;
      }
      
-     header #link-github a > span {
-        display: inline;
-     }
      
-     header #link-github .download-title,
-     header #link-github .download-line {
+     header .download-title,
+     header .download-line {
         margin-bottom: 0;
      }
 }
