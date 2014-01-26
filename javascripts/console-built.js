@@ -9564,10 +9564,17 @@ function(stream,
         unparse,
         unparse_print) {
 
-var editor = CodeMirror.fromTextArea(document.getElementById('console-input'), {
+var editor = CodeMirror.fromTextArea(document.getElementById('khepri-console-input'), {
     'mode': "javascript",
     'lineNumbers': true
 });
+
+var output = CodeMirror.fromTextArea(document.getElementById('javascript-console-output'), {
+    'mode': "javascript",
+    'lineNumbers': true,
+    'readOnly': true
+});
+
 
 $(function () {
     $('button').click(function () {

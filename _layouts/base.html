@@ -23,8 +23,7 @@
     </head>
   
     <body>
-    <div class="wrapper">
-        <header>
+        <header class='wrapper'>
             <div class="group">
                 <div id="title">
                     <img id="kep-logo" src="media/kep_logo.svg" />
@@ -63,14 +62,19 @@
             </nav>
         </header>
       
-        <article>{{content}}</article>
+        <article class='wrapper'> {{content}}</article>
       
-        <footer>
-            <div class='credits'>Project created and maintained by <a href="http://mattbierner.com">Matt Bierner</a></div>
+        <footer class='wrapper cf'>
+            <div id="project-credits" class='credits left'>
+                <span>Project created and maintained by</span> <br/>
+                <span><a href="http://mattbierner.com">Matt Bierner</a></span>
+            </div>
             <div id="bottom-logo"><img src="media/big_kep.svg" /></div>
-            <div class='credits'>Hosted on GitHub Pages &mdash; Theme based on <a href="http://twitter.com/#!/michigangraham">mattgraham</a></div>
+            <div id="hosting-credits" class='credits right'>
+                <span>Hosted on GitHub Pages</span><br/>
+                <span>Theme based on <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+            </div>
         </footer>
-    </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
     
   </body>

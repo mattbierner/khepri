@@ -1,0 +1,15 @@
+#khepri-input,
+#javascript-output {
+    width: 50%;
+    float: left;
+}
+
+#console h2 {
+    text-align: center;
+}
+
+
+article.wrapper {
+    max-width: 1600px;
+    width: auto;
+}

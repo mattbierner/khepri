@@ -525,7 +525,7 @@ h3 {
 }
 
 a {
-  color: #39c;
+  color: #5cb09e;
   font-weight: 400;
   text-decoration: none;
 }
@@ -549,7 +549,7 @@ strong {
 
 
 
-header {
+header.wrapper {
     margin-top: 2em;
     padding-bottom: 0.6em;
 }
@@ -765,13 +765,34 @@ section #title .credits.right {
 }
 
 footer {
+    border-bottom: 2px solid #333;
+}
+
+footer > * {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+footer .credits {
+    width: 40%;
     text-align: center;
+    line-height: 1.2em;
+    padding: 0 3em 0.5em 3em;
+    line-spacing: 0.8em;
+}
+
+footer .credits.left {
+    padding-left: 2em;
+}
+
+footer .credits.right {
+    padding-right: 2em;
 }
 
 #bottom-logo {
-    position: relative;
-    width: 100%;
-    border-bottom: 2px solid #333;
+    width: 20%;
+    z-index: -1000;
+    vertical-align: bottom;
 }
 
 #bottom-logo img {
@@ -829,8 +850,24 @@ footer {
      }
      
      
+     
+     
      header .download-title,
      header .download-line {
         margin-bottom: 0;
      }
+     
+     
+    footer .credits {
+        padding: 0 2em 0.5em 2em;
+    }
+    
+    footer .credits.left {
+        padding-left: 1em;
+    }
+    
+    footer .credits.right {
+        padding-right: 1em;
+    }
+     
 }
