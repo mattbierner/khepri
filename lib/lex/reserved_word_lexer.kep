@@ -59,8 +59,8 @@ with
         choice
         Parser},
    import 'bennu::text' {string,trie},
-   import 'khepri/lex/boolean_lexer' {booleanLiteral},
-   import 'khepri/lex/null_lexer' {nullLiteral}
+   import 'khepri::lex::boolean_lexer' {booleanLiteral},
+   import 'khepri::lex::null_lexer' {nullLiteral}
 in {
 
 var keywordList =  [

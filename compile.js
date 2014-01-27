@@ -5,23 +5,21 @@ var argv = require('optimist').argv;
 var mkdirp = require('mkdirp');
 
 requirejs.config({
-    nodeRequire: require,
     paths: {
         'khepri': 'dist',
-
+        
         'bennu': 'dependencies/bennu/dist',
-        'seshet': 'dependencies/seshet/dist/seshet',
         'nu-stream': 'dependencies/nu/dist',
+        'seshet': 'dependencies/seshet/dist/seshet',
         'bes': 'dependencies/bes/dist',
         
-        'ecma': 'dependencies/parse-ecma/lib',
-        'ecma_unparse': 'dependencies/ecma-unparse/lib',
-        'ecma_ast': 'dependencies/ecma-ast/lib',
-        'khepri_ast': 'dependencies/khepri-ast/dist',
+        'ecma-unparse': 'dependencies/ecma-unparse/dist',
+        'ecma-ast': 'dependencies/ecma-ast/dist',
+        'khepri-ast': 'dependencies/khepri-ast/dist',
         
         'neith': 'dependencies/neith/dist',
-        'ecma_ast_zipper': 'dependencies/ecma-ast-zipper/dist',
-        'khepri_ast_zipper': 'dependencies/khepri-ast-zipper/dist'
+        'ecma-ast-zipper': 'dependencies/ecma-ast-zipper/dist/ecma_zipper',
+        'khepri-ast-zipper': 'dependencies/khepri-ast-zipper/dist/khepri_zipper'
     }
 });
 

@@ -40,8 +40,8 @@ with
         letter
         string},
     import 'nu-stream::stream' {foldl},
-    import 'khepri/lex/reserved_word_lexer' {reservedWord},
-    import 'khepri/lex/string_lexer' {escape, unicodeEscapeSequence}
+    import 'khepri::lex::reserved_word_lexer' {reservedWord},
+    import 'khepri::lex::string_lexer' {escape, unicodeEscapeSequence}
 in {
 
 var join = (foldl, (+), '');

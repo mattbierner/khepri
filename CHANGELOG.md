@@ -1,5 +1,12 @@
 # ChangeLog #
 
+## 0.10.0 - January 26, 2014
+* Changed conditional expression syntax.
+** Now prefixed by `?` followed by the test then the two choices prefixed with `:`.
+** This simplifies the grammar and makes it possible to use conditional
+  expressions in the test without parens. `??x>3:10:4:6:7;`
+* Allow package managers to customize behave of with imports.
+
 ## 0.9.0 - January 19, 2014
 * Fat arrow `this` unpacks.
 ** `\x y =self-> self.z + x + y;`

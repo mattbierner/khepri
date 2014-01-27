@@ -10,7 +10,7 @@ with
     import 'bennu::parse' parse#{
         always,
         bind},
-    import 'khepri/position' {SourceLocation},
+    import 'khepri::position' {SourceLocation},
     import 'nu-stream::stream' stream#{NIL}
 in {
 

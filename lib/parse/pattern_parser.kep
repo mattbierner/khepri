@@ -35,9 +35,9 @@ with
         Parser},
     import 'bennu::lang' {between sepBy sepBy1 then},
     import 'khepri-ast::pattern' ast_pattern,
-    import 'khepri/parse/common' {node nodea},
-    import 'khepri/parse/token_parser' {keyword punctuator},
-    import 'khepri/parse/value_parser' {identifier stringLiteral}
+    import 'khepri::parse::common' {node nodea},
+    import 'khepri::parse::token_parser' {keyword punctuator},
+    import 'khepri::parse::value_parser' {identifier stringLiteral}
 in {
 
 /* Circular

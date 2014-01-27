@@ -2,7 +2,8 @@
  * @fileOverview
  */
 package (
-    definePackage)
+    definePackage
+    importPackage)
 with
     import 'khepri-ast::declaration' ast_declaration,
     import 'khepri-ast::expression' ast_expression,
@@ -13,11 +14,14 @@ in {
 var concat = Function.prototype.call.bind(Array.prototype.concat);
 var map = Function.prototype.call.bind(Array.prototype.map);
 
-var path = \path -> let
+
+/* Package Manager
+ ******************************************************************************/
+importPackage = \path -> let
     segs = path.split('::')
 in
     segs.slice(1).reduce(
-        \p c -> 
+        \p c ->
             ast_expression.MemberExpression.create(null,
                 p,
                 ast_value.Literal.create(null, 'string', c),
@@ -26,8 +30,6 @@ in
             ast_value.Identifier.create(null, 'require'), [
             ast_value.Literal.create(null, 'string', segs[0])]));
 
-/* Package Manager
- ******************************************************************************/
 definePackage = \loc exports imports targets body -> let
     exportHeader = ast_declaration.VariableDeclaration.create(null,
         map(exports, \x ->
@@ -49,7 +51,7 @@ in
             map(imports, \x ->
                 ast_declaration.Binding.create(null,
                     x.pattern,
-                    path(x.from.value))),
+                    importPackage(x.from.value))),
             ast_statement.BlockStatement.create(null,
                 concat(
                     exportHeader,

@@ -32,7 +32,7 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
             }
             return false;
         }),
-        expressionStatement, _transform, identifier = (function(loc, name) {
+        expressionStatement, _transform, packageManager, identifier = (function(loc, name) {
             return ecma_value.Identifier.create(loc, name);
         }),
         stringLiteral = (function(loc, value) {
@@ -98,8 +98,8 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
     }),
         withStatement = (function(loc, bindings, body) {
             var vars = flatten(map((function(imp) {
-                var base = ((imp.type === "ImportPattern") ? callExpression(null, identifier(
-                    null, "require"), [imp.from]) : imp.value);
+                var base = ((imp.type === "ImportPattern") ? packageManager.importPackage(imp.from
+                    .value) : imp.value);
                 return unpack(imp.pattern, base);
             }), bindings)),
                 prefix = variableDeclaration(null, vars);
@@ -176,7 +176,7 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
                         identifier(null, "arguments")
                     ])]))])))])), [f, g]);
         }),
-        packageManager, packageBlock = (function(loc, exports, body) {
+        packageBlock = (function(loc, exports, body) {
             var imports = ((body.type === "WithStatement") ? filter((function(x) {
                 return (x.type === "ImportPattern");
             }), body.bindings) : []),
@@ -378,10 +378,11 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
     }));
     (transform = (function(__o) {
         var options = __o["options"],
-            ast = __o["ast"];
-        (packageManager = require("khepri/compile/package_manager/amd"));
-        if ((options.package_manager === "node"))(packageManager = require(
-            "khepri/compile/package_manager/node"));
+            ast = __o["ast"],
+            amd_manager = require("khepri/compile/package_manager/amd"),
+            node_manager = require("khepri/compile/package_manager/node");
+        (packageManager = amd_manager);
+        if ((options.package_manager === "node"))(packageManager = node_manager);
         return ({
             "options": options,
             "ast": _transform(ast)

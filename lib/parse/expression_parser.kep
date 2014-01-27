@@ -87,19 +87,19 @@ with
     import 'khepri-ast::statement' ast_statement,
     import 'khepri-ast::pattern' ast_pattern,
     import 'khepri-ast::value' ast_value,
-    import 'khepri/position' {SourceLocation},
-    import 'khepri/parse/common' {node nodea precedence},
-    import 'khepri/parse/token_parser' {keyword punctuator},
-    import 'khepri/parse/program_parser' program_parser,
-    import 'khepri/parse/value_parser' {identifier literal stringLiteral},
-    import 'khepri/parse/pattern_parser' pattern
+    import 'khepri::position' {SourceLocation},
+    import 'khepri::parse::common' {node nodea precedence},
+    import 'khepri::parse::token_parser' {keyword punctuator},
+    import 'khepri::parse::program_parser' program_parser,
+    import 'khepri::parse::value_parser' {identifier literal stringLiteral},
+    import 'khepri::parse::pattern_parser' pattern
 in {
 
 /* Circular Declarations 
  ******************************************************************************/
 var sourceElements = \args(...) -> {
     with
-        import 'khepri/parse/program_parser' {sourceElements}
+        import 'khepri::parse::program_parser' {sourceElements}
     in {
         return sourceElements.apply(undefined, args);
     }

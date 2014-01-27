@@ -24,8 +24,8 @@ with
     import 'khepri-ast::statement' khepri_statement,
     import 'khepri-ast::value' khepri_value,
     
-    import 'khepri/compile/package_manager/amd' _,
-    import 'khepri/compile/package_manager/node' _
+    import 'khepri::compile::package_manager/amd' _,
+    import 'khepri::compile::package_manager/node' _
 in {
 
 var concat = Function.prototype.call.bind(Array.prototype.concat);
@@ -56,6 +56,11 @@ var isStrict = \elems -> {
 var expressionStatement;
 
 var _transform;
+
+/* State
+ ******************************************************************************/
+// @TODO: evil
+var packageManager;
 
 /* Values
  ******************************************************************************/
@@ -175,9 +180,7 @@ var withStatement = \loc, bindings, body -> let
     vars = bindings
         |> (map, \imp -> {
             var base = ?imp.type === 'ImportPattern'
-                :callExpression(null,
-                    identifier(null, 'require'),
-                    [imp.from])
+                :packageManager.importPackage(imp.from.value)
                 :imp.value;
             return unpack(imp.pattern, base);
         })
@@ -344,9 +347,7 @@ var multiCompose = \loc, f, g ->
 
 /* Package
  ******************************************************************************/
-// @TODO: evil
-var packageManager;
-    
+
 var packageBlock = \loc, exports, body -> let
     imports = ?body.type === 'WithStatement'
         :filter(\x -> x.type === 'ImportPattern', body.bindings)
@@ -680,14 +681,20 @@ _transform = \node -> {
 
 transform = \{options ast} -> {
     // @TODO: Much evil
-    packageManager = require('khepri/compile/package_manager/amd');
-    if (options.package_manager === 'node')
-        packageManager = require('khepri/compile/package_manager/node');
+    with 
+        import 'khepri::compile::package_manager::amd' amd_manager,
+        import 'khepri::compile::package_manager::node' node_manager
+    in {
+        packageManager = amd_manager;
+        
+        if (options.package_manager === 'node')
+            packageManager = node_manager;
 
-    return ({
-        'options': options,
-        'ast': _transform(ast)
-    });
+        return ({
+            'options': options,
+            'ast': _transform(ast)
+        });
+    }
 };
 
 }

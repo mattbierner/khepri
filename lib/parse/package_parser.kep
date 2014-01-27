@@ -7,17 +7,17 @@ with
     import 'bennu::parse' {eager, either, enumeration, expected, next, optional, Parser},
     import 'bennu::lang' {between, sepBy},
     import 'khepri-ast::package' ast_package,
-    import 'khepri/parse/common' {node, nodea},
-    import 'khepri/parse/token_parser' {keyword, punctuator},
-    import 'khepri/parse/value_parser' {identifier},
-    import 'khepri/parse/statement_parser' _
+    import 'khepri::parse::common' {node, nodea},
+    import 'khepri::parse::token_parser' {keyword, punctuator},
+    import 'khepri::parse::value_parser' {identifier},
+    import 'khepri::parse::statement_parser' _
 in {
 
 /* Circular
  ******************************************************************************/
 var withStatement = \args(...) -> {
     with
-        import 'khepri/parse/statement_parser' {withStatement}
+        import 'khepri::parse::statement_parser' {withStatement}
     in {
         return withStatement.apply(undefined, args);
     }
@@ -25,7 +25,7 @@ var withStatement = \args(...) -> {
 
 var blockStatement = \args(...) -> {
     with
-        import 'khepri/parse/statement_parser' {blockStatement}
+        import 'khepri::parse::statement_parser' {blockStatement}
     in {
         return blockStatement.apply(undefined, args);
     }

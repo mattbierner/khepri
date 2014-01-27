@@ -19,7 +19,7 @@ with
     import 'bes::record' record,
     import 'bes::object' object,
     
-    import 'khepri/compile/scope' {Scope}
+    import 'khepri::compile::scope' {Scope}
 in {
 
 var map = Function.prototype.call.bind(Array.prototype.map);

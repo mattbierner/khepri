@@ -2,7 +2,8 @@
  * @fileOverview
  */
 package (
-    definePackage)
+    definePackage
+    importPackage)
 with
     import 'khepri-ast::declaration' ast_declaration,
     import 'khepri-ast::expression' ast_expression,
@@ -19,6 +20,13 @@ var path = \path ->
 
 /* Package Manager
  ******************************************************************************/
+importPackage = \imp -> let
+    packagePath = path(imp)
+in
+    ast_expression.CallExpression.create(null,
+        ast_value.Identifier.create(null, 'require'),
+        [ast_value.Literal.create(null, 'string', packagePath)]);
+
 definePackage = \loc exports imports targets body -> let
     exportHeader = ast_declaration.VariableDeclaration.create(null,
         map(exports, \x ->
