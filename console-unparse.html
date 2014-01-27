@@ -23,40 +23,6 @@
             color: red;
         }
         
-        .node .bg {
-            fill: #D4D9B4;
-            stroke-width: 2px;
-            stroke: rgba(255, 255, 255, .25);
-        }
-        
-        .node.InnerNode .bg {
-            stroke: rgba(0, 0, 0, .5);
-        }
-        
-       .node.InnerNode:hover .bg {
-            opacity: .65;
-        }
-        
-        .node.Collapsed text {
-            font-weight: bold;
-        }
-        
-        .node.Statement .bg {
-            fill: #C0974E;
-        }
-        
-        .node.Expression .bg {
-            fill: #7A9FA2;
-        }
-        
-        .node.Identifier .bg {
-            fill: #A7AE61;
-        }
-        
-        .node.Literal .bg {
-            fill: #86575A;
-        }
-        
         #text_out {
             border: 1px solid black;
             padding: 0;
@@ -98,9 +64,8 @@
                 'seshet': 'dependencies/seshet/dist/seshet',
                 'bes': 'dependencies/bes/dist',
                 
-                'ecma': 'dependencies/parse-ecma/lib',
-                'ecma-unparse': 'dependencies/ecma-unparse/lib',
-                'ecma-ast': 'dependencies/ecma-ast/lib',
+                'ecma-unparse': '../ecma-unparse/dist',
+                'ecma-ast': '../ecma-ast/dist',
                 'khepri-ast': 'dependencies/khepri-ast/dist',
                 
                 'neith': 'dependencies/neith/dist',
@@ -110,16 +75,17 @@
         });
 
         $(function () {
-            require(['nu-stream/stream',
+            require([
+                'nu-stream/stream',
                'khepri/lex/lexer',
                'khepri/parse/parser',
-               'khepri/compile/transform',
-               'khepri/compile/lexical',
                'khepri/compile/compile',
-               'ecma-unparse/unparse', 'ecma-unparse/print'],
+               'ecma-unparse/unparse',
+               'ecma-unparse/print'],
             function(stream,
-                    lexer, parser, transform, lexical, compile,
-                    unparse, unparse_print) {
+                    lexer, parser, compile,
+                    unparse,
+                    unparse_print) {
                     
                 $('button').click(function () {
                     var input = $('textarea').val();
