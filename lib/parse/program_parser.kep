@@ -10,16 +10,17 @@ with
     import 'bennu::lang' {then},
     import 'nu-stream::stream' {NIL},
     import 'khepri-ast::program' ast_program,
-    import 'khepri::parse::common' {node},
-    import 'khepri::parse::statement_parser' _,
-    import 'khepri::parse::package_parser' _
+    
+    import './common' {node},
+    import './statement_parser' _,
+    import './package_parser' _
 in {
 
 /* Circular
  ******************************************************************************/
 var statementParser = \args(...) -> {
     with
-        import 'khepri::parse::statement_parser' {statement}
+        import './statement_parser' {statement}
     in {
         return statement.apply(undefined, args);
     }
@@ -27,7 +28,7 @@ var statementParser = \args(...) -> {
 
 var khepriPackage = \args(...) -> {
     with
-        import 'khepri::parse::package_parser' {khepriPackage}
+        import './package_parser' {khepriPackage}
     in {
         return khepriPackage.apply(undefined, args);
     }

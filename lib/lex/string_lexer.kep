@@ -43,8 +43,8 @@ with
     import 'bennu::text' {character},
     import 'bennu::lang' {between times},
     import 'nu-stream::stream' {foldl},
-    import 'khepri::lex::line_terminator_lexer' {lineTerminatorSequence lineTerminator},
-    import 'khepri::lex::number_lexer' {decimalDigit hexDigit}
+    import './line_terminator_lexer' {lineTerminatorSequence lineTerminator},
+    import './number_lexer' {decimalDigit hexDigit}
 in {
 
 var join = (foldl, (+), '');

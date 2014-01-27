@@ -2,8 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/regular_expression_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-stream/stream",
-    "khepri/lex/identifier_lexer", "khepri/lex/line_terminator_lexer"
+define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-stream/stream", "./identifier_lexer",
+    "./line_terminator_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
     "use strict";
     var always = __o["always"],

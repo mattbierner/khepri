@@ -2,8 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/lex/identifier_lexer.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "khepri/lex/reserved_word_lexer",
-    "khepri/lex/string_lexer"
+define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "./reserved_word_lexer",
+    "./string_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3) {
     "use strict";
     var always = __o["always"],

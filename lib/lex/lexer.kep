@@ -29,18 +29,19 @@ with
     import 'bennu::lang' {then},
     import 'nu-stream::stream' {memoStream, NIL, 'from': streamFrom},
     import 'khepri-ast::token' lexToken,
-    import 'khepri::position' {SourceLocation, SourcePosition},
-    import 'khepri::lex::boolean_lexer' {booleanLiteral},
-    import 'khepri::lex::comment_lexer' {comment},
-    import 'khepri::lex::identifier_lexer' {identifier, identifierName},
-    import 'khepri::lex::line_terminator_lexer' {lineTerminator},
-    import 'khepri::lex::null_lexer' {nullLiteral},
-    import 'khepri::lex::number_lexer' {numericLiteral},
-    import 'khepri::lex::punctuator_lexer' {punctuator},
-    import 'khepri::lex::reserved_word_lexer' {reservedWord},
-    import 'khepri::lex::string_lexer' {stringLiteral},
-    import 'khepri::lex::whitespace_lexer' {whitespace},
-    import 'khepri::lex::regular_expression_lexer' {regularExpressionLiteral}
+    
+    import '../position' {SourceLocation, SourcePosition},
+    import './boolean_lexer' {booleanLiteral},
+    import './comment_lexer' {comment},
+    import './identifier_lexer' {identifier, identifierName},
+    import './line_terminator_lexer' {lineTerminator},
+    import './null_lexer' {nullLiteral},
+    import './number_lexer' {numericLiteral},
+    import './punctuator_lexer' {punctuator},
+    import './reserved_word_lexer' {reservedWord},
+    import './string_lexer' {stringLiteral},
+    import './whitespace_lexer' {whitespace},
+    import './regular_expression_lexer' {regularExpressionLiteral}
 in {
 
 var makeToken = \type, p ->

@@ -5,7 +5,7 @@
 define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression", "ecma-ast/node",
     "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause", "khepri-ast/declaration",
     "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/program", "khepri-ast/statement",
-    "khepri-ast/value", "khepri/compile/package_manager/amd", "khepri/compile/package_manager/node"
+    "khepri-ast/value", "./package_manager/amd", "./package_manager/node"
 ], (function(require, exports, ecma_clause, ecma_declaration, ecma_expression, ecma_node, ecma_program,
     ecma_statement, ecma_value, khepri_clause, khepri_declaration, khepri_expression, khepri_node,
     khepri_pattern, khepri_program, khepri_statement, khepri_value, _, _0) {
@@ -379,8 +379,8 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
     (transform = (function(__o) {
         var options = __o["options"],
             ast = __o["ast"],
-            amd_manager = require("khepri/compile/package_manager/amd"),
-            node_manager = require("khepri/compile/package_manager/node");
+            amd_manager = require("./package_manager/amd"),
+            node_manager = require("./package_manager/node");
         (packageManager = amd_manager);
         if ((options.package_manager === "node"))(packageManager = node_manager);
         return ({

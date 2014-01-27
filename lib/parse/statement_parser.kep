@@ -42,17 +42,17 @@ with
     import 'khepri-ast::declaration' ast_declaration,
     import 'khepri-ast::statement' ast_statement,
     
-    import 'khepri::parse::common' {
+    import './common' {
         node
         nodea},
-    import 'khepri::parse::token_parser' {keyword punctuator},
-    import 'khepri::parse::expression_parser' {
+    import './token_parser' {keyword punctuator},
+    import './expression_parser' {
         expression
         topLevelExpression},
-    import 'khepri::parse::pattern_parser' {
+    import './pattern_parser' {
         importPattern
         pattern},
-    import 'khepri::parse::value_parser' {identifier}
+    import './value_parser' {identifier}
 in {
 
 /* Forward declarations

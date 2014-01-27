@@ -1,10 +1,10 @@
 package (
     compile)
 with
-    import 'khepri::compile::lexical' lexical,
-    import 'khepri::compile::transform' transform,
-    import 'khepri::compile::khepri_peep' khepri_peep,
-    import 'khepri::compile::ecma_peep' ecma_peep
+    import './lexical' lexical,
+    import './transform' transform,
+    import './khepri_peep' khepri_peep,
+    import './ecma_peep' ecma_peep
 in {
 
 compile =

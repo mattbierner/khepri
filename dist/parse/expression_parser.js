@@ -3,9 +3,8 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/declaration",
-    "khepri-ast/expression", "khepri-ast/statement", "khepri-ast/pattern", "khepri-ast/value", "khepri/position",
-    "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/program_parser", "khepri/parse/value_parser",
-    "khepri/parse/pattern_parser"
+    "khepri-ast/expression", "khepri-ast/statement", "khepri-ast/pattern", "khepri-ast/value", "../position",
+    "./common", "./token_parser", "./program_parser", "./value_parser", "./pattern_parser"
 ], (function(require, exports, __o, __o0, __o1, ast_declaration, ast_expression, ast_statement, ast_pattern,
     ast_value, __o2, __o3, __o4, program_parser, __o5, pattern) {
     "use strict";
@@ -48,7 +47,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
             assignmentOperator, assignmentExpression, expression, topLevelExpression, sourceElements = (
                 function() {
                     var args = arguments,
-                        __o6 = require("khepri/parse/program_parser"),
+                        __o6 = require("./program_parser"),
                         sourceElements = __o6["sourceElements"];
                     return sourceElements.apply(undefined, args);
                 });

@@ -2,13 +2,13 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/common.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/stream"], (function(require, exports, parse,
-    __o, stream) {
+define(["require", "exports", "bennu/parse", "nu-stream/stream", "../position"], (function(require, exports, parse,
+    stream, __o) {
     "use strict";
     var always = parse["always"],
         bind = parse["bind"],
-        SourceLocation = __o["SourceLocation"],
         NIL = stream["NIL"],
+        SourceLocation = __o["SourceLocation"],
         precedence, node, nodea, positionParser;
     (precedence = (function(p, table) {
         var sep = parse.choicea(table.map((function(entry) {

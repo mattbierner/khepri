@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/package_manager/amd.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "khepri-ast/declaration", "khepri-ast/expression", "khepri-ast/pattern",
     "khepri-ast/statement", "khepri-ast/value"
 ], (function(require, exports, ast_declaration, ast_expression, ast_pattern, ast_statement, ast_value) {

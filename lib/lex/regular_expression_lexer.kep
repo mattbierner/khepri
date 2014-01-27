@@ -39,8 +39,8 @@ with
     import 'bennu::lang' {between},
     import 'bennu::text' {character},
     import 'nu-stream::stream' {foldl},
-    import 'khepri::lex::identifier_lexer' {identifierPart},
-    import 'khepri::lex::line_terminator_lexer' {lineTerminator}
+    import './identifier_lexer' {identifierPart},
+    import './line_terminator_lexer' {lineTerminator}
 in {
 
 var join = (foldl, (+), '');

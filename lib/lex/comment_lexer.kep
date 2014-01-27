@@ -17,7 +17,8 @@ with
     import 'bennu::parse' {anyToken always bind cons either many next Parser RecParser test token},
     import 'bennu::text' {character string},
     import 'nu-stream::stream' {foldl NIL},
-    import 'khepri::lex::line_terminator_lexer' {lineTerminator}
+    
+    import './line_terminator_lexer' {lineTerminator}
 in {
 
 var join = \p ->

@@ -24,8 +24,8 @@ with
     import 'khepri-ast::statement' khepri_statement,
     import 'khepri-ast::value' khepri_value,
     
-    import 'khepri::compile::package_manager/amd' _,
-    import 'khepri::compile::package_manager/node' _
+    import './package_manager::amd' _,
+    import './package_manager::node' _
 in {
 
 var concat = Function.prototype.call.bind(Array.prototype.concat);
@@ -682,8 +682,8 @@ _transform = \node -> {
 transform = \{options ast} -> {
     // @TODO: Much evil
     with 
-        import 'khepri::compile::package_manager::amd' amd_manager,
-        import 'khepri::compile::package_manager::node' node_manager
+        import './package_manager/amd' amd_manager,
+        import './package_manager/node' node_manager
     in {
         packageManager = amd_manager;
         
