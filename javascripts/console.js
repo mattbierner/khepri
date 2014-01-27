@@ -26,28 +26,43 @@ var output = CodeMirror.fromTextArea(document.getElementById('javascript-console
     'readOnly': true
 });
 
+var translate = function(input) {
+    $('#text-out').text('');
+    
+    var options = {
+        'package_manager': $('#package_manager').val()
+    };
+    
+    try {
+        var lex = lexer.lex(input);
+        var ast = parser.parseStream(lex);
+        var ecam_ast = compile.compile(ast, options);
+        var unparsed = unparse.unparse(ecam_ast);
+        var s = unparse_print.print(unparsed);
+        
+         output.doc.setValue(s);
+         $('#text-out').removeClass('error');
+
+         return s;
+    } catch(e) {
+        $('#text-out').addClass('error').text(e);
+        
+    }
+};
 
 $(function () {
-    $('button').click(function () {
-        var input = editor.doc.getValue('\n');
-        $('.ParseError').text('');
-        $('#text_out').text('');
-        
-        var options = {
-            'package_manager': $('#package_manager').val()
-        };
+    $('#translate-button').click(function() {
+        translate(editor.doc.getValue('\n'));
+    });
+    
+    $('#evaluate-button').click(function() {
+        var result = translate(editor.doc.getValue('\n'));
         
         try {
-            var lex = lexer.lex(input);
-            var ast = parser.parseStream(lex);
-            
-            var ecam_ast = compile.compile(ast, options);
-            var unparsed = unparse.unparse(ecam_ast);
-            var s = unparse_print.print(unparsed);
-            
-            output.doc.setValue(s);
-        } catch (e) {
-            $('.ParseError').text(e);
+            var out = eval(result);
+            $('#text-out').text(out).removeClass('error');
+        } catch(e) {
+            $('#text-out').addClass('error').text(e);
         }
     });
 });

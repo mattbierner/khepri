@@ -3,51 +3,55 @@ article.wrapper {
     width: auto;
 }
 
+#try-khepri h2 {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.error {
+    color: red;
+}
+
 #khepri-input,
 #javascript-output {
     width: 50%;
     float: left;
     height: auto;
     min-height: 300px;
-        position: relative;
+    position: relative;
 }
 
 #console {
     position: relative;
 }
 
-#console h2 {
-    text-align: center;
-    font-size: 1.2em;
+#console-controls,
+#console-options {
+    margin-top: 0.4em;
 }
 
-#console button {
-    background: none;
-    border-style: solid;
+#console-controls {
+    float: left;
 }
 
-
+#console-options {
+    float: right;
+}
 
 #console-output {
     width: 100%;
     clear: both;
     padding-top: 1em;
-}
-
-#khepri-input {
-    border-right: 1px solid #e5e5e5;
-}
-
-#javascript-output {
+    text-align: left;
 }
 
 
 #console {
     padding: 8px 15px;
-  background: #f8f8f8;
-  border-radius:5px;
-  border:1px solid #e5e5e5;
-  overflow-x: auto;
+    background: #f8f8f8;
+    border-radius:5px;
+    border:1px solid #e5e5e5;
+    overflow-x: auto;
 }
 
 #khepri-input > *,
