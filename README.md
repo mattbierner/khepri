@@ -17,15 +17,6 @@ more fun, with a focus on functional style programming.
     git submodule update --init
 
 
-# Using Khepri #
-
-## Dependencies ##
-* [parse.js][parsejs]
-* [nu][nu]
-* [ecma-unparse][ecmaunparse]
-* [khepri-ast][khepriast]
-* [ecma-ast][ecmaast]
-
 # Differences with ECMAScript
 
 ### Lambda Function Expression Syntax
