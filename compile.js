@@ -25,8 +25,8 @@ requirejs.config({
 
 var KHEPRI_EXT = /^\.kep$/i;
 
-requirejs(['ecma_unparse/unparse',
-           'ecma_unparse/print',
+requirejs(['ecma-unparse/unparse',
+           'ecma-unparse/print',
            'khepri/compile/compile',
            'khepri/lex/lexer',
            'khepri/parse/parser'],
