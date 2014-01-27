@@ -7,22 +7,22 @@ package (
     transform
     transformStage)
 with 
-    import 'ecma_ast::clause' ecma_clause,
-    import 'ecma_ast::declaration' ecma_declaration,
-    import 'ecma_ast::expression' ecma_expression,
-    import 'ecma_ast::node' ecma_node,
-    import 'ecma_ast::program' ecma_program,
-    import 'ecma_ast::statement' ecma_statement,
-    import 'ecma_ast::value'ecma_value ,
+    import 'ecma-ast::clause' ecma_clause,
+    import 'ecma-ast::declaration' ecma_declaration,
+    import 'ecma-ast::expression' ecma_expression,
+    import 'ecma-ast::node' ecma_node,
+    import 'ecma-ast::program' ecma_program,
+    import 'ecma-ast::statement' ecma_statement,
+    import 'ecma-ast::value'ecma_value ,
     
-    import 'khepri_ast::clause' khepri_clause,
-    import 'khepri_ast::declaration' khepri_declaration,
-    import 'khepri_ast::expression' khepri_expression,
-    import 'khepri_ast::node' khepri_node#{setUserData},
-    import 'khepri_ast::pattern' khepri_pattern,
-    import 'khepri_ast::program' khepri_program,
-    import 'khepri_ast::statement' khepri_statement,
-    import 'khepri_ast::value' khepri_value,
+    import 'khepri-ast::clause' khepri_clause,
+    import 'khepri-ast::declaration' khepri_declaration,
+    import 'khepri-ast::expression' khepri_expression,
+    import 'khepri-ast::node' khepri_node#{setUserData},
+    import 'khepri-ast::pattern' khepri_pattern,
+    import 'khepri-ast::program' khepri_program,
+    import 'khepri-ast::statement' khepri_statement,
+    import 'khepri-ast::value' khepri_value,
     
     import 'khepri/compile/package_manager/amd' _,
     import 'khepri/compile/package_manager/node' _

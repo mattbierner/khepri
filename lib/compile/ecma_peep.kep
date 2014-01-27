@@ -4,16 +4,16 @@
 package (
     optimize)
 with
-    import 'neith/tree' tree,
-    import 'neith/zipper' zipper,
+    import 'neith::tree' tree,
+    import 'neith::zipper' zipper,
 
-    import 'ecma_ast_zipper/ecma_zipper' {ecmaZipper},
+    import 'ecma-ast-zipper' {ecmaZipper},
     
-    import 'ecma_ast::node' {modify, Node},
-    import 'ecma_ast::value' ast_value,
-    import 'ecma_ast::declaration' ast_declaration,
-    import 'ecma_ast::statement' ast_statement,
-    import 'ecma_ast::expression' ast_expression
+    import 'ecma-ast::node' {modify, Node},
+    import 'ecma-ast::value' ast_value,
+    import 'ecma-ast::declaration' ast_declaration,
+    import 'ecma-ast::statement' ast_statement,
+    import 'ecma-ast::expression' ast_expression
 in {
 
 var concat = \args(...) ->

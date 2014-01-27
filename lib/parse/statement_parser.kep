@@ -38,9 +38,9 @@ with
         sepBy1
         then},
     
-    import 'khepri_ast::clause' ast_clause,
-    import 'khepri_ast::declaration' ast_declaration,
-    import 'khepri_ast::statement' ast_statement,
+    import 'khepri-ast::clause' ast_clause,
+    import 'khepri-ast::declaration' ast_declaration,
+    import 'khepri-ast::statement' ast_statement,
     
     import 'khepri/parse/common' {
         node

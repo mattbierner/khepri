@@ -2,10 +2,10 @@
  * THIS FILE IS AUTO GENERATED from 'lib/compile/transform.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_ast/expression", "ecma_ast/node",
-    "ecma_ast/program", "ecma_ast/statement", "ecma_ast/value", "khepri_ast/clause", "khepri_ast/declaration",
-    "khepri_ast/expression", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/program", "khepri_ast/statement",
-    "khepri_ast/value", "khepri/compile/package_manager/amd", "khepri/compile/package_manager/node"
+define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression", "ecma-ast/node",
+    "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause", "khepri-ast/declaration",
+    "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/program", "khepri-ast/statement",
+    "khepri-ast/value", "khepri/compile/package_manager/amd", "khepri/compile/package_manager/node"
 ], (function(require, exports, ecma_clause, ecma_declaration, ecma_expression, ecma_node, ecma_program,
     ecma_statement, ecma_value, khepri_clause, khepri_declaration, khepri_expression, khepri_node,
     khepri_pattern, khepri_program, khepri_statement, khepri_value, _, _0) {

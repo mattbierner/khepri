@@ -7,14 +7,14 @@ package (
     check
     checkStage)
 with
-    import 'khepri_ast::node' ast_node#{setUserData},
-    import 'khepri_ast::pattern' ast_pattern,
-    import 'khepri_ast::value' ast_value,
+    import 'khepri-ast::node' ast_node#{setUserData},
+    import 'khepri-ast::pattern' ast_pattern,
+    import 'khepri-ast::value' ast_value,
     
-    import 'neith/zipper' zipper,
-    import 'neith/tree' tree,
+    import 'neith::zipper' zipper,
+    import 'neith::tree' tree,
     
-    import 'khepri_ast_zipper/khepri_zipper' {khepriZipper},
+    import 'khepri-ast-zipper' {khepriZipper},
     
     import 'bes::record' record,
     import 'bes::object' object,

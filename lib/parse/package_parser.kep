@@ -6,7 +6,7 @@ package (
 with
     import 'bennu::parse' {eager, either, enumeration, expected, next, optional, Parser},
     import 'bennu::lang' {between, sepBy},
-    import 'khepri_ast::package' ast_package,
+    import 'khepri-ast::package' ast_package,
     import 'khepri/parse/common' {node, nodea},
     import 'khepri/parse/token_parser' {keyword, punctuator},
     import 'khepri/parse/value_parser' {identifier},

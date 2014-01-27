@@ -2,8 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri_ast/declaration",
-    "khepri_ast/expression", "khepri_ast/statement", "khepri_ast/pattern", "khepri_ast/value", "khepri/position",
+define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/declaration",
+    "khepri-ast/expression", "khepri-ast/statement", "khepri-ast/pattern", "khepri-ast/value", "khepri/position",
     "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/program_parser", "khepri/parse/value_parser",
     "khepri/parse/pattern_parser"
 ], (function(require, exports, __o, __o0, __o1, ast_declaration, ast_expression, ast_statement, ast_pattern,

@@ -2,8 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value", "neith/zipper", "neith/tree",
-    "khepri_ast_zipper/khepri_zipper", "bes/record", "bes/object", "khepri/compile/scope"
+define(["require", "exports", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/value", "neith/zipper", "neith/tree",
+    "khepri-ast-zipper", "bes/record", "bes/object", "khepri/compile/scope"
 ], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, record, object, __o0) {
     "use strict";
     var setUserData = ast_node["setUserData"],

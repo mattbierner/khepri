@@ -9,7 +9,7 @@ with
     import 'bennu::parse' {always, cons, eager, either, eof, many, next, Parser, rec},
     import 'bennu::lang' {then},
     import 'nu-stream::stream' {NIL},
-    import 'khepri_ast::program' ast_program,
+    import 'khepri-ast::program' ast_program,
     import 'khepri/parse/common' {node},
     import 'khepri/parse/statement_parser' _,
     import 'khepri/parse/package_parser' _

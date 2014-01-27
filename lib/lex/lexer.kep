@@ -28,7 +28,7 @@ with
         ParserState},
     import 'bennu::lang' {then},
     import 'nu-stream::stream' {memoStream, NIL, 'from': streamFrom},
-    import 'khepri_ast::token' lexToken,
+    import 'khepri-ast::token' lexToken,
     import 'khepri/position' {SourceLocation, SourcePosition},
     import 'khepri/lex/boolean_lexer' {booleanLiteral},
     import 'khepri/lex/comment_lexer' {comment},

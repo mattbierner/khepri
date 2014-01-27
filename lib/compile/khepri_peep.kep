@@ -4,16 +4,16 @@
 package (
     optimize)
 with
-    import 'neith/tree' tree,
-    import 'neith/zipper' zipper,
+    import 'neith::tree' tree,
+    import 'neith::zipper' zipper,
 
-    import 'khepri_ast_zipper/khepri_zipper' {khepriZipper},
+    import 'khepri-ast-zipper' {khepriZipper},
     
-    import 'khepri_ast::node' {modify Node setUserData},
-    import 'khepri_ast::statement' ast_statement,
-    import 'khepri_ast::expression' ast_expression,
-    import 'khepri_ast::pattern' ast_pattern,
-    import 'khepri_ast::value' ast_value
+    import 'khepri-ast::node' {modify Node setUserData},
+    import 'khepri-ast::statement' ast_statement,
+    import 'khepri-ast::expression' ast_expression,
+    import 'khepri-ast::pattern' ast_pattern,
+    import 'khepri-ast::value' ast_value
 
 
 in {
@@ -25,7 +25,10 @@ var concat = \args(...) ->
 var map = \f, x -> [].map.call(x, f);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
-var flatten = \x -> (Array.isArray(x) ? reduce(x, \p, c -> p.concat(c), []) : x);
+var flatten = \x ->
+    ?Array.isArray(x)
+        :reduce(x, \p, c -> p.concat(c), [])
+        :x;
 
 /*
  ******************************************************************************/
@@ -36,7 +39,7 @@ var addPeephole = \type, condition, f -> {
         'condition': condition,
         'map': f
     };
-    peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]);
+    peepholes[type] = ?peepholes[type] :peepholes[type].concat(entry) :[entry];
 };
 
 /* Peepholes
@@ -138,7 +141,7 @@ addPeephole('BinaryExpression',
             node.right.type === 'UnaryOperatorExpression' || node.right.type === 'TernaryOperatorExpression'),
     \node ->
         ast_expression.CallExpression.create(null,
-            (node.right.type === 'CurryExpression' ? node.right.base : node.right),
+            (?node.right.type === 'CurryExpression' :node.right.base :node.right),
             concat(node.right.args || [], node.left)));
 
 /**
@@ -154,7 +157,7 @@ addPeephole('BinaryExpression',
     
     \node ->
         ast_expression.CallExpression.create(null,
-            (node.left.type === 'CurryExpression' ? node.left.base : node.left),
+            (?node.left.type === 'CurryExpression' :node.left.base :node.left),
             concat(node.left.args || [], node.right)));
 
 
@@ -168,7 +171,7 @@ var opt = \z -> {
     }, z);
     
     var next = zipper.nextDfs(t);
-    return (next ? opt(next) : t);
+    return ?next :opt(next) :t;
 };
 
 optimize = \{options ast} ->

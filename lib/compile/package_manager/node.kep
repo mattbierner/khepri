@@ -4,10 +4,10 @@
 package (
     definePackage)
 with
-    import 'khepri_ast::declaration' ast_declaration,
-    import 'khepri_ast::expression' ast_expression,
-    import 'khepri_ast::statement' ast_statement,
-    import 'khepri_ast::value' ast_value
+    import 'khepri-ast::declaration' ast_declaration,
+    import 'khepri-ast::expression' ast_expression,
+    import 'khepri-ast::statement' ast_statement,
+    import 'khepri-ast::value' ast_value
 in {
 
 var concat = Function.prototype.call.bind(Array.prototype.concat);
