@@ -1,36 +1,30 @@
-[submodule "dependencies/parse"]
-	path = dependencies/parse
-	url = git@github.com:mattbierner/parse.js.git
 [submodule "dependencies/ecma-unparse"]
-	path = dependencies/ecma-unparse
-	url = https://github.com/mattbierner/ecma-unparse.git
+        path = dependencies/ecma-unparse
+        url = https://github.com/mattbierner/ecma-unparse.git
 [submodule "dependencies/nu"]
-	path = dependencies/nu
-	url = https://github.com/mattbierner/nu.git
+        path = dependencies/nu
+        url = https://github.com/mattbierner/nu.git
 [submodule "dependencies/khepri-ast"]
-	path = dependencies/khepri-ast
-	url = git://github.com/mattbierner/khepri-ast.git
+        path = dependencies/khepri-ast
+        url = https://github.com/mattbierner/khepri-ast.git
 [submodule "dependencies/ecma-ast"]
-	path = dependencies/ecma-ast
-	url = git://github.com/mattbierner/ecma-ast.git
-[submodule "dependencies/seshat"]
-	path = dependencies/seshat
-	url = git://github.com/mattbierner/seshat
+        path = dependencies/ecma-ast
+        url = https://github.com/mattbierner/ecma-ast.git
 [submodule "dependencies/neith"]
-	path = dependencies/neith
-	url = git@github.com:mattbierner/neith.git
+        path = dependencies/neith
+        url = https://github.com/mattbierner/neith.git
 [submodule "dependencies/ecma-ast-zipper"]
-	path = dependencies/ecma-ast-zipper
-	url = git@github.com:mattbierner/ecma-ast-zipper.git
+        path = dependencies/ecma-ast-zipper
+        url = https://github.com/mattbierner/ecma-ast-zipper.git
 [submodule "dependencies/khepri-ast-zipper"]
-	path = dependencies/khepri-ast-zipper
-	url = git@github.com:mattbierner/khepri-ast-zipper.git
+        path = dependencies/khepri-ast-zipper
+        url = https://github.com/mattbierner/khepri-ast-zipper.git
 [submodule "dependencies/seshet"]
-	path = dependencies/seshet
-	url = git@github.com:mattbierner/seshet.git
+        path = dependencies/seshet
+        url = https://github.com/mattbiernerseshet.git
 [submodule "dependencies/bennu"]
-	path = dependencies/bennu
-	url = git@github.com:mattbierner/bennu.git
+        path = dependencies/bennu
+        url = https://github.com/mattbierner/bennu.git
 [submodule "dependencies/bes"]
-	path = dependencies/bes
-	url = git@github.com:mattbierner/bes.git
+        path = dependencies/bes
+        url = https://github.com/mattbierner/bes.git
