@@ -97,7 +97,7 @@ in {
 ### Install
 
 ```
-$ npm install -g khepri`
+$ npm install -g khepri
 ```
 
 ### Compile
