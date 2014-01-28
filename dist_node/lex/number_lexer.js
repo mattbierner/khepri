@@ -66,8 +66,8 @@ var hexIntegerLiteralDigits = Parser("Hex Integer Literal Digits Lexer", bind(he
         return f(g(x));
     });
 })(always, parseInt))));
-(decimalLiteral = Parser("Decimal Literal Lexer", binds(enumeration(binds(enumeration(decimalDigits, optional(0, next(
-    decimal, optional(0, decimalDigits)))), (function(whole, fractional) {
+(decimalLiteral = Parser("Decimal Literal Lexer", binds(enumeration(binds(enumeration(decimalDigits, optional(0,
+    attempt(next(decimal, decimalDigits)))), (function(whole, fractional) {
     return always(parseFloat(((whole + ".") + fractional)));
 })), optional(0, exponentPart)), (function(num, exp) {
     return always((num * Math.pow(10, parseInt(exp))));

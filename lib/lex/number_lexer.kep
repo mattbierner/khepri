@@ -149,9 +149,9 @@ decimalLiteral = (Parser, 'Decimal Literal Lexer') <|
                 enumeration(
                     decimalDigits,
                     optional(0,
-                        next(
+                        attempt(next(
                             decimal,
-                            optional(0, decimalDigits)))),
+                            decimalDigits)))),
                 \whole, fractional ->
                     always(parseFloat(whole + '.' + fractional))),
             optional(0, exponentPart)),

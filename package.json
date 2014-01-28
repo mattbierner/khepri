@@ -16,6 +16,10 @@
     ],
     
     "main": "index.js",
+    "bin": {
+        "khepri": "./bin/khepri",
+    },
+    
     "directories": {
         "lib": "dist_node/"
     },

@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/lex/number_lexer.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-stream/stream"], (function(require,
     exports, __o, __o0, __o1, __o2) {
     "use strict";
@@ -66,8 +70,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
         });
     })(always, parseInt))));
     (decimalLiteral = Parser("Decimal Literal Lexer", binds(enumeration(binds(enumeration(decimalDigits,
-        optional(0, next(decimal, optional(0, decimalDigits)))), (function(whole,
-        fractional) {
+        optional(0, attempt(next(decimal, decimalDigits)))), (function(whole, fractional) {
         return always(parseFloat(((whole + ".") + fractional)));
     })), optional(0, exponentPart)), (function(num, exp) {
         return always((num * Math.pow(10, parseInt(exp))));

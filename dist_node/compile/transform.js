@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/transform.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var ecma_clause = require("ecma-ast")["clause"],
     ecma_declaration = require("ecma-ast")["declaration"],
@@ -258,7 +254,16 @@ addTransform("AssignmentExpression", (function(node) {
     return assignmentExpression(node.loc, node.operator, node.left, node.right);
 }));
 addTransform("UnaryExpression", (function(node) {
-    return ecma_expression.UnaryExpression.create(node.loc, node.operator, _transform(node.argument));
+    var op = node.operator;
+    switch (op) {
+        case "++":
+            (op = "+");
+            break;
+        case "--":
+            (op = "-");
+            break;
+    }
+    return ecma_expression.UnaryExpression.create(node.loc, op, _transform(node.argument));
 }));
 addTransform("BinaryExpression", (function(node) {
     switch (node.operator) {

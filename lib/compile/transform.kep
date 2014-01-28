@@ -471,10 +471,17 @@ addTransform('AssignmentExpression', \node ->
         node.left,
         node.right));
 
-addTransform('UnaryExpression', \node ->
-    ecma_expression.UnaryExpression.create(node.loc,
-        node.operator,
-        _transform(node.argument)));
+addTransform('UnaryExpression', \node ->  {
+    var op = node.operator;
+    switch (op) {
+    case '++': op = '+'; break;
+    case '--': op = '-'; break;
+    }
+    
+    return ecma_expression.UnaryExpression.create(node.loc,
+        op,
+        _transform(node.argument));
+});
 
 addTransform('BinaryExpression', \node -> {
     switch (node.operator) {

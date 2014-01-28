@@ -1,5 +1,11 @@
 # ChangeLog #
 
+## 0.11.0 - January 27, 2014
+* New expressions must supply an argument list.
+* Changed curry syntax.
+** Form is 
+* Restricted numbers to always require digits both before and after the decimal.
+
 ## 0.10.0 - January 26, 2014
 * Changed conditional expression syntax.
 ** Now prefixed by `?` followed by the test then the two choices prefixed with `:`.

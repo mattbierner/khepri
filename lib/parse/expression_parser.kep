@@ -22,6 +22,7 @@ package (
 // Call Expression
     args
     argumentList
+    callExpression
     
 // Member Expression
     dotAccessor
@@ -33,7 +34,6 @@ package (
     newExpression
     
 // Left hand side expression
-    leftHandSideExpression
     leftHandReferenceExpression
     
 // Unary Expression
@@ -75,9 +75,11 @@ with
         memo
         next
         optional
+        RecParser
         Parser},
     import 'bennu::lang' {
         between
+        chainl
         sepBy
         sepBy1
         then},
@@ -109,8 +111,6 @@ var sourceElements = \args(...) -> {
 /* Forward Declarations
  ******************************************************************************/
 expression = \args(...) -> expression.apply(undefined, args);
-
-newExpression = \args(...) -> newExpression.apply(undefined, args);
 
 memberExpression = \args(...) -> memberExpression.apply(undefined, args);
 
@@ -271,7 +271,9 @@ var unaryOperatorExpression = (Parser, 'Unary Operator Expression') <|
             punctuator(
                 'void',
                 '~',
-                '!')),
+                '!',
+                '++',
+                '--')),
         \{loc, value} -> always(ast_expression.UnaryOperatorExpression.create(loc, value)));
 
 var binaryOperatorExpression = (Parser, 'Binary Operator Expression') <|
@@ -315,26 +317,6 @@ var operatorExpression = (Parser, 'Operator Expression') <|
         binaryOperatorExpression,
         ternayOperatorExpression);
 
-// Curry Expression
-////////////////////////////////////////
-curryExpression = (Parser, 'Curry Expression') <| let
-    base = either(
-        attempt <| expression |> (expected, 'expression'),
-        operatorExpression |> (expected, 'curryable operator'))
-in
-    between(punctuator('('), punctuator(')'),
-        nodea(
-            enumeration(
-                base,
-                optional([], next(
-                    punctuator(','),
-                    eager <| sepBy1(punctuator(','),
-                        expression)))),
-            \loc, base, elements -> 
-                ?elements.length
-                    :ast_expression.CurryExpression.create(loc, base, elements)
-                    :base));
-
 // Primary Expression
 ////////////////////////////////////////
 primaryExpression = (Parser, 'Primary Expression') <|
@@ -342,70 +324,63 @@ primaryExpression = (Parser, 'Primary Expression') <|
         letExpression,
         conditionalExpression,
         identifier,
-        curryExpression,
         literal,
         arrayLiteral,
         objectLiteral,
-        functionExpression);
+        functionExpression,
+        between(punctuator('('), punctuator(')'),
+            either(
+                attempt <| then(
+                    operatorExpression,
+                    lookahead(punctuator(')'))),
+                expression)));
 
-// Calling
+
+
+// Argument
 ////////////////////////////////////////
 argumentList = (Parser, 'Argument List') <| let
     argument = expression |> (expected, "argument")
 in
-    eager <| sepBy(punctuator(','), argument);
+    between(punctuator('('), punctuator(')'),
+        eager(sepBy(punctuator(','), argument)));
 
 args = (Parser, 'Arguments') <|
     node(
-        between(punctuator('('), punctuator(')'),
-            argumentList),
+        argumentList,
         \loc, args -> {
             args.loc = loc;
-            args.argument = true;
             return args;
         });
 
-// At Expression
-////////////////////////////////////////
-var atExpression = (Parser, 'AtExpression') <|
-    nodea(
-        next(
-            punctuator('@'),
-            enumeration(
-                memberExpression,
-                eager <| many(
-                    next(
-                        optional(null, punctuator(':')),
-                        expression)))),
-        ast_expression.CallExpression.create);
-
 // Accessor
 ////////////////////////////////////////
-dotAccessor = (Parser, 'Dot Accessor') <|
+accessor = (Parser, 'Accessor') <|
     node(
         next(
             punctuator('.'),
-            identifier),
-        \loc, x -> ({
+            either(
+                bind(identifier, \x -> always([x, false])),
+                bind(
+                    between(punctuator('('), punctuator(')'),
+                        expression |> (expected, "accessor expression")),
+                    \x -> always([x, true])))),
+        \loc [x computed] -> ({
             'loc': loc,
             'property': x,
-            'computed': false
+            'computed': computed
         }));
 
-bracketAccessor = (Parser, 'Bracket Accessor') <|
-    node(
-        between(punctuator('['), punctuator(']'),
-            expression |> (expected, "accessor expression")),
-        \loc, x -> ({
-            'loc': loc,
-            'property': x,
-            'computed': true
-        }));
-
-accessor = (Parser, 'Accessor') <|
-    either(
-        dotAccessor,
-        bracketAccessor);
+// New Expression
+////////////////////////////////////////
+newExpression = (Parser, 'New Expression') <|
+    nodea(
+        next(
+            keyword('new'),
+            enumeration(
+                memberExpression |> (expected, "member expression"),
+                args |> (expected, "argument list"))),
+        ast_expression.NewExpression.create);
 
 // Member Expression
 ////////////////////////////////////////
@@ -419,55 +394,69 @@ var accessorReducer = \p, c ->
 memberExpression = (Parser, 'Member Expression') <|
     binds(
         enumeration(
-            choice(
-                atExpression,
-                newExpression,
-                primaryExpression),
+            either(
+                primaryExpression,
+                newExpression),
             many(accessor)),
         (foldl, accessorReducer) \>> always);
 
-// New Expression
+// Curry Expression
 ////////////////////////////////////////
-newExpression = (Parser, 'New Expression') <|
-    nodea(
-        next(
-            keyword('new'),
-            enumeration(
-                memberExpression |> (expected, "member expression"),
-                optional([], args))),
-        ast_expression.NewExpression.create);
-
-// Left Hand Side Expression
-////////////////////////////////////////
-leftHandSideExpression = (Parser, 'Left Hand Side Expression') <| let
-    reducer = \p, c ->
-        ?c && c.hasOwnProperty('argument')
-             :ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c)
-             :accessorReducer(p, c)
+curryExpression = (Parser, 'Curry Expression') <| let
+    application = either(
+        args,
+        node(
+            eager(enumeration(memberExpression)),
+            \loc, args -> {
+                args.loc = loc;
+                return args;
+            })),
+    
+    reducer = \f args -> 
+        ast_expression.CurryExpression.create(
+            SourceLocation.merge(f.loc, args.loc),
+            f,
+            args)
 in
     binds(
         enumeration(
-            memberExpression |> memo,
-            many(either(
-                args,
-                accessor))),
+            memberExpression,
+            many(
+                next(
+                    punctuator('@'),
+                    application))),
         (foldl, reducer) \>> always);
 
-// Left Hand Side Expression
+// Call Expression
 ////////////////////////////////////////
-leftHandReferenceExpression = (Parser, 'Left Hand Reference Expression') <|
+var application = either(
+    args,
+    node(
+        eager <| enumeration(curryExpression),
+        \loc, args -> {
+            args.loc = loc;
+            return args;
+        }));
+
+callExpression = (Parser, 'Call Expression') <| let
+    reducer = \p c ->
+        ast_expression.CallExpression.create(
+            SourceLocation.merge(p.loc, c.loc),
+            p,
+            c)
+in
     binds(
         enumeration(
-            identifier |> memo,
-            many(accessor) |> memo),
-        (foldl, accessorReducer) \>> always);
+            curryExpression,
+            many(application)),
+        (foldl, reducer) \>> always);
 
 // Unary Expression
 ////////////////////////////////////////
 unaryOperator = (Parser, 'Unary Operator') <|
     either(
         keyword('typeof', 'void'),
-        punctuator('+', '-', '~', '!'));
+        punctuator('++', '--', '~', '!'));
 
 unaryExpression = (Parser, 'Unary Expression') <| let
     reducer = \argument, op -> 
@@ -479,10 +468,11 @@ in
     binds(
         enumeration(
             many(unaryOperator),
-            leftHandSideExpression |> (expected, "unary argument")),
+            callExpression |> (expected, "unary argument")),
         \ops, expression ->
             always(foldr(reducer, expression, ops)));
 
+        
 // Binary Expressions
 ////////////////////////////////////////
 var multiplicativeOperator = punctuator('*', '/', '%');
@@ -553,31 +543,31 @@ var precedenceTable = [
         'precedence': 8,
         'node': ast_expression.BinaryExpression
     }, {
-        'sep': logicalOROperator,
-        'precedence': 12,
-        'node': ast_expression.LogicalExpression
-    }, {
-        'sep': logicalANDOperator,
-        'precedence': 13,
-        'node': ast_expression.LogicalExpression
-    }, {
         'sep': composeOperator,
-        'precedence': 14,
+        'precedence': 9,
         'node': ast_expression.BinaryExpression
     }, {
         'sep': reverseComposeOperator,
-        'precedence': 14,
+        'precedence': 9,
         'right': true,
         'node': ast_expression.BinaryExpression
     }, {
         'sep': pipeOperator,
-        'precedence': 15,
+        'precedence': 10,
         'node': ast_expression.BinaryExpression
     }, {
         'sep': reversePipeOperator,
-        'precedence': 15,
+        'precedence': 10,
         'right': true,
         'node': ast_expression.BinaryExpression
+    }, {
+        'sep': logicalOROperator,
+        'precedence': 11,
+        'node': ast_expression.LogicalExpression
+    }, {
+        'sep': logicalANDOperator,
+        'precedence': 12,
+        'node': ast_expression.LogicalExpression
     }
 ];
 
@@ -585,6 +575,19 @@ binaryExpression = (Parser, 'Binary Expression') <|
     precedence(
         unaryExpression |> memo,
         precedenceTable);
+
+// Expression
+////////////////////////////////////////
+expression = binaryExpression;
+
+// Left Hand Reference Expression
+////////////////////////////////////////
+leftHandReferenceExpression = (Parser, 'Left Hand Reference Expression') <|
+    binds(
+        enumeration(
+            identifier |> memo,
+            many(accessor) |> memo),
+        (foldl, accessorReducer) \>> always);
 
 // Assignment Expression
 ////////////////////////////////////////
@@ -612,10 +615,6 @@ var deleteExpression = (Parser, 'Delete Expression') <|
             leftHandReferenceExpression |> (expected, 'reference expression')),
         \loc op expression ->
             ast_expression.UnaryExpression.create(loc, op.value, expression));
-
-// Expression
-////////////////////////////////////////
-expression = binaryExpression;
 
 // Top Level Expression
 ////////////////////////////////////////

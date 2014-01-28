@@ -130,6 +130,17 @@ addPeephole('CurryExpression',
     \node -> !node.args.length,
     \node -> node.base);
 
+/**
+ * Flatten currying of curry.
+ */
+addPeephole('CurryExpression',
+    \node -> node.base.type === 'CurryExpression',
+    \node ->
+        ast_expression.CurryExpression.create(null,
+            node.base.base,
+            concat(
+                node.base.args,
+                node.args)));
 
 /**
  * Rewrite left pipe of curried expression to a call.

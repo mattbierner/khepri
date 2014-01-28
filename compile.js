@@ -1,50 +1,18 @@
-var requirejs = require('requirejs');
 var fs = require('fs');
 var path = require('path');
-var argv = require('optimist').argv;
+
 var mkdirp = require('mkdirp');
-
-/*
-requirejs.config({
-    paths: {
-        'khepri': 'dist',
-        
-        'bennu': 'dependencies/bennu/dist',
-        'nu-stream': 'dependencies/nu/dist',
-        'seshet': 'dependencies/seshet/dist/seshet',
-        'bes': 'dependencies/bes/dist',
-        
-        'ecma-unparse': 'dependencies/ecma-unparse/dist',
-        'ecma-ast': 'dependencies/ecma-ast/dist',
-        'khepri-ast': 'dependencies/khepri-ast/dist',
-        
-        'neith': 'dependencies/neith/dist',
-        'ecma-ast-zipper': 'dependencies/ecma-ast-zipper/dist/ecma_zipper',
-        'khepri-ast-zipper': 'dependencies/khepri-ast-zipper/dist/khepri_zipper'
-    }
-});
-
-requirejs(['ecma-unparse/unparse',
-           'ecma-unparse/print',
-           'khepri/compile/compile',
-           'khepri/lex/lexer',
-           'khepri/parse/parser'],
-function(unparse,
-        unparse_print,
-        khepri_compile,
-        lexer,
-        parser){
-    
-*/
-
-
-var KHEPRI_EXT = /^\.kep$/i;
 
 var unparse = require('ecma-unparse').unparse;
 var unparse_print = require('ecma-unparse').print;
-var khepri_compile = require('./index').compile.compile;
-var lexer = require('./index').lex.lexer;
-var parser = require('./index').parse.parser;
+
+var index = path.join(__dirname, 'index');
+var khepri_compile = require(index).compile.compile;
+var lexer = require(index).lex.lexer;
+var parser = require(index).parse.parser;
+
+var KHEPRI_EXT = /^\.kep$/i;
+
 
 var compile = function(input, options) {
     try {
@@ -54,8 +22,6 @@ var compile = function(input, options) {
         return unparse_print.print(unparsed);
     } catch (e) {
         console.error(e + '');
-            console.error(e.stack);
-
         process.exit(1);
     }
 };
@@ -111,6 +77,22 @@ var compileFile = function(inFile, outFile, header, options) {
 
 
 // Arguments
+var argv = require('optimist')
+    .usage('Compile Khepri to Javascript.\nUsage: $0')
+    .demand(1)
+    .options('header', {
+        'default': ''
+    })
+    .describe('header', "Javascript header to prefix output file.")
+    .boolean('version')
+    .describe('version', "Print version number")
+    .argv;
+
+if (argv.version) {
+    console.log("s");
+    return 0;
+}
+
 var inFile = argv._[0],
     outFile = argv['o'],
     header = (argv['header'] ? argv['header'] + '\n' : '');

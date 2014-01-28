@@ -11,8 +11,8 @@ var __o = require("bennu")["parse"],
         xor, assign, logicalNot, bitwiseNot, addition, subtration, multiplication, mod, division, compose, composeNary,
         reverseCompose, reverseComposeNary, pipe, reversePipe, ellipsis, as, argumentList, lambda, punctuator,
         punctuators = ["{", "}", "(", ")", "[", "]", ",", ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>", "<=", "<",
-            ">=", ">", "===", "!==", "==", "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%", "@", "\\>",
-            "\\>>", "<\\", "<<\\", "|>", "<|", "...", "#", "\\", "->"
+            ">=", ">", "===", "!==", "==", "!=", "=", "!", "~", "++", "--", "&", "|", "^", "+", "-", "*", "/", "%", "@",
+            "\\>", "\\>>", "<\\", "<<\\", "|>", "<|", "...", "#", "\\", "->"
     ];
 (openBrace = character("{"));
 (closeBrace = character("}"));

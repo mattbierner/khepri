@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/khepri_peep.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper", "khepri-ast/node",
     "khepri-ast/statement", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_statement, ast_expression, ast_pattern, ast_value) {
@@ -79,6 +83,11 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
         return !node.args.length;
     }), (function(node) {
         return node.base;
+    }));
+    addPeephole("CurryExpression", (function(node) {
+        return (node.base.type === "CurryExpression");
+    }), (function(node) {
+        return ast_expression.CurryExpression.create(null, node.base.base, concat(node.base.args, node.args));
     }));
     addPeephole("BinaryExpression", (function(node) {
         return ((node.operator === "|>") && ((((node.right.type === "CurryExpression") || (node.right.type ===

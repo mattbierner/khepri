@@ -130,14 +130,14 @@ function(parse,
            
             ["Simple New Expression",
             function(){
-                var expr = testParser(lexer.lex("new a;"));
+                var expr = testParser(lexer.lex("new a();"));
                 assert.equal(expr.type, 'NewExpression');
                 assert.equal(expr.callee.name, 'a');
                 assert.equal(expr.args.length, 0);
             }],
             ["Many New Expression",
             function(){
-                var expr = testParser(lexer.lex("new new a;"));
+                var expr = testParser(lexer.lex("new new a()();"));
                 assert.equal(expr.type, 'NewExpression');
                 assert.equal(expr.callee.type, 'NewExpression');
                 assert.equal(expr.callee.callee.name, 'a');
@@ -213,7 +213,7 @@ function(parse,
             
             ["Simple Bracket Accessor",
             function(){
-                var expr = testParser(lexer.lex("a[b];"));
+                var expr = testParser(lexer.lex("a.(b);"));
                 assert.equal(expr.type, 'MemberExpression');
                 assert.equal(expr.object.name, 'a');
                 assert.equal(expr.property.name, 'b');
@@ -221,7 +221,7 @@ function(parse,
             }],
             ["Many Bracket Accessor Left Associativity",
             function(){
-                var expr = testParser(lexer.lex("a[b][c];"));
+                var expr = testParser(lexer.lex("a.(b).(c);"));
                 assert.equal(expr.type, 'MemberExpression');
                 assert.equal(expr.object.type, 'MemberExpression');
                 assert.equal(expr.object.object.name, 'a');

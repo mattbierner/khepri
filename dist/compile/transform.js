@@ -259,7 +259,16 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
         return assignmentExpression(node.loc, node.operator, node.left, node.right);
     }));
     addTransform("UnaryExpression", (function(node) {
-        return ecma_expression.UnaryExpression.create(node.loc, node.operator, _transform(node.argument));
+        var op = node.operator;
+        switch (op) {
+            case "++":
+                (op = "+");
+                break;
+            case "--":
+                (op = "-");
+                break;
+        }
+        return ecma_expression.UnaryExpression.create(node.loc, op, _transform(node.argument));
     }));
     addTransform("BinaryExpression", (function(node) {
         switch (node.operator) {
