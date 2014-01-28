@@ -578,7 +578,12 @@ header #blurb {
     padding: 0;
 }
 
-
+header #version {
+    position: absolute;
+    top: -2em;
+    right: 0;
+    padding-right: 1em;
+}
 header #links a span {
     display: block;
     text-align: center;

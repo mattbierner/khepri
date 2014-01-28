@@ -4,6 +4,14 @@ layout: base
 extra_css:
   - stylesheets/codemirror.css
   - stylesheets/console.css
+
+extra_js:
+  - javascripts/require.js
+  - javascripts/codemirror.js
+  - javascripts/javascript.js
+  - http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.0.min.js
+  - javascripts/console-built.js
+
 ---
 
 <div id='try-khepri' class='cf'>
@@ -22,7 +30,6 @@ extra_css:
     <div class='cf'>
         <div id='console-controls'>
             <button id='translate-button'>Translate</button>
-            <button id='evaluate-button'>Evaluate</button>
         </div>
         <div id='console-options'>
             <span>Package Manager:</span>
@@ -31,16 +38,5 @@ extra_css:
                 <option value="node">Node</option>
             </select>
         </div>
-
-        <div id='console-output'>
-            <h2>Output</h2>
-            <pre id='text-out'></pre>
-        </div>
     </div>
 </div>
-
-<script type="application/javascript" src="javascripts/require.js"></script>
-<script type="application/javascript" src="javascripts/codemirror.js"></script>
-<script type="application/javascript" src="javascripts/javascript.js"></script>
-<script type="application/javascript" src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.0.min.js"></script>
-<script type="application/javascript" src="javascripts/console-built.js"></script>

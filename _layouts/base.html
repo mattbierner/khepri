@@ -51,6 +51,7 @@
                     </ul>
                     <pre id="npm-code">$ npm install -g khepri</pre>
                 </div>
+                <span id='version'>V0.11</span>
             </div>
             
             <nav id='pages'>
@@ -80,7 +81,11 @@
                 <div><div><div><div></div></div></div></div>
             </div>
         </footer>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
     
+    
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    {% for file in page.extra_js %}
+        <script type="application/javascript" src="{{ file }}"></script>
+    {% endfor %}
   </body>
 </html>

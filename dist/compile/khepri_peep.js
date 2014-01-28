@@ -110,7 +110,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {
             if ((!node)) return node;
-            var transforms = (peepholes([node.type]) || [])
+            var transforms = (peepholes[node.type] || [])
                 .filter((function(x) {
                     return x.condition(node);
                 }));

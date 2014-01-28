@@ -54,17 +54,6 @@ $(function () {
     $('#translate-button').click(function() {
         translate(editor.doc.getValue('\n'));
     });
-    
-    $('#evaluate-button').click(function() {
-        var result = translate(editor.doc.getValue('\n'));
-        
-        try {
-            var out = eval(result);
-            $('#text-out').text(out).removeClass('error');
-        } catch(e) {
-            $('#text-out').addClass('error').text(e);
-        }
-    });
 });
 
 });
