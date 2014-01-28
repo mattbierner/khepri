@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/position.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse"], (function(require, exports, parse) {
     "use strict";
     var SourcePosition, SourceLocation;

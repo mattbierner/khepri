@@ -34,7 +34,7 @@ var __o = require("bennu")["parse"],
         return f(g(x));
     });
 })((function(x) {
-    return !x;
+    return (!x);
 }), test.bind(null, lineTerminator))));
 (regularExpressionBackslashSequence = next(character("\\"), bind(regularExpressionNonTerminator, (function(f, g) {
     return (function(x) {
@@ -45,18 +45,18 @@ var __o = require("bennu")["parse"],
     })
     .bind(null, "\\")))));
 (regularExpressionClassChar = either(attempt(token((function(tok) {
-    return ((!test(lineTerminator, tok) && (tok !== "]")) && (tok !== "\\"));
+    return (((!test(lineTerminator, tok)) && (tok !== "]")) && (tok !== "\\"));
 }))), regularExpressionBackslashSequence));
 (regularExpressionClassChars = many(regularExpressionClassChar));
 (regularExpressionClass = between(character("["), character("]"), bind(regularExpressionClassChars, (function(body) {
     return always((("[" + join(body)) + "]"));
 }))));
 (regularExpressionFirstChar = choice(token((function(tok) {
-    return ((((!test(lineTerminator, tok) && (tok !== "*")) && (tok !== "\\")) && (tok !== "`")) && (
+    return (((((!test(lineTerminator, tok)) && (tok !== "*")) && (tok !== "\\")) && (tok !== "`")) && (
         tok !== "["));
 })), regularExpressionBackslashSequence, regularExpressionClass));
 (regularExpressionChar = choice(token((function(tok) {
-    return (((!test(lineTerminator, tok) && (tok !== "\\")) && (tok !== "`")) && (tok !== "["));
+    return ((((!test(lineTerminator, tok)) && (tok !== "\\")) && (tok !== "`")) && (tok !== "["));
 })), regularExpressionBackslashSequence, regularExpressionClass));
 (regularExpressionChars = many(regularExpressionChar));
 (regularExpressionFlags = many(identifierPart));

@@ -7,7 +7,7 @@ package (
 
 var copy = \obj ->
     Object.keys(obj).reduce(\p, c -> {
-        p[c] = obj[c];
+        p.(c) = obj.(c);
         return p;
     }, new obj.constructor());
 
@@ -23,7 +23,7 @@ var defineProperty = \obj, prop, descriptor ->
  * @param outer Parent scope.
  * @param mappin Maps identifiers to their actual names in this scope.
  */
-Scope = function\(record, outer, mapping) =self-> {
+Scope = function\record, outer, mapping =self-> {
     self.record = record;
     self.outer = outer;
     self.mapping = mapping;
@@ -46,7 +46,7 @@ Scope.prototype.hasBinding = \id =self->
  */
 Scope.prototype.getBinding = \id =self->
     ?self.hasOwnBinding(id)
-        :self.record[id]
+        :self.record.(id)
         :?self.outer
             :self.outer.getBinding(id)
             :null;
@@ -68,7 +68,7 @@ Scope.prototype.hasMapping = \id =self->
  */
 Scope.prototype.getMapping = \id =self->
     ?self.hasOwnMapping(id)
-        :self.mapping[id]
+        :self.mapping.(id)
         :self.outer && self.outer.getMapping(id);
 
 /**

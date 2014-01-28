@@ -30,7 +30,7 @@ var ast_declaration = require("khepri-ast")["declaration"],
             null, null, concat(ast_pattern.IdentifierPattern.create(null, ast_value.Identifier.create(null,
                 "require")), ast_pattern.IdentifierPattern.create(null, ast_value.Identifier.create(
                 null, "exports")), map(imports, (function(x) {
-                return targets[x.from.value];
+                return targets([x.from.value]);
             })))), ast_statement.BlockStatement.create(body.loc, concat(ast_statement.ExpressionStatement.create(
                 null, ast_value.Literal.create(null, "string", "use strict")), exportHeader, body,
             exportBody)));

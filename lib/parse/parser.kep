@@ -25,17 +25,16 @@ in {
  * 
  * @return Stream suitable for parsing.
  */
-parserStream = (filter,
-    \x -> {
-        switch (x.type) {
-        case 'Whitespace':
-        case 'LineTerminator':
-        case 'Comment':
-            return false;
-        default:
-            return true;
-        }
-    });
+parserStream = filter @ \x -> {
+    switch (x.type) {
+    case 'Whitespace':
+    case 'LineTerminator':
+    case 'Comment':
+        return false;
+    default:
+        return true;
+    }
+};
 
 /* Position
  ******************************************************************************/
@@ -48,7 +47,7 @@ ParserPosition = function\tokenPosition, sourcePosition =self-> {
     self.tokenPosition = tokenPosition;
     self.sourcePosition = sourcePosition;
 };
-ParserPosition.prototype = new parse.Position;
+ParserPosition.prototype = new parse.Position();
 ParserPosition.prototype.constructor = ParserPosition;
 
 ParserPosition.initial = new ParserPosition(
@@ -70,7 +69,7 @@ ParserState = function\input, pos, prevEnd =self-> {
     parse.ParserState.call(self, input, pos);
     self._prevEnd = prevEnd;
 };
-ParserState.prototype = new parse.ParserState;
+ParserState.prototype = new parse.ParserState();
 
 ParserState.initial = new ParserState(NIL,
     ParserPosition.initial,
@@ -90,8 +89,8 @@ ParserState.prototype.setPosition = \position =self->
     
 ParserState.prototype.next = \tok =self-> {
     if (!self._next) {
-        var r = rest(self.input);
-        var end =? isEmpty(r)
+        var r = rest self.input;
+        var end =? isEmpty r
             :tok.loc.end
             :first(r).loc.start;
         var s = new ParserState(r, self.position.increment(tok, end), self.loc.end);
@@ -102,7 +101,7 @@ ParserState.prototype.next = \tok =self-> {
 
 Object.defineProperty(ParserState.prototype, 'loc', {
     'get': \() =self->
-        ?isEmpty(self.input)
+        ?isEmpty self.input
             :new SourceLocation(self._prevEnd, self._prevEnd)
             :first(self.input).loc
 });
@@ -122,7 +121,7 @@ parseStream = \s ->
     parse.runState(
         program,
         new ParserState(
-            parserStream(s),
+            parserStream s,
             ParserPosition.initial));
 
 /**

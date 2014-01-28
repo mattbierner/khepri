@@ -11,7 +11,7 @@ define(["require", "exports", "khepri-ast/declaration", "khepri-ast/expression",
                 return ast_expression.MemberExpression.create(null, p, ast_value.Literal.create(
                     null, "string", c), true);
             }), ast_expression.CallExpression.create(null, ast_value.Identifier.create(null,
-                "require"), [ast_value.Literal.create(null, "string", segs[0])]));
+                "require"), [ast_value.Literal.create(null, "string", segs([0]))]));
     }));
     (definePackage = (function(loc, exports, imports, targets, body) {
         var exportHeader = ast_declaration.VariableDeclaration.create(null, map(exports, (function(x) {

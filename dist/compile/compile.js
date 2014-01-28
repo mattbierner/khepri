@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/compile.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "./lexical", "./transform", "./khepri_peep", "./ecma_peep"], (function(require, exports,
     lexical, transform, khepri_peep, ecma_peep) {
     "use strict";

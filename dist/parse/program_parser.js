@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/program_parser.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/program", "./common",
     "./statement_parser", "./package_parser"
 ], (function(require, exports, __o, __o0, __o1, ast_program, __o2, _, _0) {

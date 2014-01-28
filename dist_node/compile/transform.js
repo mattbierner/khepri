@@ -64,11 +64,11 @@ var ecma_clause = require("ecma-ast")["clause"],
                 case "AsPattern":
                     return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target, f)));
                 case "ObjectPattern":
-                    return flatten(map((function(__o) {
+                    return map((function(__o) {
                         var target = __o["target"],
                             key = __o["key"];
-                        return objectElementUnpack(pattern.ud.id, target, key, f);
-                    }), pattern.elements));
+                        return flatten(objectElementUnpack(pattern.ud.id, target, key, f));
+                    }), pattern.elements);
                 default:
                     return [];
             }
@@ -108,9 +108,9 @@ var returnStatement = (function(loc, argument) {
         return blockStatement(loc, concat(prefix, body.body));
     }),
     functionExpression = (function(loc, id, parameters, body) {
-        var params = _transform(filter((function(x) {
-            return (x.type !== "EllipsisPattern");
-        }), parameters.elements)),
+        var params = filter((function(x) {
+            return _transform((x.type !== "EllipsisPattern"));
+        }), parameters.elements),
             elementsPrefix = flatten(map((function(x) {
                 switch (x.type) {
                     case "IdentifierPattern":
@@ -373,11 +373,11 @@ addTransform("Package", (function(node) {
     return packageBlock(node.loc, node.exports, node.body);
 }));
 (_transform = (function(node) {
-    if (!node) return node;
+    if ((!node)) return node;
     if (Array.isArray(node)) return map(_transform, node);
-    if (!(node instanceof khepri_node.Node)) return node;
-    var t = transformers[node.type];
-    if (!t) return node;
+    if ((!(node instanceof khepri_node.Node))) return node;
+    var t = transformers([node.type]);
+    if ((!t)) return node;
     return t(node);
 }));
 (transform = (function(__o) {

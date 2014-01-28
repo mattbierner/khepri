@@ -36,7 +36,7 @@ var __o = require("bennu")["parse"],
         return f(g(x));
     });
 })((function(x) {
-    return !x;
+    return (!x);
 }), test.bind(null, lineTerminator))));
 (singleLineCommentChars = many(singleLineCommentChar));
 (singleLineComment = Parser("Single Line Comment Lexer", next(singleLineCommentMarker, join(singleLineCommentChars))));

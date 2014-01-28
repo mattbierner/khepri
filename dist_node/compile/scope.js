@@ -41,10 +41,10 @@ var Scope, copy = (function(obj) {
 }));
 (Scope.prototype.getUnusedId = (function(id) {
     var self = this;
-    if (!self.hasBinding(id)) return id;
+    if ((!self.hasBinding(id))) return id;
     for (var i = 0;;
         (i = (i + 1)))
-        if (!self.hasBinding((id + i))) return (id + i);
+        if ((!self.hasBinding((id + i)))) return (id + i);
 }));
 (Scope.addBinding = (function(s, id, info) {
     return new(Scope)(defineProperty(s.record, id, ({

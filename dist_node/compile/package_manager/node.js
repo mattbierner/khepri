@@ -12,7 +12,7 @@ var ast_declaration = require("khepri-ast")["declaration"],
             return ast_expression.MemberExpression.create(null, p, ast_value.Literal.create(null,
                 "string", c), true);
         }), ast_expression.CallExpression.create(null, ast_value.Identifier.create(null, "require"), [
-            ast_value.Literal.create(null, "string", segs[0])
+            ast_value.Literal.create(null, "string", segs([0]))
         ]));
 }));
 (definePackage = (function(loc, exports, imports, targets, body) {

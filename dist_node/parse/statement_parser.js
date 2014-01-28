@@ -119,7 +119,7 @@ var whileStatement = Parser("While Statement", nodea(next(keyword("while"), enum
     return nodea(next(keyword("try"), enumeration(blockStatement, optional(null, catchBlock), optional(null,
         finallyBlock))), ast_statement.TryStatement.create);
 })()));
-(statement = Parser("Statement", expected("statement", choice(blockStatement, staticStatement, variableStatement,
+(statement = expected("statement", Parser("Statement", choice(blockStatement, staticStatement, variableStatement,
     emptyStatement, ifStatement, withStatement, iterationStatement, continueStatement, breakStatement,
     returnStatement, switchStatement, throwStatement, tryStatement, debuggerStatement, expressionStatement))));
 (exports.blockStatement = blockStatement);

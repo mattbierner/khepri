@@ -29,21 +29,21 @@ var tree = require("neith")["tree"],
             "up": up
         });
         types.forEach((function(type) {
-            (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
+            (peepholes[type] = (peepholes([type]) ? peepholes[type].concat(entry) : [entry]));
         }));
     });
 addPeephole(["VariableDeclaration"], false, (function(_) {
     return true;
 }), (function(node) {
     var declarations = node.declarations.filter((function(x) {
-        return !!x;
+        return (!(!x));
     }));
     return modify(node, ({
         "declarations": declarations
     }), ({}));
 }));
 addPeephole(["VariableDeclaration"], true, (function(node) {
-    return !node.declarations.length;
+    return (!node.declarations.length);
 }), (function(_) {
     return null;
 }));
@@ -61,9 +61,9 @@ addPeephole(["Program", "BlockStatement"], true, (function(_) {
 }), (function(node) {
     return modify(node, ({
         "body": node.body.reduceRight((function(p, c) {
-            return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p[0].type ===
+            return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p([0].type) ===
                 "VariableDeclaration")) ? concat(modify(c, ({
-                "declarations": concat(c.declarations, p[0].declarations)
+                "declarations": concat(c.declarations, p([0].declarations))
             }), ({})), p.slice(1)) : concat(c, p));
         }), [])
     }), ({}));
@@ -73,7 +73,7 @@ addPeephole(["Program", "BlockStatement"], true, (function(_) {
 }), (function(node) {
     return modify(node, ({
         "body": flatten(node.body.map((function(x) {
-            return ((!x || (x.type === "EmptyStatement")) ? [] : x);
+            return (((!x) || (x.type === "EmptyStatement")) ? [] : x);
         })))
     }), ({}));
 }));
@@ -133,23 +133,23 @@ addPeephole(["BinaryExpression", "LogicalExpression"], true, (function(__o1) {
         left = __o1["left"],
         right = __o1["right"],
         value = arithmetic[operator](left.value, right.value);
-    return ast_value.Literal.create(null, typeof value, value);
+    return ast_value.Literal.create(null, (typeof value), value);
 }));
 var arithmetic0 = ({
     "!": (function(x) {
-        return !x;
+        return (!x);
     }),
     "~": (function(x) {
-        return~ x;
+        return (~x);
     }),
     "typeof": (function(x) {
-        return typeof x;
+        return (typeof x);
     }),
     "+": (function(x) {
-        return +x;
+        return (+x);
     }),
     "-": (function(x) {
-        return -x;
+        return (-x);
     })
 }),
     isPrimitive0 = (function(node) {
@@ -164,15 +164,15 @@ addPeephole(["UnaryExpression"], true, (function(__o1) {
     var operator = __o1["operator"],
         argument = __o1["argument"],
         value = arithmetic0[operator](argument.value);
-    return ast_value.Literal.create(null, typeof value, value);
+    return ast_value.Literal.create(null, (typeof value), value);
 }));
 var transform = (function(node) {
-    var transforms = (peepholes[node.type] || [])
+    var transforms = (peepholes([node.type]) || [])
         .filter((function(x) {
             return x.condition(node);
         })),
         down = transforms.filter((function(x) {
-            return !x.up;
+            return (!x.up);
         })),
         up = transforms.filter((function(x) {
             return x.up;
@@ -182,16 +182,16 @@ var transform = (function(node) {
     }), node);
 }),
     transformDown = (function(node) {
-        var transforms = (peepholes[node.type] || [])
+        var transforms = (peepholes([node.type]) || [])
             .filter((function(x) {
-                return (!x.up && x.condition(node));
+                return ((!x.up) && x.condition(node));
             }));
         return transforms.reduce((function(p, c) {
             return c.map(p, transformDown);
         }), node);
     }),
     transformUp = (function(node) {
-        var transforms = (peepholes[node.type] || [])
+        var transforms = (peepholes([node.type]) || [])
             .filter((function(x) {
                 return (x.up && x.condition(node));
             }));

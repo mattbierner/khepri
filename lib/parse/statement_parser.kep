@@ -167,7 +167,7 @@ in
 
 // If Statement
 ////////////////////////////////////////
-ifStatement = Parser('If Statement',
+ifStatement = Parser@'If Statement' <|
     nodea(
         next(
             keyword 'if',
@@ -178,7 +178,7 @@ ifStatement = Parser('If Statement',
                 optional(null, next(
                     keyword 'else',
                     statement)))),
-        ast_statement.IfStatement.create));
+        ast_statement.IfStatement.create);
 
 // Switch Statement
 ////////////////////////////////////////

@@ -1,10 +1,21 @@
 # ChangeLog #
 
-## 0.11.0 - January 27, 2014
+## 0.11.0 - January 28, 2014
 * New expressions must supply an argument list.
 * Changed curry syntax.
-** Form is 
+** Form is `TARGET@EXPR` where expr may either be a curry expression or a list
+  or arguments.
+** Left associative.
+** `f@1`, `f@(1,2)`
 * Restricted numbers to always require digits both before and after the decimal.
+* Changed computed member syntax:
+** `x.(1 + 3)`
+* Added unparened function application syntax:
+** `f x y // f(x)(y)`
+** Left associative
+** Js syntax is still supported for multi argument functions `f(1, 2, 3)`
+** Lower precedence then curry.
+* Renamed unary plus to `++` and unary minus to `--`.
 
 ## 0.10.0 - January 26, 2014
 * Changed conditional expression syntax.

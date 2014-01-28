@@ -14,11 +14,11 @@ in {
 /**
  * Data structure for a point in source code.
  */
-SourcePosition = function\(line, column) =self-> {
+SourcePosition = function\line, column =self-> {
     self.line = line;
     self.column = column;
 };
-SourcePosition.prototype = new parse.Position;
+SourcePosition.prototype = new parse.Position();
 SourcePosition.prototype.constructor = SourcePosition;
 
 /**

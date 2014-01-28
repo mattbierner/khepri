@@ -52,10 +52,9 @@ var __o = require("bennu")["parse"],
     return (function(x) {
         return f(g(x));
     });
-})(always, (function(x, y) {
-        return (x - y);
-    })
-    .bind(null, 0)))), next(optional(null, positiveSign), unsignedInteger))));
+})(always, (function(x) {
+    return (-x);
+})))), next(optional(null, positiveSign), unsignedInteger))));
 var hexIntegerLiteralDigits = Parser("Hex Integer Literal Digits Lexer", bind(hexDigits, (function(num) {
     return always(parseInt(num, 16));
 })));

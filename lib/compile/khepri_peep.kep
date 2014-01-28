@@ -39,7 +39,7 @@ var addPeephole = \type, condition, f -> {
         'condition': condition,
         'map': f
     };
-    peepholes[type] = ?peepholes[type] :peepholes[type].concat(entry) :[entry];
+    peepholes.(type) = ?peepholes.(type) :peepholes.(type).concat(entry) :[entry];
 };
 
 /* Peepholes

@@ -64,7 +64,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
         }), elements)), ud);
     }));
     addPeephole("ObjectPatternElement", (function(node) {
-        return !node.target;
+        return (!node.target);
     }), (function(node) {
         var loc = node["loc"],
             key = node["key"];
@@ -80,7 +80,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
         }
     }));
     addPeephole("CurryExpression", (function(node) {
-        return !node.args.length;
+        return (!node.args.length);
     }), (function(node) {
         return node.base;
     }));
@@ -109,8 +109,8 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
     }));
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {
-            if (!node) return node;
-            var transforms = (peepholes[node.type] || [])
+            if ((!node)) return node;
+            var transforms = (peepholes([node.type]) || [])
                 .filter((function(x) {
                     return x.condition(node);
                 }));

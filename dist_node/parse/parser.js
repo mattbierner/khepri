@@ -60,7 +60,7 @@ var parse = require("bennu")["parse"],
 }));
 (ParserState.prototype.next = (function(tok) {
     var self = this;
-    if (!self._next) {
+    if ((!self._next)) {
         var r = rest(self.input),
             end = (isEmpty(r) ? tok.loc.end : first(r)
                 .loc.start),

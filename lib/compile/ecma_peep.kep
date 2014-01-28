@@ -40,8 +40,8 @@ var addPeephole = \types, up, condition, f -> {
     };
     
     types.forEach <|\ type -> {
-        peepholes[type] = ?peepholes[type]
-            :peepholes[type].concat(entry)
+        peepholes.(type) = ?peepholes[type]
+            :peepholes.(type).concat(entry)
             :[entry];
     };
 };
@@ -139,12 +139,12 @@ let
 in
     addPeephole(['BinaryExpression', 'LogicalExpression'], true,
         \{operator left right} ->
-            arithmetic[operator]
+            arithmetic.(operator)
             && isPrimitive(left)
             && isPrimitive(right),
         
         \{operator left right} -> let
-            value = arithmetic[operator](left.value, right.value)
+            value = arithmetic.(operator)(left.value, right.value)
         in
             ast_value.Literal.create(null, typeof value, value));
 
@@ -155,8 +155,8 @@ let
         '!': (!),
         '~': (~),
         'typeof': (typeof),
-        '+': \x -> +x,
-        '-': \x -> -x},
+        '+': (++),
+        '-': (--)},
     
     isPrimitive = \node ->
         node.type === 'Literal' && (
@@ -167,11 +167,11 @@ let
 in
     addPeephole(['UnaryExpression'], true,
         \{operator argument} ->
-            arithmetic[operator]
+            arithmetic.(operator)
             && isPrimitive(argument),
         
         \{operator argument} -> let
-            value = arithmetic[operator](argument.value)
+            value = arithmetic.(operator)(argument.value)
         in
             ast_value.Literal.create(null, typeof value, value));
 

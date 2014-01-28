@@ -65,7 +65,7 @@ addPeephole("ArrayPattern", (function(_) {
     }), elements)), ud);
 }));
 addPeephole("ObjectPatternElement", (function(node) {
-    return !node.target;
+    return (!node.target);
 }), (function(node) {
     var loc = node["loc"],
         key = node["key"];
@@ -81,7 +81,7 @@ addPeephole("ObjectPatternElement", (function(node) {
     }
 }));
 addPeephole("CurryExpression", (function(node) {
-    return !node.args.length;
+    return (!node.args.length);
 }), (function(node) {
     return node.base;
 }));
@@ -110,8 +110,8 @@ addPeephole("BinaryExpression", (function(__o1) {
 }));
 var opt = (function(z) {
     var t = tree.modifyNode((function(node) {
-        if (!node) return node;
-        var transforms = (peepholes[node.type] || [])
+        if ((!node)) return node;
+        var transforms = (peepholes([node.type]) || [])
             .filter((function(x) {
                 return x.condition(node);
             }));

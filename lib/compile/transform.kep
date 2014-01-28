@@ -43,8 +43,8 @@ var flatten = \x ->
  * Is an array of source elements strict code?
  */
 var isStrict = \elems -> {
-    if (elems && elems.length && elems[0].type === 'ExpressionStatement') {
-        var first = elems[0].expression;
+    if (elems && elems.length && elems.(0).type === 'ExpressionStatement') {
+        var first = elems.(0).expression;
         return (first && first.type === 'Literal' && first.kind ==='string' && first.value === 'use strict');
     }
     return false;
@@ -108,7 +108,7 @@ in
         
         case 'ObjectPattern':
             return pattern.elements
-                |> (map, \{target key} -> objectElementUnpack(pattern.ud.id, target, key, f))
+                |> map@\{target key} -> objectElementUnpack(pattern.ud.id, target, key, f)
                 |> flatten;
         
         default:
@@ -120,7 +120,7 @@ in
  * 
  */
 var unpack = let
-    make = (variableDeclarator, null)
+    make = variableDeclarator@null
 in
     \pattern, value ->
         innerPattern(value, pattern, make)
@@ -178,12 +178,12 @@ var returnStatement = \loc, argument ->
  */
 var withStatement = \loc, bindings, body -> let
     vars = bindings
-        |> (map, \imp -> {
+        |> map@\imp -> {
             var base = ?imp.type === 'ImportPattern'
                 :packageManager.importPackage(imp.from.value)
                 :imp.value;
             return unpack(imp.pattern, base);
-        })
+        }
         |> flatten,
     
     prefix = variableDeclaration(null, vars)
@@ -200,21 +200,21 @@ in
  */
 var functionExpression = \loc, id, parameters, body -> let
     params = parameters.elements
-        |> (filter, \x -> x.type !== 'EllipsisPattern')
+        |> filter@\x -> x.type !== 'EllipsisPattern'
         |> _transform,
     
     elementsPrefix = parameters.elements
-        |> (map, \x -> {
+        |> map@\x -> {
             // Avoid generating redundant unpacks for parameters names.
             switch (x.type) {
             case 'IdentifierPattern':
                 return [];
             case 'AsPattern':
-                return innerPattern(_transform(x.id), x.target, (variableDeclarator, null));
+                return innerPattern(_transform(x.id), x.target, variableDeclarator@null);
             default:
-                return innerPattern(_transform(x), x, (variableDeclarator, null));
+                return innerPattern(_transform(x), x, variableDeclarator@null);
             }
-        })
+        }
         |> flatten,
     
     argumentsPrefix = concat(
@@ -350,13 +350,13 @@ var multiCompose = \loc, f, g ->
 
 var packageBlock = \loc, exports, body -> let
     imports = ?body.type === 'WithStatement'
-        :filter(\x -> x.type === 'ImportPattern', body.bindings)
+        : filter(\x -> x.type === 'ImportPattern', body.bindings)
         :[],
     
     exportedNames = map(\x -> x.id.name, exports.exports),
     
     targets = reduce(imports, \p c -> {
-        p[c.from.value] = c.pattern;
+        p.(c.from.value) = c.pattern;
         return p;
     }, {}),
     
@@ -373,7 +373,7 @@ in
 var transformers = {};
 
 var addTransform = \target f -> {
-    transformers[target] = f;
+    transformers.(target) = f;
 };
 
 // Declarations

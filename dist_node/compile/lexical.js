@@ -148,7 +148,7 @@ var ok = (function(x) {
     }),
     checkCanAddOwnBinding = (function(id, loc) {
         return examineScope((function(s) {
-            return (!s.hasOwnBinding(id) ? pass : (function() {
+            return ((!s.hasOwnBinding(id)) ? pass : (function() {
                 var start = (loc && loc.start),
                     binding = s.getBinding(id),
                     end = (binding.loc && binding.loc.start);
@@ -254,12 +254,12 @@ var ok = (function(x) {
     });
 (_check = (function(node) {
     if (Array.isArray(node)) {
-        if (!node.length) return pass;
+        if ((!node.length)) return pass;
         return seq(move(zipper.down), seqa(map(node, (function(_, i) {
             return ((i === (node.length - 1)) ? checkTop : next(checkTop, move(zipper.right)));
         }))), move(zipper.up));
     }
-    if (!(node instanceof ast_node.Node)) return pass;
+    if ((!(node instanceof ast_node.Node))) return pass;
     switch (node.type) {
         case "Program":
             return checkChild("body");
@@ -367,7 +367,7 @@ var ok = (function(x) {
         case "ArrayPattern":
         case "ObjectPattern":
             return examineScope((function(s) {
-                if ((!node.ud || !node.ud.id)) {
+                if (((!node.ud) || (!node.ud.id))) {
                     var unused = s.getUnusedId("__o"),
                         id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier.create(
                             null, unused));

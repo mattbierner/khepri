@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/scope.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports"], (function(require, exports) {
     "use strict";
     var Scope, copy = (function(obj) {
@@ -43,10 +47,10 @@ define(["require", "exports"], (function(require, exports) {
     }));
     (Scope.prototype.getUnusedId = (function(id) {
         var self = this;
-        if (!self.hasBinding(id)) return id;
+        if ((!self.hasBinding(id))) return id;
         for (var i = 0;;
             (i = (i + 1)))
-            if (!self.hasBinding((id + i))) return (id + i);
+            if ((!self.hasBinding((id + i)))) return (id + i);
     }));
     (Scope.addBinding = (function(s, id, info) {
         return new(Scope)(defineProperty(s.record, id, ({
