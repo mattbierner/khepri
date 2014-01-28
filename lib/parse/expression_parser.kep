@@ -128,7 +128,7 @@ arrayElement = Parser('Array Element',
  * Parser for the elements of an array literal.
  */
 arrayElements = Parser@'Array Elements' <|
-    eager <| sepBy(punctuator(','), arrayElement)
+    eager <| sepBy(punctuator ',', arrayElement)
         |> expected@"array element";
 
 /**
@@ -136,7 +136,7 @@ arrayElements = Parser@'Array Elements' <|
  */
 arrayLiteral = Parser@'Array Literal' <|
     node(
-        between(punctuator('['), punctuator(']'),
+        between(punctuator '[', punctuator ']',
             arrayElements),
         ast_expression.ArrayExpression.create);
 
@@ -156,7 +156,7 @@ propertyInitializer = Parser@'Property Initializer' <|
         enumeration(
             then(
                 propertyName,
-                punctuator(':')),
+                punctuator ':'),
             expression),
         ast_value.ObjectValue.create);
 
@@ -164,14 +164,14 @@ propertyInitializer = Parser@'Property Initializer' <|
  * Parser for a set or more properties in an object literal.
  */
 objectProperties = Parser@'Object Properties' <|
-    eager <| sepBy(punctuator(','), propertyInitializer);
+    eager <| sepBy(punctuator ',', propertyInitializer);
 
 /**
  * Parser for an ECMAScript object literal.
  */
 objectLiteral = Parser@'Object Literal' <|
     node(
-        between(punctuator('{'), punctuator('}'),
+        between(punctuator '{', punctuator '}',
             objectProperties),
         ast_expression.ObjectExpression.create);
 
@@ -180,7 +180,7 @@ objectLiteral = Parser@'Object Literal' <|
 var formalParameterList = pattern.argumentsPattern;
 
 var statementBody = node(
-     between(punctuator('{'), punctuator('}'),
+     between(punctuator '{', punctuator '}',
          sourceElements),
     ast_statement.BlockStatement.create);
 
@@ -204,14 +204,14 @@ var functionExpression = Parser@'Function Expression' <|
     nodea(
         cons(
             optional(null, next(
-                keyword('function'),
+                keyword 'function',
                 optional(null, identifier))),
             next(
-                punctuator('\\'),
+                punctuator '\\',
                 enumeration(
                     formalParameterList,
                     next(
-                        punctuator('->'),
+                        punctuator '->',
                         functionBody |> expected@"function body")))),
         ast_expression.FunctionExpression.create);
 
@@ -222,12 +222,12 @@ var letBinding = Parser@'Let Binding' <|
         enumeration(
             then(
                 pattern.topLevelPattern |> expected@'pattern',
-                punctuator('=')),
+                punctuator '='),
             expression |> expected@'let binding expression'),
        ast_declaration.Binding.create);
 
 letExpression = Parser@'Let Expression' <| let
-    letBindings = sepBy1(punctuator(','),
+    letBindings = sepBy1(punctuator ',',
         letBinding)
         |> expected@'let bindings',
     
@@ -236,11 +236,11 @@ letExpression = Parser@'Let Expression' <| let
 in
     nodea(
         next(
-            keyword('let'),
+            keyword 'let',
             enumeration(
                 eager(letBindings),
                 next(
-                    keyword('in'),
+                    keyword 'in',
                     letBody))),
         ast_expression.LetExpression.create);
 
@@ -249,15 +249,15 @@ in
 conditionalExpression = Parser@'Conditional Expression' <|
     nodea(
         next(
-            punctuator('?'),
+            punctuator '?',
             enumeration(
                 expression,
                 next(
-                    punctuator(':'),
+                    punctuator ':',
                     expression
                     |> expected@"conditional consequent expression"),
                 next(
-                    punctuator(':'),
+                    punctuator ':',
                     expression
                     |> expected@"conditional alternate expression"))),
         ast_expression.ConditionalExpression.create);
@@ -267,7 +267,7 @@ conditionalExpression = Parser@'Conditional Expression' <|
 var unaryOperatorExpression = Parser@'Unary Operator Expression' <|
     bind(
         either(
-            keyword('typeof'),
+            keyword 'typeof',
             punctuator(
                 'void',
                 '~',
@@ -279,7 +279,7 @@ var unaryOperatorExpression = Parser@'Unary Operator Expression' <|
 var binaryOperatorExpression = Parser@'Binary Operator Expression' <|
     bind(
         either(
-            keyword('instanceof'),
+            keyword 'instanceof',
             punctuator(
                 '*',
                 '/',
@@ -308,7 +308,7 @@ var binaryOperatorExpression = Parser@'Binary Operator Expression' <|
 
 var ternayOperatorExpression = Parser@'Ternary Operator Expression' <|
     bind(
-        punctuator('?'),
+        punctuator '?',
         \{loc, value} -> always(ast_expression.TernaryOperatorExpression.create(loc, value)));
 
 var operatorExpression = Parser@'Operator Expression' <|
@@ -328,11 +328,11 @@ primaryExpression = Parser@'Primary Expression' <|
         arrayLiteral,
         objectLiteral,
         functionExpression,
-        between(punctuator('('), punctuator(')'),
+        between(punctuator '(', punctuator ')',
             either(
                 attempt <| then(
                     operatorExpression,
-                    lookahead(punctuator(')'))),
+                    lookahead(punctuator ')')),
                 expression)));
 
 // Argument
@@ -340,8 +340,8 @@ primaryExpression = Parser@'Primary Expression' <|
 argumentList = Parser@'Argument List' <| let
     argument = expression |> expected@"argument"
 in
-    between(punctuator('('), punctuator(')'),
-        eager(sepBy(punctuator(','), argument)));
+    between(punctuator '(', punctuator ')',
+        eager(sepBy(punctuator ',', argument)));
 
 args = Parser@'Arguments' <|
     node(
@@ -356,11 +356,11 @@ args = Parser@'Arguments' <|
 accessor = Parser@'Accessor' <|
     node(
         next(
-            punctuator('.'),
+            punctuator '.',
             either(
                 bind(identifier, \x -> always([x, false])),
                 bind(
-                    between(punctuator('('), punctuator(')'),
+                    between(punctuator '(', punctuator ')',
                         expression |> expected@"accessor expression"),
                     \x -> always([x, true])))),
         \loc [x computed] -> ({
@@ -374,7 +374,7 @@ accessor = Parser@'Accessor' <|
 newExpression = Parser@'New Expression' <|
     nodea(
         next(
-            keyword('new'),
+            keyword 'new',
             enumeration(
                 memberExpression |> expected@"member expression",
                 args |> expected@"argument list")),
@@ -421,7 +421,7 @@ in
             memberExpression,
             many(
                 next(
-                    punctuator('@'),
+                    punctuator '@',
                     application))),
         foldl@reducer \>> always);
 
@@ -449,6 +449,27 @@ in
             many(application)),
         foldl@reducer \>> always);
 
+// Call Expression
+////////////////////////////////////////
+var leftHandSideExpression = Parser@'Call Expression' <| let
+    reducer = \p c ->
+        ?c.hasOwnProperty('property')
+            :ast_expression.MemberExpression.create(
+                SourceLocation.merge(p.loc, c.loc),
+                p,
+                c.property,
+                c.computed)
+            :ast_expression.CallExpression.create(
+                SourceLocation.merge(p.loc, c.loc),
+                p,
+                c)
+in
+    binds(
+        enumeration(
+            callExpression,
+            many(either(application, accessor))),
+        foldl@reducer \>> always);
+
 // Unary Expression
 ////////////////////////////////////////
 unaryOperator = Parser@'Unary Operator' <|
@@ -466,7 +487,7 @@ in
     binds(
         enumeration(
             many(unaryOperator),
-            callExpression |> expected@"unary argument"),
+            leftHandSideExpression  |> expected@"unary argument"),
         \ops, expression ->
             always(foldr(reducer, expression, ops)));
 
@@ -481,31 +502,27 @@ var shiftOperator = punctuator('<<', '>>', '>>>');
 
 var relationalOperator = either(
     punctuator('<', '>', '<=', '>='),
-    keyword('instanceof'));
+    keyword 'instanceof');
 
 var equalityOperator = punctuator('==', '!=', '===', '!==');
 
-var bitwiseANDOperator = punctuator('&');
+var bitwiseANDOperator = punctuator '&';
 
-var bitwiseXOROperator = punctuator('^');
+var bitwiseXOROperator = punctuator '^';
 
-var bitwiseOROperator = punctuator('|');
+var bitwiseOROperator = punctuator '|';
 
-var logicalANDOperator = punctuator('&&');
+var logicalANDOperator = punctuator '&&';
 
-var logicalOROperator = punctuator('||');
+var logicalOROperator = punctuator '||';
 
-var composeOperator = punctuator(
-    '\\>',
-    '\\>>');
+var composeOperator = punctuator('\\>', '\\>>');
 
-var reverseComposeOperator = punctuator(
-    '<\\',
-    '<<\\');
+var reverseComposeOperator = punctuator('<\\', '<<\\');
 
-var pipeOperator = punctuator('|>');
+var pipeOperator = punctuator '|>';
 
-var reversePipeOperator = punctuator('<|');
+var reversePipeOperator = punctuator '<|';
 
 var precedenceTable = [
     {
@@ -589,7 +606,7 @@ leftHandReferenceExpression = Parser@'Left Hand Reference Expression' <|
 
 // Assignment Expression
 ////////////////////////////////////////
-assignmentOperator = punctuator('=');
+assignmentOperator = punctuator '=';
 
 assignmentExpression = Parser@'Assignment Expression' <|
     nodea(
@@ -604,7 +621,7 @@ assignmentExpression = Parser@'Assignment Expression' <|
 
 // Delete Expression
 ////////////////////////////////////////
-var deleteOperator = keyword('delete');
+var deleteOperator = keyword 'delete';
 
 var deleteExpression = Parser@'Delete Expression' <|
     nodea(

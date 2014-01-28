@@ -34,27 +34,27 @@ var blockStatement = \args(...) -> {
 
 /* Parsers
  ******************************************************************************/
-var packageExport = @Parser :'Package Export'
-    :node(
+var packageExport = Parser@'Package Export' <|
+    node(
         identifier,
         ast_package.PackageExport.create);
 
-var packageExports = (Parser, 'Package Exports') <|
+var packageExports = Parser@'Package Exports' <|
     node(
-        between(punctuator('('), punctuator(')'), 
-            eager <| sepBy(optional(null, punctuator(',')),
+        between(punctuator '(', punctuator ')', 
+            eager <| sepBy(optional(null, punctuator ','),
                 packageExport)),
         ast_package.PackageExports.create);
 
-var packageBody = (Parser, 'Package Body') <|
+var packageBody = Parser@'Package Body' <|
     either(
         withStatement,
         blockStatement);
 
-khepriPackage = (Parser, 'Package') <|
+khepriPackage = Parser@'Package' <|
     nodea(
         next(
-            keyword('package'),
+            keyword 'package',
             enumeration(
                 packageExports |> expected@'package export list',
                 packageBody)),

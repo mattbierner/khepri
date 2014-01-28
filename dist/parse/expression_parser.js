@@ -185,16 +185,28 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
             });
         })(always, foldl.bind(null, reducer0)));
     })()));
+    var leftHandSideExpression = Parser("Call Expression", (function() {
+        var reducer1 = (function(p, c) {
+            return (c.hasOwnProperty("property") ? ast_expression.MemberExpression.create(
+                    SourceLocation.merge(p.loc, c.loc), p, c.property, c.computed) : ast_expression
+                .CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c));
+        });
+        return binds(enumeration(callExpression, many(either(application0, accessor))), (function(f, g) {
+            return (function() {
+                return f(g.apply(null, arguments));
+            });
+        })(always, foldl.bind(null, reducer1)));
+    })());
     (unaryOperator = Parser("Unary Operator", either(keyword("typeof", "void"), punctuator("++", "--", "~", "!"))));
     (unaryExpression = Parser("Unary Expression", (function() {
-        var reducer1 = (function(argument, op) {
+        var reducer2 = (function(argument, op) {
             return ast_expression.UnaryExpression.create(SourceLocation.merge(op.loc, argument.loc),
                 op.value, argument);
         });
-        return binds(enumeration(many(unaryOperator), expected("unary argument", callExpression)), (
-            function(ops, expression) {
-                return always(foldr(reducer1, expression, ops));
-            }));
+        return binds(enumeration(many(unaryOperator), expected("unary argument",
+            leftHandSideExpression)), (function(ops, expression) {
+            return always(foldr(reducer2, expression, ops));
+        }));
     })()));
     var multiplicativeOperator = punctuator("*", "/", "%"),
         additiveOperator = punctuator("+", "-"),

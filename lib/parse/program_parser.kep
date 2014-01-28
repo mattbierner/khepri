@@ -46,12 +46,12 @@ sourceElement = statementParser;
 /**
  * Parser for a enumeration of zero or more source elements.
  */
-sourceElements = eager <| many(sourceElement);
+sourceElements = eager <| many sourceElement;
 
 /**
  * Parser for an ECMAScript 5.1 program.
  */
-program = (Parser, 'Program') <|
+program = Parser@'Program' <|
     node(
         either(
             then(khepriPackage, eof),

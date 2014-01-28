@@ -61,32 +61,32 @@ statement = \args(...) -> statement.apply(undefined, args);
 
 /* Statement Parsers
  ******************************************************************************/
-var logicalSemiColon = punctuator(';');
+var logicalSemiColon = punctuator ';';
 
 var statementList = eager(many(statement));
 
 // Block Statement
 ////////////////////////////////////////
-blockStatement = (Parser, 'Block Statement') <|
+blockStatement = Parser@'Block Statement' <|
     node(
-        between(punctuator('{'), punctuator('}'), 
+        between(punctuator '{', punctuator '}', 
             statementList),
         ast_statement.BlockStatement.create);
 
 // Empty Statement
 ////////////////////////////////////////
-emptyStatement = (Parser, 'Empty Statement') <|
+emptyStatement = Parser@'Empty Statement' <|
     node(
-        punctuator(';'),
+        punctuator ';',
         ast_statement.EmptyStatement.create);
 
 // Debugger Statement
 ////////////////////////////////////////
-debuggerStatement = (Parser, 'Debugger Statement') <|
+debuggerStatement = Parser@'Debugger Statement' <|
     node(
         next(
-            keyword('debugger'),
-            punctuator(';')),
+            keyword 'debugger',
+            punctuator ';'),
         ast_statement.DebuggerStatement.create);
 
 // Expression Statement
@@ -106,11 +106,11 @@ staticStatement = Parser('Static Statement', let
         ast_declaration.StaticDeclarator.create),
     
     staticDeclarationList =
-        eager <| sepBy1(punctuator(','),
+        eager <| sepBy1(punctuator ',',
             staticDeclaration)
 in
     node(
-        between(keyword('static'), logicalSemiColon,
+        between(keyword 'static', logicalSemiColon,
             staticDeclarationList),
         ast_declaration.StaticDeclaration.create));
 
@@ -118,7 +118,7 @@ in
 ////////////////////////////////////////
 var variableDeclarationList = let
     initialiser = next(
-        punctuator('='),
+        punctuator '=',
         expression |> expected@"variable initilizer"),
 
     variableDeclaration = nodea(
@@ -127,18 +127,18 @@ var variableDeclarationList = let
             optional(null, initialiser)),
         ast_declaration.VariableDeclarator.create)
 in
-    eager <| sepBy1(punctuator(','),
+    eager <| sepBy1(punctuator ',',
         variableDeclaration);
 
 variableStatement = Parser('Variable Statement',
     node(
-        between(keyword('var'), logicalSemiColon,
+        between(keyword 'var', logicalSemiColon,
             variableDeclarationList),
         ast_declaration.VariableDeclaration.create));
 
 // With Statement
 ////////////////////////////////////////
-withStatement = (Parser, 'With Statement') <| let
+withStatement = Parser@'With Statement' <| let
     withIdentifier = pattern |> expected@"pattern",
 
     withBinding = either(
@@ -147,21 +147,21 @@ withStatement = (Parser, 'With Statement') <| let
             enumeration(
                 then(
                     withIdentifier,
-                    punctuator('=')),
+                    punctuator '='),
                 expression),
             ast_declaration.Binding.create)),
     
     bindings =
-        eager <| sepBy1(punctuator(','),
+        eager <| sepBy1(punctuator ',',
             withBinding)
 in
     nodea(
         next(
-            keyword('with'),
+            keyword 'with',
             enumeration(
                 bindings,
                 next(
-                    keyword('in'),
+                    keyword 'in',
                     blockStatement))),
         ast_statement.WithStatement.create);
 
@@ -170,40 +170,40 @@ in
 ifStatement = Parser('If Statement',
     nodea(
         next(
-            keyword('if'),
+            keyword 'if',
             enumeration(
-                between(punctuator('('), punctuator(')'),
+                between(punctuator '(', punctuator ')',
                     expression |> expected@"if condition"),
                 statement,
                 optional(null, next(
-                    keyword('else'),
+                    keyword 'else',
                     statement)))),
         ast_statement.IfStatement.create));
 
 // Switch Statement
 ////////////////////////////////////////
-switchStatement = (Parser, 'Switch Statement') <| let
+switchStatement = Parser@'Switch Statement' <| let
     caseClause = nodea(
         next(
-            keyword('case'),
+            keyword 'case',
             enumeration(
                 then(
                     expression,
-                    punctuator(':')),
+                    punctuator ':'),
                 statementList)),
         ast_clause.SwitchCase.create),
 
     defaultClause = node(
         next(
-            keyword('default'),
+            keyword 'default',
             next(
-                punctuator(':'),
+                punctuator ':',
                 statementList)),
         \loc, consequent -> ast_clause.SwitchCase.create(loc, null, consequent)),
 
     caseClauses = eager <| many(caseClause),
 
-    caseBlock = between(punctuator('{'), punctuator('}'),
+    caseBlock = between(punctuator '{', punctuator '}',
         binds(
             enumeration(
                 optional([], caseClauses),
@@ -215,9 +215,9 @@ switchStatement = (Parser, 'Switch Statement') <| let
 in
     nodea(
         next(
-            keyword('switch'),
+            keyword 'switch',
             enumeration(
-                between(punctuator('('), punctuator(')'),
+                between(punctuator '(', punctuator ')',
                     expression |> expected@"switch discriminant"),
                 caseBlock)),
         ast_statement.SwitchStatement.create);
@@ -227,9 +227,9 @@ in
 var whileStatement = Parser('While Statement',
     nodea(
         next(
-            keyword('while'),
+            keyword 'while',
             enumeration(
-                between(punctuator('('), punctuator(')'),
+                between(punctuator '(', punctuator ')',
                     expression),
                 statement)),
         ast_statement.WhileStatement.create));
@@ -237,14 +237,14 @@ var whileStatement = Parser('While Statement',
 var doWhileStatement = Parser('Do While Statement',
     nodea(
         next(
-            keyword('do'),
+            keyword 'do',
             enumeration(
                 then(
                     statement,
-                    keyword('while')),
-                between(punctuator('('), punctuator(')'),
+                    keyword 'while'),
+                between(punctuator '(', punctuator ')',
                     expression),
-                punctuator(';'))),
+                punctuator ';')),
         ast_statement.DoWhileStatement.create));
 
 var forStatement = Parser('For Statement', let
@@ -252,7 +252,7 @@ var forStatement = Parser('For Statement', let
         either(
             node(
                 next(
-                    keyword('var'),
+                    keyword 'var',
                     variableDeclarationList),
                 ast_declaration.VariableDeclaration.create),
             topLevelExpression)),
@@ -263,81 +263,81 @@ var forStatement = Parser('For Statement', let
 in
     nodea(
         next(
-            keyword('for'),
+            keyword 'for',
             enumeration(
                 next(
-                    punctuator('('),
+                    punctuator '(',
                     forInitExpression),
                 next(
-                    punctuator(';'),
+                    punctuator ';',
                     forTestExpression),
                 next(
-                    punctuator(';'),
+                    punctuator ';',
                     forUpdateExpression),
                 next(
-                    punctuator(')'),
+                    punctuator ')',
                     statement))),
         ast_statement.ForStatement.create));
 
-iterationStatement = @Parser :'Iteration Statement'
-    :@choice
-        :doWhileStatement
-        :whileStatement
-        :forStatement;
+iterationStatement = Parser@'Iteration Statement' <|
+    choice
+        (doWhileStatement
+        ,whileStatement
+        ,forStatement);
 
 // Continue Statement
 ////////////////////////////////////////
-continueStatement = @Parser :'Continue Statement'
-    :node(
+continueStatement = Parser@'Continue Statement' <|
+    node(
         next(
-            keyword('continue'),
+            keyword 'continue',
             logicalSemiColon),
         ast_statement.ContinueStatement.create);
 
 // Break Statement
 ////////////////////////////////////////
-breakStatement = @Parser :'Break Statement'
-    :node(
+breakStatement = Parser@'Break Statement'  <|
+    node(
         next(
-            keyword('break'),
+            keyword 'break',
             logicalSemiColon),
         ast_statement.BreakStatement.create);
 
 // Return Statement
 ////////////////////////////////////////
-returnStatement = @Parser :'Return Statement'
-    :node(
-        between(keyword('return'), logicalSemiColon,
+returnStatement = Parser@'Return Statement'  <|
+    node(
+        between(keyword 'return', logicalSemiColon,
             optional(null, expression)),
         ast_statement.ReturnStatement.create);
 
 // Throw Statement
 ////////////////////////////////////////
-throwStatement = @Parser :'Throw Statement'
-    :node(
-        between(keyword('throw'), logicalSemiColon,
+throwStatement = Parser@'Throw Statement'  <|
+    node(
+        between(keyword 'throw', logicalSemiColon,
             expression),
         ast_statement.ThrowStatement.create);
 
 // Try Statement
 ////////////////////////////////////////
-tryStatement = @Parser :'Try Statement' :let
+tryStatement = Parser@'Try Statement'  <| let
     catchBlock = nodea(
         next(
-            keyword('catch'),
+            keyword 'catch',
             enumeration(
-                between(punctuator('('), punctuator(')'),
+                between(punctuator '(', punctuator ')',
                     identifier),
                 blockStatement)),
         ast_clause.CatchClause.create),
 
     finallyBlock = next(
-        keyword('finally'),
+        keyword 'finally',
         blockStatement)
 in
     nodea(
         next(
-            keyword('try'),
+            keyword 'try',
             enumeration(
                 blockStatement,
                 optional(null, catchBlock),
@@ -346,23 +346,23 @@ in
 
 // Statement
 ////////////////////////////////////////
-statement = @Parser :'Statement'
-    :(@choice
-        :blockStatement
-        :staticStatement
-        :variableStatement
-        :emptyStatement
-        :ifStatement
-        :withStatement
-        :iterationStatement
-        :continueStatement
-        :breakStatement
-        :returnStatement
-        :switchStatement
-        :throwStatement
-        :tryStatement
-        :debuggerStatement
-        :expressionStatement)
+statement = Parser@'Statement' <|
+    choice
+        (blockStatement
+        ,staticStatement
+        ,variableStatement
+        ,emptyStatement
+        ,ifStatement
+        ,withStatement
+        ,iterationStatement
+        ,continueStatement
+        ,breakStatement
+        ,returnStatement
+        ,switchStatement
+        ,throwStatement
+        ,tryStatement
+        ,debuggerStatement
+        ,expressionStatement)
     |> expected@'statement';
 
 }

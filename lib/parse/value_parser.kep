@@ -19,36 +19,36 @@ in {
 
 var literalParser = \kind, p ->
     bind(p, \x ->
-        always(ast_value.Literal.create(x.loc, kind, x.value)));
+        always <| ast_value.Literal.create(x.loc, kind, x.value));
 
 /* Literals
  ******************************************************************************/
-nullLiteral = (Parser, 'Null Literal') <|
+nullLiteral = Parser@'Null Literal' <|
     literalParser(
         'null',
         token.nullLiteral);
 
-booleanLiteral = (Parser, 'Boolean Literal') <|
+booleanLiteral = Parser@'Boolean Literal' <|
     literalParser(
         'boolean',
         token.booleanLiteral);
 
-numericLiteral = (Parser, 'Numeric Literal') <|
+numericLiteral = Parser@'Numeric Literal' <|
     literalParser(
         'number',
         token.numericLiteral);
 
-stringLiteral = (Parser, 'String Literal') <|
+stringLiteral = Parser@'String Literal' <|
     literalParser(
         'string',
         token.stringLiteral);
 
-regularExpressionLiteral = (Parser, 'Regular Expression Literal') <|
+regularExpressionLiteral = Parser@'Regular Expression Literal' <|
     literalParser(
         'regexp',
         token.regularExpressionLiteral);
 
-literal = (Parser, 'Literal') <|
+literal = Parser@'Literal' <|
     choice(
         nullLiteral,
         booleanLiteral,
@@ -58,9 +58,9 @@ literal = (Parser, 'Literal') <|
 
 /* Symbols
  ******************************************************************************/
-identifier = (Parser, 'Identifier') <|
+identifier = Parser@'Identifier' <|
     bind(
         token.anyIdentifier,
-        \x -> always(ast_value.Identifier.create(x.loc, x.value)));
+        \x -> always <| ast_value.Identifier.create(x.loc, x.value));
 
 }

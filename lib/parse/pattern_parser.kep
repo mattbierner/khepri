@@ -53,38 +53,38 @@ subPattern = \args(...) -> subPattern.apply(undefined, args);
 
 /* Parts
  ******************************************************************************/
-var sep = optional(null, punctuator(','));
+var sep = optional(null, punctuator ',');
 
 /* Base Patterns
  ******************************************************************************/
 // Identifier Pattern
 ////////////////////////////////////////
-identifierPattern = (Parser, 'Identifier Pattern') <|
+identifierPattern = Parser@'Identifier Pattern' <|
     bind(
         identifier,
         \x -> always(ast_pattern.IdentifierPattern.create(x.loc, x)));
 
 // Sink Pattern
 ////////////////////////////////////////
-sinkPattern = (Parser, 'Sink Pattern') <|
+sinkPattern = Parser@'Sink Pattern' <|
     bind(
-        keyword('_'),
+        keyword '_',
         \x -> always(ast_pattern.SinkPattern.create(x.loc)));
 
 // Ellipsis Pattern
 ////////////////////////////////////////
-ellipsisPattern = (Parser, 'Ellipsis Pattern') <|
+ellipsisPattern = Parser@'Ellipsis Pattern' <|
     bind(
-        punctuator('...'),
+        punctuator '...',
         \x -> always(ast_pattern.EllipsisPattern.create(x.loc)));
 
 /* Unpacks
  ******************************************************************************/
 // Array Pattern
 ////////////////////////////////////////
-arrayPattern = (Parser, 'Array Pattern') <|
+arrayPattern = Parser@'Array Pattern' <|
     node(
-        between(punctuator('['), punctuator(']'),
+        between(punctuator '[', punctuator ']',
             eager <| sepBy1(sep, topLevelPattern)
                 |> expected@"array pattern element"),
         ast_pattern.ArrayPattern.create);
@@ -96,7 +96,7 @@ var objectPatternElement = either(
         enumeration(
             stringLiteral,
             next(
-                punctuator(':'),
+                punctuator ':',
                 choice(
                     arrayPattern,
                     objectPattern,
@@ -109,21 +109,21 @@ var objectPatternElement = either(
             identifierPattern),
         \loc, key -> ast_pattern.ObjectPatternElement.create(loc, key, null)));
 
-objectPattern = (Parser, 'Object Pattern') <|
+objectPattern = Parser@'Object Pattern' <|
     node(
-        between(punctuator('{'), punctuator('}'),
+        between(punctuator '{', punctuator '}',
             eager <| sepBy1(sep, objectPatternElement)
                 |> expected@"object pattern element"),
         ast_pattern.ObjectPattern.create);
 
 // As Pattern
 ////////////////////////////////////////
-asPattern = (Parser, 'As Pattern') <|
+asPattern = Parser@'As Pattern' <|
     nodea(
         enumeration(
             attempt <| then(
                 identifierPattern,
-                punctuator('#')),
+                punctuator '#'),
             choice(
                 arrayPattern,
                 objectPattern)
@@ -132,9 +132,9 @@ asPattern = (Parser, 'As Pattern') <|
 
 // Import Pattern
 ////////////////////////////////////////
-importPattern = (Parser, 'Import Pattern') <|
+importPattern = Parser@'Import Pattern' <|
     next(
-        keyword('import'),
+        keyword 'import',
         nodea(
             enumeration(
                 stringLiteral,
@@ -149,7 +149,7 @@ importPattern = (Parser, 'Import Pattern') <|
  ******************************************************************************/
 // Top Level Pattern
 ////////////////////////////////////////
-topLevelPattern = (Parser, 'Top Level Pattern') <|
+topLevelPattern = Parser@'Top Level Pattern' <|
     choice(
         ellipsisPattern,
         sinkPattern,
@@ -165,11 +165,11 @@ var subPatternElements = eager <| sepBy1(sep,
         topLevelPattern,
         subPattern));
 
-subPattern = (Parser, 'Sub Pattern') <|
+subPattern = Parser@'Sub Pattern' <|
     attempt <| nodea(
         enumeration(
             identifierPattern,
-            between(punctuator('('), punctuator(')'),
+            between(punctuator '(', punctuator ')',
                 subPatternElements)),
         ast_pattern.ArgumentsPattern.create);
 
@@ -178,33 +178,33 @@ subPattern = (Parser, 'Sub Pattern') <|
 var argumentElements = eager <| sepBy(sep, topLevelPattern);
 
 var selfPattern = next(
-    punctuator('='),
+    punctuator '=',
     identifierPattern);
 
-argumentList = (Parser, 'Argument List') <|
+argumentList = Parser@'Argument List' <|
     nodea(
         enumeration(
             argumentElements,
             optional(null, selfPattern)),
         \loc, elements, self -> ast_pattern.ArgumentsPattern.create(loc, null, elements, self));
 
-argumentsPattern = (Parser, 'Arguments Pattern') <|
+argumentsPattern = Parser@'Arguments Pattern' <|
     either(
         nodea(
             enumeration(
                 attempt <| then(
                     optional(null, identifierPattern),
-                    punctuator('(')),
+                    punctuator '('),
                 then(
                     argumentElements,
-                    punctuator(')')),
+                    punctuator ')'),
                 optional(null, selfPattern)),
             ast_pattern.ArgumentsPattern.create),
         argumentList);
 
 // Pattern
 ////////////////////////////////////////
-pattern = (Parser, 'Pattern') <|
+pattern = Parser@'Pattern' <|
     choice(
         importPattern,
         topLevelPattern);

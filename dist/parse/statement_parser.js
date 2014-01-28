@@ -121,7 +121,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri-ast/clause", 
         return nodea(next(keyword("try"), enumeration(blockStatement, optional(null, catchBlock),
             optional(null, finallyBlock))), ast_statement.TryStatement.create);
     })()));
-    (statement = Parser("Statement", expected("statement", choice(blockStatement, staticStatement,
+    (statement = expected("statement", Parser("Statement", choice(blockStatement, staticStatement,
         variableStatement, emptyStatement, ifStatement, withStatement, iterationStatement,
         continueStatement, breakStatement, returnStatement, switchStatement, throwStatement,
         tryStatement, debuggerStatement, expressionStatement))));
