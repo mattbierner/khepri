@@ -1090,119 +1090,102 @@ define('bennu/lang',["require", "exports", "nu-stream/stream", "nu-stream/gen", 
     (exports.chainr1 = chainr1);
     (exports.chainr = chainr);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/serialization.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/serialization',["require", "exports", "khepri_ast/node"], (function(require, exports, khepri_node) {
+define('khepri-ast/serialization',["require", "exports", "./node"], (function(require, exports, khepri_node) {
     
-    var registerNode, serialize, unserialize;
-    var khepri_node = khepri_node;
-    var keys = Object.keys;
-    var map = Function.prototype.call.bind(Array.prototype.map);
-    var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-    var id = (function(x) {
-        return x;
-    });
-    var typeMap = ({});
+    var registerNode, serialize, unserialize, keys = Object.keys,
+        map = Function.prototype.call.bind(Array.prototype.map),
+        reduce = Function.prototype.call.bind(Array.prototype.reduce),
+        id = (function(x) {
+            return x;
+        }),
+        typeMap = ({});
     (registerNode = (function(type, ctor) {
         (typeMap[type] = ctor);
     }));
-    (serialize = (function() {
-            var _serialize = (function(node, locSerializer, udSerializer) {
-                if (!node) return node;
-                if (Array.isArray(node)) return map(node, (function(x) {
-                    return _serialize(x, locSerializer, udSerializer);
-                }));
-                if (!(node instanceof khepri_node.Node)) return node;
-                return ({
-                    "type": node.type,
-                    "loc": locSerializer(node.loc),
-                    "ud": udSerializer(node.ud),
-                    "children": reduce(node.children, (function(o, childKey) {
-                        (o[childKey] = _serialize(node[childKey], locSerializer,
-                            udSerializer));
-                        return o;
-                    }), ({})),
-                    "attributes": reduce(node.attributes, (function(o, key) {
-                        (o[key] = node[key]);
-                        return o;
-                    }), ({}))
-                });
-            });
-            return (function(node, locSerializer, udSerializer) {
-                var program = _serialize(node, (locSerializer || id), (udSerializer || id));
-                return ({
-                    "version": "2.1.0",
-                    "kind": "ecma",
-                    "program": program
-                });
-            });
-        })
-        .call(this));
-    (unserialize = (function() {
-            var _unserialize = (function(data, locUnserializer, udUnserializer) {
-                if (!data) return data;
-                if (Array.isArray(data)) return map(data, (function(x) {
-                    return _unserialize(x, locUnserializer, udUnserializer);
-                }));
-                var ctor = typeMap[data.type];
-                if (!ctor) return data;
-                var loc = locUnserializer(data.loc),
-                    ud = udUnserializer(data.ud);
-                var children = reduce(keys(data.children), (function(o, c) {
-                    (o[c] = _unserialize(data.children[c], locUnserializer, udUnserializer));
-                    return o;
-                }), ({}));
-                var attributes = reduce(keys(data.attributes), (function(o, c) {
-                    (o[c] = data.attributes[c]);
-                    return o;
-                }), ({}));
-                return khepri_node.construct(ctor.prototype, loc, ud, children, attributes);
-            });
-            return (function(data, locSerializer, udSerializer) {
-                return _unserialize(data.program, (locSerializer || id), (udSerializer || id));
-            });
-        })
-        .call(this));
+    var _serialize = (function(node, locSerializer, udSerializer) {
+        if (!node) return node;
+        if (Array.isArray(node)) return map(node, (function(x) {
+            return _serialize(x, locSerializer, udSerializer);
+        }));
+        if (!(node instanceof khepri_node.Node)) return node;
+        return ({
+            "type": node.type,
+            "loc": locSerializer(node.loc),
+            "ud": udSerializer(node.ud),
+            "children": reduce(node.children, (function(o, childKey) {
+                (o[childKey] = _serialize(node[childKey], locSerializer, udSerializer));
+                return o;
+            }), ({})),
+            "attributes": reduce(node.attributes, (function(o, key) {
+                (o[key] = node[key]);
+                return o;
+            }), ({}))
+        });
+    });
+    (serialize = (function(node, locSerializer, udSerializer) {
+        var program = _serialize(node, (locSerializer || id), (udSerializer || id));
+        return ({
+            "version": "2.1.0",
+            "kind": "ecma",
+            "program": program
+        });
+    }));
+    var _unserialize = (function(data, locUnserializer, udUnserializer) {
+        if (!data) return data;
+        if (Array.isArray(data)) return map(data, (function(x) {
+            return _unserialize(x, locUnserializer, udUnserializer);
+        }));
+        var ctor = typeMap[data.type];
+        if (!ctor) return data;
+        var loc = locUnserializer(data.loc),
+            ud = udUnserializer(data.ud),
+            children = reduce(keys(data.children), (function(o, c) {
+                (o[c] = _unserialize(data.children[c], locUnserializer, udUnserializer));
+                return o;
+            }), ({})),
+            attributes = reduce(keys(data.attributes), (function(o, c) {
+                (o[c] = data.attributes[c]);
+                return o;
+            }), ({}));
+        return khepri_node.construct(ctor.prototype, loc, ud, children, attributes);
+    });
+    (unserialize = (function(data, locSerializer, udSerializer) {
+        return _unserialize(data.program, (locSerializer || id), (udSerializer || id));
+    }));
     (exports.registerNode = registerNode);
     (exports.serialize = serialize);
     (exports.unserialize = unserialize);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/node.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/node',["require", "exports", "khepri_ast/serialization"], (function(require, exports, __o) {
+define('khepri-ast/node',["require", "exports", "./serialization"], (function(require, exports, __o) {
     
-    var Node, construct, reconstruct, modify, setLoc, setUserData, getData, modifyData, setData, defineNode;
-    var __o = __o,
-        registerNode = __o["registerNode"];
-    var concatArgs = (function() {
-        var id = (function(x) {
-            return x;
+    var registerNode = __o["registerNode"],
+        Node, construct, reconstruct, modify, setLoc, setUserData, getData, modifyData, setData, defineNode,
+            concatArgs = (function() {
+                var id = (function(x) {
+                    return x;
+                });
+                return (function(arr, args) {
+                    return arr.concat([].map.call(args, id));
+                });
+            })(),
+        keys = Object.keys,
+        map = Function.prototype.call.bind(Array.prototype.map),
+        reduce = Function.prototype.call.bind(Array.prototype.reduce),
+        copy = (function(obj) {
+            var out = Object.create(Object.getPrototypeOf(obj));
+            Object.getOwnPropertyNames(obj)
+                .forEach((function(i) {
+                    var self = this;
+                    (out[i] = obj[i]);
+                }));
+            return out;
+        }),
+        defineProperty = (function(obj, prop, descriptor) {
+            return Object.defineProperty(copy(obj), prop, descriptor);
         });
-        return (function(arr, args) {
-            return arr.concat([].map.call(args, id));
-        });
-    })
-        .call(this);
-    var keys = Object.keys;
-    var map = Function.prototype.call.bind(Array.prototype.map);
-    var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-    var copy = (function(obj) {
-        var out = Object.create(Object.getPrototypeOf(obj));
-        Object.getOwnPropertyNames(obj)
-            .forEach((function(i) {
-                (out[i] = obj[i]);
-            }));
-        return out;
-    });
-    var defineProperty = (function(obj, prop, descriptor) {
-        return Object.defineProperty(copy(obj), prop, descriptor);
-    });
     (Node = (function(loc, ud) {
-        Object.defineProperties(this, ({
+        var self = this;
+        Object.defineProperties(self, ({
             "loc": ({
                 "value": loc,
                 "enumerable": false
@@ -1232,6 +1215,7 @@ define('khepri_ast/node',["require", "exports", "khepri_ast/serialization"], (fu
         }));
         Object.keys(attributes)
             .forEach((function(key) {
+                var self = this;
                 (properties[key] = ({
                     "value": attributes[key],
                     "enumerable": true,
@@ -1257,14 +1241,14 @@ define('khepri_ast/node',["require", "exports", "khepri_ast/serialization"], (fu
         base.children.forEach((function(key) {
             (allChildren[key] = base[key]);
         }));
-        Object.keys(children)
+        if (children) Object.keys(children)
             .forEach((function(key) {
                 (allChildren[key] = children[key]);
             }));
         base.attributes.forEach((function(key) {
             (allAttributes[key] = base[key]);
         }));
-        Object.keys(attributes)
+        if (attributes) Object.keys(attributes)
             .forEach((function(key) {
                 (allAttributes[key] = attributes[key]);
             }));
@@ -1329,57 +1313,64 @@ define('khepri_ast/node',["require", "exports", "khepri_ast/serialization"], (fu
     (exports.setData = setData);
     (exports.defineNode = defineNode);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/token.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/token',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/token',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Token, StringToken, NumberToken, RegularExpressionToken, BooleanToken, NullToken, IdentifierToken,
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Token, StringToken, NumberToken, RegularExpressionToken, BooleanToken, NullToken, IdentifierToken,
             KeywordToken, PunctuatorToken, CommentToken, WhitespaceToken, LineTerminatorToken;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
     (Token = (function(loc, value) {
-        Node.call(this, loc);
-        (this.value = value);
+        var self = this;
+        Node.call(self, loc);
+        (self.value = value);
     }));
     (Token.prototype = new(Node)());
     (StringToken = defineNode(Token, "String", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (NumberToken = defineNode(Token, "Number", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (RegularExpressionToken = defineNode(Token, "RegularExpression", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (BooleanToken = defineNode(Token, "Boolean", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (NullToken = defineNode(Token, "Null", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (IdentifierToken = defineNode(Token, "Identifier", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (KeywordToken = defineNode(Token, "Keyword", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (PunctuatorToken = defineNode(Token, "Punctuator", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (CommentToken = defineNode(Token, "Comment", [], ["value", "multiline", "linebreak"], (function(loc, value,
         multiline, linebreak) {
-        Token.call(this, loc, value);
-        (this.multiline = !!multiline);
-        (this.linebreak = !!linebreak);
+        var self = this;
+        Token.call(self, loc, value);
+        (self.multiline = !!multiline);
+        (self.linebreak = !!linebreak);
     })));
     (WhitespaceToken = defineNode(Token, "Whitespace", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (LineTerminatorToken = defineNode(Token, "LineTerminator", [], ["value"], (function(loc, value) {
-        Token.call(this, loc, value);
+        var self = this;
+        Token.call(self, loc, value);
     })));
     (exports.Token = Token);
     (exports.StringToken = StringToken);
@@ -1596,66 +1587,66 @@ define('khepri/lex/line_terminator_lexer',["require", "exports", "bennu/parse", 
     (exports.lineTerminator = lineTerminator);
     (exports.lineTerminatorSequence = lineTerminatorSequence);
 }));
-define('khepri/lex/comment_lexer',["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "khepri/lex/line_terminator_lexer"], (
-    function(require, exports, __o, __o0, __o1, __o2) {
-        
-        var anyToken = __o["anyToken"],
-            always = __o["always"],
-            bind = __o["bind"],
-            cons = __o["cons"],
-            either = __o["either"],
-            many = __o["many"],
-            next = __o["next"],
-            Parser = __o["Parser"],
-            RecParser = __o["RecParser"],
-            test = __o["test"],
-            token = __o["token"],
-            character = __o0["character"],
-            string = __o0["string"],
-            foldl = __o1["foldl"],
-            NIL = __o1["NIL"],
-            lineTerminator = __o2["lineTerminator"],
-            singleLineCommentMarker, singleLineCommentChar, singleLineCommentChars, singleLineComment,
-                multiLineCommentStartMarker, multiLineCommentEndMarker, multiLineCommentChars, multiLineComment,
-                comment, join = (function(p) {
-                    return bind(p, (function(f, g) {
-                        return (function(x) {
-                            return f(g(x));
-                        });
-                    })(always, foldl.bind(null, (function(x, y) {
-                        return (x + y);
-                    }), "")));
-                });
-        (singleLineCommentMarker = string("//"));
-        (singleLineCommentChar = token((function(f, g) {
-            return (function(x) {
-                return f(g(x));
+define('khepri/lex/comment_lexer',["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "./line_terminator_lexer"], (function(
+    require, exports, __o, __o0, __o1, __o2) {
+    
+    var anyToken = __o["anyToken"],
+        always = __o["always"],
+        bind = __o["bind"],
+        cons = __o["cons"],
+        either = __o["either"],
+        many = __o["many"],
+        next = __o["next"],
+        Parser = __o["Parser"],
+        RecParser = __o["RecParser"],
+        test = __o["test"],
+        token = __o["token"],
+        character = __o0["character"],
+        string = __o0["string"],
+        foldl = __o1["foldl"],
+        NIL = __o1["NIL"],
+        lineTerminator = __o2["lineTerminator"],
+        singleLineCommentMarker, singleLineCommentChar, singleLineCommentChars, singleLineComment,
+            multiLineCommentStartMarker, multiLineCommentEndMarker, multiLineCommentChars, multiLineComment,
+            comment, join = (function(p) {
+                return bind(p, (function(f, g) {
+                    return (function(x) {
+                        return f(g(x));
+                    });
+                })(always, foldl.bind(null, (function(x, y) {
+                    return (x + y);
+                }), "")));
             });
-        })((function(x) {
-            return !x;
-        }), test.bind(null, lineTerminator))));
-        (singleLineCommentChars = many(singleLineCommentChar));
-        (singleLineComment = Parser("Single Line Comment Lexer", next(singleLineCommentMarker, join(
-            singleLineCommentChars))));
-        (multiLineCommentStartMarker = string("/*"));
-        (multiLineCommentEndMarker = string("*/"));
-        (multiLineCommentChars = RecParser("Multi Line Comment Characters Lexer", (function(self) {
-            return either(next(character("*"), either(next(character("/"), always(NIL)), cons(always(
-                "*"), self))), cons(anyToken, self));
-        })));
-        (multiLineComment = Parser("Multi Line Comment Lexer", next(multiLineCommentStartMarker, join(
-            multiLineCommentChars))));
-        (comment = Parser("Comment Lexer", either(singleLineComment, multiLineComment)));
-        (exports.singleLineCommentMarker = singleLineCommentMarker);
-        (exports.singleLineCommentChar = singleLineCommentChar);
-        (exports.singleLineCommentChars = singleLineCommentChars);
-        (exports.singleLineComment = singleLineComment);
-        (exports.multiLineCommentStartMarker = multiLineCommentStartMarker);
-        (exports.multiLineCommentEndMarker = multiLineCommentEndMarker);
-        (exports.multiLineCommentChars = multiLineCommentChars);
-        (exports.multiLineComment = multiLineComment);
-        (exports.comment = comment);
-    }));
+    (singleLineCommentMarker = string("//"));
+    (singleLineCommentChar = token((function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })((function(x) {
+        return (!x);
+    }), test.bind(null, lineTerminator))));
+    (singleLineCommentChars = many(singleLineCommentChar));
+    (singleLineComment = Parser("Single Line Comment Lexer", next(singleLineCommentMarker, join(
+        singleLineCommentChars))));
+    (multiLineCommentStartMarker = string("/*"));
+    (multiLineCommentEndMarker = string("*/"));
+    (multiLineCommentChars = RecParser("Multi Line Comment Characters Lexer", (function(self) {
+        return either(next(character("*"), either(next(character("/"), always(NIL)), cons(always(
+            "*"), self))), cons(anyToken, self));
+    })));
+    (multiLineComment = Parser("Multi Line Comment Lexer", next(multiLineCommentStartMarker, join(
+        multiLineCommentChars))));
+    (comment = Parser("Comment Lexer", either(singleLineComment, multiLineComment)));
+    (exports.singleLineCommentMarker = singleLineCommentMarker);
+    (exports.singleLineCommentChar = singleLineCommentChar);
+    (exports.singleLineCommentChars = singleLineCommentChars);
+    (exports.singleLineComment = singleLineComment);
+    (exports.multiLineCommentStartMarker = multiLineCommentStartMarker);
+    (exports.multiLineCommentEndMarker = multiLineCommentEndMarker);
+    (exports.multiLineCommentChars = multiLineCommentChars);
+    (exports.multiLineComment = multiLineComment);
+    (exports.comment = comment);
+}));
 define('khepri/lex/null_lexer',["require", "exports", "bennu/parse", "bennu/text"], (function(require, exports, __o, __o0) {
     
     var always = __o["always"],
@@ -1666,134 +1657,134 @@ define('khepri/lex/null_lexer',["require", "exports", "bennu/parse", "bennu/text
     (nullLiteral = Parser("Null Lexer", next(string("null"), always(null))));
     (exports.nullLiteral = nullLiteral);
 }));
-define('khepri/lex/reserved_word_lexer',["require", "exports", "bennu/parse", "bennu/text", "khepri/lex/boolean_lexer", "khepri/lex/null_lexer"], (
-    function(require, exports, parse, __o, __o0, __o1) {
-        
-        var attempt = parse["attempt"],
-            choice = parse["choice"],
-            Parser = parse["Parser"],
-            string = __o["string"],
-            trie = __o["trie"],
-            booleanLiteral = __o0["booleanLiteral"],
-            nullLiteral = __o1["nullLiteral"],
-            reservedWord, futureReservedWord, breakKeyword, caseKeyword, catchKeyword, continueKeyword,
-                debuggerKeyword, defaultKeyword, deleteKeyword, doKeyword, elseKeyword, finallyKeyword, forKeyword,
-                functionKeyword, ifKeyword, inKeyword, instanceofKeyword, typeofKeyword, newKeyword, Keyword,
-                returnKeyword, voidKeyword, switchKeyword, whileKeyword, thisKeyword, withKeyword, throwKeyword,
-                tryKeyword, keyword, getKeyword, setKeyword, classKeyword, enumKeyword, extendsKeyword,
-                superKeyword, constKeyword, exportKeyword, importKeyword, implementsKeyword, letKeyword,
-                privateKeyword, publicKeyword, interfaceKeyword, packageKeyword, protectedKeyword, staticKeyword,
-                yieldKeyword, keywordList = ["break", "case", "catch", "continue", "debugger", "default", "delete",
-                    "do", "else", "finally", "for", "function", "if", "in", "instanceof", "typeof", "new", "var",
-                    "return", "void", "switch", "while", "this", "with", "throw", "try", "export", "package",
-                    "class", "enum", "interface", "extends", "implements", "private", "public", "protected",
-                    "super", "const", "yield", "import", "let", "static", "_"
-            ];
-        (breakKeyword = string("break"));
-        (caseKeyword = string("case"));
-        (catchKeyword = string("catch"));
-        (continueKeyword = string("continue"));
-        (debuggerKeyword = string("debugger"));
-        (defaultKeyword = string("default"));
-        (deleteKeyword = string("delete"));
-        (doKeyword = string("do"));
-        (elseKeyword = string("else"));
-        (finallyKeyword = string("finally"));
-        (forKeyword = string("for"));
-        (functionKeyword = string("function"));
-        (ifKeyword = string("if"));
-        (inKeyword = string("in"));
-        (instanceofKeyword = string("instanceof"));
-        (typeofKeyword = string("typeof"));
-        (newKeyword = string("new"));
-        (Keyword = string(""));
-        (returnKeyword = string("return"));
-        (voidKeyword = string("void"));
-        (switchKeyword = string("switch"));
-        (whileKeyword = string("while"));
-        (thisKeyword = string("this"));
-        (withKeyword = string("with"));
-        (throwKeyword = string("throw"));
-        (tryKeyword = string("try"));
-        (getKeyword = string("get"));
-        (setKeyword = string("set"));
-        (keyword = choice(attempt(breakKeyword), attempt(caseKeyword), attempt(catchKeyword), attempt(
-                continueKeyword), attempt(debuggerKeyword), attempt(defaultKeyword), attempt(deleteKeyword),
-            attempt(doKeyword), attempt(elseKeyword), attempt(finallyKeyword), attempt(forKeyword), attempt(
-                functionKeyword), attempt(ifKeyword), attempt(inKeyword), attempt(instanceofKeyword), attempt(
-                typeofKeyword), attempt(newKeyword), attempt(Keyword), attempt(returnKeyword), attempt(
-                voidKeyword), attempt(switchKeyword), attempt(whileKeyword), attempt(thisKeyword), attempt(
-                withKeyword), attempt(throwKeyword), attempt(tryKeyword)));
-        (classKeyword = string("class"));
-        (enumKeyword = string("enum"));
-        (extendsKeyword = string("extends"));
-        (superKeyword = string("super"));
-        (constKeyword = string("const"));
-        (exportKeyword = string("export"));
-        (importKeyword = string("import"));
-        (implementsKeyword = string("implements"));
-        (letKeyword = string("let"));
-        (privateKeyword = string("private"));
-        (publicKeyword = string("public"));
-        (interfaceKeyword = string("interface"));
-        (packageKeyword = string("package"));
-        (protectedKeyword = string("protected"));
-        (staticKeyword = string("static"));
-        (yieldKeyword = string("yield"));
-        (futureReservedWord = choice(attempt(classKeyword), attempt(enumKeyword), attempt(extendsKeyword), attempt(
-                superKeyword), attempt(constKeyword), attempt(exportKeyword), attempt(importKeyword), attempt(
-                implementsKeyword), attempt(letKeyword), attempt(privateKeyword), attempt(publicKeyword),
-            attempt(interfaceKeyword), attempt(packageKeyword), attempt(protectedKeyword), attempt(
-                staticKeyword), yieldKeyword));
-        (reservedWord = Parser("ReservedWordLexer", choice(trie(keywordList), nullLiteral, booleanLiteral)));
-        (exports.reservedWord = reservedWord);
-        (exports.futureReservedWord = futureReservedWord);
-        (exports.breakKeyword = breakKeyword);
-        (exports.caseKeyword = caseKeyword);
-        (exports.catchKeyword = catchKeyword);
-        (exports.continueKeyword = continueKeyword);
-        (exports.debuggerKeyword = debuggerKeyword);
-        (exports.defaultKeyword = defaultKeyword);
-        (exports.deleteKeyword = deleteKeyword);
-        (exports.doKeyword = doKeyword);
-        (exports.elseKeyword = elseKeyword);
-        (exports.finallyKeyword = finallyKeyword);
-        (exports.forKeyword = forKeyword);
-        (exports.functionKeyword = functionKeyword);
-        (exports.ifKeyword = ifKeyword);
-        (exports.inKeyword = inKeyword);
-        (exports.instanceofKeyword = instanceofKeyword);
-        (exports.typeofKeyword = typeofKeyword);
-        (exports.newKeyword = newKeyword);
-        (exports.Keyword = Keyword);
-        (exports.returnKeyword = returnKeyword);
-        (exports.voidKeyword = voidKeyword);
-        (exports.switchKeyword = switchKeyword);
-        (exports.whileKeyword = whileKeyword);
-        (exports.thisKeyword = thisKeyword);
-        (exports.withKeyword = withKeyword);
-        (exports.throwKeyword = throwKeyword);
-        (exports.tryKeyword = tryKeyword);
-        (exports.keyword = keyword);
-        (exports.getKeyword = getKeyword);
-        (exports.setKeyword = setKeyword);
-        (exports.classKeyword = classKeyword);
-        (exports.enumKeyword = enumKeyword);
-        (exports.extendsKeyword = extendsKeyword);
-        (exports.superKeyword = superKeyword);
-        (exports.constKeyword = constKeyword);
-        (exports.exportKeyword = exportKeyword);
-        (exports.importKeyword = importKeyword);
-        (exports.implementsKeyword = implementsKeyword);
-        (exports.letKeyword = letKeyword);
-        (exports.privateKeyword = privateKeyword);
-        (exports.publicKeyword = publicKeyword);
-        (exports.interfaceKeyword = interfaceKeyword);
-        (exports.packageKeyword = packageKeyword);
-        (exports.protectedKeyword = protectedKeyword);
-        (exports.staticKeyword = staticKeyword);
-        (exports.yieldKeyword = yieldKeyword);
-    }));
+define('khepri/lex/reserved_word_lexer',["require", "exports", "bennu/parse", "bennu/text", "./boolean_lexer", "./null_lexer"], (function(require,
+    exports, __o, __o0, __o1, __o2) {
+    
+    var attempt = __o["attempt"],
+        choice = __o["choice"],
+        Parser = __o["Parser"],
+        string = __o0["string"],
+        trie = __o0["trie"],
+        booleanLiteral = __o1["booleanLiteral"],
+        nullLiteral = __o2["nullLiteral"],
+        reservedWord, futureReservedWord, breakKeyword, caseKeyword, catchKeyword, continueKeyword,
+            debuggerKeyword, defaultKeyword, deleteKeyword, doKeyword, elseKeyword, finallyKeyword, forKeyword,
+            functionKeyword, ifKeyword, inKeyword, instanceofKeyword, typeofKeyword, newKeyword, Keyword,
+            returnKeyword, voidKeyword, switchKeyword, whileKeyword, thisKeyword, withKeyword, throwKeyword,
+            tryKeyword, keyword, getKeyword, setKeyword, classKeyword, enumKeyword, extendsKeyword,
+            superKeyword, constKeyword, exportKeyword, importKeyword, implementsKeyword, letKeyword,
+            privateKeyword, publicKeyword, interfaceKeyword, packageKeyword, protectedKeyword, staticKeyword,
+            yieldKeyword, keywordList = ["break", "case", "catch", "continue", "debugger", "default", "delete",
+                "do", "else", "finally", "for", "function", "if", "in", "instanceof", "typeof", "new", "var",
+                "return", "void", "switch", "while", "this", "with", "throw", "try", "export", "package",
+                "class", "enum", "interface", "extends", "implements", "private", "public", "protected",
+                "super", "const", "yield", "import", "let", "static", "_"
+        ];
+    (breakKeyword = string("break"));
+    (caseKeyword = string("case"));
+    (catchKeyword = string("catch"));
+    (continueKeyword = string("continue"));
+    (debuggerKeyword = string("debugger"));
+    (defaultKeyword = string("default"));
+    (deleteKeyword = string("delete"));
+    (doKeyword = string("do"));
+    (elseKeyword = string("else"));
+    (finallyKeyword = string("finally"));
+    (forKeyword = string("for"));
+    (functionKeyword = string("function"));
+    (ifKeyword = string("if"));
+    (inKeyword = string("in"));
+    (instanceofKeyword = string("instanceof"));
+    (typeofKeyword = string("typeof"));
+    (newKeyword = string("new"));
+    (Keyword = string(""));
+    (returnKeyword = string("return"));
+    (voidKeyword = string("void"));
+    (switchKeyword = string("switch"));
+    (whileKeyword = string("while"));
+    (thisKeyword = string("this"));
+    (withKeyword = string("with"));
+    (throwKeyword = string("throw"));
+    (tryKeyword = string("try"));
+    (getKeyword = string("get"));
+    (setKeyword = string("set"));
+    (keyword = choice(attempt(breakKeyword), attempt(caseKeyword), attempt(catchKeyword), attempt(
+            continueKeyword), attempt(debuggerKeyword), attempt(defaultKeyword), attempt(deleteKeyword),
+        attempt(doKeyword), attempt(elseKeyword), attempt(finallyKeyword), attempt(forKeyword), attempt(
+            functionKeyword), attempt(ifKeyword), attempt(inKeyword), attempt(instanceofKeyword), attempt(
+            typeofKeyword), attempt(newKeyword), attempt(Keyword), attempt(returnKeyword), attempt(
+            voidKeyword), attempt(switchKeyword), attempt(whileKeyword), attempt(thisKeyword), attempt(
+            withKeyword), attempt(throwKeyword), attempt(tryKeyword)));
+    (classKeyword = string("class"));
+    (enumKeyword = string("enum"));
+    (extendsKeyword = string("extends"));
+    (superKeyword = string("super"));
+    (constKeyword = string("const"));
+    (exportKeyword = string("export"));
+    (importKeyword = string("import"));
+    (implementsKeyword = string("implements"));
+    (letKeyword = string("let"));
+    (privateKeyword = string("private"));
+    (publicKeyword = string("public"));
+    (interfaceKeyword = string("interface"));
+    (packageKeyword = string("package"));
+    (protectedKeyword = string("protected"));
+    (staticKeyword = string("static"));
+    (yieldKeyword = string("yield"));
+    (futureReservedWord = choice(attempt(classKeyword), attempt(enumKeyword), attempt(extendsKeyword), attempt(
+            superKeyword), attempt(constKeyword), attempt(exportKeyword), attempt(importKeyword), attempt(
+            implementsKeyword), attempt(letKeyword), attempt(privateKeyword), attempt(publicKeyword),
+        attempt(interfaceKeyword), attempt(packageKeyword), attempt(protectedKeyword), attempt(
+            staticKeyword), yieldKeyword));
+    (reservedWord = Parser("ReservedWordLexer", choice(trie(keywordList), nullLiteral, booleanLiteral)));
+    (exports.reservedWord = reservedWord);
+    (exports.futureReservedWord = futureReservedWord);
+    (exports.breakKeyword = breakKeyword);
+    (exports.caseKeyword = caseKeyword);
+    (exports.catchKeyword = catchKeyword);
+    (exports.continueKeyword = continueKeyword);
+    (exports.debuggerKeyword = debuggerKeyword);
+    (exports.defaultKeyword = defaultKeyword);
+    (exports.deleteKeyword = deleteKeyword);
+    (exports.doKeyword = doKeyword);
+    (exports.elseKeyword = elseKeyword);
+    (exports.finallyKeyword = finallyKeyword);
+    (exports.forKeyword = forKeyword);
+    (exports.functionKeyword = functionKeyword);
+    (exports.ifKeyword = ifKeyword);
+    (exports.inKeyword = inKeyword);
+    (exports.instanceofKeyword = instanceofKeyword);
+    (exports.typeofKeyword = typeofKeyword);
+    (exports.newKeyword = newKeyword);
+    (exports.Keyword = Keyword);
+    (exports.returnKeyword = returnKeyword);
+    (exports.voidKeyword = voidKeyword);
+    (exports.switchKeyword = switchKeyword);
+    (exports.whileKeyword = whileKeyword);
+    (exports.thisKeyword = thisKeyword);
+    (exports.withKeyword = withKeyword);
+    (exports.throwKeyword = throwKeyword);
+    (exports.tryKeyword = tryKeyword);
+    (exports.keyword = keyword);
+    (exports.getKeyword = getKeyword);
+    (exports.setKeyword = setKeyword);
+    (exports.classKeyword = classKeyword);
+    (exports.enumKeyword = enumKeyword);
+    (exports.extendsKeyword = extendsKeyword);
+    (exports.superKeyword = superKeyword);
+    (exports.constKeyword = constKeyword);
+    (exports.exportKeyword = exportKeyword);
+    (exports.importKeyword = importKeyword);
+    (exports.implementsKeyword = implementsKeyword);
+    (exports.letKeyword = letKeyword);
+    (exports.privateKeyword = privateKeyword);
+    (exports.publicKeyword = publicKeyword);
+    (exports.interfaceKeyword = interfaceKeyword);
+    (exports.packageKeyword = packageKeyword);
+    (exports.protectedKeyword = protectedKeyword);
+    (exports.staticKeyword = staticKeyword);
+    (exports.yieldKeyword = yieldKeyword);
+}));
 define('khepri/lex/number_lexer',["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-stream/stream"], (function(require,
     exports, __o, __o0, __o1, __o2) {
     
@@ -1847,10 +1838,9 @@ define('khepri/lex/number_lexer',["require", "exports", "bennu/parse", "bennu/la
         return (function(x) {
             return f(g(x));
         });
-    })(always, (function(x, y) {
-            return (x - y);
-        })
-        .bind(null, 0)))), next(optional(null, positiveSign), unsignedInteger))));
+    })(always, (function(x) {
+        return (-x);
+    })))), next(optional(null, positiveSign), unsignedInteger))));
     var hexIntegerLiteralDigits = Parser("Hex Integer Literal Digits Lexer", bind(hexDigits, (function(num) {
         return always(parseInt(num, 16));
     })));
@@ -1862,8 +1852,7 @@ define('khepri/lex/number_lexer',["require", "exports", "bennu/parse", "bennu/la
         });
     })(always, parseInt))));
     (decimalLiteral = Parser("Decimal Literal Lexer", binds(enumeration(binds(enumeration(decimalDigits,
-        optional(0, next(decimal, optional(0, decimalDigits)))), (function(whole,
-        fractional) {
+        optional(0, attempt(next(decimal, decimalDigits)))), (function(whole, fractional) {
         return always(parseFloat(((whole + ".") + fractional)));
     })), optional(0, exponentPart)), (function(num, exp) {
         return always((num * Math.pow(10, parseInt(exp))));
@@ -1888,8 +1877,8 @@ define('khepri/lex/number_lexer',["require", "exports", "bennu/parse", "bennu/la
     (exports.decimalLiteral = decimalLiteral);
     (exports.numericLiteral = numericLiteral);
 }));
-define('khepri/lex/string_lexer',["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-stream/stream",
-    "khepri/lex/line_terminator_lexer", "khepri/lex/number_lexer"
+define('khepri/lex/string_lexer',["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-stream/stream", "./line_terminator_lexer",
+    "./number_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
     
     var always = __o["always"],
@@ -1944,7 +1933,7 @@ define('khepri/lex/string_lexer',["require", "exports", "bennu/parse", "bennu/te
         "\u000b"))),
         escapeCharacter = choice(singleEscapeCharacter, decimalDigit, character("u"), character("x")),
         nonEscapeCharacter = token((function(tok) {
-            return !(test(escapeCharacter, tok) || test(lineTerminator, tok));
+            return (!(test(escapeCharacter, tok) || test(lineTerminator, tok)));
         }));
     (hexEscapeSequence = next(character("x"), bind(times(2, hexDigit), fromCharCodeParser)));
     (unicodeEscapeSequence = next(character("u"), bind(times(4, hexDigit), fromCharCodeParser)));
@@ -1954,11 +1943,11 @@ define('khepri/lex/string_lexer',["require", "exports", "bennu/parse", "bennu/te
             return f(g(x));
         });
     })((function(x) {
-        return !x;
+        return (!x);
     }), test.bind(null, decimalDigit)))), always("\u0000")), hexEscapeSequence, unicodeEscapeSequence));
     (singleStringCharacter = choice(attempt(lineContinuation), next(escape, escapeSequence), token((function(
         tok) {
-        return !((test(singleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok));
+        return (!((test(singleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok)));
     }))));
     (singleStringCharacters = many(singleStringCharacter));
     (singleStringLiteral = Parser("Single String Literal", between(singleQuote, singleQuote, bind(
@@ -1969,7 +1958,7 @@ define('khepri/lex/string_lexer',["require", "exports", "bennu/parse", "bennu/te
         })(always, join)))));
     (doubleStringCharacter = choice(attempt(lineContinuation), next(escape, escapeSequence), token((function(
         tok) {
-        return !((test(doubleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok));
+        return (!((test(doubleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok)));
     }))));
     (doubleStringCharacters = many(doubleStringCharacter));
     (doubleStringLiteral = Parser("Double String Literal", between(doubleQuote, doubleQuote, bind(
@@ -1995,12 +1984,8 @@ define('khepri/lex/string_lexer',["require", "exports", "bennu/parse", "bennu/te
     (exports.doubleStringLiteral = doubleStringLiteral);
     (exports.stringLiteral = stringLiteral);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/identifier_lexer.kep'
- * DO NOT EDIT
-*/
-define('khepri/lex/identifier_lexer',["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "khepri/lex/reserved_word_lexer",
-    "khepri/lex/string_lexer"
+define('khepri/lex/identifier_lexer',["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "./reserved_word_lexer",
+    "./string_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3) {
     
     var always = __o["always"],
@@ -2058,10 +2043,6 @@ define('khepri/lex/identifier_lexer',["require", "exports", "bennu/parse", "benn
     (exports.identifierName = identifierName);
     (exports.identifier = identifier);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/punctuator_lexer.kep'
- * DO NOT EDIT
-*/
 define('khepri/lex/punctuator_lexer',["require", "exports", "bennu/parse", "bennu/text"], (function(require, exports, __o, __o0) {
     
     var Parser = __o["Parser"],
@@ -2075,13 +2056,13 @@ define('khepri/lex/punctuator_lexer',["require", "exports", "bennu/parse", "benn
             multiplication, mod, division, compose, composeNary, reverseCompose, reverseComposeNary, pipe,
             reversePipe, ellipsis, as, argumentList, lambda, punctuator, punctuators = ["{", "}", "(", ")", "[",
                 "]", ",", ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>", "<=", "<", ">=", ">", "===", "!==",
-                "==", "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%", "@", "\\>", "\\>>", "<\\",
-                "<<\\", "|>", "<|", "...", "#", "\\", "->"
+                "==", "!=", "=", "!", "~", "++", "--", "&", "|", "^", "+", "-", "*", "/", "%", "@", "\\>",
+                "\\>>", "<\\", "<<\\", "|>", "<|", "...", "#", "\\", "->"
         ];
     (openBrace = character("{"));
     (closeBrace = character("}"));
     (openParenthesis = character("("));
-    (closeParenthesis = character(")"));
+    (closeParenthesis = character(""));
     (openBracket = character("["));
     (closeBracket = character("]"));
     (period = character("."));
@@ -2210,12 +2191,8 @@ define('khepri/lex/whitespace_lexer',["require", "exports", "bennu/parse", "benn
     (exports.usp = usp);
     (exports.whitespace = whitespace);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/regular_expression_lexer.kep'
- * DO NOT EDIT
-*/
-define('khepri/lex/regular_expression_lexer',["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-stream/stream",
-    "khepri/lex/identifier_lexer", "khepri/lex/line_terminator_lexer"
+define('khepri/lex/regular_expression_lexer',["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-stream/stream", "./identifier_lexer",
+    "./line_terminator_lexer"
 ], (function(require, exports, __o, __o0, __o1, __o2, __o3, __o4) {
     
     var always = __o["always"],
@@ -2247,7 +2224,7 @@ define('khepri/lex/regular_expression_lexer',["require", "exports", "bennu/parse
             return f(g(x));
         });
     })((function(x) {
-        return !x;
+        return (!x);
     }), test.bind(null, lineTerminator))));
     (regularExpressionBackslashSequence = next(character("\\"), bind(regularExpressionNonTerminator, (function(
         f, g) {
@@ -2259,7 +2236,7 @@ define('khepri/lex/regular_expression_lexer',["require", "exports", "bennu/parse
         })
         .bind(null, "\\")))));
     (regularExpressionClassChar = either(attempt(token((function(tok) {
-        return ((!test(lineTerminator, tok) && (tok !== "]")) && (tok !== "\\"));
+        return (((!test(lineTerminator, tok)) && (tok !== "]")) && (tok !== "\\"));
     }))), regularExpressionBackslashSequence));
     (regularExpressionClassChars = many(regularExpressionClassChar));
     (regularExpressionClass = between(character("["), character("]"), bind(regularExpressionClassChars, (
@@ -2267,11 +2244,11 @@ define('khepri/lex/regular_expression_lexer',["require", "exports", "bennu/parse
             return always((("[" + join(body)) + "]"));
         }))));
     (regularExpressionFirstChar = choice(token((function(tok) {
-        return ((((!test(lineTerminator, tok) && (tok !== "*")) && (tok !== "\\")) && (tok !==
+        return (((((!test(lineTerminator, tok)) && (tok !== "*")) && (tok !== "\\")) && (tok !==
             "`")) && (tok !== "["));
     })), regularExpressionBackslashSequence, regularExpressionClass));
     (regularExpressionChar = choice(token((function(tok) {
-        return (((!test(lineTerminator, tok) && (tok !== "\\")) && (tok !== "`")) && (tok !==
+        return ((((!test(lineTerminator, tok)) && (tok !== "\\")) && (tok !== "`")) && (tok !==
             "["));
     })), regularExpressionBackslashSequence, regularExpressionClass));
     (regularExpressionChars = many(regularExpressionChar));
@@ -2297,11 +2274,10 @@ define('khepri/lex/regular_expression_lexer',["require", "exports", "bennu/parse
     (exports.regularExpressionBody = regularExpressionBody);
     (exports.regularExpressionLiteral = regularExpressionLiteral);
 }));
-define('khepri/lex/lexer',["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri_ast/token", "khepri/position",
-    "khepri/lex/boolean_lexer", "khepri/lex/comment_lexer", "khepri/lex/identifier_lexer",
-    "khepri/lex/line_terminator_lexer", "khepri/lex/null_lexer", "khepri/lex/number_lexer",
-    "khepri/lex/punctuator_lexer", "khepri/lex/reserved_word_lexer", "khepri/lex/string_lexer",
-    "khepri/lex/whitespace_lexer", "khepri/lex/regular_expression_lexer"
+define('khepri/lex/lexer',["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/token", "../position",
+    "./boolean_lexer", "./comment_lexer", "./identifier_lexer", "./line_terminator_lexer", "./null_lexer",
+    "./number_lexer", "./punctuator_lexer", "./reserved_word_lexer", "./string_lexer", "./whitespace_lexer",
+    "./regular_expression_lexer"
 ], (function(require, exports, parse, __o, __o0, lexToken, __o1, __o2, __o3, __o4, __o5, __o6, __o7, __o8, __o9,
     __o10, __o11, __o12) {
     
@@ -2376,29 +2352,30 @@ define('khepri/lex/lexer',["require", "exports", "bennu/parse", "bennu/lang", "n
     (exports.lexManyState = lexManyState);
     (exports.lex = lex);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/program.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/program',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/program',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Program;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Program;
     (Program = defineNode(Node, "Program", ["body"], [], (function(loc, body) {
-        Node.call(this, loc);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.body = body);
     })));
     (exports.Program = Program);
 }));
-define('khepri/parse/common',["require", "exports", "bennu/parse", "khepri/position", "nu-stream/stream"], (function(require, exports, parse,
-    __o, stream) {
+define('khepri/parse/common',["require", "exports", "bennu/parse", "nu-stream/stream", "../position"], (function(require, exports, parse,
+    stream, __o) {
     
     var always = parse["always"],
         bind = parse["bind"],
-        SourceLocation = __o["SourceLocation"],
+        binds = parse["binds"],
+        extract = parse["extract"],
+        enumeration = parse["enumeration"],
+        eager = parse["eager"],
+        optional = parse["optional"],
         NIL = stream["NIL"],
+        SourceLocation = __o["SourceLocation"],
         precedence, node, nodea, positionParser;
     (precedence = (function(p, table) {
         var sep = parse.choicea(table.map((function(entry) {
@@ -2412,8 +2389,8 @@ define('khepri/parse/common',["require", "exports", "bennu/parse", "khepri/posit
                 }), value);
             }));
         })));
-        return bind(parse.eager(parse.rec((function(self) {
-            return parse.cons(p, parse.optional(NIL, parse.cons(sep, parse.expected(
+        return bind(eager(parse.rec((function(self) {
+            return parse.cons(p, optional(NIL, parse.cons(sep, parse.expected(
                 "binary expression", self))));
         }))), (function(list) {
             var stack = [],
@@ -2425,7 +2402,7 @@ define('khepri/parse/common',["require", "exports", "bennu/parse", "khepri/posit
                 } else {
                     while ((stack.length > 0)) {
                         var o2 = stack[(stack.length - 1)];
-                        if (((!tok.right && (o2.precedence === tok.precedence)) || (o2.precedence <
+                        if ((((!tok.right) && (o2.precedence === tok.precedence)) || (o2.precedence <
                             tok.precedence))) {
                             stack.pop();
                             var rt = out.pop(),
@@ -2445,28 +2422,28 @@ define('khepri/parse/common',["require", "exports", "bennu/parse", "khepri/posit
                     lf0 = out.pop();
                 out.push(new(o.node)(SourceLocation.merge(lf0.loc, rt0.loc), o.value, lf0, rt0));
             }
-            return parse.always(out.pop());
+            return always(out.pop());
         }));
     }));
-    (positionParser = parse.extract((function(__o0) {
+    (positionParser = extract((function(__o0) {
         var position = __o0["position"];
         return position;
     })));
-    var locParser = parse.extract((function(__o0) {
+    var locParser = extract((function(__o0) {
         var loc = __o0["loc"];
         return loc;
     })),
-        prevEnd = parse.extract((function(__o0) {
+        prevEnd = extract((function(__o0) {
             var _prevEnd = __o0["_prevEnd"];
             return _prevEnd;
         }));
     (node = (function(p, f) {
-        return parse.binds(parse.enumeration(locParser, p, prevEnd), (function(o, x, c) {
+        return binds(enumeration(locParser, p, prevEnd), (function(o, x, c) {
             return always(f(new(SourceLocation)((o && o.start), c), x));
         }));
     }));
     (nodea = (function(p, f) {
-        return parse.binds(parse.enumeration(locParser, p, prevEnd), (function(o, x, c) {
+        return binds(enumeration(locParser, p, prevEnd), (function(o, x, c) {
             return always(f.apply(undefined, stream.toArray(stream.cons(new(SourceLocation)((o &&
                 o.start), c), x))));
         }));
@@ -2476,69 +2453,66 @@ define('khepri/parse/common',["require", "exports", "bennu/parse", "khepri/posit
     (exports.nodea = nodea);
     (exports.positionParser = positionParser);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/clause.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/clause',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/clause',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Clause, SwitchCase, CatchClause;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Clause, SwitchCase, CatchClause;
     (Clause = (function() {}));
     (Clause.prototype = new(Node)());
     (SwitchCase = defineNode(Clause, "SwitchCase", ["test", "consequent"], [], (function(loc, test, consequent) {
-        Node.call(this, loc);
-        (this.test = (test || null));
-        (this.consequent = consequent);
+        var self = this;
+        Node.call(self, loc);
+        (self.test = (test || null));
+        (self.consequent = consequent);
     })));
     (CatchClause = defineNode(Clause, "CatchClause", ["param", "body"], [], (function(loc, param, body) {
-        Node.call(this, loc);
-        (this.param = param);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.param = param);
+        (self.body = body);
     })));
     (exports.Clause = Clause);
     (exports.SwitchCase = SwitchCase);
     (exports.CatchClause = CatchClause);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/declaration.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/declaration',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/declaration',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Declaration, VariableDeclaration, VariableDeclarator, Binding, StaticDeclaration, StaticDeclarator;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Declaration, VariableDeclaration, VariableDeclarator, Binding, StaticDeclaration, StaticDeclarator;
     (Declaration = (function() {}));
     (Declaration.prototype = new(Node)());
     (VariableDeclaration = defineNode(Declaration, "VariableDeclaration", ["declarations"], [], (function(loc,
         declarations) {
-        Node.call(this, loc);
-        (this.declarations = declarations);
+        var self = this;
+        Node.call(self, loc);
+        (self.declarations = declarations);
     })));
     (VariableDeclarator = defineNode(Declaration, "VariableDeclarator", ["id", "init"], [], (function(loc, id,
         init) {
-        Node.call(this, loc);
-        (this.id = id);
-        (this.init = (init || null));
+        var self = this;
+        Node.call(self, loc);
+        (self.id = id);
+        (self.init = (init || null));
     })));
     (Binding = defineNode(Declaration, "Binding", ["pattern", "value"], [], (function(loc, pattern, value) {
-        Node.call(this, loc);
-        (this.pattern = pattern);
-        (this.value = value);
+        var self = this;
+        Node.call(self, loc);
+        (self.pattern = pattern);
+        (self.value = value);
     })));
     (StaticDeclaration = defineNode(Declaration, "StaticDeclaration", ["declarations"], [], (function(loc,
         declarations) {
-        Node.call(this, loc);
-        (this.declarations = declarations);
+        var self = this;
+        Node.call(self, loc);
+        (self.declarations = declarations);
     })));
     (StaticDeclarator = defineNode(Declaration, "StaticDeclarator", ["id", "init"], [], (function(loc, id, init) {
-        Node.call(this, loc);
-        (this.id = id);
-        (this.init = init);
+        var self = this;
+        Node.call(self, loc);
+        (self.id = id);
+        (self.init = init);
     })));
     (exports.Declaration = Declaration);
     (exports.VariableDeclaration = VariableDeclaration);
@@ -2547,93 +2521,105 @@ define('khepri_ast/declaration',["require", "exports", "khepri_ast/node"], (func
     (exports.StaticDeclaration = StaticDeclaration);
     (exports.StaticDeclarator = StaticDeclarator);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/statement.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/statement',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/statement',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Statement, EmptyStatement, DebuggerStatement, WithStatement, BlockStatement, ExpressionStatement,
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Statement, EmptyStatement, DebuggerStatement, WithStatement, BlockStatement, ExpressionStatement,
             IfStatement, BreakStatement, ContinueStatement, SwitchStatement, ReturnStatement, ThrowStatement,
             TryStatement, WhileStatement, DoWhileStatement, ForStatement;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
-    (Statement = (function() {}));
+    (Statement = (function() {
+        var self = this;
+    }));
     (Statement.prototype = new(Node)());
     (EmptyStatement = defineNode(Statement, "EmptyStatement", [], [], (function(loc) {
-        Node.call(this, loc);
+        var self = this;
+        Node.call(self, loc);
     })));
     (DebuggerStatement = defineNode(Statement, "DebuggerStatement", [], [], (function(loc) {
-        Node.call(this, loc);
+        var self = this;
+        Node.call(self, loc);
     })));
     (BlockStatement = defineNode(Statement, "BlockStatement", ["body"], [], (function(loc, body) {
-        Node.call(this, loc);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.body = body);
     })));
     (ExpressionStatement = defineNode(Statement, "ExpressionStatement", ["expression"], [], (function(loc,
         expression) {
-        Node.call(this, loc);
-        (this.expression = expression);
+        var self = this;
+        Node.call(self, loc);
+        (self.expression = expression);
     })));
     (IfStatement = defineNode(Statement, "IfStatement", ["test", "consequent", "alternate"], [], (function(loc,
         test, consequent, alternate) {
-        Node.call(this, loc);
-        (this.test = test);
-        (this.consequent = consequent);
-        (this.alternate = (alternate || null));
+        var self = this;
+        Node.call(self, loc);
+        (self.test = test);
+        (self.consequent = consequent);
+        (self.alternate = (alternate || null));
     })));
     (WithStatement = defineNode(Statement, "WithStatement", ["bindings", "body"], [], (function(loc, bindings,
         body) {
-        Node.call(this, loc);
-        (this.bindings = bindings);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.bindings = bindings);
+        (self.body = body);
     })));
     (BreakStatement = defineNode(Statement, "BreakStatement", [], [], (function(loc) {
-        Node.call(this, loc);
+        var self = this;
+        Node.call(self, loc);
     })));
     (ContinueStatement = defineNode(Statement, "ContinueStatement", [], [], (function(loc) {
-        Node.call(this, loc);
+        var self = this;
+        Node.call(self, loc);
     })));
     (SwitchStatement = defineNode(Statement, "SwitchStatement", ["discriminant", "cases"], [], (function(loc,
         discriminant, cases) {
-        Node.call(this, loc);
-        (this.discriminant = discriminant);
-        (this.cases = cases);
+        var self = this;
+        Node.call(self, loc);
+        (self.discriminant = discriminant);
+        (self.cases = cases);
     })));
     (ReturnStatement = defineNode(Statement, "ReturnStatement", ["argument"], [], (function(loc, argument) {
-        Node.call(this, loc);
-        (this.argument = (argument || null));
+        var self = this;
+        Node.call(self, loc);
+        (self.argument = (argument || null));
     })));
     (ThrowStatement = defineNode(Statement, "ThrowStatement", ["argument"], [], (function(loc, argument) {
-        Node.call(this, loc);
-        (this.argument = argument);
+        var self = this;
+        Node.call(self, loc);
+        (self.argument = argument);
     })));
     (TryStatement = defineNode(Statement, "TryStatement", ["block", "handler", "finalizer"], [], (function(loc,
         block, handler, finalizer) {
-        Node.call(this, loc);
-        (this.block = block);
-        (this.handler = handler);
-        (this.finalizer = finalizer);
+        var self = this;
+        Node.call(self, loc);
+        (self.block = block);
+        (self.handler = handler);
+        (self.finalizer = finalizer);
     })));
     (WhileStatement = defineNode(Statement, "WhileStatement", ["test", "body"], [], (function(loc, test, body) {
-        Node.call(this, loc);
-        (this.test = test);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.test = test);
+        (self.body = body);
     })));
     (DoWhileStatement = defineNode(Statement, "DoWhileStatement", ["body", "test"], [], (function(loc, body,
         test) {
-        Node.call(this, loc);
-        (this.test = test);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.test = test);
+        (self.body = body);
     })));
     (ForStatement = defineNode(Statement, "ForStatement", ["init", "test", "update", "body"], [], (function(loc,
         init, test, update, body) {
-        Node.call(this, loc);
-        (this.init = (init || null));
-        (this.test = (test || null));
-        (this.update = (update || null));
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.init = (init || null));
+        (self.test = (test || null));
+        (self.update = (update || null));
+        (self.body = body);
     })));
     (exports.Statement = Statement);
     (exports.EmptyStatement = EmptyStatement);
@@ -2652,10 +2638,6 @@ define('khepri_ast/statement',["require", "exports", "khepri_ast/node"], (functi
     (exports.DoWhileStatement = DoWhileStatement);
     (exports.ForStatement = ForStatement);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/token_parser.kep'
- * DO NOT EDIT
-*/
 define('khepri/parse/token_parser',["require", "exports", "bennu/parse"], (function(require, exports, parse) {
     
     var punctuator, keyword, identifier, anyIdentifier, nullLiteral, booleanLiteral, numericLiteral,
@@ -2698,118 +2680,132 @@ define('khepri/parse/token_parser',["require", "exports", "bennu/parse"], (funct
     (exports.stringLiteral = stringLiteral);
     (exports.regularExpressionLiteral = regularExpressionLiteral);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/expression.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/expression',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/expression',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Expression, ThisExpression, UnaryExpression, BinaryExpression, AssignmentExpression, LogicalExpression,
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Expression, ThisExpression, UnaryExpression, BinaryExpression, AssignmentExpression, LogicalExpression,
             ConditionalExpression, NewExpression, CallExpression, MemberExpression, FunctionExpression,
             ArrayExpression, ObjectExpression, LetExpression, CurryExpression, UnaryOperatorExpression,
             BinaryOperatorExpression, TernaryOperatorExpression;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
-    (Expression = (function() {}));
+    (Expression = (function() {
+        var self = this;
+    }));
     (Expression.prototype = new(Node)());
     (ThisExpression = defineNode(Expression, "ThisExpression", [], [], (function(loc) {
-        Node.call(this, loc);
+        var self = this;
+        Node.call(self, loc);
     })));
     (UnaryExpression = defineNode(Expression, "UnaryExpression", ["argument"], ["operator"], (function(loc,
         operator, argument) {
-        Node.call(this, loc);
-        (this.operator = operator);
-        (this.argument = argument);
+        var self = this;
+        Node.call(self, loc);
+        (self.operator = operator);
+        (self.argument = argument);
     })));
     (BinaryExpression = defineNode(Expression, "BinaryExpression", ["left", "right"], ["operator"], (function(
         loc, operator, left, right) {
-        Node.call(this, loc);
-        (this.operator = operator);
-        (this.left = left);
-        (this.right = right);
+        var self = this;
+        Node.call(self, loc);
+        (self.operator = operator);
+        (self.left = left);
+        (self.right = right);
     })));
     (AssignmentExpression = defineNode(Expression, "AssignmentExpression", ["left", "right"], ["operator"], (
         function(loc, operator, left, right) {
-            Node.call(this, loc);
-            (this.operator = operator);
-            (this.left = left);
-            (this.right = right);
+            var self = this;
+            Node.call(self, loc);
+            (self.operator = operator);
+            (self.left = left);
+            (self.right = right);
         })));
     (LogicalExpression = defineNode(Expression, "LogicalExpression", ["left", "right"], ["operator"], (function(
         loc, operator, left, right) {
-        Node.call(this, loc);
-        (this.operator = operator);
-        (this.left = left);
-        (this.right = right);
+        var self = this;
+        Node.call(self, loc);
+        (self.operator = operator);
+        (self.left = left);
+        (self.right = right);
     })));
     (ConditionalExpression = defineNode(Expression, "ConditionalExpression", ["test", "consequent", "alternate"], [], (
         function(loc, test, consequent, alternate) {
-            Node.call(this, loc);
-            (this.test = test);
-            (this.consequent = consequent);
-            (this.alternate = alternate);
+            var self = this;
+            Node.call(self, loc);
+            (self.test = test);
+            (self.consequent = consequent);
+            (self.alternate = alternate);
         })));
     (NewExpression = defineNode(Expression, "NewExpression", ["callee", "args"], [], (function(loc, callee,
         args) {
-        Node.call(this, loc);
-        (this.callee = callee);
-        (this.args = args);
+        var self = this;
+        Node.call(self, loc);
+        (self.callee = callee);
+        (self.args = args);
     })));
     (CallExpression = defineNode(Expression, "CallExpression", ["callee", "args"], [], (function(loc, callee,
         args) {
-        Node.call(this, loc);
-        (this.callee = callee);
-        (this.args = args);
+        var self = this;
+        Node.call(self, loc);
+        (self.callee = callee);
+        (self.args = args);
     })));
     (MemberExpression = defineNode(Expression, "MemberExpression", ["object", "property"], ["computed"], (
         function(loc, object, property, computed) {
-            Node.call(this, loc);
-            (this.object = object);
-            (this.property = property);
-            (this.computed = computed);
+            var self = this;
+            Node.call(self, loc);
+            (self.object = object);
+            (self.property = property);
+            (self.computed = computed);
         })));
     (FunctionExpression = defineNode(Expression, "FunctionExpression", ["id", "params", "body"], [], (function(
         loc, id, params, body) {
-        Node.call(this, loc);
-        (this.id = (id || null));
-        (this.params = params);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.id = (id || null));
+        (self.params = params);
+        (self.body = body);
     })));
     (ArrayExpression = defineNode(Expression, "ArrayExpression", ["elements"], [], (function(loc, elements) {
-        Node.call(this, loc);
-        (this.elements = elements);
+        var self = this;
+        Node.call(self, loc);
+        (self.elements = elements);
     })));
     (ObjectExpression = defineNode(Expression, "ObjectExpression", ["properties"], [], (function(loc,
         properties) {
-        Node.call(this, loc);
-        (this.properties = properties);
+        var self = this;
+        Node.call(self, loc);
+        (self.properties = properties);
     })));
     (LetExpression = defineNode(Expression, "LetExpression", ["bindings", "body"], [], (function(loc, bindings,
         body) {
-        Node.call(this, loc);
-        (this.bindings = bindings);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.bindings = bindings);
+        (self.body = body);
     })));
     (CurryExpression = defineNode(Expression, "CurryExpression", ["base", "args"], [], (function(loc, base,
         args) {
-        Node.call(this, loc);
-        (this.base = base);
-        (this.args = args);
+        var self = this;
+        Node.call(self, loc);
+        (self.base = base);
+        (self.args = args);
     })));
     (UnaryOperatorExpression = defineNode(Expression, "UnaryOperatorExpression", [], ["op"], (function(loc, op) {
-        Node.call(this, loc);
-        (this.op = op);
+        var self = this;
+        Node.call(self, loc);
+        (self.op = op);
     })));
     (BinaryOperatorExpression = defineNode(Expression, "BinaryOperatorExpression", [], ["op"], (function(loc,
         op) {
-        Node.call(this, loc);
-        (this.op = op);
+        var self = this;
+        Node.call(self, loc);
+        (self.op = op);
     })));
     (TernaryOperatorExpression = defineNode(Expression, "TernaryOperatorExpression", [], ["op"], (function(loc,
         op) {
-        Node.call(this, loc);
-        (this.op = op);
+        var self = this;
+        Node.call(self, loc);
+        (self.op = op);
     })));
     (exports.Expression = Expression);
     (exports.ThisExpression = ThisExpression);
@@ -2830,67 +2826,73 @@ define('khepri_ast/expression',["require", "exports", "khepri_ast/node"], (funct
     (exports.BinaryOperatorExpression = BinaryOperatorExpression);
     (exports.TernaryOperatorExpression = TernaryOperatorExpression);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/pattern.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/pattern',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/pattern',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Pattern, IdentifierPattern, EllipsisPattern, SinkPattern, ImportPattern, ArrayPattern,
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Pattern, IdentifierPattern, EllipsisPattern, SinkPattern, ImportPattern, ArrayPattern,
             ObjectPatternElement, ObjectPattern, ArgumentsPattern, SubPattern, AsPattern;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
     (Pattern = (function(loc) {
-        Node.call(this, loc);
+        var self = this;
+        Node.call(self, loc);
     }));
     (Pattern.prototype = new(Node)());
     (IdentifierPattern = defineNode(Pattern, "IdentifierPattern", ["id"], [], (function(loc, id) {
-        Pattern.call(this, loc);
-        (this.id = id);
+        var self = this;
+        Pattern.call(self, loc);
+        (self.id = id);
     })));
     (EllipsisPattern = defineNode(Pattern, "EllipsisPattern", [], ["id"], (function(loc, id) {
-        Pattern.call(this, loc);
-        (this.id = (id || null));
+        var self = this;
+        Pattern.call(self, loc);
+        (self.id = (id || null));
     })));
     (SinkPattern = defineNode(Pattern, "SinkPattern", [], [], (function(loc) {
-        Pattern.call(this, loc);
+        var self = this;
+        Pattern.call(self, loc);
     })));
     (ImportPattern = defineNode(Node, "ImportPattern", ["from", "pattern"], [], (function(loc, from, pattern) {
-        Node.call(this, loc);
-        (this.from = from);
-        (this.pattern = pattern);
+        var self = this;
+        Node.call(self, loc);
+        (self.from = from);
+        (self.pattern = pattern);
     })));
     (ArrayPattern = defineNode(Pattern, "ArrayPattern", ["elements"], [], (function(loc, elements) {
-        Pattern.call(this, loc);
-        (this.elements = elements);
+        var self = this;
+        Pattern.call(self, loc);
+        (self.elements = elements);
     })));
     (ObjectPatternElement = defineNode(Pattern, "ObjectPatternElement", ["key", "target"], [], (function(loc,
         key, target) {
-        Pattern.call(this, loc);
-        (this.key = key);
-        (this.target = (target || null));
+        var self = this;
+        Pattern.call(self, loc);
+        (self.key = key);
+        (self.target = (target || null));
     })));
     (ObjectPattern = defineNode(Pattern, "ObjectPattern", ["elements"], [], (function(loc, elements) {
-        Pattern.call(this, loc);
-        (this.elements = elements);
+        var self = this;
+        Pattern.call(self, loc);
+        (self.elements = elements);
     })));
     (AsPattern = defineNode(Pattern, "AsPattern", ["id", "target"], [], (function(loc, id, target) {
-        Pattern.call(this, loc);
-        (this.id = id);
-        (this.target = target);
+        var self = this;
+        Pattern.call(self, loc);
+        (self.id = id);
+        (self.target = target);
     })));
     (SubPattern = defineNode(Pattern, "SubPattern", ["id", "elements"], [], (function(loc, id, elements) {
-        Pattern.call(this, loc);
-        (this.id = id);
-        (this.elements = elements);
+        var self = this;
+        Pattern.call(self, loc);
+        (self.id = id);
+        (self.elements = elements);
     })));
     (ArgumentsPattern = defineNode(Pattern, "ArgumentsPattern", ["id", "elements", "self"], [], (function(loc,
         id, elements, self) {
-        Pattern.call(this, loc);
-        (this.id = id);
-        (this.elements = elements);
-        (this.self = self);
+        var T = this;
+        Pattern.call(T, loc);
+        (T.id = id);
+        (T.elements = elements);
+        (T.self = self);
     })));
     (exports.Pattern = Pattern);
     (exports.IdentifierPattern = IdentifierPattern);
@@ -2904,36 +2906,34 @@ define('khepri_ast/pattern',["require", "exports", "khepri_ast/node"], (function
     (exports.SubPattern = SubPattern);
     (exports.AsPattern = AsPattern);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/value.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/value',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/value',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Identifier, Literal, ObjectValue;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Identifier, Literal, ObjectValue;
     (Identifier = defineNode(Node, "Identifier", [], ["name"], (function(loc, name) {
-        Node.call(this, loc);
-        (this.name = name);
+        var self = this;
+        Node.call(self, loc);
+        (self.name = name);
     })));
     (Literal = defineNode(Node, "Literal", [], ["kind", "value"], (function(loc, kind, value) {
-        Node.call(this, loc);
-        (this.kind = kind);
-        (this.value = value);
+        var self = this;
+        Node.call(self, loc);
+        (self.kind = kind);
+        (self.value = value);
     })));
     (ObjectValue = defineNode(Node, "ObjectValue", ["key", "value"], [], (function(loc, key, value) {
-        Node.call(this, loc);
-        (this.key = key);
-        (this.value = value);
+        var self = this;
+        Node.call(self, loc);
+        (self.key = key);
+        (self.value = value);
     })));
     (exports.Identifier = Identifier);
     (exports.Literal = Literal);
     (exports.ObjectValue = ObjectValue);
 }));
-define('khepri/parse/value_parser',["require", "exports", "bennu/parse", "khepri_ast/value", "khepri/parse/token_parser"], (function(require,
-    exports, __o, ast_value, token) {
+define('khepri/parse/value_parser',["require", "exports", "bennu/parse", "khepri-ast/value", "./token_parser"], (function(require, exports, __o,
+    ast_value, token) {
     
     var always = __o["always"],
         bind = __o["bind"],
@@ -2963,8 +2963,8 @@ define('khepri/parse/value_parser',["require", "exports", "bennu/parse", "khepri
     (exports.regularExpressionLiteral = regularExpressionLiteral);
     (exports.identifier = identifier);
 }));
-define('khepri/parse/pattern_parser',["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/pattern", "khepri/parse/common",
-    "khepri/parse/token_parser", "khepri/parse/value_parser"
+define('khepri/parse/pattern_parser',["require", "exports", "bennu/parse", "bennu/lang", "khepri-ast/pattern", "./common", "./token_parser",
+    "./value_parser"
 ], (function(require, exports, __o, __o0, ast_pattern, __o1, __o2, __o3) {
     
     var always = __o["always"],
@@ -3060,14 +3060,9 @@ define('khepri/parse/pattern_parser',["require", "exports", "bennu/parse", "benn
     (exports.asPattern = asPattern);
     (exports.subPattern = subPattern);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
- * DO NOT EDIT
-*/
-define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri_ast/declaration",
-    "khepri_ast/expression", "khepri_ast/statement", "khepri_ast/pattern", "khepri_ast/value", "khepri/position",
-    "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/program_parser", "khepri/parse/value_parser",
-    "khepri/parse/pattern_parser"
+define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/declaration",
+    "khepri-ast/expression", "khepri-ast/statement", "khepri-ast/pattern", "khepri-ast/value", "../position",
+    "./common", "./token_parser", "./program_parser", "./value_parser", "./pattern_parser"
 ], (function(require, exports, __o, __o0, __o1, ast_declaration, ast_expression, ast_statement, ast_pattern,
     ast_value, __o2, __o3, __o4, program_parser, __o5, pattern) {
     
@@ -3087,8 +3082,10 @@ define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "b
         memo = __o["memo"],
         next = __o["next"],
         optional = __o["optional"],
+        RecParser = __o["RecParser"],
         Parser = __o["Parser"],
         between = __o0["between"],
+        chainl = __o0["chainl"],
         sepBy = __o0["sepBy"],
         sepBy1 = __o0["sepBy1"],
         then = __o0["then"],
@@ -3104,23 +3101,19 @@ define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "b
         literal = __o5["literal"],
         stringLiteral = __o5["stringLiteral"],
         arrayElement, arrayElements, arrayLiteral, propertyName, propertyInitializer, objectProperties,
-            objectLiteral, curryExpression, primaryExpression, args, argumentList, dotAccessor, bracketAccessor,
-            accessor, memberExpression, newExpression, leftHandSideExpression, leftHandReferenceExpression,
+            objectLiteral, curryExpression, primaryExpression, args, argumentList, callExpression, dotAccessor,
+            bracketAccessor, accessor, memberExpression, newExpression, leftHandReferenceExpression,
             unaryOperator, unaryExpression, binaryExpression, conditionalExpression, letExpression,
             assignmentOperator, assignmentExpression, expression, topLevelExpression, sourceElements = (
                 function() {
                     var args = arguments,
-                        __o6 = require("khepri/parse/program_parser"),
+                        __o6 = require("./program_parser"),
                         sourceElements = __o6["sourceElements"];
                     return sourceElements.apply(undefined, args);
                 });
     (expression = (function() {
         var args = arguments;
         return expression.apply(undefined, args);
-    }));
-    (newExpression = (function() {
-        var args = arguments;
-        return newExpression.apply(undefined, args);
     }));
     (memberExpression = (function() {
         var args = arguments;
@@ -3162,7 +3155,7 @@ define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "b
             expression)), next(punctuator(":"), expected("conditional alternate expression",
             expression)))), ast_expression.ConditionalExpression.create)));
     var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(keyword("typeof"), punctuator(
-        "void", "~", "!")), (function(__o6) {
+        "void", "~", "!", "++", "--")), (function(__o6) {
         var loc = __o6["loc"],
             value = __o6["value"];
         return always(ast_expression.UnaryOperatorExpression.create(loc, value));
@@ -3181,84 +3174,96 @@ define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "b
         }))),
         operatorExpression = Parser("Operator Expression", choice(unaryOperatorExpression,
             binaryOperatorExpression, ternayOperatorExpression));
-    (curryExpression = Parser("Curry Expression", (function() {
-        var base = either(expected("expression", attempt(expression)), expected(
-            "curryable operator", operatorExpression));
-        return between(punctuator("("), punctuator(")"), nodea(enumeration(base, optional([], next(
-            punctuator(","), eager(sepBy1(punctuator(","), expression))))), (function(loc,
-            base, elements) {
-            return (elements.length ? ast_expression.CurryExpression.create(loc, base,
-                elements) : base);
-        })));
-    })()));
     (primaryExpression = Parser("Primary Expression", choice(letExpression, conditionalExpression, identifier,
-        curryExpression, literal, arrayLiteral, objectLiteral, functionExpression)));
+        literal, arrayLiteral, objectLiteral, functionExpression, between(punctuator("("), punctuator(
+            ")"), either(attempt(then(operatorExpression, lookahead(punctuator(")")))), expression)))));
     (argumentList = Parser("Argument List", (function() {
         var argument = expected("argument", expression);
-        return eager(sepBy(punctuator(","), argument));
+        return between(punctuator("("), punctuator(")"), eager(sepBy(punctuator(","), argument)));
     })()));
-    (args = Parser("Arguments", node(between(punctuator("("), punctuator(")"), argumentList), (function(loc,
-        args) {
+    (args = Parser("Arguments", node(argumentList, (function(loc, args) {
         (args.loc = loc);
-        (args.argument = true);
         return args;
     }))));
-    var atExpression = Parser("AtExpression", nodea(next(punctuator("@"), enumeration(memberExpression, eager(
-        many(next(optional(null, punctuator(":")), expression))))), ast_expression.CallExpression.create));
-    (dotAccessor = Parser("Dot Accessor", node(next(punctuator("."), identifier), (function(loc, x) {
+    (accessor = Parser("Accessor", node(next(punctuator("."), either(bind(identifier, (function(x) {
+        return always([x, false]);
+    })), bind(between(punctuator("("), punctuator(")"), expected("accessor expression",
+        expression)), (function(x) {
+        return always([x, true]);
+    })))), (function(loc, __o6) {
+        var x = __o6[0],
+            computed = __o6[1];
         return ({
             "loc": loc,
             "property": x,
-            "computed": false
+            "computed": computed
         });
     }))));
-    (bracketAccessor = Parser("Bracket Accessor", node(between(punctuator("["), punctuator("]"), expected(
-        "accessor expression", expression)), (function(loc, x) {
-        return ({
-            "loc": loc,
-            "property": x,
-            "computed": true
-        });
-    }))));
-    (accessor = Parser("Accessor", either(dotAccessor, bracketAccessor)));
+    (newExpression = Parser("New Expression", nodea(next(keyword("new"), enumeration(expected(
+            "member expression", memberExpression), expected("argument list", args))), ast_expression.NewExpression
+        .create)));
     var accessorReducer = (function(p, c) {
         return ast_expression.MemberExpression.create(SourceLocation.merge(p.loc, c.loc), p, c.property, c.computed);
     });
-    (memberExpression = Parser("Member Expression", binds(enumeration(choice(atExpression, newExpression,
-        primaryExpression), many(accessor)), (function(f, g) {
+    (memberExpression = Parser("Member Expression", binds(enumeration(either(primaryExpression, newExpression),
+        many(accessor)), (function(f, g) {
         return (function() {
             return f(g.apply(null, arguments));
         });
     })(always, foldl.bind(null, accessorReducer)))));
-    (newExpression = Parser("New Expression", nodea(next(keyword("new"), enumeration(expected(
-        "member expression", memberExpression), optional([], args))), ast_expression.NewExpression.create)));
-    (leftHandSideExpression = Parser("Left Hand Side Expression", (function() {
-        var reducer = (function(p, c) {
-            return ((c && c.hasOwnProperty("argument")) ? ast_expression.CallExpression.create(
-                SourceLocation.merge(p.loc, c.loc), p, c) : accessorReducer(p, c));
+    (curryExpression = Parser("Curry Expression", (function() {
+        var application = either(args, node(eager(enumeration(memberExpression)), (function(loc,
+            args) {
+            (args.loc = loc);
+            return args;
+        }))),
+            reducer = (function(f, args) {
+                return ast_expression.CurryExpression.create(SourceLocation.merge(f.loc, args.loc),
+                    f, args);
+            });
+        return binds(enumeration(memberExpression, many(next(punctuator("@"), application))), (
+            function(f, g) {
+                return (function() {
+                    return f(g.apply(null, arguments));
+                });
+            })(always, foldl.bind(null, reducer)));
+    })()));
+    var application0 = either(args, node(eager(enumeration(curryExpression)), (function(loc, args) {
+        (args.loc = loc);
+        return args;
+    })));
+    (callExpression = Parser("Call Expression", (function() {
+        var reducer0 = (function(p, c) {
+            return ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p,
+                c);
         });
-        return binds(enumeration(memo(memberExpression), many(either(args, accessor))), (function(f,
-            g) {
+        return binds(enumeration(curryExpression, many(application0)), (function(f, g) {
             return (function() {
                 return f(g.apply(null, arguments));
             });
-        })(always, foldl.bind(null, reducer)));
+        })(always, foldl.bind(null, reducer0)));
     })()));
-    (leftHandReferenceExpression = Parser("Left Hand Reference Expression", binds(enumeration(memo(identifier),
-        memo(many(accessor))), (function(f, g) {
-        return (function() {
-            return f(g.apply(null, arguments));
+    var leftHandSideExpression = Parser("Call Expression", (function() {
+        var reducer1 = (function(p, c) {
+            return (c.hasOwnProperty("property") ? ast_expression.MemberExpression.create(
+                    SourceLocation.merge(p.loc, c.loc), p, c.property, c.computed) : ast_expression
+                .CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c));
         });
-    })(always, foldl.bind(null, accessorReducer)))));
-    (unaryOperator = Parser("Unary Operator", either(keyword("typeof", "void"), punctuator("+", "-", "~", "!"))));
+        return binds(enumeration(callExpression, many(either(application0, accessor))), (function(f, g) {
+            return (function() {
+                return f(g.apply(null, arguments));
+            });
+        })(always, foldl.bind(null, reducer1)));
+    })());
+    (unaryOperator = Parser("Unary Operator", either(keyword("typeof", "void"), punctuator("++", "--", "~", "!"))));
     (unaryExpression = Parser("Unary Expression", (function() {
-        var reducer0 = (function(argument, op) {
+        var reducer2 = (function(argument, op) {
             return ast_expression.UnaryExpression.create(SourceLocation.merge(op.loc, argument.loc),
                 op.value, argument);
         });
         return binds(enumeration(many(unaryOperator), expected("unary argument",
             leftHandSideExpression)), (function(ops, expression) {
-            return always(foldr(reducer0, expression, ops));
+            return always(foldr(reducer2, expression, ops));
         }));
     })()));
     var multiplicativeOperator = punctuator("*", "/", "%"),
@@ -3308,33 +3313,40 @@ define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "b
             "precedence": 8,
             "node": ast_expression.BinaryExpression
         }), ({
-            "sep": logicalOROperator,
-            "precedence": 12,
-            "node": ast_expression.LogicalExpression
-        }), ({
-            "sep": logicalANDOperator,
-            "precedence": 13,
-            "node": ast_expression.LogicalExpression
-        }), ({
             "sep": composeOperator,
-            "precedence": 14,
+            "precedence": 9,
             "node": ast_expression.BinaryExpression
         }), ({
             "sep": reverseComposeOperator,
-            "precedence": 14,
+            "precedence": 9,
             "right": true,
             "node": ast_expression.BinaryExpression
         }), ({
             "sep": pipeOperator,
-            "precedence": 15,
+            "precedence": 10,
             "node": ast_expression.BinaryExpression
         }), ({
             "sep": reversePipeOperator,
-            "precedence": 15,
+            "precedence": 10,
             "right": true,
             "node": ast_expression.BinaryExpression
+        }), ({
+            "sep": logicalOROperator,
+            "precedence": 11,
+            "node": ast_expression.LogicalExpression
+        }), ({
+            "sep": logicalANDOperator,
+            "precedence": 12,
+            "node": ast_expression.LogicalExpression
         })];
     (binaryExpression = Parser("Binary Expression", precedence(memo(unaryExpression), precedenceTable)));
+    (expression = binaryExpression);
+    (leftHandReferenceExpression = Parser("Left Hand Reference Expression", binds(enumeration(memo(identifier),
+        memo(many(accessor))), (function(f, g) {
+        return (function() {
+            return f(g.apply(null, arguments));
+        });
+    })(always, foldl.bind(null, accessorReducer)))));
     (assignmentOperator = punctuator("="));
     (assignmentExpression = Parser("Assignment Expression", nodea(append(attempt(enumeration(
         leftHandReferenceExpression, assignmentOperator)), enumeration(expected("expression",
@@ -3346,7 +3358,6 @@ define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "b
             "reference expression", leftHandReferenceExpression)), (function(loc, op, expression) {
             return ast_expression.UnaryExpression.create(loc, op.value, expression);
         })));
-    (expression = binaryExpression);
     (topLevelExpression = choice(deleteExpression, assignmentExpression, expression));
     (exports.arrayElement = arrayElement);
     (exports.arrayElements = arrayElements);
@@ -3359,12 +3370,12 @@ define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "b
     (exports.primaryExpression = primaryExpression);
     (exports.args = args);
     (exports.argumentList = argumentList);
+    (exports.callExpression = callExpression);
     (exports.dotAccessor = dotAccessor);
     (exports.bracketAccessor = bracketAccessor);
     (exports.accessor = accessor);
     (exports.memberExpression = memberExpression);
     (exports.newExpression = newExpression);
-    (exports.leftHandSideExpression = leftHandSideExpression);
     (exports.leftHandReferenceExpression = leftHandReferenceExpression);
     (exports.unaryOperator = unaryOperator);
     (exports.unaryExpression = unaryExpression);
@@ -3380,9 +3391,9 @@ define('khepri/parse/expression_parser',["require", "exports", "bennu/parse", "b
  * THIS FILE IS AUTO GENERATED from 'lib/parse/statement_parser.kep'
  * DO NOT EDIT
 */
-define('khepri/parse/statement_parser',["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/clause", "khepri_ast/declaration",
-    "khepri_ast/statement", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/expression_parser",
-    "khepri/parse/pattern_parser", "khepri/parse/value_parser"
+define('khepri/parse/statement_parser',["require", "exports", "bennu/parse", "bennu/lang", "khepri-ast/clause", "khepri-ast/declaration",
+    "khepri-ast/statement", "./common", "./token_parser", "./expression_parser", "./pattern_parser",
+    "./value_parser"
 ], (function(require, exports, __o, __o0, ast_clause, ast_declaration, ast_statement, __o1, __o2, __o3, __o4, __o5) {
     
     var always = __o["always"],
@@ -3499,7 +3510,7 @@ define('khepri/parse/statement_parser',["require", "exports", "bennu/parse", "be
         return nodea(next(keyword("try"), enumeration(blockStatement, optional(null, catchBlock),
             optional(null, finallyBlock))), ast_statement.TryStatement.create);
     })()));
-    (statement = Parser("Statement", expected("statement", choice(blockStatement, staticStatement,
+    (statement = expected("statement", Parser("Statement", choice(blockStatement, staticStatement,
         variableStatement, emptyStatement, ifStatement, withStatement, iterationStatement,
         continueStatement, breakStatement, returnStatement, switchStatement, throwStatement,
         tryStatement, debuggerStatement, expressionStatement))));
@@ -3520,36 +3531,34 @@ define('khepri/parse/statement_parser',["require", "exports", "bennu/parse", "be
     (exports.debuggerStatement = debuggerStatement);
     (exports.statement = statement);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/package.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast/package',["require", "exports", "khepri_ast/node"], (function(require, exports, __o) {
+define('khepri-ast/package',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    var Package, PackageExport, PackageExports;
-    var __o = __o,
-        defineNode = __o["defineNode"],
-        Node = __o["Node"];
+    var defineNode = __o["defineNode"],
+        Node = __o["Node"],
+        Package, PackageExport, PackageExports;
     (PackageExport = defineNode(Node, "PackageExport", ["id", "alias"], [], (function(loc, id, alias) {
-        Node.call(this, loc);
-        (this.id = id);
-        (this.alias = alias);
+        var self = this;
+        Node.call(self, loc);
+        (self.id = id);
+        (self.alias = alias);
     })));
     (PackageExports = defineNode(Node, "PackageExports", ["exports"], [], (function(loc, exports) {
-        Node.call(this, loc);
-        (this.exports = exports);
+        var self = this;
+        Node.call(self, loc);
+        (self.exports = exports);
     })));
     (Package = defineNode(Node, "Package", ["exports", "body"], [], (function(loc, exports, body) {
-        Node.call(this, loc);
-        (this.exports = exports);
-        (this.body = body);
+        var self = this;
+        Node.call(self, loc);
+        (self.exports = exports);
+        (self.body = body);
     })));
     (exports.Package = Package);
     (exports.PackageExport = PackageExport);
     (exports.PackageExports = PackageExports);
 }));
-define('khepri/parse/package_parser',["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/package", "khepri/parse/common",
-    "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/statement_parser"
+define('khepri/parse/package_parser',["require", "exports", "bennu/parse", "bennu/lang", "khepri-ast/package", "./common", "./token_parser",
+    "./value_parser", "./statement_parser"
 ], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, _) {
     
     var eager = __o["eager"],
@@ -3568,13 +3577,13 @@ define('khepri/parse/package_parser',["require", "exports", "bennu/parse", "benn
         identifier = __o3["identifier"],
         khepriPackage, withStatement = (function() {
             var args = arguments,
-                __o4 = require("khepri/parse/statement_parser"),
+                __o4 = require("./statement_parser"),
                 withStatement = __o4["withStatement"];
             return withStatement.apply(undefined, args);
         }),
         blockStatement = (function() {
             var args = arguments,
-                __o4 = require("khepri/parse/statement_parser"),
+                __o4 = require("./statement_parser"),
                 blockStatement = __o4["blockStatement"];
             return blockStatement.apply(undefined, args);
         }),
@@ -3586,8 +3595,8 @@ define('khepri/parse/package_parser',["require", "exports", "bennu/parse", "benn
         "package export list", packageExports), packageBody)), ast_package.Package.create)));
     (exports.khepriPackage = khepriPackage);
 }));
-define('khepri/parse/program_parser',["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri_ast/program",
-    "khepri/parse/common", "khepri/parse/statement_parser", "khepri/parse/package_parser"
+define('khepri/parse/program_parser',["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/program", "./common",
+    "./statement_parser", "./package_parser"
 ], (function(require, exports, __o, __o0, __o1, ast_program, __o2, _, _0) {
     
     var always = __o["always"],
@@ -3604,13 +3613,13 @@ define('khepri/parse/program_parser',["require", "exports", "bennu/parse", "benn
         node = __o2["node"],
         sourceElement, sourceElements, program, statementParser = (function() {
             var args = arguments,
-                __o3 = require("khepri/parse/statement_parser"),
+                __o3 = require("./statement_parser"),
                 statement = __o3["statement"];
             return statement.apply(undefined, args);
         }),
         khepriPackage = (function() {
             var args = arguments,
-                __o3 = require("khepri/parse/package_parser"),
+                __o3 = require("./package_parser"),
                 khepriPackage = __o3["khepriPackage"];
             return khepriPackage.apply(undefined, args);
         });
@@ -3627,1202 +3636,705 @@ define('khepri/parse/program_parser',["require", "exports", "bennu/parse", "benn
  * THIS FILE IS AUTO GENERATED from 'lib/parse/parser.kep'
  * DO NOT EDIT
 */
-define('khepri/parse/parser',["require", "exports", "bennu/parse", "nu-stream/stream", "khepri/position", "khepri/parse/program_parser"], (
-    function(require, exports, parse, stream, __o, __o0) {
-        
-        var first = stream["first"],
-            filter = stream["filter"],
-            isEmpty = stream["isEmpty"],
-            rest = stream["rest"],
-            NIL = stream["NIL"],
-            streamFrom = stream["from"],
-            SourceLocation = __o["SourceLocation"],
-            SourcePosition = __o["SourcePosition"],
-            program = __o0["program"],
-            parserStream, ParserPosition, ParserState, parseInput, parseStream;
-        (parserStream = filter.bind(null, (function(x) {
-            switch (x.type) {
-                case "Whitespace":
-                case "LineTerminator":
-                case "Comment":
-                    return false;
-                default:
-                    return true;
-            }
-        })));
-        (ParserPosition = (function(tokenPosition, sourcePosition) {
-            var self = this;
-            (self.tokenPosition = tokenPosition);
-            (self.sourcePosition = sourcePosition);
-        }));
-        (ParserPosition.prototype = new(parse.Position)());
-        (ParserPosition.prototype.constructor = ParserPosition);
-        (ParserPosition.initial = new(ParserPosition)(parse.Position.initial, SourcePosition.initial));
-        (ParserPosition.prototype.increment = (function(tok, end) {
-            var self = this;
-            return new(ParserPosition)(self.tokenPosition.increment(tok), end);
-        }));
-        (ParserPosition.prototype.toString = (function() {
-            var self = this;
-            return ("" + self.sourcePosition);
-        }));
-        (ParserPosition.prototype.compare = (function(pos) {
-            var self = this;
-            return self.tokenPosition.compare(pos.tokenPosition);
-        }));
-        (ParserState = (function(input, pos, prevEnd) {
-            var self = this;
-            parse.ParserState.call(self, input, pos);
-            (self._prevEnd = prevEnd);
-        }));
-        (ParserState.prototype = new(parse.ParserState)());
-        (ParserState.initial = new(ParserState)(NIL, ParserPosition.initial, SourcePosition.initial));
-        (ParserState.prototype.setInput = (function(input) {
-            var self = this;
-            return new(ParserState)(input, self.position, self._prevEnd);
-        }));
-        (ParserState.prototype.setPosition = (function(position) {
-            var self = this;
-            return new(ParserState)(self.input, position, self._prevEnd);
-        }));
-        (ParserState.prototype.next = (function(tok) {
-            var self = this;
-            if (!self._next) {
-                var r = rest(self.input),
-                    end = (isEmpty(r) ? tok.loc.end : first(r)
-                        .loc.start),
-                    s = new(ParserState)(r, self.position.increment(tok, end), self.loc.end);
-                (self._next = (function(_, m, cok) {
-                    return cok(tok, s, m);
-                }));
-            }
-            return self._next;
-        }));
-        Object.defineProperty(ParserState.prototype, "loc", ({
-            "get": (function() {
-                var self = this;
-                return (isEmpty(self.input) ? new(SourceLocation)(self._prevEnd, self._prevEnd) : first(
-                        self.input)
-                    .loc);
-            })
-        }));
-        (parseStream = (function(s) {
-            return parse.runState(program, new(ParserState)(parserStream(s), ParserPosition.initial));
-        }));
-        (parseInput = (function(f, g) {
-            return (function(x) {
-                return f(g(x));
-            });
-        })(parseStream, streamFrom));
-        (exports.parserStream = parserStream);
-        (exports.ParserPosition = ParserPosition);
-        (exports.ParserState = ParserState);
-        (exports.parseInput = parseInput);
-        (exports.parseStream = parseStream);
+define('khepri/parse/parser',["require", "exports", "bennu/parse", "nu-stream/stream", "../position", "./program_parser"], (function(require,
+    exports, parse, stream, __o, __o0) {
+    
+    var first = stream["first"],
+        filter = stream["filter"],
+        isEmpty = stream["isEmpty"],
+        rest = stream["rest"],
+        NIL = stream["NIL"],
+        streamFrom = stream["from"],
+        SourceLocation = __o["SourceLocation"],
+        SourcePosition = __o["SourcePosition"],
+        program = __o0["program"],
+        parserStream, ParserPosition, ParserState, parseInput, parseStream;
+    (parserStream = filter.bind(null, (function(x) {
+        switch (x.type) {
+            case "Whitespace":
+            case "LineTerminator":
+            case "Comment":
+                return false;
+            default:
+                return true;
+        }
+    })));
+    (ParserPosition = (function(tokenPosition, sourcePosition) {
+        var self = this;
+        (self.tokenPosition = tokenPosition);
+        (self.sourcePosition = sourcePosition);
     }));
-/**
- * @fileOverview Node serialization
- */
-define('ecma_ast/serialization',['exports',
-        'ecma_ast/node'],
-function(exports,
-        ecma_node){
-//
-
-var keys = Object.keys;
-    
-var map = Function.prototype.call.bind(Array.prototype.map);
-var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-
-var id = function(x) { return x; };
-
-/* Internal
- ******************************************************************************/
-var typeMap = {};
-
-var registerNode = function(type, ctor) {
-    typeMap[type] = ctor;
-};
-
-/* Serialization
- ******************************************************************************/
-/**
- * Serialize a given node to a JSON data structure.
- * 
- * @param node Root node to serialize.
- * @param [locSerializer] Function that serializes location data.
- * @param [udSerializer] Function that serializes user data objects.
- */
-var serialize = (function(){
-    var _serialize = function(node, locSerializer, udSerializer) {
-        if (!node)
-            return node;
-        
-        if (Array.isArray(node))
-            return map(node, function(x) { return _serialize(x, locSerializer, udSerializer); });
-        
-        if (!(node instanceof ecma_node.Node))
-            return node;
-        
-        return {
-            'type': node.type,
-            'loc': locSerializer(node.loc),
-            'ud': udSerializer(node.ud),
-            'children': reduce(node.children, function(o, childKey) {
-                o[childKey] = _serialize(node[childKey], locSerializer, udSerializer);
-                return o;
-            }, {}),
-            'attributes': reduce(node.attributes, function(o, key) {
-                o[key] = node[key];
-                return o;
-            }, {})
+    (ParserPosition.prototype = new(parse.Position)());
+    (ParserPosition.prototype.constructor = ParserPosition);
+    (ParserPosition.initial = new(ParserPosition)(parse.Position.initial, SourcePosition.initial));
+    (ParserPosition.prototype.increment = (function(tok, end) {
+        var self = this;
+        return new(ParserPosition)(self.tokenPosition.increment(tok), end);
+    }));
+    (ParserPosition.prototype.toString = (function() {
+        var self = this;
+        return ("" + self.sourcePosition);
+    }));
+    (ParserPosition.prototype.compare = (function(pos) {
+        var self = this;
+        return self.tokenPosition.compare(pos.tokenPosition);
+    }));
+    (ParserState = (function(input, pos, prevEnd) {
+        var self = this;
+        parse.ParserState.call(self, input, pos);
+        (self._prevEnd = prevEnd);
+    }));
+    (ParserState.prototype = new(parse.ParserState)());
+    (ParserState.initial = new(ParserState)(NIL, ParserPosition.initial, SourcePosition.initial));
+    (ParserState.prototype.setInput = (function(input) {
+        var self = this;
+        return new(ParserState)(input, self.position, self._prevEnd);
+    }));
+    (ParserState.prototype.setPosition = (function(position) {
+        var self = this;
+        return new(ParserState)(self.input, position, self._prevEnd);
+    }));
+    (ParserState.prototype.next = (function(tok) {
+        var self = this;
+        if ((!self._next)) {
+            var r = rest(self.input),
+                end = (isEmpty(r) ? tok.loc.end : first(r)
+                    .loc.start),
+                s = new(ParserState)(r, self.position.increment(tok, end), self.loc.end);
+            (self._next = (function(_, m, cok) {
+                return cok(tok, s, m);
+            }));
         }
-    };
+        return self._next;
+    }));
+    Object.defineProperty(ParserState.prototype, "loc", ({
+        "get": (function() {
+            var self = this;
+            return (isEmpty(self.input) ? new(SourceLocation)(self._prevEnd, self._prevEnd) : first(
+                    self.input)
+                .loc);
+        })
+    }));
+    (parseStream = (function(s) {
+        return parse.runState(program, new(ParserState)(parserStream(s), ParserPosition.initial));
+    }));
+    (parseInput = (function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })(parseStream, streamFrom));
+    (exports.parserStream = parserStream);
+    (exports.ParserPosition = ParserPosition);
+    (exports.ParserState = ParserState);
+    (exports.parseInput = parseInput);
+    (exports.parseStream = parseStream);
+}));
+define('ecma-ast/serialization',["require", "exports", "./node"], (function(require, exports, ecma_node) {
     
-    return function(node, locSerializer, udSerializer) {
-        var program = _serialize(
-            node,
-            locSerializer || id,
-            udSerializer || id);
-        return {
-            'version': '2.1.0',
-            'kind': 'ecma',
-            'program': program
-        };
-    };
-}());
-
-/**
- * Unserialize a data to an AST.
- * 
- * @param data Object to unserialize.
- * @param [locSerializer] Function that unserializes location data.
- * @param [udSerializer] Function that unserializes user data objects.
- */
-var unserialize = (function(){
-    var _unserialize = function(data, locUnserializer, udUnserializer) {
-        if (!data)
-            return data;
-        
-        if (Array.isArray(data))
-            return map(data, function(x) { return _unserialize(x, locUnserializer, udUnserializer); });
-        
-        var ctor = typeMap[data.type];
-        if (!ctor)
-            return data;
-        
-        var loc = locUnserializer(data.loc),
-            ud = udUnserializer(data.ud);
-        
-        var children = reduce(
-            keys(data.children),
-            function(o, c) {
-                o[c] = _unserialize(data.children[c], locUnserializer, udUnserializer);
+    var Node = ecma_node["Node"],
+        registerNode, serialize, unserialize, keys = Object.keys,
+        map = Function.prototype.call.bind(Array.prototype.map),
+        reduce = Function.prototype.call.bind(Array.prototype.reduce),
+        id = (function(x) {
+            return x;
+        }),
+        typeMap = ({});
+    (registerNode = (function(type, ctor) {
+        (typeMap[type] = ctor);
+    }));
+    var _serialize = (function(node, locSerializer, udSerializer) {
+        if (!node) return node;
+        if (Array.isArray(node)) return map(node, (function(x) {
+            return _serialize(x, locSerializer, udSerializer);
+        }));
+        if (!(node instanceof Node)) return node;
+        return ({
+            "type": node.type,
+            "loc": locSerializer(node.loc),
+            "ud": udSerializer(node.ud),
+            "children": reduce(node.children, (function(o, childKey) {
+                (o[childKey] = _serialize(node[childKey], locSerializer, udSerializer));
                 return o;
-            }, {});
-        
-        var attributes = reduce(
-            keys(data.attributes),
-            function(o, c) {
-                o[c] = data.attributes[c];
+            }), ({})),
+            "attributes": reduce(node.attributes, (function(o, key) {
+                (o[key] = node[key]);
                 return o;
-            }, {});
-        
-        return ecma_node.construct(
-            ctor.prototype,
-            loc,
-            ud,
-            children,
-            attributes);
-    };
-    
-    return function(data, locSerializer, udSerializer) {
-        return _unserialize(
-            data.program,
-            locSerializer || id,
-            udSerializer || id);
-    };
-}());
-
-
-/* Export
- ******************************************************************************/
-// Internal
-exports.registerNode = registerNode;
-
-// Public
-exports.serialize = serialize;
-exports.unserialize = unserialize;
-});
-/**
- * @fileOverview Node serialization
- */
-define('ecma_ast/node',['require', 'exports', 'ecma_ast/serialization'],
-function(require, exports){
-//
-
-var concatArgs = (function(){
-    var map = function(x) { return x; };
-    
-    return function(arr, args) {
-        return arr.concat([].map.call(args, map));
-    };
-}());
-
-var keys = Object.keys;
-    
-var map = Function.prototype.call.bind(Array.prototype.map);
-var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-
-var copy = function(obj) {
-    var out = new (Object.getPrototypeOf(obj).constructor)();
-    for (var i in obj)
-        out[i] = obj[i];
-    return out;
-};
-
-var defineProperty = function(obj, prop, descriptor) {
-    return Object.defineProperty(copy(obj), prop, descriptor);
-};
-
-/* Node
- ******************************************************************************/
-/**
- * Base class for nodes
- * 
- * @param loc Location.
- * @param ud UserData
- */
-var Node = function(loc, ud) {
-    Object.defineProperties(this, {
-        'loc': {
-            'value': loc,
-            'enumerable': false
-        },
-        'ud': {
-            'value': (ud || null),
-            'enumerable': false
-        }
-    });
-};
-
-/* Operations
- ******************************************************************************/
-/**
- * Construct a node with given attributes and children.
- * 
- * Nulls all undefined children.
- * 
- * @param proto Node prototype.
- * @param loc Location.
- * @param ud Userdata.
- * @param children Object mappings keys to children values.
- * @param attributes Object mappings keys to attribute values.
- * 
- * @return New node.
- */
-var construct = function(proto, loc, ud, children, attributes) {
-    var properties = {};
-    
-    // Copy explicit children
-    Object.keys(children).forEach(function(key) {
-        properties[key] = {
-            'value': children[key],
-            'enumerable': true,
-            'configurable': true
-        };
-    });
-    
-    // Null remaining children
-    proto.children.forEach(function(key) {
-        properties[key] = (properties[key] || {
-            'value': null,
-            'enumerable': true,
-            'configurable': true
+            }), ({}))
         });
     });
-    
-    Object.keys(attributes).forEach(function(key) {
-        properties[key] = {
-            'value': attributes[key],
-            'enumerable': true,
-            'configurable': true
-        };
+    (serialize = (function(node, locSerializer, udSerializer) {
+        var program = _serialize(node, (locSerializer || id), (udSerializer || id));
+        return ({
+            "version": "2.1.0",
+            "kind": "ecma",
+            "program": program
+        });
+    }));
+    var _unserialize = (function(data, locUnserializer, udUnserializer) {
+        if (!data) return data;
+        if (Array.isArray(data)) return map(data, (function(x) {
+            return _unserialize(x, locUnserializer, udUnserializer);
+        }));
+        var ctor = typeMap[data.type];
+        if (!ctor) return data;
+        var loc = locUnserializer(data.loc),
+            ud = udUnserializer(data.ud),
+            children = reduce(keys(data.children), (function(o, c) {
+                (o[c] = _unserialize(data.children[c], locUnserializer, udUnserializer));
+                return o;
+            }), ({})),
+            attributes = reduce(keys(data.attributes), (function(o, c) {
+                (o[c] = data.attributes[c]);
+                return o;
+            }), ({}));
+        return ecma_node.construct(ctor.prototype, loc, ud, children, attributes);
     });
+    (unserialize = (function(data, locSerializer, udSerializer) {
+        return _unserialize(data.program, (locSerializer || id), (udSerializer || id));
+    }));
+    (exports.registerNode = registerNode);
+    (exports.serialize = serialize);
+    (exports.unserialize = unserialize);
+}));
+define('ecma-ast/node',["require", "exports", "./serialization"], (function(require, exports, __o) {
     
-    // Shallow copy other props
-    properties.loc = {
-        'value': loc,
-        'enumerable': false
-    };
-    properties.ud = {
-        'value': ud,
-        'enumerable': false
-    };
-    
-    return Object.create(
-        proto,
-        properties);
-};
-
-/**
- * Reconstruct a node with new attributes and children.
- * 
- * @param base Node to reconstruct.
- * @param children Object mappings keys to children values.
- * @param attributes Object mappings keys to attribute values.
- * 
- * @return Reconstructed node.
- */
-var reconstruct = function(base, children, attributes) {
-    return construct(
-        Object.getPrototypeOf(base),
-        base.loc,
-        base.ud,
-        children,
-        attributes);
-};
-
-/**
- * Create a new node from a base with children and attributes included from
- * `children` and `attributes`.
- * 
- * Unlike `reconstruct`, `children` and `attributes` are not the list of all
- * properties the node will have, but difference with the current node.
- * 
- * @param base Base node to transform.
- * @param children Object mappings keys to children values.
- * @param attributes Object mappings keys to attribute values.
- * 
- * @return Modified node.
- */
-var modify = function(base, children, attributes) {
-    var allChildren = {},
-        allAttributes = {};
-    
-    base.children.forEach(function(key) {
-        allChildren[key] = base[key];
-    });
-    Object.keys(children).forEach(function(key) {
-        allChildren[key] = children[key];
-    });
-    
-    base.attributes.forEach(function(key) {
-        allAttributes[key] = base[key];
-    });
-    Object.keys(attributes).forEach(function(key) {
-        allAttributes[key] = attributes[key];
-    });
-    
-    return reconstruct(
-        base,
-        allChildren,
-        allAttributes);
-};
-
-/**
- * Set the loc of a node.
- * 
- * @param base Base node to transform.
- * @param loc New loc.
- * 
- * @return Transformed node.
- */
-var setLoc = function(base, loc) {
-    return construct(
-        Object.getPrototypeOf(base),
-        loc,
-        base.ud,
-        reduce(base.children, function(o, key) { o[key] = base[key]; return o; }, {}),
-        reduce(base.attributes, function(o, key) { o[key] = base[key]; return o; }, {}));
-};
-
-/**
- * Set the user data of a node.
- * 
- * @param base Base node to transform.
- * @param ud New user data.
- * 
- * @return Transformed node.
- */
-var setUserData = function(base, ud) {
-    return construct(
-        Object.getPrototypeOf(base),
-        base.loc,
-        ud,
-        reduce(base.children, function(o, key) { o[key] = base[key]; return o; }, {}),
-        reduce(base.attributes, function(o, key) { o[key] = base[key]; return o; }, {}));
-};
-
-/* User Data
- ******************************************************************************/
-/**
- * Get a user data entry.
- * 
- * @param node Node to transform.
- * @param key Targeted user data key.
- * 
- * @return Value or null if none.
- */
-var getData = function(node, key) {
-    return (node.ud ?
-        node.ud[key] :
-        null);
-};
-
-/**
- * Modifies a user data entry.
- * 
- * @param node Node to transform.
- * @param key Targeted user data key.
- * @param f Function mapping current value to new value.
- * 
- * @return Transformed node.
- */
-var modifyData = function(node, key, f) {
-    return setUserdata(
-        node,
-        defineProperty(
-            (node.ud || {}),
-            key, {
-                'value': f(getData(node, key)),
-                'enumerable': true
+    var registerNode = __o["registerNode"],
+        Node, construct, reconstruct, modify, setLoc, setUserData, getData, modifyData, setData, defineNode,
+            concatArgs = (function() {
+                var id = (function(x) {
+                    return x;
+                });
+                return (function(arr, args) {
+                    return arr.concat([].map.call(args, id));
+                });
+            })(),
+        keys = Object.keys,
+        map = Function.prototype.call.bind(Array.prototype.map),
+        reduce = Function.prototype.call.bind(Array.prototype.reduce),
+        copy = (function(obj) {
+            var out = Object.create(Object.getPrototypeOf(obj));
+            Object.getOwnPropertyNames(obj)
+                .forEach((function(i) {
+                    var self = this;
+                    (out[i] = obj[i]);
+                }));
+            return out;
+        }),
+        defineProperty = (function(obj, prop, descriptor) {
+            return Object.defineProperty(copy(obj), prop, descriptor);
+        });
+    (Node = (function(loc, ud) {
+        var self = this;
+        Object.defineProperties(self, ({
+            "loc": ({
+                "value": loc,
+                "enumerable": false
+            }),
+            "ud": ({
+                "value": (ud || null),
+                "enumerable": false
+            })
+        }));
+    }));
+    (construct = (function(proto, loc, ud, children, attributes) {
+        var properties = ({});
+        Object.keys(children)
+            .forEach((function(key) {
+                (properties[key] = ({
+                    "value": children[key],
+                    "enumerable": true,
+                    "configurable": true
+                }));
             }));
-};
-
-/**
- * Set a user data entry.
- * 
- * @param node Node to transform.
- * @param key Targeted user data key.
- * @param value New value.
- * 
- * @return Transformed node.
- */
-var setData = function(node, key, value) {
-    return modifyData(node, key, function() { return value; });
-};
-
-/* Creation
- ******************************************************************************/
-var defineNode = function(parent, type, children, attributes, ctor) {
-    ctor.type = type;
-    ctor.prototype = new parent;
-    ctor.prototype.constructor = ctor;
-    ctor.prototype.children = children;
-    ctor.prototype.attributes = attributes;
-    ctor.prototype.type = ctor.type;
-    ctor.create = function(/*...*/) {
-        return new (ctor.bind.apply(ctor, concatArgs([null], arguments)));
-    };
+        proto.children.forEach((function(key) {
+            (properties[key] = (properties[key] || ({
+                "value": null,
+                "enumerable": true,
+                "configurable": true
+            })));
+        }));
+        Object.keys(attributes)
+            .forEach((function(key) {
+                (properties[key] = ({
+                    "value": attributes[key],
+                    "enumerable": true,
+                    "configurable": true
+                }));
+            }));
+        (properties.loc = ({
+            "value": loc,
+            "enumerable": false
+        }));
+        (properties.ud = ({
+            "value": ud,
+            "enumerable": false
+        }));
+        return Object.create(proto, properties);
+    }));
+    (reconstruct = (function(base, children, attributes) {
+        return construct(Object.getPrototypeOf(base), base.loc, base.ud, children, attributes);
+    }));
+    (modify = (function(base, children, attributes) {
+        var allChildren = ({}),
+            allAttributes = ({});
+        base.children.forEach((function(key) {
+            (allChildren[key] = base[key]);
+        }));
+        if (children) Object.keys(children)
+            .forEach((function(key) {
+                (allChildren[key] = children[key]);
+            }));
+        base.attributes.forEach((function(key) {
+            (allAttributes[key] = base[key]);
+        }));
+        if (attributes) Object.keys(attributes)
+            .forEach((function(key) {
+                (allAttributes[key] = attributes[key]);
+            }));
+        return reconstruct(base, allChildren, allAttributes);
+    }));
+    (setLoc = (function(base, loc) {
+        return construct(Object.getPrototypeOf(base), loc, base.ud, reduce(base.children, (function(o,
+            key) {
+            (o[key] = base[key]);
+            return o;
+        }), ({})), reduce(base.attributes, (function(o, key) {
+            (o[key] = base[key]);
+            return o;
+        }), ({})));
+    }));
+    (setUserData = (function(base, ud) {
+        return construct(Object.getPrototypeOf(base), base.loc, ud, reduce(base.children, (function(o,
+            key) {
+            (o[key] = base[key]);
+            return o;
+        }), ({})), reduce(base.attributes, (function(o, key) {
+            (o[key] = base[key]);
+            return o;
+        }), ({})));
+    }));
+    (getData = (function(node, key) {
+        return (node.ud ? node.ud[key] : null);
+    }));
+    (modifyData = (function(node, key, f) {
+        return setUserData(node, defineProperty((node.ud || ({})), key, ({
+            "value": f(getData(node, key)),
+            "enumerable": true
+        })));
+    }));
+    (setData = (function(node, key, value) {
+        return modifyData(node, key, (function() {
+            return value;
+        }));
+    }));
+    (defineNode = (function(parent, type, children, attributes, ctor) {
+        (ctor.type = type);
+        (ctor.prototype = new(parent)());
+        (ctor.prototype.constructor = ctor);
+        (ctor.prototype.children = children);
+        (ctor.prototype.attributes = attributes);
+        (ctor.prototype.type = ctor.type);
+        (ctor.create = (function() {
+            var args = arguments;
+            return new(ctor.bind.apply(ctor, concatArgs([null], args)))();
+        }));
+        require("./serialization")
+            .registerNode(type, ctor);
+        return ctor;
+    }));
+    (exports.Node = Node);
+    (exports.construct = construct);
+    (exports.reconstruct = reconstruct);
+    (exports.modify = modify);
+    (exports.setLoc = setLoc);
+    (exports.setUserData = setUserData);
+    (exports.getData = getData);
+    (exports.modifyData = modifyData);
+    (exports.setData = setData);
+    (exports.defineNode = defineNode);
+}));
+define('ecma-ast/clause',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    require('ecma_ast/serialization').registerNode(type, ctor);
-    return ctor;
-};
-
-
-/* Export
- ******************************************************************************/
-exports.Node = Node;
-
-exports.construct = construct;
-exports.reconstruct = reconstruct;
-exports.modify = modify;
-exports.setLoc = setLoc;
-exports.setUserData = setUserData;
-
-exports.getData = getData;
-exports.modifyData = modifyData;
-exports.setData = setData;
-
-exports.defineNode = defineNode;
-
-});
-/**
- * @fileOverview ECMAScript clause AST nodes.
- */
-define('ecma_ast/clause',['ecma_ast/node'],
-function(node){
-
-
-/**
- * @constructor
- */
-var Clause = function() { };
-Clause.prototype = new node.Node;
-
-/* Instances
- ******************************************************************************/
-/**
- * @constructor
- */
-var SwitchCase = node.defineNode(Clause, 'SwitchCase',
-    ['test', 'consequent'],
-    [],
-    function(loc, test, consequent) {
-        node.Node.call(this, loc);
-        this.test = (test || null);
-        this.consequent = consequent;
-    });
-
-/**
- * @constructor
- */
-var CatchClause = node.defineNode(Clause, 'CatchClause',
-    ['param', 'body'],
-    [],
-    function(loc, param, body) {
-        node.Node.call(this, loc);
-        this.param = param;
-        this.body = body;
-    });
-
-/* Export
- ******************************************************************************/
-return {
-    'SwitchCase': SwitchCase,
-    'CatchClause': CatchClause
-};
-
-});
-/**
- * @fileOverview ECMASscript declaration AST nodes.
- */
-define('ecma_ast/declaration',['ecma_ast/node'],
-function(node){
-
-
-/**
- * @constructor
- */
-var Declaration = function() { };
-Declaration.prototype = new node.Node;
-
-/* Instances
- ******************************************************************************/
-/**
- * @constructor
- */
-var FunctionDeclaration = node.defineNode(Declaration, 'FunctionDeclaration',
-    ['params', 'body'],
-    [],
-    function(loc, id, params, body) {
-        node.Node.call(this, loc);
-        this.id = id;
-        this.params = params;
-        this.body = body;
-    });
-
-/**
- * @constructor
- */
-var VariableDeclaration = node.defineNode(Declaration, 'VariableDeclaration',
-    ['declarations'],
-    [],
-    function(loc, declarations) {
-        node.Node.call(this, loc);
-        this.declarations = declarations;
-    });
-
-/**
- * VariableDeclarator
- */
-var VariableDeclarator = node.defineNode(Declaration, 'VariableDeclarator',
-    ['id', 'init'],
-    [],
-    function(loc, id, init) {
-        node.Node.call(this, loc);
-        this.id = id;
-        this.init = (init || null);
-    });
-
-/* Export
- ******************************************************************************/
-return {
-    'Declaration': Declaration,
+    var Node = __o["Node"],
+        defineNode = __o["defineNode"],
+        SwitchCase, CatchClause, Clause = (function() {});
+    (Clause.prototype = new(Node)());
+    (SwitchCase = defineNode(Clause, "SwitchCase", ["test", "consequent"], [], (function(loc, test, consequent) {
+        var self = this;
+        Node.call(self, loc);
+        (self.test = (test || null));
+        (self.consequent = consequent);
+    })));
+    (CatchClause = defineNode(Clause, "CatchClause", ["param", "body"], [], (function(loc, param, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.param = param);
+        (self.body = body);
+    })));
+    (exports.SwitchCase = SwitchCase);
+    (exports.CatchClause = CatchClause);
+}));
+define('ecma-ast/declaration',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    'FunctionDeclaration': FunctionDeclaration,
+    var Node = __o["Node"],
+        defineNode = __o["defineNode"],
+        Declaration, FunctionDeclaration, VariableDeclaration, VariableDeclarator;
+    (Declaration = (function() {}));
+    (Declaration.prototype = new(Node)());
+    (FunctionDeclaration = defineNode(Declaration, "FunctionDeclaration", ["params", "body"], [], (function(loc,
+        id, params, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.id = id);
+        (self.params = params);
+        (self.body = body);
+    })));
+    (VariableDeclaration = defineNode(Declaration, "VariableDeclaration", ["declarations"], [], (function(loc,
+        declarations) {
+        var self = this;
+        Node.call(self, loc);
+        (self.declarations = declarations);
+    })));
+    (VariableDeclarator = defineNode(Declaration, "VariableDeclarator", ["id", "init"], [], (function(loc, id,
+        init) {
+        var self = this;
+        Node.call(self, loc);
+        (self.id = id);
+        (self.init = (init || null));
+    })));
+    (exports.Declaration = Declaration);
+    (exports.FunctionDeclaration = FunctionDeclaration);
+    (exports.VariableDeclaration = VariableDeclaration);
+    (exports.VariableDeclarator = VariableDeclarator);
+}));
+define('ecma-ast/expression',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    'VariableDeclaration': VariableDeclaration,
-    'VariableDeclarator': VariableDeclarator
-};
-
-});
-/**
- * @fileOverview AST expression Nodes for ECMAScript 5.1 based on the
- *   SpiderMonkey Parser API.
- */
-define('ecma_ast/expression',['ecma_ast/node'],
-function(node){
-
-
-
-/**
- * @constructor
- */
-var Expression = function() { };
-Expression.prototype = new node.Node;
-
-/* Instances
- ******************************************************************************/
-/**
- * @constructor
- */
-var ThisExpression = node.defineNode(Expression, 'ThisExpression',
-    [],
-    [],
-    function(loc) {
-        node.Node.call(this, loc);
-    });
-
-/**
- * @constructor
- */
-var SequenceExpression = node.defineNode(Expression, 'SequenceExpression',
-    ['expressions'],
-    [],
-    function(loc, expressions) {
-        node.Node.call(this, loc);
-        this.expressions = expressions;
-    });
-
-/**
- * @constructor
- */
-var UnaryExpression = node.defineNode(Expression, 'UnaryExpression',
-    ['argument'],
-    ['operator'],
-    function(loc, operator, argument) {
-        node.Node.call(this, loc);
-        this.operator = operator;
-        this.argument = argument;
-    });
-
-/**
- * @constructor
- */
-var BinaryExpression = node.defineNode(Expression, 'BinaryExpression',
-    ['left', 'right'],
-    ['operator'],
-    function(loc, operator, left, right) {
-        node.Node.call(this, loc);
-        this.operator = operator;
-        this.left = left;
-        this.right = right;
-    });
-
-/**
- * @constructor
- */
-var AssignmentExpression = node.defineNode(Expression, 'AssignmentExpression',
-    ['left', 'right'],
-    ['operator'],
-    function(loc, operator, left, right) {
-        node.Node.call(this, loc);
-        this.operator = operator;
-        this.left = left;
-        this.right = right;
-    });
-
-/**
- * @constructor
- */
-var UpdateExpression = node.defineNode(Expression, 'UpdateExpression',
-    ['argument'],
-    ['operator', 'prefix'],
-    function(loc, operator, argument, prefix) {
-        node.Node.call(this, loc);
-        this.operator = operator;
-        this.argument = argument;
-        this.prefix = prefix;
-    });
-
-/**
- * @constructor
- */
-var LogicalExpression = node.defineNode(Expression, 'LogicalExpression',
-    ['left', 'right'],
-    ['operator'],
-    function(loc, operator, left, right) {
-        node.Node.call(this, loc);
-        this.operator = operator;
-        this.left = left;
-        this.right = right;
-    });
-
-/**
- * @constructor
- */
-var ConditionalExpression = node.defineNode(Expression, 'ConditionalExpression',
-    ['test', 'consequent', 'alternate'],
-    [],
-    function(loc, test, consequent, alternate) {
-        node.Node.call(this, loc);
-        this.test = test;
-        this.consequent = consequent;
-        this.alternate = alternate;
-    });
-
-/**
- * @constructor
- */
-var NewExpression = node.defineNode(Expression, 'NewExpression',
-    ['callee', 'args'],
-    [],
-    function(loc, callee, args) {
-        node.Node.call(this, loc);
-        this.callee = callee;
-        this.args = args;
-    });
-
-/**
- * @constructor
- */
-var CallExpression = node.defineNode(Expression, 'CallExpression',
-    ['callee', 'args'],
-    [],
-    function(loc, callee, args) {
-        node.Node.call(this, loc);
-        this.callee = callee;
-        this.args = args;
-    });
-
-/**
- * @constructor
- */
-var MemberExpression = node.defineNode(Expression, 'MemberExpression',
-    ['object', 'property'],
-    ['computed'],
-    function(loc, object, property, computed) {
-        node.Node.call(this, loc);
-        this.object = object;
-        this.property = property;
-        this.computed = computed;
-    });
-
-/**
- * @constructor
- */
-var FunctionExpression = node.defineNode(Expression, 'FunctionExpression',
-    ['id', 'params', 'body'],
-    [],
-    function(loc, id, params, body) {
-        node.Node.call(this, loc);
-        this.id = (id || null);
-        this.params = params;
-        this.body = body;
-    });
-
-/**
- * @constructor
- */
-var ArrayExpression = node.defineNode(Expression, 'ArrayExpression',
-    ['elements'],
-    [],
-    function(loc, elements) {
-        node.Node.call(this, loc);
-        this.elements = elements;
-    });
-
-/**
- * @constructor
- */
-var ObjectExpression = node.defineNode(Expression, 'ObjectExpression',
-    ['properties'],
-    [],
-    function(loc, properties) {
-        node.Node.call(this, loc);
-        this.properties = properties;
-    });
-
-/* Export
- ******************************************************************************/
-return {
-    'Expression': Expression,
+    var Node = __o["Node"],
+        defineNode = __o["defineNode"],
+        Expression, ThisExpression, SequenceExpression, UnaryExpression, BinaryExpression, AssignmentExpression,
+            UpdateExpression, LogicalExpression, ConditionalExpression, NewExpression, CallExpression,
+            MemberExpression, FunctionExpression, ArrayExpression, ObjectExpression;
+    (Expression = (function() {
+        var self = this;
+    }));
+    (Expression.prototype = new(Node)());
+    (ThisExpression = defineNode(Expression, "ThisExpression", [], [], (function(loc) {
+        var self = this;
+        Node.call(self, loc);
+    })));
+    (SequenceExpression = defineNode(Expression, "SequenceExpression", ["expressions"], [], (function(loc,
+        expressions) {
+        var self = this;
+        Node.call(self, loc);
+        (self.expressions = expressions);
+    })));
+    (UnaryExpression = defineNode(Expression, "UnaryExpression", ["argument"], ["operator"], (function(loc,
+        operator, argument) {
+        var self = this;
+        Node.call(self, loc);
+        (self.operator = operator);
+        (self.argument = argument);
+    })));
+    (BinaryExpression = defineNode(Expression, "BinaryExpression", ["left", "right"], ["operator"], (function(
+        loc, operator, left, right) {
+        var self = this;
+        Node.call(self, loc);
+        (self.operator = operator);
+        (self.left = left);
+        (self.right = right);
+    })));
+    (AssignmentExpression = defineNode(Expression, "AssignmentExpression", ["left", "right"], ["operator"], (
+        function(loc, operator, left, right) {
+            var self = this;
+            Node.call(self, loc);
+            (self.operator = operator);
+            (self.left = left);
+            (self.right = right);
+        })));
+    (UpdateExpression = defineNode(Expression, "UpdateExpression", ["argument"], ["operator", "prefix"], (
+        function(loc, operator, argument, prefix) {
+            var self = this;
+            Node.call(self, loc);
+            (self.operator = operator);
+            (self.argument = argument);
+            (self.prefix = prefix);
+        })));
+    (LogicalExpression = defineNode(Expression, "LogicalExpression", ["left", "right"], ["operator"], (function(
+        loc, operator, left, right) {
+        var self = this;
+        Node.call(self, loc);
+        (self.operator = operator);
+        (self.left = left);
+        (self.right = right);
+    })));
+    (ConditionalExpression = defineNode(Expression, "ConditionalExpression", ["test", "consequent", "alternate"], [], (
+        function(loc, test, consequent, alternate) {
+            var self = this;
+            Node.call(self, loc);
+            (self.test = test);
+            (self.consequent = consequent);
+            (self.alternate = alternate);
+        })));
+    (NewExpression = defineNode(Expression, "NewExpression", ["callee", "args"], [], (function(loc, callee,
+        args) {
+        var self = this;
+        Node.call(self, loc);
+        (self.callee = callee);
+        (self.args = args);
+    })));
+    (CallExpression = defineNode(Expression, "CallExpression", ["callee", "args"], [], (function(loc, callee,
+        args) {
+        var self = this;
+        Node.call(self, loc);
+        (self.callee = callee);
+        (self.args = args);
+    })));
+    (MemberExpression = defineNode(Expression, "MemberExpression", ["object", "property"], ["computed"], (
+        function(loc, object, property, computed) {
+            var self = this;
+            Node.call(self, loc);
+            (self.object = object);
+            (self.property = property);
+            (self.computed = computed);
+        })));
+    (FunctionExpression = defineNode(Expression, "FunctionExpression", ["id", "params", "body"], [], (function(
+        loc, id, params, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.id = (id || null));
+        (self.params = params);
+        (self.body = body);
+    })));
+    (ArrayExpression = defineNode(Expression, "ArrayExpression", ["elements"], [], (function(loc, elements) {
+        var self = this;
+        Node.call(self, loc);
+        (self.elements = elements);
+    })));
+    (ObjectExpression = defineNode(Expression, "ObjectExpression", ["properties"], [], (function(loc,
+        properties) {
+        var self = this;
+        Node.call(self, loc);
+        (self.properties = properties);
+    })));
+    (exports.Expression = Expression);
+    (exports.ThisExpression = ThisExpression);
+    (exports.SequenceExpression = SequenceExpression);
+    (exports.UnaryExpression = UnaryExpression);
+    (exports.BinaryExpression = BinaryExpression);
+    (exports.AssignmentExpression = AssignmentExpression);
+    (exports.UpdateExpression = UpdateExpression);
+    (exports.LogicalExpression = LogicalExpression);
+    (exports.ConditionalExpression = ConditionalExpression);
+    (exports.NewExpression = NewExpression);
+    (exports.CallExpression = CallExpression);
+    (exports.MemberExpression = MemberExpression);
+    (exports.FunctionExpression = FunctionExpression);
+    (exports.ArrayExpression = ArrayExpression);
+    (exports.ObjectExpression = ObjectExpression);
+}));
+define('ecma-ast/program',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    'ThisExpression': ThisExpression,
-    'SequenceExpression': SequenceExpression,
-    'UnaryExpression': UnaryExpression,
-    'BinaryExpression': BinaryExpression,
-    'AssignmentExpression': AssignmentExpression,
-    'UpdateExpression': UpdateExpression,
-    'LogicalExpression': LogicalExpression,
-    'ConditionalExpression': ConditionalExpression,
-    'NewExpression': NewExpression,
-    'CallExpression': CallExpression,
-    'MemberExpression': MemberExpression,
+    var Node = __o["Node"],
+        defineNode = __o["defineNode"],
+        Program;
+    (Program = defineNode(Node, "Program", ["body"], [], (function(loc, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.body = body);
+    })));
+    (exports.Program = Program);
+}));
+define('ecma-ast/statement',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    'FunctionExpression': FunctionExpression,
-    'ArrayExpression': ArrayExpression,
-    'ObjectExpression': ObjectExpression
-};
-
-});
-/**
- * @fileOverview ECMAScript program AST nodes.
- */
-define('ecma_ast/program',['ecma_ast/node'],
-function(node){
-
-
-/**
- * @constructor
- */
-var Program = node.defineNode(node.Node, 'Program',
-    ['body'],
-    [],
-    function(loc, body) {
-        node.Node.call(this, loc);
-        this.body = body;
-    });
-
-/* Export
- ******************************************************************************/
-return {
-    'Program': Program,
-};
-
-});
-/**
- * @fileOverview AST statement nodes for ECMAScript 5.1 based on the
- * SpiderMonkey Parser API.
- */
-define('ecma_ast/statement',['ecma_ast/node'],
-function(node){
-
-
-/**
- * @constructor
- */
-var Statement = function() { };
-Statement.prototype = new node.Node;
-
-/* Instances
- ******************************************************************************/
-/**
- * @constructor
- */
-var EmptyStatement = node.defineNode(Statement, "EmptyStatement",
-    [],
-    [],
-    function(loc) {
-        node.Node.call(this, loc);
-    });
-
-/**
- * @constructor
- */
-var DebuggerStatement = node.defineNode(Statement, "DebuggerStatement",
-    [],
-    [],
-    function(loc) {
-        node.Node.call(this, loc);
-    });
-
-/**
- * @constructor
- */
-var BlockStatement = node.defineNode(Statement, "BlockStatement",
-    ['body'],
-    [],
-    function(loc, body) {
-        node.Node.call(this, loc);
-        this.body = body;
-    });
-
-/**
- * @constructor
- */
-var ExpressionStatement =  node.defineNode(Statement, "ExpressionStatement",
-    ['expression'],
-    [],
-    function(loc, expression) {
-        node.Node.call(this, loc);
-        this.expression = expression;
-    });
-
-/**
- * @constructor
- */
-var IfStatement = node.defineNode(Statement, "IfStatement",
-    ['test', 'consequent', 'alternate'],
-    [],
-    function(loc, test, consequent, alternate) {
-        node.Node.call(this, loc);
-        this.test = test;
-        this.consequent = consequent;
-        this.alternate = (alternate || null);
-    });
-
-/**
- * @constructor
- */
-var LabeledStatement = node.defineNode(Statement, "LabeledStatement",
-    ['body'],
-    [],
-    function(loc, label, body) {
-        node.Node.call(this, loc);
-        this.label = label;
-        this.body = body;
-    });
-
-/**
- * @constructor
- */
-var BreakStatement = node.defineNode(Statement, "BreakStatement",
-    ['label'],
-    [],
-    function(loc, label) {
-        node.Node.call(this, loc);
-        this.label = (label || null);
-    });
-
-/**
- * @constructor
- */
-var ContinueStatement = node.defineNode(Statement, "ContinueStatement",
-    ['label'],
-    [],
-    function(loc, label) {
-        node.Node.call(this, loc);
-        this.label = (label || null);
-    });
-
-/**
- * @constructor
- */
-var WithStatement = node.defineNode(Statement, "WithStatement",
-    ['object', 'body'],
-    [],
-    function(loc, object, body) {
-        node.Node.call(this, loc);
-        this.object = object;
-        this.body = body;
-    });
-
-/**
- * @constructor
- */
-var SwitchStatement = node.defineNode(Statement, "SwitchStatement",
-    ['discriminant', 'cases'],
-    [],
-    function(loc, discriminant, cases) {
-        node.Node.call(this, loc);
-        this.discriminant = discriminant;
-        this.cases = cases;
-    });
-
-/**
- * @constructor
- */
-var ReturnStatement = node.defineNode(Statement, "ReturnStatement",
-    ['argument'],
-    [],
-    function(loc, argument) {
-        node.Node.call(this, loc);
-        this.argument = (argument || null);
-    });
-
-/**
- * @constructor
- */
-var ThrowStatement = node.defineNode(Statement, "ThrowStatement",
-    ['argument'],
-    [],
-    function(loc, argument) {
-        node.Node.call(this, loc);
-        this.argument = argument;
-    });
-
-/**
- * @constructor
- */
-var TryStatement = node.defineNode(Statement, "TryStatement",
-    ['block', 'handler', 'finalizer'],
-    [],
-    function(loc, block, handler, finalizer) {
-        node.Node.call(this, loc);
-        this.block = block;
-        this.handler = handler;
-        this.finalizer = finalizer;
-    });
-
-/**
- * @constructor
- */
-var WhileStatement = node.defineNode(Statement, "WhileStatement",
-    ['test', 'body'],
-    [],
-    function(loc, test, body) {
-        node.Node.call(this, loc);
-        this.test = test;
-        this.body = body;
-    });
-
-/**
- * @constructor
- */
-var DoWhileStatement = node.defineNode(Statement, "DoWhileStatement",
-    ['body', 'test'],
-    [],
-    function(loc, body, test) {
-        node.Node.call(this, loc);
-        this.test = test;
-        this.body = body;
-    });
-
-/**
- * @constructor
- */
-var ForStatement = node.defineNode(Statement, "ForStatement",
-    ['init', 'test', 'update', 'body'],
-    [],
-    function(loc, init, test, update, body) {
-        node.Node.call(this, loc);
-        this.init = (init || null);
-        this.test = (test || null);
-        this.update = (update || null);
-        this.body = body;
-    });
-
-/**
- * @constructor
- */
-var ForInStatement = node.defineNode(Statement, "ForInStatement",
-    ['left', 'right', 'body'],
-    [],
-    function(loc, left, right, body) {
-        node.Node.call(this, loc);
-        this.left = left;
-        this.right = right;
-        this.body = body;
-    });
-
-/* Export
- ******************************************************************************/
-return {
-    'Statement': Statement,
+    var Node = __o["Node"],
+        defineNode = __o["defineNode"],
+        Statement, DebuggerStatement, BlockStatement, ExpressionStatement, EmptyStatement, IfStatement,
+            LabeledStatement, BreakStatement, ContinueStatement, WithStatement, SwitchStatement,
+            ReturnStatement, ThrowStatement, TryStatement, WhileStatement, DoWhileStatement, ForStatement,
+            ForInStatement;
+    (Statement = (function() {
+        var self = this;
+    }));
+    (Statement.prototype = new(Node)());
+    (EmptyStatement = defineNode(Statement, "EmptyStatement", [], [], (function(loc) {
+        var self = this;
+        Node.call(self, loc);
+    })));
+    (DebuggerStatement = defineNode(Statement, "DebuggerStatement", [], [], (function(loc) {
+        var self = this;
+        Node.call(self, loc);
+    })));
+    (BlockStatement = defineNode(Statement, "BlockStatement", ["body"], [], (function(loc, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.body = body);
+    })));
+    (ExpressionStatement = defineNode(Statement, "ExpressionStatement", ["expression"], [], (function(loc,
+        expression) {
+        var self = this;
+        Node.call(self, loc);
+        (self.expression = expression);
+    })));
+    (IfStatement = defineNode(Statement, "IfStatement", ["test", "consequent", "alternate"], [], (function(loc,
+        test, consequent, alternate) {
+        var self = this;
+        Node.call(self, loc);
+        (self.test = test);
+        (self.consequent = consequent);
+        (self.alternate = (alternate || null));
+    })));
+    (LabeledStatement = defineNode(Statement, "LabeledStatement", ["body"], [], (function(loc, label, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.label = label);
+        (self.body = body);
+    })));
+    (BreakStatement = defineNode(Statement, "BreakStatement", ["label"], [], (function(loc, label) {
+        var self = this;
+        Node.call(self, loc);
+        (self.label = (label || null));
+    })));
+    (ContinueStatement = defineNode(Statement, "ContinueStatement", ["label"], [], (function(loc, label) {
+        var self = this;
+        Node.call(self, loc);
+        (self.label = (label || null));
+    })));
+    (WithStatement = defineNode(Statement, "WithStatement", ["object", "body"], [], (function(loc, object, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.object = object);
+        (self.body = body);
+    })));
+    (SwitchStatement = defineNode(Statement, "SwitchStatement", ["discriminant", "cases"], [], (function(loc,
+        discriminant, cases) {
+        var self = this;
+        Node.call(self, loc);
+        (self.discriminant = discriminant);
+        (self.cases = cases);
+    })));
+    (ReturnStatement = defineNode(Statement, "ReturnStatement", ["argument"], [], (function(loc, argument) {
+        var self = this;
+        Node.call(self, loc);
+        (self.argument = (argument || null));
+    })));
+    (ThrowStatement = defineNode(Statement, "ThrowStatement", ["argument"], [], (function(loc, argument) {
+        var self = this;
+        Node.call(self, loc);
+        (self.argument = argument);
+    })));
+    (TryStatement = defineNode(Statement, "TryStatement", ["block", "handler", "finalizer"], [], (function(loc,
+        block, handler, finalizer) {
+        var self = this;
+        Node.call(self, loc);
+        (self.block = block);
+        (self.handler = handler);
+        (self.finalizer = finalizer);
+    })));
+    (WhileStatement = defineNode(Statement, "WhileStatement", ["test", "body"], [], (function(loc, test, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.test = test);
+        (self.body = body);
+    })));
+    (DoWhileStatement = defineNode(Statement, "DoWhileStatement", ["body", "test"], [], (function(loc, body,
+        test) {
+        var self = this;
+        Node.call(self, loc);
+        (self.test = test);
+        (self.body = body);
+    })));
+    (ForStatement = defineNode(Statement, "ForStatement", ["init", "test", "update", "body"], [], (function(loc,
+        init, test, update, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.init = (init || null));
+        (self.test = (test || null));
+        (self.update = (update || null));
+        (self.body = body);
+    })));
+    (ForInStatement = defineNode(Statement, "ForInStatement", ["left", "right", "body"], [], (function(loc,
+        left, right, body) {
+        var self = this;
+        Node.call(self, loc);
+        (self.left = left);
+        (self.right = right);
+        (self.body = body);
+    })));
+    (exports.Statement = Statement);
+    (exports.DebuggerStatement = DebuggerStatement);
+    (exports.BlockStatement = BlockStatement);
+    (exports.ExpressionStatement = ExpressionStatement);
+    (exports.EmptyStatement = EmptyStatement);
+    (exports.IfStatement = IfStatement);
+    (exports.LabeledStatement = LabeledStatement);
+    (exports.BreakStatement = BreakStatement);
+    (exports.ContinueStatement = ContinueStatement);
+    (exports.WithStatement = WithStatement);
+    (exports.SwitchStatement = SwitchStatement);
+    (exports.ReturnStatement = ReturnStatement);
+    (exports.ThrowStatement = ThrowStatement);
+    (exports.TryStatement = TryStatement);
+    (exports.WhileStatement = WhileStatement);
+    (exports.DoWhileStatement = DoWhileStatement);
+    (exports.ForStatement = ForStatement);
+    (exports.ForInStatement = ForInStatement);
+}));
+define('ecma-ast/value',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    'EmptyStatement': EmptyStatement,
-    'DebuggerStatement': DebuggerStatement,
-    'BlockStatement': BlockStatement,
-    'ExpressionStatement': ExpressionStatement,
-    'IfStatement': IfStatement,
-    'LabeledStatement': LabeledStatement,
-    'BreakStatement': BreakStatement,
-    'ContinueStatement': ContinueStatement,
-    'WithStatement': WithStatement,
-    'SwitchStatement': SwitchStatement,
-    'ReturnStatement': ReturnStatement,
-    
-    'ThrowStatement': ThrowStatement,
-    'TryStatement': TryStatement,
-    
-    'WhileStatement': WhileStatement,
-    'DoWhileStatement': DoWhileStatement,
-    'ForStatement': ForStatement,
-    'ForInStatement': ForInStatement
-};
-
-});
-/**
- * @fileOverview AST clause for ECMAScript 5.1 based on the
- * SpiderMonkey Parser API.
- */
-define('ecma_ast/value',['ecma_ast/node'],
-function(node){
-
-
-/* 
- ******************************************************************************/
-/**
- * @constructor
- */
-var Identifier = node.defineNode(node.Node, 'Identifier',
-    [],
-    ['name'],
-    function(loc, name) {
-        node.Node.call(this, loc);
-        this.name = name;
-    });
-
-/**
- * @constructor
- */
-var Literal = node.defineNode(node.Node, 'Literal',
-    [],
-    ['kind', 'value'],
-    function(loc, kind, value) {
-        node.Node.call(this, loc);
-        this.kind = kind
-        this.value = value;
-    });
-
-/**
- * @constructor
- */
-var ObjectValue = node.defineNode(node.Node, 'ObjectValue',
-    ['key', 'value'],
-    [],
-    function(loc, key, value) {
-        node.Node.call(this, key, value);
-        this.key = key;
-        this.value = value;
-    });
-
-/**
- * @constructor
- */
-var ObjectGetter = node.defineNode(node.Node, 'ObjectGetter',
-    ['key', 'value'],
-    [],
-    function(loc, key, value) {
-        node.Node.call(this, key, value);
-        this.key = key;
-        this.value = value;
-    });
-
-/**
- * @constructor
- */
-var ObjectSetter = node.defineNode(node.Node, 'ObjectSetter',
-    ['key', 'value'],
-    [],
-    function(loc, key, value) {
-        node.Node.call(this, key, value);
-        this.key = key;
-        this.value = value;
-    });
-
-/* 
- ******************************************************************************/
-
-/* Export
- ******************************************************************************/
-return {
-    'Identifier': Identifier,
-    'Literal': Literal,
-    
-    'ObjectValue': ObjectValue,
-    'ObjectGetter': ObjectGetter,
-    'ObjectSetter': ObjectSetter
-};
-
-});
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/package_manager/amd.kep'
- * DO NOT EDIT
-*/
-define('khepri/compile/package_manager/amd',["require", "exports", "khepri_ast/declaration", "khepri_ast/expression", "khepri_ast/pattern",
-    "khepri_ast/statement", "khepri_ast/value"
+    var Node = __o["Node"],
+        defineNode = __o["defineNode"],
+        Identifier, Literal, ObjectValue, ObjectGetter, ObjectSetter;
+    (Identifier = defineNode(Node, "Identifier", [], ["name"], (function(loc, name) {
+        var self = this;
+        Node.call(self, loc);
+        (self.name = name);
+    })));
+    (Literal = defineNode(Node, "Literal", [], ["kind", "value"], (function(loc, kind, value) {
+        var self = this;
+        Node.call(self, loc);
+        (self.kind = kind);
+        (self.value = value);
+    })));
+    (ObjectValue = defineNode(Node, "ObjectValue", ["key", "value"], [], (function(loc, key, value) {
+        var self = this;
+        Node.call(self, key, value);
+        (self.key = key);
+        (self.value = value);
+    })));
+    (ObjectGetter = defineNode(Node, "ObjectGetter", ["key", "value"], [], (function(loc, key, value) {
+        var self = this;
+        Node.call(self, key, value);
+        (self.key = key);
+        (self.value = value);
+    })));
+    (ObjectSetter = defineNode(Node, "ObjectSetter", ["key", "value"], [], (function(loc, key, value) {
+        var self = this;
+        Node.call(self, key, value);
+        (self.key = key);
+        (self.value = value);
+    })));
+    (exports.Identifier = Identifier);
+    (exports.Literal = Literal);
+    (exports.ObjectValue = ObjectValue);
+    (exports.ObjectGetter = ObjectGetter);
+    (exports.ObjectSetter = ObjectSetter);
+}));
+define('khepri/compile/package_manager/amd',["require", "exports", "khepri-ast/declaration", "khepri-ast/expression", "khepri-ast/pattern",
+    "khepri-ast/statement", "khepri-ast/value"
 ], (function(require, exports, ast_declaration, ast_expression, ast_pattern, ast_statement, ast_value) {
     
-    var definePackage, concat = Function.prototype.call.bind(Array.prototype.concat),
+    var definePackage, importPackage, concat = Function.prototype.call.bind(Array.prototype.concat),
         map = Function.prototype.call.bind(Array.prototype.map),
         path = (function(path) {
             return path.split("::")
                 .join("/");
         });
+    (importPackage = (function(imp) {
+        var packagePath = path(imp);
+        return ast_expression.CallExpression.create(null, ast_value.Identifier.create(null, "require"), [
+            ast_value.Literal.create(null, "string", packagePath)
+        ]);
+    }));
     (definePackage = (function(loc, exports, imports, targets, body) {
         var exportHeader = ast_declaration.VariableDeclaration.create(null, map(exports, (function(x) {
             return ast_declaration.VariableDeclarator.create(null, ast_value.Identifier.create(
@@ -4838,7 +4350,7 @@ define('khepri/compile/package_manager/amd',["require", "exports", "khepri_ast/d
                 .create(null, null, concat(ast_pattern.IdentifierPattern.create(null, ast_value.Identifier
                     .create(null, "require")), ast_pattern.IdentifierPattern.create(null,
                     ast_value.Identifier.create(null, "exports")), map(imports, (function(x) {
-                    return targets[x.from.value];
+                    return targets([x.from.value]);
                 })))), ast_statement.BlockStatement.create(body.loc, concat(ast_statement.ExpressionStatement
                     .create(null, ast_value.Literal.create(null, "string", "use strict")),
                     exportHeader, body, exportBody)));
@@ -4850,26 +4362,23 @@ define('khepri/compile/package_manager/amd',["require", "exports", "khepri_ast/d
                     })))), packageBody]));
     }));
     (exports.definePackage = definePackage);
+    (exports.importPackage = importPackage);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/package_manager/node.kep'
- * DO NOT EDIT
-*/
-define('khepri/compile/package_manager/node',["require", "exports", "khepri_ast/declaration", "khepri_ast/expression", "khepri_ast/statement",
-    "khepri_ast/value"
+define('khepri/compile/package_manager/node',["require", "exports", "khepri-ast/declaration", "khepri-ast/expression", "khepri-ast/statement",
+    "khepri-ast/value"
 ], (function(require, exports, ast_declaration, ast_expression, ast_statement, ast_value) {
     
-    var definePackage, concat = Function.prototype.call.bind(Array.prototype.concat),
-        map = Function.prototype.call.bind(Array.prototype.map),
-        path = (function(path) {
-            var segs = path.split("::");
-            return segs.slice(1)
-                .reduce((function(p, c) {
-                    return ast_expression.MemberExpression.create(null, p, ast_value.Literal.create(
-                        null, "string", c), true);
-                }), ast_expression.CallExpression.create(null, ast_value.Identifier.create(null,
-                    "require"), [ast_value.Literal.create(null, "string", segs[0])]));
-        });
+    var definePackage, importPackage, concat = Function.prototype.call.bind(Array.prototype.concat),
+        map = Function.prototype.call.bind(Array.prototype.map);
+    (importPackage = (function(path) {
+        var segs = path.split("::");
+        return segs.slice(1)
+            .reduce((function(p, c) {
+                return ast_expression.MemberExpression.create(null, p, ast_value.Literal.create(
+                    null, "string", c), true);
+            }), ast_expression.CallExpression.create(null, ast_value.Identifier.create(null,
+                "require"), [ast_value.Literal.create(null, "string", segs([0]))]));
+    }));
     (definePackage = (function(loc, exports, imports, targets, body) {
         var exportHeader = ast_declaration.VariableDeclaration.create(null, map(exports, (function(x) {
             return ast_declaration.VariableDeclarator.create(null, ast_value.Identifier.create(
@@ -4884,21 +4393,23 @@ define('khepri/compile/package_manager/node',["require", "exports", "khepri_ast/
         return ast_statement.BlockStatement.create(body.loc, [ast_statement.ExpressionStatement.create(
                 null, ast_value.Literal.create(null, "string", "use strict")), ast_statement.WithStatement
             .create(null, map(imports, (function(x) {
-                return ast_declaration.Binding.create(null, x.pattern, path(x.from.value));
+                return ast_declaration.Binding.create(null, x.pattern, importPackage(x.from
+                    .value));
             })), ast_statement.BlockStatement.create(null, concat(exportHeader, body.body,
                 exportBody)))
         ]);
     }));
     (exports.definePackage = definePackage);
+    (exports.importPackage = importPackage);
 }));
 /*
  * THIS FILE IS AUTO GENERATED from 'lib/compile/transform.kep'
  * DO NOT EDIT
 */
-define('khepri/compile/transform',["require", "exports", "ecma_ast/clause", "ecma_ast/declaration", "ecma_ast/expression", "ecma_ast/node",
-    "ecma_ast/program", "ecma_ast/statement", "ecma_ast/value", "khepri_ast/clause", "khepri_ast/declaration",
-    "khepri_ast/expression", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/program", "khepri_ast/statement",
-    "khepri_ast/value", "khepri/compile/package_manager/amd", "khepri/compile/package_manager/node"
+define('khepri/compile/transform',["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression", "ecma-ast/node",
+    "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause", "khepri-ast/declaration",
+    "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/program", "khepri-ast/statement",
+    "khepri-ast/value", "./package_manager/amd", "./package_manager/node"
 ], (function(require, exports, ecma_clause, ecma_declaration, ecma_expression, ecma_node, ecma_program,
     ecma_statement, ecma_value, khepri_clause, khepri_declaration, khepri_expression, khepri_node,
     khepri_pattern, khepri_program, khepri_statement, khepri_value, _, _0) {
@@ -4925,7 +4436,7 @@ define('khepri/compile/transform',["require", "exports", "ecma_ast/clause", "ecm
             }
             return false;
         }),
-        expressionStatement, _transform, identifier = (function(loc, name) {
+        expressionStatement, _transform, packageManager, identifier = (function(loc, name) {
             return ecma_value.Identifier.create(loc, name);
         }),
         stringLiteral = (function(loc, value) {
@@ -4954,11 +4465,11 @@ define('khepri/compile/transform',["require", "exports", "ecma_ast/clause", "ecm
                         return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target,
                             f)));
                     case "ObjectPattern":
-                        return flatten(map((function(__o) {
+                        return map((function(__o) {
                             var target = __o["target"],
                                 key = __o["key"];
-                            return objectElementUnpack(pattern.ud.id, target, key, f);
-                        }), pattern.elements));
+                            return flatten(objectElementUnpack(pattern.ud.id, target, key, f));
+                        }), pattern.elements);
                     default:
                         return [];
                 }
@@ -4991,17 +4502,17 @@ define('khepri/compile/transform',["require", "exports", "ecma_ast/clause", "ecm
     }),
         withStatement = (function(loc, bindings, body) {
             var vars = flatten(map((function(imp) {
-                var base = ((imp.type === "ImportPattern") ? callExpression(null, identifier(
-                    null, "require"), [imp.from]) : imp.value);
+                var base = ((imp.type === "ImportPattern") ? packageManager.importPackage(imp.from
+                    .value) : imp.value);
                 return unpack(imp.pattern, base);
             }), bindings)),
                 prefix = variableDeclaration(null, vars);
             return blockStatement(loc, concat(prefix, body.body));
         }),
         functionExpression = (function(loc, id, parameters, body) {
-            var params = _transform(filter((function(x) {
-                return (x.type !== "EllipsisPattern");
-            }), parameters.elements)),
+            var params = filter((function(x) {
+                return _transform((x.type !== "EllipsisPattern"));
+            }), parameters.elements),
                 elementsPrefix = flatten(map((function(x) {
                     switch (x.type) {
                         case "IdentifierPattern":
@@ -5069,7 +4580,7 @@ define('khepri/compile/transform',["require", "exports", "ecma_ast/clause", "ecm
                         identifier(null, "arguments")
                     ])]))])))])), [f, g]);
         }),
-        packageManager, packageBlock = (function(loc, exports, body) {
+        packageBlock = (function(loc, exports, body) {
             var imports = ((body.type === "WithStatement") ? filter((function(x) {
                 return (x.type === "ImportPattern");
             }), body.bindings) : []),
@@ -5152,7 +4663,16 @@ define('khepri/compile/transform',["require", "exports", "ecma_ast/clause", "ecm
         return assignmentExpression(node.loc, node.operator, node.left, node.right);
     }));
     addTransform("UnaryExpression", (function(node) {
-        return ecma_expression.UnaryExpression.create(node.loc, node.operator, _transform(node.argument));
+        var op = node.operator;
+        switch (op) {
+            case "++":
+                (op = "+");
+                break;
+            case "--":
+                (op = "-");
+                break;
+        }
+        return ecma_expression.UnaryExpression.create(node.loc, op, _transform(node.argument));
     }));
     addTransform("BinaryExpression", (function(node) {
         switch (node.operator) {
@@ -5262,19 +4782,20 @@ define('khepri/compile/transform',["require", "exports", "ecma_ast/clause", "ecm
         return packageBlock(node.loc, node.exports, node.body);
     }));
     (_transform = (function(node) {
-        if (!node) return node;
+        if ((!node)) return node;
         if (Array.isArray(node)) return map(_transform, node);
-        if (!(node instanceof khepri_node.Node)) return node;
-        var t = transformers[node.type];
-        if (!t) return node;
+        if ((!(node instanceof khepri_node.Node))) return node;
+        var t = transformers([node.type]);
+        if ((!t)) return node;
         return t(node);
     }));
     (transform = (function(__o) {
         var options = __o["options"],
-            ast = __o["ast"];
-        (packageManager = require("khepri/compile/package_manager/amd"));
-        if ((options.package_manager === "node"))(packageManager = require(
-            "khepri/compile/package_manager/node"));
+            ast = __o["ast"],
+            amd_manager = require("./package_manager/amd"),
+            node_manager = require("./package_manager/node");
+        (packageManager = amd_manager);
+        if ((options.package_manager === "node"))(packageManager = node_manager);
         return ({
             "options": options,
             "ast": _transform(ast)
@@ -5625,17 +5146,17 @@ define('neith/zipper',["require", "exports", "nu-stream/stream", "nu-stream/sele
     (exports.appendChild = appendChild);
     (exports.zipper = zipper);
 }));
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/tree.kep'
+ * DO NOT EDIT
+*/
 define('neith/tree',["require", "exports", "./zipper", "nu-stream/stream", "nu-stream/select"], (function(require, exports, zipper,
     stream, __o) {
     
-    var edgePath, nodePath, node, edge, childNode, parentNode, childNodes, child, nthChild, sibling, setNode,
-            modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild, appendChild, treeZipper;
-    var zipper = zipper,
-        right = zipper["right"],
+    var right = zipper["right"],
         left = zipper["left"],
         up = zipper["up"],
         down = zipper["down"],
-        stream = stream,
         cons = stream["cons"],
         first = stream["first"],
         foldl = stream["foldl"],
@@ -5643,98 +5164,95 @@ define('neith/tree',["require", "exports", "./zipper", "nu-stream/stream", "nu-s
         isStream = stream["isStream"],
         map = stream["map"],
         toArray = stream["toArray"],
-        __o = __o,
-        skip = __o["skip"];
-    var toStream = (function(s) {
-        return (isStream(s) ? s : stream.from(s));
-    });
-    var indexOf = (function(e, s) {
-        return foldl((function(p, __o0) {
-            var i = __o0[0],
-                c = __o0[1];
-            return ((p >= 0) ? p : ((c === e) ? i : p));
-        }), -1, indexed(s));
-    });
-    var Pair = (function(key, value) {
+        skip = __o["skip"],
+        Pair, pairKey, pairValue, edgePath, nodePath, node, edge, childNode, parentNode, childNodes, child,
+            nthChild, sibling, setNode, modifyNode, setEdge, modifyEdge, insertLeft, insertRight, insertChild,
+            appendChild, treeZipper, toStream = (function(s) {
+                return (isStream(s) ? s : stream.from(s));
+            }),
+        indexOf = (function(e, s) {
+            return foldl((function(p, __o0) {
+                var i = __o0[0],
+                    c = __o0[1];
+                return ((p >= 0) ? p : ((c === e) ? i : p));
+            }), -1, indexed(s));
+        });
+    (Pair = (function(key, value) {
         return ({
             "key": key,
             "value": value
         });
-    });
-    var key = (function(__o0) {
+    }));
+    (pairKey = (function(__o0) {
         var key = __o0["key"];
         return key;
-    });
-    var value = (function(__o0) {
+    }));
+    (pairValue = (function(__o0) {
         var value = __o0["value"];
         return value;
-    });
+    }));
     (node = (function(f, g) {
         return (function(x) {
             return f(g(x));
         });
-    })(value, zipper.extract));
+    })(pairValue, zipper.extract));
     (edge = (function(f, g) {
         return (function(x) {
             return f(g(x));
         });
-    })(key, zipper.extract));
-    (edgePath = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(map.bind(null, key), zipper.path));
+    })(pairKey, zipper.extract));
     (nodePath = (function(f, g) {
         return (function(x) {
             return f(g(x));
         });
-    })(map.bind(null, value), zipper.path));
+    })(map.bind(null, pairValue), zipper.path));
+    (edgePath = (function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })(map.bind(null, pairKey), zipper.path));
     (parentNode = (function(f, g) {
         return (function(x) {
             return f(g(x));
         });
-    })(value, zipper.parent));
+    })(pairValue, zipper.parent));
     (childNodes = (function(f, g) {
         return (function(x) {
             return f(g(x));
         });
-    })(map.bind(null, value), zipper.children));
+    })(map.bind(null, pairValue), zipper.children));
     (childNode = (function(edge, ctx) {
         var c = child(edge, ctx);
         return (c ? node(c) : null);
     }));
-    (nthChild = (function() {
-            var goRight = (function(ctx, count) {
-                return ((count <= 0) ? ctx : goRight(right(ctx), (count - 1)));
-            });
-            return (function(index, ctx) {
-                var child = down(ctx);
-                return (child ? goRight(child, index) : null);
-            });
-        })
-        .call(this));
+    var goRight = (function(ctx, count) {
+        return ((count <= 0) ? ctx : goRight(right(ctx), (count - 1)));
+    });
+    (nthChild = (function(index, ctx) {
+        var child = down(ctx);
+        return (child ? goRight(child, index) : null);
+    }));
     (child = (function(edge, ctx) {
         return (!ctx ? null : (function() {
-                var children = zipper.children(ctx),
-                    index = indexOf(edge, map(key, children));
-                return ((index === -1) ? null : nthChild(index, ctx));
-            })
-            .call(this));
+            var children = zipper.children(ctx),
+                index = indexOf(edge, map(pairKey, children));
+            return ((index === -1) ? null : nthChild(index, ctx));
+        })());
     }));
     (sibling = (function(edge, ctx) {
         return child(edge, up(ctx));
     }));
     (setNode = (function(node, ctx) {
-        return zipper.replace(Pair(key(zipper.extract(ctx)), node), ctx);
+        return zipper.replace(Pair(edge(ctx), node), ctx);
     }));
     (modifyNode = (function(f, ctx) {
         return setNode(f(node(ctx)), ctx);
     }));
     (setEdge = (function(edge, ctx) {
-        return zipper.replace(Pair(key(zipper.extract(ctx)), node), ctx);
+        return zipper.replace(Pair(edge, node(ctx)), ctx);
     }));
     (modifyEdge = (function(f, ctx) {
-        return setNode(f(edge(ctx)), ctx);
+        return setEdge(f(edge(ctx)), ctx);
     }));
     (insertLeft = (function(edge, node, ctx) {
         return zipper.insertLeft(Pair(edge, node), ctx);
@@ -5748,28 +5266,29 @@ define('neith/tree',["require", "exports", "./zipper", "nu-stream/stream", "nu-s
     (appendChild = (function(edge, node, ctx) {
         return zipper.appendChild(Pair(edge, node), ctx);
     }));
-    (treeZipper = (function() {
-            var reducer = (function(p, __o0) {
-                var key = __o0["key"],
-                    value = __o0["value"];
-                (p[key] = value);
-                return p;
+    var reducer = (function(p, __o0) {
+        var key = __o0["key"],
+            value = __o0["value"];
+        if (!p.hasOwnProperty(key))(p[key] = value);
+        return p;
+    });
+    (treeZipper = (function(edges, getChild, constructNode, focus) {
+        var children = (function(__o0) {
+            var value = __o0["value"];
+            return map((function(x) {
+                return Pair(x, getChild(value, x));
+            }), toStream(edges(value)));
+        }),
+            _constructNode = (function(parent, children) {
+                return Pair(pairKey(parent), constructNode(pairValue(parent), children, (function() {
+                    return foldl(reducer, ({}), children);
+                })));
             });
-            return (function(edges, getChild, constructNode, focus) {
-                var children = (function(__o0) {
-                    var value = __o0["value"];
-                    return map((function(x) {
-                        return Pair(x, getChild(value, x));
-                    }), toStream(edges(value)));
-                }),
-                    _constructNode = (function(parent, children) {
-                        return Pair(key(parent), constructNode(value(parent), children, toArray(map(
-                            key, children)), foldl(reducer, ({}), children)));
-                    });
-                return zipper.zipper(children, _constructNode, Pair(null, focus));
-            });
-        })
-        .call(this));
+        return zipper.zipper(children, _constructNode, Pair(null, focus));
+    }));
+    (exports.Pair = Pair);
+    (exports.pairKey = pairKey);
+    (exports.pairValue = pairValue);
     (exports.edgePath = edgePath);
     (exports.nodePath = nodePath);
     (exports.node = node);
@@ -5790,37 +5309,30 @@ define('neith/tree',["require", "exports", "./zipper", "nu-stream/stream", "nu-s
     (exports.appendChild = appendChild);
     (exports.treeZipper = treeZipper);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/khepri_zipper.kep'
- * DO NOT EDIT
-*/
-define('khepri_ast_zipper/khepri_zipper',["require", "exports", "neith/tree", "khepri_ast/node"], (function(require, exports, __o, __o0) {
+define('khepri-ast-zipper',["require", "exports", "nu-stream/gen", "nu-stream/stream", "neith/tree", "khepri-ast/node"], (function(require,
+    exports, __o, __o0, __o1, __o2) {
     
-    var khepriZipper;
-    var __o = __o,
-        treeZipper = __o["treeZipper"],
-        __o0 = __o0,
-        Node = __o0["Node"],
-        modify = __o0["modify"];
-    var range = (function(end) {
-        var a = [];
-        for (var i = 0;
-            (i < end);
-            (i = (i + 1)))(a[i] = i);
-        return a;
-    });
-    var joinKeys = (function(children, values) {
-        return children.reduce((function(p, c) {
-            (p[c] = values[c]);
-            return p;
-        }), []);
-    });
+    var range = __o["range"],
+        foldl = __o0["foldl"],
+        from = __o0["from"],
+        NIL = __o0["NIL"],
+        treeZipper = __o1["treeZipper"],
+        Node = __o2["Node"],
+        modify = __o2["modify"],
+        khepriZipper, buildArray = (function(pairs) {
+            return foldl((function(p, __o3) {
+                var key = __o3["key"],
+                    value = __o3["value"];
+                (p[key] = value);
+                return p;
+            }), [], pairs);
+        });
     (khepriZipper = treeZipper.bind(null, (function(node) {
-        return (!node ? [] : (Array.isArray(node) ? range(node.length) : node.children));
+        return (node ? (Array.isArray(node) ? range(0, node.length) : from(node.children)) : NIL);
     }), (function(n, k) {
         return n[k];
-    }), (function(node, _, children, values) {
-        return ((node instanceof Node) ? modify(node, values, ({})) : joinKeys(children, values));
+    }), (function(node, pairs, values) {
+        return ((node instanceof Node) ? modify(node, values(), ({})) : buildArray(pairs));
     })));
     (exports.khepriZipper = khepriZipper);
 }));
@@ -5989,10 +5501,10 @@ define('khepri/compile/scope',["require", "exports"], (function(require, exports
     }));
     (Scope.prototype.getUnusedId = (function(id) {
         var self = this;
-        if (!self.hasBinding(id)) return id;
+        if ((!self.hasBinding(id))) return id;
         for (var i = 0;;
             (i = (i + 1)))
-            if (!self.hasBinding((id + i))) return (id + i);
+            if ((!self.hasBinding((id + i)))) return (id + i);
     }));
     (Scope.addBinding = (function(s, id, info) {
         return new(Scope)(defineProperty(s.record, id, ({
@@ -6035,8 +5547,8 @@ define('khepri/compile/scope',["require", "exports"], (function(require, exports
  * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
  * DO NOT EDIT
 */
-define('khepri/compile/lexical',["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value", "neith/zipper", "neith/tree",
-    "khepri_ast_zipper/khepri_zipper", "bes/record", "bes/object", "khepri/compile/scope"
+define('khepri/compile/lexical',["require", "exports", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/value", "neith/zipper", "neith/tree",
+    "khepri-ast-zipper", "bes/record", "bes/object", "./scope"
 ], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, record, object, __o0) {
     
     var setUserData = ast_node["setUserData"],
@@ -6179,7 +5691,7 @@ define('khepri/compile/lexical',["require", "exports", "khepri_ast/node", "khepr
         }),
         checkCanAddOwnBinding = (function(id, loc) {
             return examineScope((function(s) {
-                return (!s.hasOwnBinding(id) ? pass : (function() {
+                return ((!s.hasOwnBinding(id)) ? pass : (function() {
                     var start = (loc && loc.start),
                         binding = s.getBinding(id),
                         end = (binding.loc && binding.loc.start);
@@ -6286,13 +5798,13 @@ define('khepri/compile/lexical',["require", "exports", "khepri_ast/node", "khepr
         });
     (_check = (function(node) {
         if (Array.isArray(node)) {
-            if (!node.length) return pass;
+            if ((!node.length)) return pass;
             return seq(move(zipper.down), seqa(map(node, (function(_, i) {
                 return ((i === (node.length - 1)) ? checkTop : next(checkTop, move(
                     zipper.right)));
             }))), move(zipper.up));
         }
-        if (!(node instanceof ast_node.Node)) return pass;
+        if ((!(node instanceof ast_node.Node))) return pass;
         switch (node.type) {
             case "Program":
                 return checkChild("body");
@@ -6405,7 +5917,7 @@ define('khepri/compile/lexical',["require", "exports", "khepri_ast/node", "khepr
             case "ArrayPattern":
             case "ObjectPattern":
                 return examineScope((function(s) {
-                    if ((!node.ud || !node.ud.id)) {
+                    if (((!node.ud) || (!node.ud.id))) {
                         var unused = s.getUnusedId("__o"),
                             id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
                                 .create(null, unused));
@@ -6468,8 +5980,12 @@ define('khepri/compile/lexical',["require", "exports", "khepri_ast/node", "khepr
     (exports.check = check);
     (exports.checkStage = checkStage);
 }));
-define('khepri/compile/khepri_peep',["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/khepri_zipper", "khepri_ast/node",
-    "khepri_ast/statement", "khepri_ast/expression", "khepri_ast/pattern", "khepri_ast/value"
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/khepri_peep.kep'
+ * DO NOT EDIT
+*/
+define('khepri/compile/khepri_peep',["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper", "khepri-ast/node",
+    "khepri-ast/statement", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_statement, ast_expression, ast_pattern, ast_value) {
     
     var khepriZipper = __o["khepriZipper"],
@@ -6530,7 +6046,7 @@ define('khepri/compile/khepri_peep',["require", "exports", "neith/tree", "neith/
         }), elements)), ud);
     }));
     addPeephole("ObjectPatternElement", (function(node) {
-        return !node.target;
+        return (!node.target);
     }), (function(node) {
         var loc = node["loc"],
             key = node["key"];
@@ -6546,9 +6062,14 @@ define('khepri/compile/khepri_peep',["require", "exports", "neith/tree", "neith/
         }
     }));
     addPeephole("CurryExpression", (function(node) {
-        return !node.args.length;
+        return (!node.args.length);
     }), (function(node) {
         return node.base;
+    }));
+    addPeephole("CurryExpression", (function(node) {
+        return (node.base.type === "CurryExpression");
+    }), (function(node) {
+        return ast_expression.CurryExpression.create(null, node.base.base, concat(node.base.args, node.args));
     }));
     addPeephole("BinaryExpression", (function(node) {
         return ((node.operator === "|>") && ((((node.right.type === "CurryExpression") || (node.right.type ===
@@ -6570,8 +6091,8 @@ define('khepri/compile/khepri_peep',["require", "exports", "neith/tree", "neith/
     }));
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {
-            if (!node) return node;
-            var transforms = (peepholes[node.type] || [])
+            if ((!node)) return node;
+            var transforms = (peepholes([node.type]) || [])
                 .filter((function(x) {
                     return x.condition(node);
                 }));
@@ -6592,37 +6113,30 @@ define('khepri/compile/khepri_peep',["require", "exports", "neith/tree", "neith/
     }));
     (exports.optimize = optimize);
 }));
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/ecma_zipper.kep'
- * DO NOT EDIT
-*/
-define('ecma_ast_zipper/ecma_zipper',["require", "exports", "neith/tree", "ecma_ast/node"], (function(require, exports, __o, __o0) {
+define('ecma-ast-zipper',["require", "exports", "nu-stream/gen", "nu-stream/stream", "neith/tree", "ecma-ast/node"], (function(require,
+    exports, __o, __o0, __o1, __o2) {
     
-    var ecmaZipper;
-    var __o = __o,
-        treeZipper = __o["treeZipper"],
-        __o0 = __o0,
-        Node = __o0["Node"],
-        modify = __o0["modify"];
-    var range = (function(end) {
-        var a = [];
-        for (var i = 0;
-            (i < end);
-            (i = (i + 1)))(a[i] = i);
-        return a;
-    });
-    var joinKeys = (function(children, values) {
-        return children.reduce((function(p, c) {
-            (p[c] = values[c]);
-            return p;
-        }), []);
-    });
+    var range = __o["range"],
+        foldl = __o0["foldl"],
+        from = __o0["from"],
+        NIL = __o0["NIL"],
+        treeZipper = __o1["treeZipper"],
+        Node = __o2["Node"],
+        modify = __o2["modify"],
+        ecmaZipper, buildArray = (function(pairs) {
+            return foldl((function(p, __o3) {
+                var key = __o3["key"],
+                    value = __o3["value"];
+                (p[key] = value);
+                return p;
+            }), [], pairs);
+        });
     (ecmaZipper = treeZipper.bind(null, (function(node) {
-        return (!node ? [] : (Array.isArray(node) ? range(node.length) : node.children));
+        return (node ? (Array.isArray(node) ? range(0, node.length) : from(node.children)) : NIL);
     }), (function(n, k) {
         return n[k];
-    }), (function(node, _, children, values) {
-        return ((node instanceof Node) ? modify(node, values, ({})) : joinKeys(children, values));
+    }), (function(node, pairs, values) {
+        return ((node instanceof Node) ? modify(node, values(), ({})) : buildArray(pairs));
     })));
     (exports.ecmaZipper = ecmaZipper);
 }));
@@ -6630,8 +6144,8 @@ define('ecma_ast_zipper/ecma_zipper',["require", "exports", "neith/tree", "ecma_
  * THIS FILE IS AUTO GENERATED from 'lib/compile/ecma_peep.kep'
  * DO NOT EDIT
 */
-define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zipper", "ecma_ast_zipper/ecma_zipper", "ecma_ast/node",
-    "ecma_ast/value", "ecma_ast/declaration", "ecma_ast/statement", "ecma_ast/expression"
+define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zipper", "ecma-ast-zipper", "ecma-ast/node", "ecma-ast/value",
+    "ecma-ast/declaration", "ecma-ast/statement", "ecma-ast/expression"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_value, ast_declaration, ast_statement, ast_expression) {
     
     var ecmaZipper = __o["ecmaZipper"],
@@ -6656,21 +6170,21 @@ define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zi
                 "up": up
             });
             types.forEach((function(type) {
-                (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
+                (peepholes[type] = (peepholes([type]) ? peepholes[type].concat(entry) : [entry]));
             }));
         });
     addPeephole(["VariableDeclaration"], false, (function(_) {
         return true;
     }), (function(node) {
         var declarations = node.declarations.filter((function(x) {
-            return !!x;
+            return (!(!x));
         }));
         return modify(node, ({
             "declarations": declarations
         }), ({}));
     }));
     addPeephole(["VariableDeclaration"], true, (function(node) {
-        return !node.declarations.length;
+        return (!node.declarations.length);
     }), (function(_) {
         return null;
     }));
@@ -6688,9 +6202,9 @@ define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zi
     }), (function(node) {
         return modify(node, ({
             "body": node.body.reduceRight((function(p, c) {
-                return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p[
-                    0].type === "VariableDeclaration")) ? concat(modify(c, ({
-                    "declarations": concat(c.declarations, p[0].declarations)
+                return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p(
+                    [0].type) === "VariableDeclaration")) ? concat(modify(c, ({
+                    "declarations": concat(c.declarations, p([0].declarations))
                 }), ({})), p.slice(1)) : concat(c, p));
             }), [])
         }), ({}));
@@ -6700,7 +6214,7 @@ define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zi
     }), (function(node) {
         return modify(node, ({
             "body": flatten(node.body.map((function(x) {
-                return ((!x || (x.type === "EmptyStatement")) ? [] : x);
+                return (((!x) || (x.type === "EmptyStatement")) ? [] : x);
             })))
         }), ({}));
     }));
@@ -6760,23 +6274,23 @@ define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zi
             left = __o1["left"],
             right = __o1["right"],
             value = arithmetic[operator](left.value, right.value);
-        return ast_value.Literal.create(null, typeof value, value);
+        return ast_value.Literal.create(null, (typeof value), value);
     }));
     var arithmetic0 = ({
         "!": (function(x) {
-            return !x;
+            return (!x);
         }),
         "~": (function(x) {
-            return~ x;
+            return (~x);
         }),
         "typeof": (function(x) {
-            return typeof x;
+            return (typeof x);
         }),
         "+": (function(x) {
-            return +x;
+            return (+x);
         }),
         "-": (function(x) {
-            return -x;
+            return (-x);
         })
     }),
         isPrimitive0 = (function(node) {
@@ -6791,15 +6305,15 @@ define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zi
         var operator = __o1["operator"],
             argument = __o1["argument"],
             value = arithmetic0[operator](argument.value);
-        return ast_value.Literal.create(null, typeof value, value);
+        return ast_value.Literal.create(null, (typeof value), value);
     }));
     var transform = (function(node) {
-        var transforms = (peepholes[node.type] || [])
+        var transforms = (peepholes([node.type]) || [])
             .filter((function(x) {
                 return x.condition(node);
             })),
             down = transforms.filter((function(x) {
-                return !x.up;
+                return (!x.up);
             })),
             up = transforms.filter((function(x) {
                 return x.up;
@@ -6809,16 +6323,16 @@ define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zi
         }), node);
     }),
         transformDown = (function(node) {
-            var transforms = (peepholes[node.type] || [])
+            var transforms = (peepholes([node.type]) || [])
                 .filter((function(x) {
-                    return (!x.up && x.condition(node));
+                    return ((!x.up) && x.condition(node));
                 }));
             return transforms.reduce((function(p, c) {
                 return c.map(p, transformDown);
             }), node);
         }),
         transformUp = (function(node) {
-            var transforms = (peepholes[node.type] || [])
+            var transforms = (peepholes([node.type]) || [])
                 .filter((function(x) {
                     return (x.up && x.condition(node));
                 }));
@@ -6854,9 +6368,8 @@ define('khepri/compile/ecma_peep',["require", "exports", "neith/tree", "neith/zi
     }));
     (exports.optimize = optimize);
 }));
-define('khepri/compile/compile',["require", "exports", "khepri/compile/lexical", "khepri/compile/transform", "khepri/compile/khepri_peep",
-    "khepri/compile/ecma_peep"
-], (function(require, exports, lexical, transform, khepri_peep, ecma_peep) {
+define('khepri/compile/compile',["require", "exports", "./lexical", "./transform", "./khepri_peep", "./ecma_peep"], (function(require, exports,
+    lexical, transform, khepri_peep, ecma_peep) {
     
     var compile;
     (compile = (function(f, g) {
@@ -6890,978 +6403,408 @@ define('khepri/compile/compile',["require", "exports", "khepri/compile/lexical",
     })))))));
     (exports.compile = compile);
 }));
-/**
- * @fileOverview ECMAScript 5.1 lex tokens.
- */
-define('ecma_ast/token',['ecma_ast/node'],
-function(node){
-
-
-/**
- * @constructor
- */
-var Token = function(loc, value) {
-    node.Node.call(this, loc);
-    this.value = value;
-};
-Token.prototype = new node.Node;
-
-/* Instances
- ******************************************************************************/
-/**
- * @constructor
- */
-var StringToken = node.defineNode(Token, 'String',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * @constructor
- */
-var NumberToken = node.defineNode(Token, 'Number',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * @constructor
- */
-var RegularExpressionToken = node.defineNode(Token, 'RegularExpression',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * @constructor
- */
-var BooleanToken = node.defineNode(Token, 'Boolean',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * @constructor
- */
-var NullToken = node.defineNode(Token, 'Null',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * 
- */
-var IdentifierToken = node.defineNode(Token, 'Identifier',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * @constructor
- */
-var KeywordToken = node.defineNode(Token, 'Keyword',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * 
- */
-var PunctuatorToken = node.defineNode(Token, 'Punctuator',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * @constructor
- */
-var CommentToken = node.defineNode(Token, 'Comment',
-    [],
-    ['value', 'multiline', 'linebreak'],
-    function(loc, value, multiline, linebreak) {
-        Token.call(this, loc, value);
-        this.multiline = !!multiline;
-        this.linebreak = !!linebreak;
-    });
-
-/**
- * @constructor
- */
-var WhitespaceToken = node.defineNode(Token, 'Whitespace',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/**
- * @constructor
- */
-var LineTerminatorToken = node.defineNode(Token, 'LineTerminator',
-    [],
-    ['value'],
-    function(loc, value) {
-        Token.call(this, loc, value);
-    });
-
-/* Export
- ******************************************************************************/
-return {
-    'Token': Token,
+define('ecma-ast/token',["require", "exports", "./node"], (function(require, exports, __o) {
     
-    'StringToken': StringToken,
-    'NumberToken': NumberToken,
-    'RegularExpressionToken': RegularExpressionToken,
-    'BooleanToken': BooleanToken,
-    'NullToken': NullToken,
+    var Node = __o["Node"],
+        defineNode = __o["defineNode"],
+        Token, StringToken, NumberToken, RegularExpressionToken, BooleanToken, NullToken, IdentifierToken,
+            KeywordToken, PunctuatorToken, CommentToken, WhitespaceToken, LineTerminatorToken;
+    (Token = (function(loc, value) {
+        var self = this;
+        Node.call(self, loc);
+        (self.value = value);
+    }));
+    (Token.prototype = new(Node)());
+    (StringToken = defineNode(Token, "String", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (NumberToken = defineNode(Token, "Number", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (RegularExpressionToken = defineNode(Token, "RegularExpression", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (BooleanToken = defineNode(Token, "Boolean", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (NullToken = defineNode(Token, "Null", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (IdentifierToken = defineNode(Token, "Identifier", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (KeywordToken = defineNode(Token, "Keyword", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (PunctuatorToken = defineNode(Token, "Punctuator", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (CommentToken = defineNode(Token, "Comment", [], ["value", "multiline", "linebreak"], (function(loc, value,
+        multiline, linebreak) {
+        var self = this;
+        Token.call(self, loc, value);
+        (self.multiline = !!multiline);
+        (self.linebreak = !!linebreak);
+    })));
+    (WhitespaceToken = defineNode(Token, "Whitespace", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (LineTerminatorToken = defineNode(Token, "LineTerminator", [], ["value"], (function(loc, value) {
+        var self = this;
+        Token.call(self, loc, value);
+    })));
+    (exports.Token = Token);
+    (exports.StringToken = StringToken);
+    (exports.NumberToken = NumberToken);
+    (exports.RegularExpressionToken = RegularExpressionToken);
+    (exports.BooleanToken = BooleanToken);
+    (exports.NullToken = NullToken);
+    (exports.IdentifierToken = IdentifierToken);
+    (exports.KeywordToken = KeywordToken);
+    (exports.PunctuatorToken = PunctuatorToken);
+    (exports.CommentToken = CommentToken);
+    (exports.WhitespaceToken = WhitespaceToken);
+    (exports.LineTerminatorToken = LineTerminatorToken);
+}));
+define('ecma-unparse/unparse',["require", "exports", "nu-stream/stream", "nu-stream/gen", "ecma-ast/token", "ecma-ast/node"], (function(
+    require, exports, stream, gen, token, node) {
     
-    'IdentifierToken': IdentifierToken,
-    'KeywordToken': KeywordToken,
-    'PunctuatorToken': PunctuatorToken,
-    
-    'CommentToken': CommentToken,
-    'WhitespaceToken': WhitespaceToken,
-    'LineTerminatorToken': LineTerminatorToken
-};
-
-});
-/**
- * @fileOverview Transforming an AST into a stream of tokens.
- */
-define('ecma-unparse/unparse',['nu-stream/stream',
-        'nu-stream/gen',
-        'ecma_ast/token',
-        'ecma_ast/node'],
-function(stream,
-        gen,
-        token,
-        node){
-
-var slice = Array.prototype.slice;
-
-/* Stream Utilities
- ******************************************************************************/
-/**
- * Joins an array of objects into a stream with a given joiner object.
- */
-var join = function(arr, joiner) {
-    if (arr.length === 0) {
-        return stream.end;
-    } else if (arr.length === 1) {
-        return arr[0];
-    } else {
-        return stream.append(arr[0], stream.cons(joiner, join(arr.slice(1), joiner)));
-    }
-};
-
-/**
- * Joins an array of objects into a stream with a stream joiner object.
- */
-var joins = function(arr, joiner) {
-    if (arr.length === 0) {
-        return stream.end;
-    } else if (arr.length === 1) {
-        return arr[0];
-    } else {
-        return stream.append(arr[0], stream.append(joiner, joins(arr.slice(1), joiner)));
-    }
-};
-
-/* Token
- ******************************************************************************/
-var keyword = function(x) {
-    return new token.KeywordToken(null, x);
-};
-
-var identifier = function(x) {
-    return new token.IdentifierToken(null, x);
-};
-
-var lineTerminator = function(x) {
-    return new token.LineTerminatorToken(null, (x === undefined ? '\n' : x));
-};
-
-var punctuator = function(x) {
-    return new token.PunctuatorToken(null, x);
-};
-
-var whitespace = function(x) {
-    return new token.WhitespaceToken(null, (x === undefined ? ' ' : x));
-};
-
-/* 
- ******************************************************************************/
-var seq = function(/*...*/) {
-    if (arguments.length === 0) {
-        return stream.end;
-    }
-    
-    var first = arguments[0],
-        rest = seq.apply(undefined, slice.call(arguments, 1));
-
-    if (first === undefined || stream.isEmpty(first)) {
-        return rest;
-    } else if (stream.isStream(first)) {
-        return stream.append(first, rest);
-    } else {
-        return stream.cons(first, rest)
-    }
-};
-
-/* 
- ******************************************************************************/
-var statement = function(/*...*/) {
-    return seq(
-        seq.apply(undefined, arguments),
-        lineTerminator());
-};
-
-var expression = function(/*...*/) {
-    return seq.apply(undefined, arguments);
-};
-
-var declaration = function(/*...*/) {
-    return seq.apply(undefined, arguments);
-};
-
-var clause = function(/*...*/) {
-    return seq(
-        seq.apply(undefined, arguments),
-        lineTerminator());
-};
-
-var value = function(/*...*/) {
-    return seq.apply(undefined, arguments);
-};
-
-
-/* Unparsing
- ******************************************************************************/
-var program = function(body) {
-    return seq.apply(undefined, body);
-}; 
-
-var variableDeclaration = function(declarations) {
-    return statement(
-        keyword('var'),
-        whitespace(),
-        join(declarations, punctuator(',')),
-        punctuator(';'));
-};
-
-var variableDeclarator = function(id, init) {
-    return declaration(
-        id,
-        (init ?
-            seq(
-                whitespace(),
-                punctuator('='),
-                whitespace(),
-                init) :
-            stream.end));
-};
-
-var functionExpression = function(id, params, body) {
-    return expression(
-        punctuator('('),
-        keyword('function'),
-        (id ?
-            seq(
-                whitespace(),
-                id):
-            stream.end),
-        punctuator('('),
-        joins(params, seq(
-            punctuator(','),
-            whitespace())),
-        punctuator(')'),
-        whitespace(),
-        body,
-        punctuator(')'));
-};
-
-var functionDeclaration = function(id, params, body) {
-    return functionExpression(id, params, body);
-};
-
-var switchCase = function(test, consequent) {
-    return seq(
-        (test ?
-            seq(
-                keyword('case'),
-                whitespace(),
-                test) :
-            keyword('default')),
-        punctuator(':'),
-            lineTerminator(),
-            seq.apply(undefined, consequent));
-};
-
-var catchClause = function(param, body) {
-    return seq(
-        keyword('catch'),
-        punctuator('('),
-        param,
-        punctuator(')'),
-        body);
-};
-
-/* Statement Unparsing
- ******************************************************************************/
-var emptyStatement = function(){
-    return statement(
-        punctuator(';'));
-};
-
-var debuggerStatement = function() {
-    return statement(
-        keyword('debugger'),
-        punctuator(';'));
-};
-
-var blockStatement = function(body) {
-    return statement(
-        punctuator('{'),
-        lineTerminator(),
-        seq.apply(undefined, body),
-        punctuator('}'));
-};
-
-var expressionStatement = function(expression) {
-    return statement(
-        expression,
-        punctuator(';'));
-};
-
-var ifStatement = function(test, consequent, alternate) {
-    return statement(
-        keyword('if'),
-        whitespace(),
-        punctuator('('),
-        test,
-        punctuator(')'),
-        consequent,
-        (!alternate ? stream.end :
-            seq(
-                keyword('else'),
-                whitespace(),
-                alternate)));
-};
-
-var labeledStatement = function(label, body) {
-    return statement(
-        identifier(label),
-        punctuator(':'),
-        body);
-};
-
-var breakStatement = function(label) {
-    return statement(
-        keyword('break'),
-        whitespace(),
-        label,
-        punctuator(';'));
-};
-
-var continueStatement = function(label) {
-    return statement(
-        keyword('continue'),
-        whitespace(),
-        label,
-        punctuator(';'));
-};
-
-var withStatement = function(obj, body) {
-    return statement(
-        keyword('with'),
-        punctuator('('),
-        object,
-        punctuator(')'),
-        punctuator('{'),
-        body,
-        punctuator('}'));
-};
-
-var switchStatement = function(discriminant, cases) {
-    return statement(
-        keyword('switch'),
-        punctuator('('),
-        discriminant,
-        punctuator(')'),
-        punctuator('{'),
-        lineTerminator(),
-        seq.apply(undefined, cases),
-        punctuator('}'));
-};
-
-var returnStatement = function(argument) {
-    return statement(
-        keyword('return'),
-        whitespace(),
-        argument,
-        punctuator(';'));
-};
-
-var throwStatement = function(argument) {
-    return statement(
-        keyword('throw'),
-        whitespace(),
-        argument,
-        punctuator(';'));
-};
-
-var tryStatement = function(block, handler, finalizer) {
-    return statement(
-        keyword('try'),
-        block,
-        (handler ?
-            handler:
-            stream.end),
-        (finalizer ?
-            seq(
-                keyword('finally'),
-                finalizer) :
-            stream.end));
-};
-
-var whileStatement = function(test, body) { 
-    return statement(
-        keyword('while'),
-        punctuator('('),
-        test,
-        punctuator(')'),
-        body);
-};
-
-var doWhileStatement = function(body, test) {
-    return statement(
-        keyword('do'),
-        body,
-        keyword('while'),
-        punctuator('('),
-        test,
-        punctuator(')'),
-        punctuator(';'));
-};
-
-var forDeclarationStatement = function(init, test, update, body) {
-    return statement(
-        keyword('for'),
-        punctuator('('),
-        init,
-        whitespace(),
-        test,
-        punctuator(';'),
-        update,
-        punctuator(')'),
-        body);
-};
-
-var forStatement = function(init, test, update, body) {
-    return statement(
-        keyword('for'),
-        punctuator('('),
-        init,
-        punctuator(';'),
-        test,
-        punctuator(';'),
-        update,
-        punctuator(')'),
-        body);
-};
-
-var forInStatement = function(left, right) {
-    return statement(
-        keyword('for'),
-        punctuator('('),
-        node.left,
-        punctuator('in'),
-        node.right,
-        punctuator(')'),
-        node.body);
-};
-
-
-
-/* Expression Unparsing
- ******************************************************************************/
-var thisExpression = function() {
-    return expression(
-        keyword('this'));
-};
-
-var sequenceExpression = function(expressions) {
-    return expression(
-        join(expressions, punctuator(',')));
-};
-
-var unaryExpression = function(op, arg) {
-    return expression(
-        op,
-        whitespace(),
-        arg);
-};
-
-var binaryExpression = function(op, left, right) {
-    return expression(
-        punctuator('('),
-        left,
-        whitespace(),
-        op,
-        whitespace(),
-        right,
-        punctuator(')'));
-};
-    
-var updateExpression = function(op, arg, prefix){
-    return (prefix ?
-        expression(op, arg) :
-        expression(arg, op));
-};
-
-var conditionalExpression = function(test, consequent, alternate) {
-    return expression(
-        punctuator('('),
-        test,
-        whitespace(),
-        punctuator('?'),
-        whitespace(),
-        consequent,
-        whitespace(),
-        punctuator(':'),
-        whitespace(),
-        alternate,
-        punctuator(')'));
-};
-
-var newExpression = function(callee, args) {
-    return expression(
-        keyword('new'),
-        whitespace(),
-        punctuator('('),
-        callee,
-        punctuator(')'),
-        (args ?
-            seq(
-                punctuator('('),
-                joins(args, seq(
-                    punctuator(','),
-                    whitespace())),
-                punctuator(')')) :
-            stream.end));
-};
-
-var callExpression = function(callee, args) {
-    return expression(
-        callee,
-        punctuator('('),
-        joins(args, seq(
-            punctuator(','),
-            whitespace())),
-        punctuator(')'));
-};
-
-var memberExpression = function(obj, property, computed) {
-    return (computed ?
-        expression(
-            obj,
-            punctuator('['),
-            property,
-            punctuator(']')) :
-        expression(
-            obj,
-            punctuator('.'),
-                property));
-};
- 
-var arrayExpression = function(elements) {
-    return expression(
-        punctuator('['),
-        joins(elements, seq(
-            punctuator(','),
-            whitespace())),
-        punctuator(']'));
-};
-
-var objectExpression = function(props) {
-     return expression(
-        punctuator('('),
-        punctuator('{'),
-        (props && props.length ? 
-            seq(
-                lineTerminator(),
-                joins(props, seq(
-                    punctuator(','),
-                    lineTerminator())),
-                lineTerminator()) :
-            stream.end),
-        punctuator('}'),
-        punctuator(')'));
-};
-
-var objectGetExpression = function(key, body) {
-    return seq(
-        identifier('get'),
-        whitespace(),
-        key,
-        punctuator('('),
-        punctuator(')'),
-        whitespace(),
-        body);
-};
-
-var objectSetExpression = function(key, params, body) {
-    return seq(
-        identifier('set'),
-        whitespace(),
-        key,
-        punctuator('('),
-        seq.apply(undefined, params),
-        punctuator(')'),
-        whitespace(),
-        body);
-};
-
-var objectValueExpression = function(key, value) {
-    return seq(
-        key,
-        punctuator(':'),
-        whitespace(),
-        value);
-};
-
-/* Value Unparsers
- ******************************************************************************/
-var identifier = function(name) {
-    return value(new token.IdentifierToken(null, name));
-}
-
-var string = function(x) {
-    return value(new token.StringToken(null, x));
-};
-
-var number= function(x) {
-    return value(new token.NumberToken(null, x));
-};
-
-var nil = function(x) {
-    return value(new token.NullToken(null, x));
-};
-
-var boolean = function(x) {
-    return value(new token.BooleanToken(null, x));
-};
-
-var regexp = function(x) {
-    return value(new token.RegularExpressionToken(null, x));
-};
-
-
-/* Unparsing
- ******************************************************************************/
-/**
- * Transforms a AST node to a stream of tokens.
- */
-var _unparse = function(node) {
-    if (!node) {
-        return stream.end;
-    }
-        
-    switch (node.type) {
-// clauses
-    case 'SwitchCase':
-        return switchCase(
-            (node.test ?
-                _unparse(node.test) :
-                null),
-            node.consequent.map(_unparse));
-   
-    case 'CatchClause':
-        return catchClause(
-            _unparse(node.param),
-            _unparse(node.body));
-    
-// Statement
-    case 'EmptyStatement':
-        return emptyStatement()
-        
-    case 'DebuggerStatement':
-        return debuggerStatement();
-    
-    case 'BlockStatement':
-        return blockStatement(
-            node.body.map(_unparse));
-        
-    case 'ExpressionStatement':
-        return expressionStatement(
-            _unparse(node.expression));
-    
-    case 'IfStatement':
-        return ifStatement(
-            _unparse(node.test),
-            _unparse(node.consequent),
-            (node.alternate ?
-                _unparse(node.alternate) :
-                null));
-        
-    case 'LabeledStatement':
-        return labeledStatement(
-            _unparse(node.label),
-            _unparse(node.body));
-        
-    case 'BreakStatement':
-        return breakStatement(
-           _unparse(node.label));
-        
-    case 'ContinueStatement':
-        return continueStatement(
-            _unparse(node.label));
-        
-    case 'WithStatement':
-        return withStatement(
-            _unparse(node.object),
-            _unparse(node.body));
-    
-    case 'SwitchStatement':
-        return switchStatement(
-            _unparse(node.discriminant),
-            node.cases.map(_unparse));
-    
-    case'ReturnStatement':
-        return returnStatement(
-            _unparse(node.argument));
-    
-    case 'ThrowStatement':
-        return throwStatement(
-            _unparse(node.argument));
-    
-    case 'TryStatement':
-        return tryStatement(
-            _unparse(node.block),
-            (node.handler ?
-                _unparse(node.handler) :
-                null),
-            (node.finalizer ?
-                _unparse(node.finalizer) :
-                null));
-    
-    case 'WhileStatement':
-        return whileStatement(
-            _unparse(node.test),
-            _unparse(node.body));
-    
-    case 'DoWhileStatement':
-        return doWhileStatement(
-            _unparse(node.body),
-            _unparse(node.test));
-    
-    case 'ForStatement':
-        var init = (node.init ? _unparse(node.init) : null);
-        var test = (node.test ? _unparse(node.test) : null);
-        var update = (node.update ? _unparse(node.update) : null);
-        var body = _unparse(node.body);
-        return (node.init && node.init.type ===  "VariableDeclaration" ?
-            forDeclarationStatement(init, test, update, body) :
-            forStatement(init, test, update, body));
-        
-    case 'ForInStatement':
-        return forInStatement(
-            _unparse(node.left),
-            _unparse(node.right),
-            _unparse(node.body));
-        
-// Expression
-    case 'ThisExpression':
-        return thisExpression();
-
-    case 'SequenceExpression':
-        return sequenceExpression(node.expressions.map(_unparse));
-    
-    case 'UnaryExpression':
-        return unaryExpression(
-            punctuator(node.operator),
-            _unparse(node.argument));
-        
-    case 'BinaryExpression':
-    case 'LogicalExpression':
-    case 'AssignmentExpression':
-        return binaryExpression(
-            punctuator(node.operator),
-            _unparse(node.left),
-            _unparse(node.right));
-
-    case 'UpdateExpression':
-        return updateExpression(
-            punctuator(node.operator),
-            _unparse(node.argument),
-            node.prefix);
-        
-    case 'ConditionalExpression':
-        return conditionalExpression(
-            _unparse(node.test),
-            _unparse(node.consequent),
-            _unparse(node.alternate));
-    
-    case 'NewExpression':
-        return newExpression(
-            _unparse(node.callee),
-            (node.args ?
-                node.args.map(_unparse) :
-                null));
-    
-    case 'CallExpression':
-        return callExpression(
-            _unparse(node.callee),
-            node.args.map(_unparse));
-        
-    case 'MemberExpression':
-        return memberExpression(
-            _unparse(node.object),
-            _unparse(node.property),
-            node.computed);
-        
-    case 'ArrayExpression':
-        return arrayExpression(node.elements.map(_unparse));
-    
-    case 'ObjectExpression':
-        return objectExpression(node.properties.map(_unparse));
-    
-    case 'ObjectValue':
-        return objectValueExpression(_unparse(node.key), _unparse(node.value));
-    
-    case 'ObjectGetter':
-        return objectGetExpression(_unparse(node.key), _unparse(node.value.body));
-        
-    case 'ObjectSetter':
-        return objectSetExpression(_unparse(node.key), node.value.params.map(_unparse), _unparse(node.value.body));
-
-// Function
-    case 'FunctionExpression':
-        return functionExpression(
-            (node.id ?
-                _unparse(node.id) :
-                null),
-            node.params.map(_unparse),
-            _unparse(node.body));
-        
-    case 'FunctionDeclaration':
-        return functionDeclaration(
-            _unparse(node.id),
-            node.params.map(_unparse),
-            _unparse(node.body));
-
-// Program
-    case 'Program':
-        return program(node.body.map(_unparse));
-
-// Declarations
-    case 'VariableDeclaration':
-        return variableDeclaration(node.declarations.map(_unparse));
-        
-    case 'VariableDeclarator':
-        return variableDeclarator(
-            _unparse(node.id),
-            (node.init ?
-                _unparse(node.init) :
-                null));
-
-// Value
-    case 'Identifier':
-        return identifier(node.name);
-    
-    case 'Literal':
-        switch (node.kind) {
-        case 'string':
-            return string(node.value);
-        case 'number':
-            return number(node.value);
-        case 'null':
-            return nil(node.value);
-        case 'boolean':
-            return boolean(node.value)
-        case 'regexp':
-            return regexp(node.value);
-        default:
-            return stream.end;
-        }
-        
-    default:
-        return stream.end;
-    }
-};
-
-/* Exported
- ******************************************************************************/
-
-
-/**
- * Transform an AST to a stream of tokens.
- * 
- * Returned stream inserts line terminators for pretty printing.
- * 
- * @param node Root of AST to unparse.
- * 
- * @return Stream of parse-ecma lex tokens.
- */
-var unparse = (function(){
-    var indent = function(ind, s) {
-        if (stream.isEmpty(s)) {
-            return s;
-        }
-        
-        var first = stream.first(s);
-        var rest = stream.rest(s);
-        
-        if (first.type === 'LineTerminator') {
-            if (!stream.isEmpty(rest)) {
-                var next = stream.first(rest);
-                if (next.type === 'Punctuator' && next.value === '}') {
-                    var padding = gen.repeat(ind - 4, whitespace());
-                    return stream.cons(first, stream.append(padding, indent(ind, rest)));
-                }
+    var unparse, slice = Array.prototype.slice,
+        join = (function(arr, joiner) {
+            if ((arr.length === 0)) return stream.end;
+            else if ((arr.length === 1)) return arr[0];
+            else return stream.append(arr[0], stream.cons(joiner, join(arr.slice(1), joiner)));
+        }),
+        joins = (function(arr, joiner) {
+            if ((arr.length === 0)) return stream.end;
+            else if ((arr.length === 1)) return arr[0];
+            else return stream.append(arr[0], stream.append(joiner, joins(arr.slice(1), joiner)));
+        }),
+        keyword = (function(x) {
+            return new(token.KeywordToken)(null, x);
+        }),
+        lineTerminator = (function(x) {
+            return new(token.LineTerminatorToken)(null, (x || "\n"));
+        }),
+        punctuator = (function(x) {
+            return new(token.PunctuatorToken)(null, x);
+        }),
+        whitespace = (function(x) {
+            return new(token.WhitespaceToken)(null, (x || " "));
+        }),
+        seq = (function() {
+            var args = arguments;
+            if ((args.length === 0)) return stream.end;
+            var first = args[0],
+                rest = seq.apply(undefined, slice.call(args, 1));
+            if (((first === undefined) || stream.isEmpty(first))) return rest;
+            else if (stream.isStream(first)) return stream.append(first, rest);
+            else return stream.cons(first, rest);
+        }),
+        statement = (function() {
+            var args = arguments;
+            return seq(seq.apply(undefined, args), lineTerminator());
+        }),
+        expression = (function() {
+            var args = arguments;
+            return seq.apply(undefined, args);
+        }),
+        declaration = (function() {
+            var args = arguments;
+            return seq.apply(undefined, args);
+        }),
+        clause = (function() {
+            var args = arguments;
+            return seq(seq.apply(undefined, args), lineTerminator());
+        }),
+        value = (function() {
+            var args = arguments;
+            return seq.apply(undefined, args);
+        }),
+        identifier = (function(name) {
+            return value(new(token.IdentifierToken)(null, name));
+        }),
+        string = (function(x) {
+            return value(new(token.StringToken)(null, x));
+        }),
+        number = (function(x) {
+            return value(new(token.NumberToken)(null, x));
+        }),
+        nil = (function(x) {
+            return value(new(token.NullToken)(null, x));
+        }),
+        boolean = (function(x) {
+            return value(new(token.BooleanToken)(null, x));
+        }),
+        regexp = (function(x) {
+            return value(new(token.RegularExpressionToken)(null, x));
+        }),
+        program = (function(body) {
+            return seq.apply(undefined, body);
+        }),
+        variableDeclaration = (function(declarations) {
+            return statement(keyword("var"), whitespace(), join(declarations, punctuator(",")), punctuator(
+                ";"));
+        }),
+        variableDeclarator = (function(id, init) {
+            return declaration(id, (init ? seq(whitespace(), punctuator("="), whitespace(), init) : stream.end));
+        }),
+        functionExpression = (function(id, params, body) {
+            return expression(punctuator("("), keyword("function"), (id ? seq(whitespace(), id) : stream.end),
+                punctuator("("), joins(params, seq(punctuator(","), whitespace())), punctuator(")"),
+                whitespace(), body, punctuator(")"));
+        }),
+        functionDeclaration = (function(id, params, body) {
+            return declaration(keyword("function"), whitespace(), punctuator("("), joins(params, seq(
+                punctuator(","), whitespace())), punctuator(")"), whitespace(), body);
+        }),
+        switchCase = (function(test, consequent) {
+            return seq((test ? seq(keyword("case"), whitespace(), test) : keyword("default")), punctuator(
+                ":"), lineTerminator(), seq.apply(undefined, consequent));
+        }),
+        catchClause = (function(param, body) {
+            return seq(keyword("catch"), punctuator("("), param, punctuator(")"), body);
+        }),
+        emptyStatement = (function() {
+            return statement(punctuator(";"));
+        }),
+        debuggerStatement = (function() {
+            return statement(keyword("debugger"), punctuator(";"));
+        }),
+        blockStatement = (function(body) {
+            return statement(punctuator("{"), lineTerminator(), seq.apply(undefined, body), punctuator("}"));
+        }),
+        expressionStatement = (function(expression) {
+            return statement(expression, punctuator(";"));
+        }),
+        ifStatement = (function(test, consequent, alternate) {
+            return statement(keyword("if"), whitespace(), punctuator("("), test, punctuator(")"),
+                consequent, (!alternate ? stream.end : seq(keyword("else"), whitespace(), alternate)));
+        }),
+        labeledStatement = (function(label, body) {
+            return statement(identifier(label), punctuator(":"), body);
+        }),
+        breakStatement = (function(label) {
+            return statement(keyword("break"), whitespace(), label, punctuator(";"));
+        }),
+        continueStatement = (function(label) {
+            return statement(keyword("continue"), whitespace(), label, punctuator(";"));
+        }),
+        withStatement = (function(obj, body) {
+            return statement(keyword("with"), punctuator("("), obj, punctuator(")"), punctuator("{"), body,
+                punctuator("}"));
+        }),
+        switchStatement = (function(discriminant, cases) {
+            return statement(keyword("switch"), punctuator("("), discriminant, punctuator(")"), punctuator(
+                "{"), lineTerminator(), seq.apply(undefined, cases), punctuator("}"));
+        }),
+        returnStatement = (function(argument) {
+            return statement(keyword("return"), whitespace(), argument, punctuator(";"));
+        }),
+        throwStatement = (function(argument) {
+            return statement(keyword("throw"), whitespace(), argument, punctuator(";"));
+        }),
+        tryStatement = (function(block, handler, finalizer) {
+            return statement(keyword("try"), block, (handler ? handler : stream.end), (finalizer ? seq(
+                keyword("finally"), finalizer) : stream.end));
+        }),
+        whileStatement = (function(test, body) {
+            return statement(keyword("while"), punctuator("("), test, punctuator(")"), body);
+        }),
+        doWhileStatement = (function(body, test) {
+            return statement(keyword("do"), body, keyword("while"), punctuator("("), test, punctuator(")"),
+                punctuator(";"));
+        }),
+        forDeclarationStatement = (function(init, test, update, body) {
+            return statement(keyword("for"), punctuator("("), init, whitespace(), test, punctuator(";"),
+                update, punctuator(")"), body);
+        }),
+        forStatement = (function(init, test, update, body) {
+            return statement(keyword("for"), punctuator("("), init, punctuator(";"), test, punctuator(";"),
+                update, punctuator(")"), body);
+        }),
+        forInStatement = (function(left, right) {
+            return statement(keyword("for"), punctuator("("), node.left, punctuator("in"), node.right,
+                punctuator(")"), node.body);
+        }),
+        thisExpression = (function() {
+            return expression(keyword("this"));
+        }),
+        sequenceExpression = (function(expressions) {
+            return expression(join(expressions, punctuator(",")));
+        }),
+        unaryExpression = (function(op, arg) {
+            return expression(punctuator("("), op, whitespace(), arg, punctuator(")"));
+        }),
+        binaryExpression = (function(op, left, right) {
+            return expression(punctuator("("), left, whitespace(), op, whitespace(), right, punctuator(")"));
+        }),
+        updateExpression = (function(op, arg, prefix) {
+            return (prefix ? expression(op, arg) : expression(arg, op));
+        }),
+        conditionalExpression = (function(test, consequent, alternate) {
+            return expression(punctuator("("), test, whitespace(), punctuator("?"), whitespace(),
+                consequent, whitespace(), punctuator(":"), whitespace(), alternate, punctuator(")"));
+        }),
+        newExpression = (function(callee, args) {
+            return expression(keyword("new"), whitespace(), punctuator("("), callee, punctuator(")"), (args ?
+                seq(punctuator("("), joins(args, seq(punctuator(","), whitespace())), punctuator(")")) :
+                stream.end));
+        }),
+        callExpression = (function(callee, args) {
+            return expression(callee, punctuator("("), joins(args, seq(punctuator(","), whitespace())),
+                punctuator(")"));
+        }),
+        memberExpression = (function(obj, property, computed) {
+            return (computed ? expression(obj, punctuator("["), property, punctuator("]")) : expression(obj,
+                punctuator("."), property));
+        }),
+        arrayExpression = (function(elements) {
+            return expression(punctuator("["), joins(elements, seq(punctuator(","), whitespace())),
+                punctuator("]"));
+        }),
+        objectExpression = (function(props) {
+            return expression(punctuator("("), punctuator("{"), ((props && props.length) ? seq(
+                lineTerminator(), joins(props, seq(punctuator(","), lineTerminator())),
+                lineTerminator()) : stream.end), punctuator("}"), punctuator(")"));
+        }),
+        objectGetExpression = (function(key, body) {
+            return seq(identifier("get"), whitespace(), key, punctuator("("), punctuator(")"), whitespace(),
+                body);
+        }),
+        objectSetExpression = (function(key, params, body) {
+            return seq(identifier("set"), whitespace(), key, punctuator("("), seq.apply(undefined, params),
+                punctuator(")"), whitespace(), body);
+        }),
+        objectValueExpression = (function(key, value) {
+            return seq(key, punctuator(":"), whitespace(), value);
+        }),
+        _unparse = (function(node) {
+            if (!node) return stream.end;
+            switch (node.type) {
+                case "SwitchCase":
+                    return switchCase((node.test ? _unparse(node.test) : null), node.consequent.map(
+                        _unparse));
+                case "CatchClause":
+                    return catchClause(_unparse(node.param), _unparse(node.body));
+                case "EmptyStatement":
+                    return emptyStatement();
+                case "DebuggerStatement":
+                    return debuggerStatement();
+                case "BlockStatement":
+                    return blockStatement(node.body.map(_unparse));
+                case "ExpressionStatement":
+                    return expressionStatement(_unparse(node.expression));
+                case "IfStatement":
+                    return ifStatement(_unparse(node.test), _unparse(node.consequent), (node.alternate ?
+                        _unparse(node.alternate) : null));
+                case "LabeledStatement":
+                    return labeledStatement(_unparse(node.label), _unparse(node.body));
+                case "BreakStatement":
+                    return breakStatement(_unparse(node.label));
+                case "ContinueStatement":
+                    return continueStatement(_unparse(node.label));
+                case "WithStatement":
+                    return withStatement(_unparse(node.object), _unparse(node.body));
+                case "SwitchStatement":
+                    return switchStatement(_unparse(node.discriminant), node.cases.map(_unparse));
+                case "ReturnStatement":
+                    return returnStatement(_unparse(node.argument));
+                case "ThrowStatement":
+                    return throwStatement(_unparse(node.argument));
+                case "TryStatement":
+                    return tryStatement(_unparse(node.block), (node.handler ? _unparse(node.handler) : null), (
+                        node.finalizer ? _unparse(node.finalizer) : null));
+                case "WhileStatement":
+                    return whileStatement(_unparse(node.test), _unparse(node.body));
+                case "DoWhileStatement":
+                    return doWhileStatement(_unparse(node.body), _unparse(node.test));
+                case "ForStatement":
+                    var init = (node.init ? _unparse(node.init) : null);
+                    var test = (node.test ? _unparse(node.test) : null);
+                    var update = (node.update ? _unparse(node.update) : null);
+                    var body = _unparse(node.body);
+                    return ((node.init && (node.init.type === "VariableDeclaration")) ?
+                        forDeclarationStatement(init, test, update, body) : forStatement(init, test, update,
+                            body));
+                case "ForInStatement":
+                    return forInStatement(_unparse(node.left), _unparse(node.right), _unparse(node.body));
+                case "ThisExpression":
+                    return thisExpression();
+                case "SequenceExpression":
+                    return sequenceExpression(node.expressions.map(_unparse));
+                case "UnaryExpression":
+                    return unaryExpression(punctuator(node.operator), _unparse(node.argument));
+                case "BinaryExpression":
+                case "LogicalExpression":
+                case "AssignmentExpression":
+                    return binaryExpression(punctuator(node.operator), _unparse(node.left), _unparse(node.right));
+                case "UpdateExpression":
+                    return updateExpression(punctuator(node.operator), _unparse(node.argument), node.prefix);
+                case "ConditionalExpression":
+                    return conditionalExpression(_unparse(node.test), _unparse(node.consequent), _unparse(
+                        node.alternate));
+                case "NewExpression":
+                    return newExpression(_unparse(node.callee), (node.args ? node.args.map(_unparse) : null));
+                case "CallExpression":
+                    return callExpression(_unparse(node.callee), node.args.map(_unparse));
+                case "MemberExpression":
+                    return memberExpression(_unparse(node.object), _unparse(node.property), node.computed);
+                case "ArrayExpression":
+                    return arrayExpression(node.elements.map(_unparse));
+                case "ObjectExpression":
+                    return objectExpression(node.properties.map(_unparse));
+                case "ObjectValue":
+                    return objectValueExpression(_unparse(node.key), _unparse(node.value));
+                case "ObjectGetter":
+                    return objectGetExpression(_unparse(node.key), _unparse(node.value.body));
+                case "ObjectSetter":
+                    return objectSetExpression(_unparse(node.key), node.value.params.map(_unparse),
+                        _unparse(node.value.body));
+                case "FunctionExpression":
+                    return functionExpression((node.id ? _unparse(node.id) : null), node.params.map(
+                        _unparse), _unparse(node.body));
+                case "FunctionDeclaration":
+                    return functionDeclaration(_unparse(node.id), node.params.map(_unparse), _unparse(node.body));
+                case "Program":
+                    return program(node.body.map(_unparse));
+                case "VariableDeclaration":
+                    return variableDeclaration(node.declarations.map(_unparse));
+                case "VariableDeclarator":
+                    return variableDeclarator(_unparse(node.id), (node.init ? _unparse(node.init) : null));
+                case "Identifier":
+                    return identifier(node.name);
+                case "Literal":
+                    switch (node.kind) {
+                        case "string":
+                            return string(node.value);
+                        case "number":
+                            return number(node.value);
+                        case "null":
+                            return nil(node.value);
+                        case "boolean":
+                            return boolean(node.value);
+                        case "regexp":
+                            return regexp(node.value);
+                        default:
+                            return stream.end;
+                    }
+                default:
+                    return stream.end;
             }
-            var padding = gen.repeat(ind, whitespace());
-            return stream.cons(first, stream.append(padding, indent(ind, rest)));
-        }
-        
-        if (first.type === 'Punctuator') {
-            switch  (first.value) {
-            case '{': ind += 4; break;
-            case '}': ind -= 4; break;
-            }
-        }
-        
-        return stream.stream(first, indent.bind(undefined, ind, stream.rest(s)));
-    };
-    
-    return function(node) {
-        return indent(0, _unparse(node));
-    };
-}());
-
-/* Export
- ******************************************************************************/
-return {
-    'unparse': unparse
-};
-
-});
+        });
+    (unparse = _unparse);
+    (exports.unparse = unparse);
+}));
 /*jshint curly:true, eqeqeq:true, laxbreak:true, noempty:false */
 /*NOTE: the exports at the end of this file were modified to make it work with r.js */
 /*
@@ -9501,50 +8444,47 @@ return {
 
 }());
 
-define('ecma-unparse/print',['nu-stream/stream', './beautify'],
-function(stream, beautify){
-
-/**
- * Transforms a stream of tokens to strings.
- */
-var print = (function(){
-    var mapper = function(x) {
-        if (!x)
-            return '';
-        
-        switch (x.type) {
-        case 'Null':
-            return 'null';
-        case 'Comment':
-            return "/*" + x.value + "*/";
-        case 'String':
-            return JSON.stringify(x.value)
-                .replace('\u2028', '\\u2028')
-                .replace('\u2029', '\\u2029');
-        default:
-            return x.value;
-        }
-    };
+define('ecma-unparse/print',["require", "exports", "nu-stream/stream", "./beautify"], (function(require, exports, __o, js_beautify) {
     
-    return function(s) {
-        return beautify(
-            stream.foldl(
-                function(p, c) { return p + c; },
-                '',
-                stream.map(mapper, s)),
-            {
-                'preserve_newlines': false,
-                "wrap_line_length": 120,
-                "break_chained_methods": true
-            });
-    };
-}());
-
-return {
-    'print': print
-};
-
-});
+    var foldl = __o["foldl"],
+        map = __o["map"],
+        print, join = foldl.bind(null, (function(x, y) {
+            return (x + y);
+        }), ""),
+        mapTokens = map.bind(null, (function(x) {
+            if (!x) return "";
+            switch (x.type) {
+                case "Null":
+                    return "null";
+                case "Comment":
+                    return (("/*" + x.value) + "*/");
+                case "String":
+                    return JSON.stringify(x.value)
+                        .replace("\u2028", "\\u2028")
+                        .replace("\u2029", "\\u2029");
+                default:
+                    return x.value;
+            }
+        })),
+        options = ({
+            "preserve_newlines": false,
+            "wrap_line_length": 120,
+            "break_chained_methods": true
+        }),
+        beautify = (js_beautify.js_beautify || js_beautify);
+    (print = (function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })((function(x) {
+        return beautify(x, options);
+    }), (function(f, g) {
+        return (function(x) {
+            return f(g(x));
+        });
+    })(join, mapTokens)));
+    (exports.print = print);
+}));
 require(['nu-stream/stream',
          'khepri/lex/lexer',
          'khepri/parse/parser',

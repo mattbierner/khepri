@@ -1,5 +1,5 @@
-define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri_ast/program",
-    "khepri/parse/common", "khepri/parse/statement_parser", "khepri/parse/package_parser"
+define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/program", "./common",
+    "./statement_parser", "./package_parser"
 ], (function(require, exports, __o, __o0, __o1, ast_program, __o2, _, _0) {
     "use strict";
     var always = __o["always"],
@@ -16,13 +16,13 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
         node = __o2["node"],
         sourceElement, sourceElements, program, statementParser = (function() {
             var args = arguments,
-                __o3 = require("khepri/parse/statement_parser"),
+                __o3 = require("./statement_parser"),
                 statement = __o3["statement"];
             return statement.apply(undefined, args);
         }),
         khepriPackage = (function() {
             var args = arguments,
-                __o3 = require("khepri/parse/package_parser"),
+                __o3 = require("./package_parser"),
                 khepriPackage = __o3["khepriPackage"];
             return khepriPackage.apply(undefined, args);
         });

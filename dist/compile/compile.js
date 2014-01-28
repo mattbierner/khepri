@@ -1,6 +1,5 @@
-define(["require", "exports", "khepri/compile/lexical", "khepri/compile/transform", "khepri/compile/khepri_peep",
-    "khepri/compile/ecma_peep"
-], (function(require, exports, lexical, transform, khepri_peep, ecma_peep) {
+define(["require", "exports", "./lexical", "./transform", "./khepri_peep", "./ecma_peep"], (function(require, exports,
+    lexical, transform, khepri_peep, ecma_peep) {
     "use strict";
     var compile;
     (compile = (function(f, g) {

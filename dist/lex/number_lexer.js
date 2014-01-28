@@ -51,10 +51,9 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
         return (function(x) {
             return f(g(x));
         });
-    })(always, (function(x, y) {
-            return (x - y);
-        })
-        .bind(null, 0)))), next(optional(null, positiveSign), unsignedInteger))));
+    })(always, (function(x) {
+        return (-x);
+    })))), next(optional(null, positiveSign), unsignedInteger))));
     var hexIntegerLiteralDigits = Parser("Hex Integer Literal Digits Lexer", bind(hexDigits, (function(num) {
         return always(parseInt(num, 16));
     })));
@@ -66,8 +65,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
         });
     })(always, parseInt))));
     (decimalLiteral = Parser("Decimal Literal Lexer", binds(enumeration(binds(enumeration(decimalDigits,
-        optional(0, next(decimal, optional(0, decimalDigits)))), (function(whole,
-        fractional) {
+        optional(0, attempt(next(decimal, decimalDigits)))), (function(whole, fractional) {
         return always(parseFloat(((whole + ".") + fractional)));
     })), optional(0, exponentPart)), (function(num, exp) {
         return always((num * Math.pow(10, parseInt(exp))));

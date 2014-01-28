@@ -1,5 +1,9 @@
-define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/khepri_zipper", "khepri_ast/node",
-    "khepri_ast/statement", "khepri_ast/expression", "khepri_ast/pattern", "khepri_ast/value"
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/khepri_peep.kep'
+ * DO NOT EDIT
+*/
+define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper", "khepri-ast/node",
+    "khepri-ast/statement", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_statement, ast_expression, ast_pattern, ast_value) {
     "use strict";
     var khepriZipper = __o["khepriZipper"],
@@ -60,7 +64,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
         }), elements)), ud);
     }));
     addPeephole("ObjectPatternElement", (function(node) {
-        return !node.target;
+        return (!node.target);
     }), (function(node) {
         var loc = node["loc"],
             key = node["key"];
@@ -76,9 +80,14 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
         }
     }));
     addPeephole("CurryExpression", (function(node) {
-        return !node.args.length;
+        return (!node.args.length);
     }), (function(node) {
         return node.base;
+    }));
+    addPeephole("CurryExpression", (function(node) {
+        return (node.base.type === "CurryExpression");
+    }), (function(node) {
+        return ast_expression.CurryExpression.create(null, node.base.base, concat(node.base.args, node.args));
     }));
     addPeephole("BinaryExpression", (function(node) {
         return ((node.operator === "|>") && ((((node.right.type === "CurryExpression") || (node.right.type ===
@@ -100,8 +109,8 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri_ast_zipper/k
     }));
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {
-            if (!node) return node;
-            var transforms = (peepholes[node.type] || [])
+            if ((!node)) return node;
+            var transforms = (peepholes([node.type]) || [])
                 .filter((function(x) {
                     return x.condition(node);
                 }));

@@ -2,8 +2,8 @@
  * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_ast/value", "neith/zipper", "neith/tree",
-    "khepri_ast_zipper/khepri_zipper", "bes/record", "bes/object", "khepri/compile/scope"
+define(["require", "exports", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/value", "neith/zipper", "neith/tree",
+    "khepri-ast-zipper", "bes/record", "bes/object", "./scope"
 ], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, record, object, __o0) {
     "use strict";
     var setUserData = ast_node["setUserData"],
@@ -146,7 +146,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         }),
         checkCanAddOwnBinding = (function(id, loc) {
             return examineScope((function(s) {
-                return (!s.hasOwnBinding(id) ? pass : (function() {
+                return ((!s.hasOwnBinding(id)) ? pass : (function() {
                     var start = (loc && loc.start),
                         binding = s.getBinding(id),
                         end = (binding.loc && binding.loc.start);
@@ -253,13 +253,13 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
         });
     (_check = (function(node) {
         if (Array.isArray(node)) {
-            if (!node.length) return pass;
+            if ((!node.length)) return pass;
             return seq(move(zipper.down), seqa(map(node, (function(_, i) {
                 return ((i === (node.length - 1)) ? checkTop : next(checkTop, move(
                     zipper.right)));
             }))), move(zipper.up));
         }
-        if (!(node instanceof ast_node.Node)) return pass;
+        if ((!(node instanceof ast_node.Node))) return pass;
         switch (node.type) {
             case "Program":
                 return checkChild("body");
@@ -372,7 +372,7 @@ define(["require", "exports", "khepri_ast/node", "khepri_ast/pattern", "khepri_a
             case "ArrayPattern":
             case "ObjectPattern":
                 return examineScope((function(s) {
-                    if ((!node.ud || !node.ud.id)) {
+                    if (((!node.ud) || (!node.ud.id))) {
                         var unused = s.getUnusedId("__o"),
                             id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
                                 .create(null, unused));

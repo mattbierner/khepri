@@ -1,10 +1,15 @@
-define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/stream"], (function(require, exports, parse,
-    __o, stream) {
+define(["require", "exports", "bennu/parse", "nu-stream/stream", "../position"], (function(require, exports, parse,
+    stream, __o) {
     "use strict";
     var always = parse["always"],
         bind = parse["bind"],
-        SourceLocation = __o["SourceLocation"],
+        binds = parse["binds"],
+        extract = parse["extract"],
+        enumeration = parse["enumeration"],
+        eager = parse["eager"],
+        optional = parse["optional"],
         NIL = stream["NIL"],
+        SourceLocation = __o["SourceLocation"],
         precedence, node, nodea, positionParser;
     (precedence = (function(p, table) {
         var sep = parse.choicea(table.map((function(entry) {
@@ -18,8 +23,8 @@ define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/strea
                 }), value);
             }));
         })));
-        return bind(parse.eager(parse.rec((function(self) {
-            return parse.cons(p, parse.optional(NIL, parse.cons(sep, parse.expected(
+        return bind(eager(parse.rec((function(self) {
+            return parse.cons(p, optional(NIL, parse.cons(sep, parse.expected(
                 "binary expression", self))));
         }))), (function(list) {
             var stack = [],
@@ -31,7 +36,7 @@ define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/strea
                 } else {
                     while ((stack.length > 0)) {
                         var o2 = stack[(stack.length - 1)];
-                        if (((!tok.right && (o2.precedence === tok.precedence)) || (o2.precedence <
+                        if ((((!tok.right) && (o2.precedence === tok.precedence)) || (o2.precedence <
                             tok.precedence))) {
                             stack.pop();
                             var rt = out.pop(),
@@ -51,28 +56,28 @@ define(["require", "exports", "bennu/parse", "khepri/position", "nu-stream/strea
                     lf0 = out.pop();
                 out.push(new(o.node)(SourceLocation.merge(lf0.loc, rt0.loc), o.value, lf0, rt0));
             }
-            return parse.always(out.pop());
+            return always(out.pop());
         }));
     }));
-    (positionParser = parse.extract((function(__o0) {
+    (positionParser = extract((function(__o0) {
         var position = __o0["position"];
         return position;
     })));
-    var locParser = parse.extract((function(__o0) {
+    var locParser = extract((function(__o0) {
         var loc = __o0["loc"];
         return loc;
     })),
-        prevEnd = parse.extract((function(__o0) {
+        prevEnd = extract((function(__o0) {
             var _prevEnd = __o0["_prevEnd"];
             return _prevEnd;
         }));
     (node = (function(p, f) {
-        return parse.binds(parse.enumeration(locParser, p, prevEnd), (function(o, x, c) {
+        return binds(enumeration(locParser, p, prevEnd), (function(o, x, c) {
             return always(f(new(SourceLocation)((o && o.start), c), x));
         }));
     }));
     (nodea = (function(p, f) {
-        return parse.binds(parse.enumeration(locParser, p, prevEnd), (function(o, x, c) {
+        return binds(enumeration(locParser, p, prevEnd), (function(o, x, c) {
             return always(f.apply(undefined, stream.toArray(stream.cons(new(SourceLocation)((o &&
                 o.start), c), x))));
         }));

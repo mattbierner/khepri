@@ -1,5 +1,5 @@
-define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/package", "khepri/parse/common",
-    "khepri/parse/token_parser", "khepri/parse/value_parser", "khepri/parse/statement_parser"
+define(["require", "exports", "bennu/parse", "bennu/lang", "khepri-ast/package", "./common", "./token_parser",
+    "./value_parser", "./statement_parser"
 ], (function(require, exports, __o, __o0, ast_package, __o1, __o2, __o3, _) {
     "use strict";
     var eager = __o["eager"],
@@ -18,13 +18,13 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/package",
         identifier = __o3["identifier"],
         khepriPackage, withStatement = (function() {
             var args = arguments,
-                __o4 = require("khepri/parse/statement_parser"),
+                __o4 = require("./statement_parser"),
                 withStatement = __o4["withStatement"];
             return withStatement.apply(undefined, args);
         }),
         blockStatement = (function() {
             var args = arguments,
-                __o4 = require("khepri/parse/statement_parser"),
+                __o4 = require("./statement_parser"),
                 blockStatement = __o4["blockStatement"];
             return blockStatement.apply(undefined, args);
         }),

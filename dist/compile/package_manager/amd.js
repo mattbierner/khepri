@@ -1,17 +1,19 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/package_manager/amd.kep'
- * DO NOT EDIT
-*/
-define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression", "khepri_ast/pattern",
-    "khepri_ast/statement", "khepri_ast/value"
+define(["require", "exports", "khepri-ast/declaration", "khepri-ast/expression", "khepri-ast/pattern",
+    "khepri-ast/statement", "khepri-ast/value"
 ], (function(require, exports, ast_declaration, ast_expression, ast_pattern, ast_statement, ast_value) {
     "use strict";
-    var definePackage, concat = Function.prototype.call.bind(Array.prototype.concat),
+    var definePackage, importPackage, concat = Function.prototype.call.bind(Array.prototype.concat),
         map = Function.prototype.call.bind(Array.prototype.map),
         path = (function(path) {
             return path.split("::")
                 .join("/");
         });
+    (importPackage = (function(imp) {
+        var packagePath = path(imp);
+        return ast_expression.CallExpression.create(null, ast_value.Identifier.create(null, "require"), [
+            ast_value.Literal.create(null, "string", packagePath)
+        ]);
+    }));
     (definePackage = (function(loc, exports, imports, targets, body) {
         var exportHeader = ast_declaration.VariableDeclaration.create(null, map(exports, (function(x) {
             return ast_declaration.VariableDeclarator.create(null, ast_value.Identifier.create(
@@ -27,7 +29,7 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
                 .create(null, null, concat(ast_pattern.IdentifierPattern.create(null, ast_value.Identifier
                     .create(null, "require")), ast_pattern.IdentifierPattern.create(null,
                     ast_value.Identifier.create(null, "exports")), map(imports, (function(x) {
-                    return targets[x.from.value];
+                    return targets([x.from.value]);
                 })))), ast_statement.BlockStatement.create(body.loc, concat(ast_statement.ExpressionStatement
                     .create(null, ast_value.Literal.create(null, "string", "use strict")),
                     exportHeader, body, exportBody)));
@@ -39,4 +41,5 @@ define(["require", "exports", "khepri_ast/declaration", "khepri_ast/expression",
                     })))), packageBody]));
     }));
     (exports.definePackage = definePackage);
+    (exports.importPackage = importPackage);
 }));

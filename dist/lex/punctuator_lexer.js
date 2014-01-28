@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lex/punctuator_lexer.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, exports, __o, __o0) {
     "use strict";
     var Parser = __o["Parser"],
@@ -15,13 +11,13 @@ define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, e
             multiplication, mod, division, compose, composeNary, reverseCompose, reverseComposeNary, pipe,
             reversePipe, ellipsis, as, argumentList, lambda, punctuator, punctuators = ["{", "}", "(", ")", "[",
                 "]", ",", ".", ";", ":", "?", "&&", "||", "<<", ">>", ">>>", "<=", "<", ">=", ">", "===", "!==",
-                "==", "!=", "=", "!", "~", "&", "|", "^", "+", "-", "*", "/", "%", "@", "\\>", "\\>>", "<\\",
-                "<<\\", "|>", "<|", "...", "#", "\\", "->"
+                "==", "!=", "=", "!", "~", "++", "--", "&", "|", "^", "+", "-", "*", "/", "%", "@", "\\>",
+                "\\>>", "<\\", "<<\\", "|>", "<|", "...", "#", "\\", "->"
         ];
     (openBrace = character("{"));
     (closeBrace = character("}"));
     (openParenthesis = character("("));
-    (closeParenthesis = character(")"));
+    (closeParenthesis = character(""));
     (openBracket = character("["));
     (closeBracket = character("]"));
     (period = character("."));

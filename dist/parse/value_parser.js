@@ -1,5 +1,5 @@
-define(["require", "exports", "bennu/parse", "khepri_ast/value", "khepri/parse/token_parser"], (function(require,
-    exports, __o, ast_value, token) {
+define(["require", "exports", "bennu/parse", "khepri-ast/value", "./token_parser"], (function(require, exports, __o,
+    ast_value, token) {
     "use strict";
     var always = __o["always"],
         bind = __o["bind"],

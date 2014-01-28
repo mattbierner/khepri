@@ -2,9 +2,9 @@
  * THIS FILE IS AUTO GENERATED from 'lib/parse/statement_parser.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/clause", "khepri_ast/declaration",
-    "khepri_ast/statement", "khepri/parse/common", "khepri/parse/token_parser", "khepri/parse/expression_parser",
-    "khepri/parse/pattern_parser", "khepri/parse/value_parser"
+define(["require", "exports", "bennu/parse", "bennu/lang", "khepri-ast/clause", "khepri-ast/declaration",
+    "khepri-ast/statement", "./common", "./token_parser", "./expression_parser", "./pattern_parser",
+    "./value_parser"
 ], (function(require, exports, __o, __o0, ast_clause, ast_declaration, ast_statement, __o1, __o2, __o3, __o4, __o5) {
     "use strict";
     var always = __o["always"],
@@ -121,7 +121,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "khepri_ast/clause", 
         return nodea(next(keyword("try"), enumeration(blockStatement, optional(null, catchBlock),
             optional(null, finallyBlock))), ast_statement.TryStatement.create);
     })()));
-    (statement = Parser("Statement", expected("statement", choice(blockStatement, staticStatement,
+    (statement = expected("statement", Parser("Statement", choice(blockStatement, staticStatement,
         variableStatement, emptyStatement, ifStatement, withStatement, iterationStatement,
         continueStatement, breakStatement, returnStatement, switchStatement, throwStatement,
         tryStatement, debuggerStatement, expressionStatement))));
