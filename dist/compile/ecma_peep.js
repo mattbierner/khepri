@@ -28,7 +28,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma-ast-zipper", "
                 "up": up
             });
             types.forEach((function(type) {
-                (peepholes[type] = (peepholes([type]) ? peepholes[type].concat(entry) : [entry]));
+                (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
             }));
         });
     addPeephole(["VariableDeclaration"], false, (function(_) {
@@ -60,9 +60,9 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma-ast-zipper", "
     }), (function(node) {
         return modify(node, ({
             "body": node.body.reduceRight((function(p, c) {
-                return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p(
-                    [0].type) === "VariableDeclaration")) ? concat(modify(c, ({
-                    "declarations": concat(c.declarations, p([0].declarations))
+                return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p[
+                    0].type === "VariableDeclaration")) ? concat(modify(c, ({
+                    "declarations": concat(c.declarations, p[0].declarations)
                 }), ({})), p.slice(1)) : concat(c, p));
             }), [])
         }), ({}));
@@ -166,7 +166,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma-ast-zipper", "
         return ast_value.Literal.create(null, (typeof value), value);
     }));
     var transform = (function(node) {
-        var transforms = (peepholes([node.type]) || [])
+        var transforms = (peepholes[node.type] || [])
             .filter((function(x) {
                 return x.condition(node);
             })),
@@ -181,7 +181,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma-ast-zipper", "
         }), node);
     }),
         transformDown = (function(node) {
-            var transforms = (peepholes([node.type]) || [])
+            var transforms = (peepholes[node.type] || [])
                 .filter((function(x) {
                     return ((!x.up) && x.condition(node));
                 }));
@@ -190,7 +190,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma-ast-zipper", "
             }), node);
         }),
         transformUp = (function(node) {
-            var transforms = (peepholes([node.type]) || [])
+            var transforms = (peepholes[node.type] || [])
                 .filter((function(x) {
                     return (x.up && x.condition(node));
                 }));

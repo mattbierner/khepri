@@ -106,9 +106,9 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
             return blockStatement(loc, concat(prefix, body.body));
         }),
         functionExpression = (function(loc, id, parameters, body) {
-            var params = filter((function(x) {
-                return _transform((x.type !== "EllipsisPattern"));
-            }), parameters.elements),
+            var params = _transform(filter((function(x) {
+                return (x.type !== "EllipsisPattern");
+            }), parameters.elements)),
                 elementsPrefix = flatten(map((function(x) {
                     switch (x.type) {
                         case "IdentifierPattern":
@@ -381,7 +381,7 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
         if ((!node)) return node;
         if (Array.isArray(node)) return map(_transform, node);
         if ((!(node instanceof khepri_node.Node))) return node;
-        var t = transformers([node.type]);
+        var t = transformers[node.type];
         if ((!t)) return node;
         return t(node);
     }));

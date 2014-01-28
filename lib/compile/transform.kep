@@ -200,7 +200,7 @@ in
  */
 var functionExpression = \loc, id, parameters, body -> let
     params = parameters.elements
-        |> filter@\x -> x.type !== 'EllipsisPattern'
+        |> (filter@\x -> x.type !== 'EllipsisPattern')
         |> _transform,
     
     elementsPrefix = parameters.elements
@@ -680,7 +680,7 @@ _transform = \node -> {
     if (!(node instanceof khepri_node.Node))
         return node;
     
-    var t = transformers[node.type];
+    var t = transformers.(node.type);
     
     if (!t) return node;
     return t(node);

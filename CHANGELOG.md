@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.11.1 - January 28, 2014
+* Fixed several issues resulting from compilation with incomplete translation.
+
 ## 0.11.0 - January 28, 2014
 * New expressions must supply an argument list.
 * Changed curry syntax.

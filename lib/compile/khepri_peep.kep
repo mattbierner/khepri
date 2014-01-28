@@ -177,7 +177,7 @@ addPeephole('BinaryExpression',
 var opt = \z -> {
     var t = tree.modifyNode(\node -> {
         if (!node) return node;
-        var transforms = (peepholes[node.type] || []).filter(\x -> x.condition(node));
+        var transforms = (peepholes.(node.type) || []).filter(\x -> x.condition(node));
         return transforms.reduce(\p c -> c.map(p), node);
     }, z);
     

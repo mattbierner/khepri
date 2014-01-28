@@ -40,7 +40,7 @@ var addPeephole = \types, up, condition, f -> {
     };
     
     types.forEach <|\ type -> {
-        peepholes.(type) = ?peepholes[type]
+        peepholes.(type) = ?peepholes.(type)
             :peepholes.(type).concat(entry)
             :[entry];
     };
@@ -93,9 +93,9 @@ addPeephole(['Program', 'BlockStatement'], true,
     \node ->
         modify(node, {
             'body': node.body.reduceRight(\p c ->
-                ?(c && c.type === 'VariableDeclaration' && p.length && p[0].type === 'VariableDeclaration')
+                ?(c && c.type === 'VariableDeclaration' && p.length && p.(0).type === 'VariableDeclaration')
                     :concat(modify(c, {
-                        'declarations': concat(c.declarations, p[0].declarations)
+                        'declarations': concat(c.declarations, p.(0).declarations)
                     }, {}), p.slice(1))
                     :concat(c, p),
                 [])
@@ -178,7 +178,7 @@ in
 /* Interface
  ******************************************************************************/
 var transform = \node -> {
-    var transforms = (peepholes[node.type] || []).filter(\x -> x.condition(node));
+    var transforms = (peepholes.(node.type) || []).filter(\x -> x.condition(node));
     var down = transforms.filter(\x -> !x.up);
     var up = transforms.filter(\x -> x.up);
 
@@ -186,12 +186,12 @@ var transform = \node -> {
 };
 
 var transformDown = \node -> {
-    var transforms = (peepholes[node.type] || []).filter(\x -> !x.up && x.condition(node));
+    var transforms = (peepholes.(node.type) || []).filter(\x -> !x.up && x.condition(node));
     return transforms.reduce(\p c -> c.map(p, transformDown), node);
 };
 
 var transformUp = \node -> {
-    var transforms = (peepholes[node.type] || []).filter(\x -> x.up && x.condition(node));
+    var transforms = (peepholes.(node.type) || []).filter(\x -> x.up && x.condition(node));
     return transforms.reduce(\p c -> c.map(p, transformUp), node);
 };
 
