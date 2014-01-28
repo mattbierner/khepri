@@ -132,7 +132,7 @@ See documentation for details:
     f \> g;     //    \x -> g(f(x))
     
     // Reverse Compose
-    f \> g;     //    \x -> f(g(x))
+    f <\ g;     //    \x -> f(g(x))
 
     /* Other Important Changes
       ----------------------*/
