@@ -12,3 +12,35 @@ extra_js:
   - http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.0.min.js
   - javascripts/console-built.js
 ---
+
+<div id='try-khepri' class='cf'>
+    <div id="console" class='cf'>
+        <div id='khepri-input'>
+            <h2>Khepri</h2>
+            <textarea id='khepri-console-input'></textarea>
+        </div>
+        
+        <div id='javascript-output'>
+            <h2>Javascript</h2>
+            <textarea id='javascript-console-output'></textarea>
+        </div>
+    </div>
+  
+    <div class='cf'>
+        <div id='console-controls'>
+            <button id='translate-button'>Translate</button>
+        </div>
+        <div id='console-options'>
+            <span>Package Manager:</span>
+            <select id='package_manager'>
+                <option value="amd">AMD</option>
+                <option value="node">Node</option>
+            </select>
+        </div>
+
+        <div id='console-output'>
+            <h2>Output</h2>
+            <pre id='text-out'></pre>
+        </div>
+    </div>
+</div>
