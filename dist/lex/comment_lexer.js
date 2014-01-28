@@ -38,7 +38,7 @@ define(["require", "exports", "bennu/parse", "bennu/text", "nu-stream/stream", "
             return f(g(x));
         });
     })((function(x) {
-        return !x;
+        return (!x);
     }), test.bind(null, lineTerminator))));
     (singleLineCommentChars = many(singleLineCommentChar));
     (singleLineComment = Parser("Single Line Comment Lexer", next(singleLineCommentMarker, join(

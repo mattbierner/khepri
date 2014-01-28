@@ -22,42 +22,42 @@ with
 in {
 
 var join = \p ->
-    bind(p, (foldl, (+), '') \> always);
+    bind(p, foldl@((+), '') \> always);
 
 /* Lexers
  ******************************************************************************/
 // Single Line Comment
 ////////////////////////////////////////
-singleLineCommentMarker = string('//');
+singleLineCommentMarker = string '//';
 
 singleLineCommentChar = token(
-    (!) <\ (test, lineTerminator));
+    (!) <\ test@lineTerminator);
 
-singleLineCommentChars = many(singleLineCommentChar);
+singleLineCommentChars = many singleLineCommentChar;
 
 /**
  * Lexer for a single line comment
  * 
  * Returns the contents of the comment.
  */
-singleLineComment = (Parser, 'Single Line Comment Lexer') <|
+singleLineComment = Parser@'Single Line Comment Lexer' <|
     next(
         singleLineCommentMarker,
-        join(singleLineCommentChars));
+        join singleLineCommentChars);
 
 // Multi Line Comment
 ////////////////////////////////////////
-multiLineCommentStartMarker = string('/*');
+multiLineCommentStartMarker = string '/*';
 
-multiLineCommentEndMarker = string('*/');
+multiLineCommentEndMarker = string '*/';
 
-multiLineCommentChars = (RecParser, 'Multi Line Comment Characters Lexer') <|\self ->
+multiLineCommentChars = RecParser@'Multi Line Comment Characters Lexer' <|\self ->
     either(
         next(
-            character('*'),
+            character '*',
             either(
-                next(character('/'), always(NIL)),
-                cons(always('*'), self))),
+                next(character '/', always NIL),
+                cons(always '*', self))),
         cons(anyToken, self));
 
 /**
@@ -65,14 +65,14 @@ multiLineCommentChars = (RecParser, 'Multi Line Comment Characters Lexer') <|\se
  * 
  * Returns the contents of the comment.
  */
-multiLineComment = (Parser, 'Multi Line Comment Lexer') <|
+multiLineComment = Parser@'Multi Line Comment Lexer' <|
     next(
         multiLineCommentStartMarker,
-        join(multiLineCommentChars));
+        join multiLineCommentChars);
 
 // Comment
 ////////////////////////////////////////
-comment = (Parser, 'Comment Lexer') <|
+comment = Parser@'Comment Lexer' <|
     either(
         singleLineComment,
         multiLineComment);

@@ -21,7 +21,7 @@ define(["require", "exports", "bennu/parse", "bennu/text"], (function(require, e
     (openBrace = character("{"));
     (closeBrace = character("}"));
     (openParenthesis = character("("));
-    (closeParenthesis = character(")"));
+    (closeParenthesis = character(""));
     (openBracket = character("["));
     (closeBracket = character("]"));
     (period = character("."));

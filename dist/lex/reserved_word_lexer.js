@@ -3,15 +3,15 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "bennu/parse", "bennu/text", "./boolean_lexer", "./null_lexer"], (function(require,
-    exports, parse, __o, __o0, __o1) {
+    exports, __o, __o0, __o1, __o2) {
     "use strict";
-    var attempt = parse["attempt"],
-        choice = parse["choice"],
-        Parser = parse["Parser"],
-        string = __o["string"],
-        trie = __o["trie"],
-        booleanLiteral = __o0["booleanLiteral"],
-        nullLiteral = __o1["nullLiteral"],
+    var attempt = __o["attempt"],
+        choice = __o["choice"],
+        Parser = __o["Parser"],
+        string = __o0["string"],
+        trie = __o0["trie"],
+        booleanLiteral = __o1["booleanLiteral"],
+        nullLiteral = __o2["nullLiteral"],
         reservedWord, futureReservedWord, breakKeyword, caseKeyword, catchKeyword, continueKeyword,
             debuggerKeyword, defaultKeyword, deleteKeyword, doKeyword, elseKeyword, finallyKeyword, forKeyword,
             functionKeyword, ifKeyword, inKeyword, instanceofKeyword, typeofKeyword, newKeyword, Keyword,

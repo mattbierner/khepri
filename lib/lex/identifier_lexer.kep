@@ -44,7 +44,7 @@ with
     import './string_lexer' {escape, unicodeEscapeSequence}
 in {
 
-var join = (foldl, (+), '');
+var join = foldl@((+), '');
 
 /* Lexers
  ******************************************************************************/
@@ -53,12 +53,12 @@ var join = (foldl, (+), '');
 /**
  * Zero Width non-joiner Lexer
  */
-zwnj = character('\u200c');
+zwnj = character '\u200c';
 
 /**
  * Zero Width joiner Lexer
  */
-zwj = character('\u200d');
+zwj = character '\u200d';
 
 /**
  * Lexer for a unicode letter character.
@@ -89,7 +89,7 @@ unicodeDigit = digit;
  * 
  * Any character in the Unicode category Connector Punctuation (Pc).
  */
-unicodeConnectorPunctuation = characters([
+unicodeConnectorPunctuation = characters [
     '\u005F',
     '\u203F',
     '\u2040',
@@ -99,7 +99,7 @@ unicodeConnectorPunctuation = characters([
     '\uFE4D',
     '\uFE4E',
     '\uFE4F',
-    '\uFF3F']);
+    '\uFF3F'];
 
 /**
  * Lexer for any combining mark Unicode character.
@@ -119,7 +119,7 @@ unicodeCombiningMark = never();
  */
 identifierStart = choice(
     unicodeLetter,
-    characters('$_'),
+    characters '$_',
     next(
         escape,
         unicodeEscapeSequence));
@@ -128,14 +128,14 @@ identifierStart = choice(
  * Lexer for the rest of an identifier after the first character.
  */
 identifierPart = choice(
-    attempt <| identifierStart,
+    attempt identifierStart,
     unicodeCombiningMark,
     unicodeDigit,
     unicodeConnectorPunctuation,
     zwnj,
     zwj);
 
-identifierParts = many(identifierPart);
+identifierParts = many identifierPart;
 
 /**
  * Lexer for any identifier name.
@@ -155,10 +155,10 @@ var reservedWordTest = next(
  * 
  * Checks to make sure returned identifier is not a keyword.
  */
-identifier = (Parser, 'Identifier Lexer') <|
+identifier = Parser@'Identifier Lexer' <|
     bind(identifierName, \name ->
         ?testStream(reservedWordTest, name)
             :fail()
-            :always(join(name)));
+            :always(join name));
 
 }

@@ -24,46 +24,46 @@ var lfChar = '\u000A',
  * Line Feed
  */
 lf = Parser('Line Feed Lexer',
-    character(lfChar));
+    character lfChar);
 
 /**
  * Carriage Return
  */
 cr = Parser('Carriage Return Lexer',
-    character(crChar));
+    character crChar);
 
 /**
  * Line Separator
  */
 ls = Parser('Line Separator Lexer',
-    character(lsChar));
+    character lsChar);
 
 /**
  * Paragraph Separator
  */
 ps = Parser('Paragraph Separator Lexer',
-    character(psChar));
+    character psChar);
 
 /**
  * A line terminator character.
  */
 lineTerminator = Parser('Line Terminator Lexer',
-    characters([lfChar, crChar, lsChar, psChar]));
+    characters [lfChar, crChar, lsChar, psChar]);
 
 /**
  * A sequence of characters denoting a linter terminator.
  * 
  * crlf sequences are returned as a single token.
  */
-lineTerminatorSequence = @Parser :'Line Terminator Sequence Lexer'
-    :@choice
-        :lf
-        :ls
-        :ps
-        :next(
+lineTerminatorSequence = Parser@'Line Terminator Sequence Lexer' <|
+    choice(
+        lf,
+        ls,
+        ps,
+        next(
             cr,
             optional(crChar,
                 next(lf,
-                    always(crChar + lfChar))));
+                    always(crChar + lfChar)))));
 
 }

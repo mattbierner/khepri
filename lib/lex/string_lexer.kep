@@ -43,11 +43,12 @@ with
     import 'bennu::text' {character},
     import 'bennu::lang' {between times},
     import 'nu-stream::stream' {foldl},
+    
     import './line_terminator_lexer' {lineTerminatorSequence lineTerminator},
     import './number_lexer' {decimalDigit hexDigit}
 in {
 
-var join = (foldl, (+), '');
+var join = foldl@((+), '');
 
 var fromCharCodeParser = join
     \> (\x -> parseInt(x, 16))
@@ -59,38 +60,38 @@ var fromCharCodeParser = join
 // Constants
 ////////////////////////////////////////
 doubleQuote = Parser('Double Quote Lexer',
-    character('"'));
+    character '"');
 
 singleQuote = Parser('Single Quote Lexer',
-    character("'"));
+    character "'");
 
 escape = Parser('String Escape Lexer',
-    character('\\'));
+    character '\\');
 
-lineContinuation = @Parser :'String Line Continuation Lexer'
-    :@sequence
-        :escape
-        :lineTerminatorSequence
-        :always('');
+lineContinuation = Parser@'String Line Continuation Lexer' <|
+    sequence(
+        escape,
+        lineTerminatorSequence,
+        always '');
 
 // Escape Character
 ////////////////////////////////////////
-var singleEscapeCharacter = @choice
-    :character("'")
-    :character('"')
-    :character('\\')
-    :next(character('b'), always('\u0008'))
-    :next(character('f'), always('\u000C'))
-    :next(character('n'), always('\u000A'))
-    :next(character('r'), always('\u000D'))
-    :next(character('t'), always('\u0009'))
-    :next(character('v'), always('\u000B'));
+var singleEscapeCharacter = choice
+    (character "'"
+    ,character '"'
+    ,character '\\'
+    ,next(character 'b', always '\u0008')
+    ,next(character 'f', always '\u000C')
+    ,next(character 'n', always '\u000A')
+    ,next(character 'r', always '\u000D')
+    ,next(character 't', always '\u0009')
+    ,next(character 'v', always '\u000B'));
 
-var escapeCharacter = @choice
-    :singleEscapeCharacter
-    :decimalDigit
-    :character('u')
-    :character('x');
+var escapeCharacter = choice
+    (singleEscapeCharacter
+    ,decimalDigit
+    ,character 'u'
+    ,character 'x');
 
 var nonEscapeCharacter = token <|\ tok ->
     !(test(escapeCharacter, tok) || test(lineTerminator, tok));
@@ -98,85 +99,85 @@ var nonEscapeCharacter = token <|\ tok ->
 // Escape Sequence
 ////////////////////////////////////////
 hexEscapeSequence = next(
-    character('x'),
+    character 'x',
     bind(
         times(2, hexDigit),
         fromCharCodeParser));
 
 unicodeEscapeSequence = next(
-    character('u'),
+    character 'u',
     bind(
         times(4, hexDigit),
         fromCharCodeParser));
 
-characterEscapeSequence = @either
-    :singleEscapeCharacter
-    :nonEscapeCharacter;
+characterEscapeSequence = either(
+    singleEscapeCharacter,
+    nonEscapeCharacter);
 
-escapeSequence = @choice
-    :characterEscapeSequence
-    :(@sequence
-        :character('0')
-        :either(
+escapeSequence = choice
+    (characterEscapeSequence
+    ,sequence
+        (character '0'
+        ,either(
             eof,
-            token((!) <\ (test, decimalDigit)))
-        :always('\u0000'))
-    :hexEscapeSequence
-    :unicodeEscapeSequence;
+            token((!) <\ test@decimalDigit))
+        ,always('\u0000'))
+    ,hexEscapeSequence
+    ,unicodeEscapeSequence);
 
 // Single String Literal
 ////////////////////////////////////////
 /**
  * Lexer for a valid single string character.
  */
-singleStringCharacter = @choice
-    :attempt <| lineContinuation
-    :next(escape, escapeSequence)
-    :token <|\ tok ->
+singleStringCharacter = choice
+    (attempt <| lineContinuation
+    ,next(escape, escapeSequence)
+    ,token <|\ tok ->
         !(test(singleQuote, tok) ||
             test(escape, tok) || 
-            test(lineTerminator, tok));
+            test(lineTerminator, tok)));
 
 /**
  * Lexer for a sequence of single string characters.
  */
-singleStringCharacters = many(singleStringCharacter);
+singleStringCharacters = many singleStringCharacter;
 
 /**
  * Lexer for a single quoted string literal.
  * 
  * Returns the value of the string enclosed in the single quoted string literal.
  */
-singleStringLiteral = Parser('Single String Literal',
+singleStringLiteral = Parser@'Single String Literal' <|
     between(singleQuote, singleQuote,
         bind(singleStringCharacters,
-            join \> always)));
+            join \> always));
 
 // Double String Literal
 ////////////////////////////////////////
 /**
  * Lexer for a valid double string character
  */
-doubleStringCharacter = @choice
-    :attempt <| lineContinuation
-    :next(escape, escapeSequence)
-    :token <|\ tok ->
+doubleStringCharacter = choice
+    (attempt <| lineContinuation
+    ,next(escape, escapeSequence)
+    ,token <|\ tok ->
         !(test(doubleQuote, tok) ||
             test(escape, tok) ||
-            test(lineTerminator, tok));
+            test(lineTerminator, tok)));
 
 /**
  * Lexer for a sequence of double string characters.
  */
-doubleStringCharacters = many(doubleStringCharacter);
+doubleStringCharacters = many doubleStringCharacter;
 
 /**
  * Lexer for a double quoted string literal.
  * 
  * Returns the value of the string enclosed in the double quoted string literal.
  */
-doubleStringLiteral = @Parser :'Double String Literal'
-    :between(doubleQuote, doubleQuote,
+doubleStringLiteral = Parser@'Double String Literal' <|
+    between(doubleQuote, doubleQuote,
         bind(doubleStringCharacters,
             join \> always));
 
@@ -187,8 +188,8 @@ doubleStringLiteral = @Parser :'Double String Literal'
  * 
  * Returns the value of the string enclosed in the string literal.
  */
-stringLiteral = @Parser :'Sting Literal Lexer'
-    :either(
+stringLiteral = Parser@'Sting Literal Lexer' <|
+    either(
         singleStringLiteral,
         doubleStringLiteral);
 

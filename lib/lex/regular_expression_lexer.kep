@@ -43,7 +43,7 @@ with
     import './line_terminator_lexer' {lineTerminator}
 in {
 
-var join = (foldl, (+), '');
+var join = foldl@((+), '');
 
 /* Lexers
  ******************************************************************************/
@@ -53,16 +53,16 @@ var join = (foldl, (+), '');
  * Lexer for non terminator character in a regular expression.
  */
 regularExpressionNonTerminator = token(
-    (!) <\ (test, lineTerminator));
+    (!) <\ test@lineTerminator);
 
 /**
  * Lexer for regular expression backslash sequence.
  */
 regularExpressionBackslashSequence = next(
-    character('\\'),
+    character '\\',
     bind(
         regularExpressionNonTerminator,
-        (+, '\\') \> always));
+        (+)@('\\') \> always));
 
 // Class
 ////////////////////////////////////////
@@ -74,7 +74,7 @@ regularExpressionClassChar = either(
 
 regularExpressionClassChars = many(regularExpressionClassChar);
 
-regularExpressionClass = between(character('['), character(']'), 
+regularExpressionClass = between(character '[', character ']', 
     bind(regularExpressionClassChars, \body ->
         always('[' + join(body) + ']')));
 
@@ -105,14 +105,14 @@ regularExpressionChar =  choice(
 /**
  * Lexer for string of regular expression chars.
  */
-regularExpressionChars = many(regularExpressionChar);
+regularExpressionChars = many regularExpressionChar;
 
 // Literal Parts
 ////////////////////////////////////////
 /**
  * Lexer for regular expression flags.
  */
-regularExpressionFlags = many(identifierPart);
+regularExpressionFlags = many identifierPart;
 
 /**
  * Lexer for the body of a regular expression
@@ -126,12 +126,12 @@ regularExpressionBody = bind(
 /**
  * Lexer for regular expression literals.
  */
-regularExpressionLiteral = Parser('Regular Expression Lexer',
+regularExpressionLiteral = Parser@'Regular Expression Lexer' <|
     binds(
         enumeration(
-            between(character('`'), character('`'),
+            between(character '`', character '`',
                 regularExpressionBody),
             regularExpressionFlags),
-        \body, flags -> always(new RegExp(body, join(flags)))));
+        \body, flags -> always(new RegExp(body, join(flags))));
 
 }

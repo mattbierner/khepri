@@ -50,28 +50,28 @@ with
 in {
 
 var join = \p ->
-    bind(p, (foldl, (+), '') \> always);
+    bind(p, foldl@((+), '') \> always);
 
 /* Lexers
  ******************************************************************************/
 // Constants
 ////////////////////////////////////////
 decimal = Parser('Decimal Lexer',
-    character('.'));
+    character '.');
 
 negativeSign = Parser('Negative Sign Lexer',
-    character('-'));
+    character '-');
 
 positiveSign = Parser('Positive Sign Lexer',
-    character('+'));
+    character '+');
 
 exponentIndicator = Parser('Exponent Indicator Lexer',
     characters('eE'));
 
-hexIndicator = (Parser, 'Hex Indicator Lexer') <|
+hexIndicator = Parser@'Hex Indicator Lexer' <|
     either(
-        string('0x'),
-        string('0X'));
+        string '0x',
+        string '0X');
 
 // Digits
 ////////////////////////////////////////
@@ -86,50 +86,50 @@ hexDigit = Parser('Hex Digit Lexer',
 
 // Strings
 ////////////////////////////////////////
-decimalDigits = (Parser, 'Decimal Digits Lexer') <|
+decimalDigits = Parser@'Decimal Digits Lexer' <|
     join <| many1(decimalDigit);
 
-hexDigits = (Parser, 'Hex Digits Lexer') <|
+hexDigits = Parser@'Hex Digits Lexer' <|
     join <| many1(hexDigit);
 
 // Integers
 ////////////////////////////////////////
-unsignedInteger = (Parser, 'Unsigned Integer Lexer') <|
+unsignedInteger = Parser@'Unsigned Integer Lexer' <|
     bind(
         decimalDigits,
         parseInt \> always);
 
 
-signedInteger = (Parser, 'Signed Integer Lexer') <|
+signedInteger = Parser@'Signed Integer Lexer' <|
     either(
         next(
             negativeSign,
             bind(
                 unsignedInteger,
-                (-, 0) \> always)),
+                (--) \> always)),
         next(
             optional(null, positiveSign),
             unsignedInteger));
 
-var hexIntegerLiteralDigits = (Parser, 'Hex Integer Literal Digits Lexer') <|
+var hexIntegerLiteralDigits = Parser@'Hex Integer Literal Digits Lexer' <|
     bind(
         hexDigits,
         \num -> always(parseInt(num, 16)));
 // Parts
 ////////////////////////////////////////
-exponentPart = (Parser, 'Exponent Part Lexer') <|
+exponentPart = Parser@'Exponent Part Lexer' <|
     next(
         exponentIndicator,
         signedInteger);
 
 // Literals
 ////////////////////////////////////////
-hexIntegerLiteral = (Parser, 'Hex Integer Literal Lexer') <|
+hexIntegerLiteral = Parser@'Hex Integer Literal Lexer' <|
     next(
         hexIndicator,
         hexIntegerLiteralDigits);
 
-decimalIntegerLiteral = (Parser, 'Decimal Integer Literal') <|
+decimalIntegerLiteral = Parser@'Decimal Integer Literal' <|
     bind(
         decimalDigits,
         parseInt \> always);
@@ -142,7 +142,7 @@ decimalIntegerLiteral = (Parser, 'Decimal Integer Literal') <|
  * 
  * @return Number value of the input.
  */
-decimalLiteral = (Parser, 'Decimal Literal Lexer') <|
+decimalLiteral = Parser@'Decimal Literal Lexer' <|
     binds(
         enumeration(
             binds(
@@ -163,11 +163,11 @@ decimalLiteral = (Parser, 'Decimal Literal Lexer') <|
  * 
  * @return Number value of the input.
  */
-numericLiteral = (Parser, 'Numeric Literal Lexer') <|
+numericLiteral = Parser@'Numeric Literal Lexer' <|
     either(
         next(
             attempt <| hexIndicator,
-            hexIntegerLiteralDigits |> (expected, 'hex digits')),
+            hexIntegerLiteralDigits |> expected@'hex digits'),
         decimalLiteral);
 
 }

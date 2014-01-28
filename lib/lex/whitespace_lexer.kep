@@ -19,7 +19,7 @@ with
 in {
 
 var join = \p ->
-    bind(p, (foldl, (+), '') \> always);
+    bind(p, foldl@((+), '') \> always);
 
 var tabChar = '\u0009',
     vtChar = '\u000B',
@@ -35,32 +35,32 @@ var tabChar = '\u0009',
 /**
  * Tab
  */
-tab = character(tabChar);
+tab = character tabChar;
 
 /**
  * Vertical Tab
  */
-vt = character(vtChar);
+vt = character vtChar;
 
 /**
  * Form Feed
  */
-ff = character(ffChar);
+ff = character ffChar;
 
 /**
  * Space
  */
-sp = character(spChar);
+sp = character spChar;
 
 /**
  * No-break space
  */
-nbsp = character(nbspChar);
+nbsp = character nbspChar;
 
 /**
  * Byte Order Mark
  */
-bom = character(bomChar);
+bom = character bomChar;
 
 /**
  * Any Unicode space separator
@@ -72,8 +72,8 @@ usp = match(`^\s$`);
 /**
  * Any whitespace character.
  */
-whitespace = (Parser, 'Whitespace Character Lexer') <|
-    characters([tabChar, vtChar, ffChar, spChar, nbspChar, bomChar]);
+whitespace = Parser@'Whitespace Character Lexer' <|
+    characters [tabChar, vtChar, ffChar, spChar, nbspChar, bomChar];
 
 /**
  * Many Whitespace characters

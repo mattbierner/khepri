@@ -94,74 +94,74 @@ var punctuators = [
  ******************************************************************************/
 // Brackets and Braces
 ////////////////////////////////////////
-openBrace = character('{');
-closeBrace = character('}');
+openBrace = character '{';
+closeBrace = character '}';
 
-openParenthesis = character('(');
-closeParenthesis = character(')');
+openParenthesis = character '(';
+closeParenthesis = character '';
 
-openBracket= character('[');
-closeBracket= character(']');
+openBracket= character '[';
+closeBracket= character ']';
 
 // Separators
 ////////////////////////////////////////
-period = character('.');
+period = character '.';
 
-semicolon = character(';');
+semicolon = character ';';
 
-comma = character(',');
+comma = character ',';
 
-colon = character(':');
+colon = character ':';
 
 // Operators
 ////////////////////////////////////////
-questionMark = character('?');
+questionMark = character '?';
 
-logicalAnd = string('&&');
-logicalOr = string('||');
+logicalAnd = string '&&';
+logicalOr = string '||';
 
-leftShift = string('<<');
-signedRightShift = string('>>');
-unsignedRightShift = string('>>>');
+leftShift = string '<<';
+signedRightShift = string '>>';
+unsignedRightShift = string '>>>';
 
-lessThanOrEqualTo = string('<=');
-lessThan = character('<');
+lessThanOrEqualTo = string '<=';
+lessThan = character '<';
 
-greaterThanOrEqualTo = string('>=');
-greaterThan = character('>');
+greaterThanOrEqualTo = string '>=';
+greaterThan = character '>';
 
-strictEquals = string('===');
-strictDoesNotEqual = string('!==');
+strictEquals = string '===';
+strictDoesNotEqual = string '!==';
 
-equals = string('==');
-doesNotEqual = string('!=');
+equals = string '==';
+doesNotEqual = string '!=';
 
-assign = character('=');
+assign = character '=';
 
-logicalNot = character('!');
-bitwiseNot = character('~');
+logicalNot = character '!';
+bitwiseNot = character '~';
 
-and = character('&');
-or = character('|');
-xor = character('^');
+and = character '&';
+or = character '|';
+xor = character '^';
 
-addition = character('+');
-subtration = character('-');
+addition = character '+';
+subtration = character '-';
 
-multiplication = character('*');
-division = character('/');
-mod = character('%');
+multiplication = character '*';
+division = character '/';
+mod = character '%';
 
 // Patterns
 ////////////////////////////////////////
-as = character('#');
-ellipsis = string('...');
+as = character '#';
+ellipsis = string '...';
 
 // Lambda
 ////////////////////////////////////////
-argumentList = character('\\');
+argumentList = character '\\';
 
-lambda = string('->');
+lambda = string '->';
 
 // Punctuators
 ////////////////////////////////////////

@@ -8,9 +8,9 @@ with
     import 'bennu::text' {string}
 in {
 
-nullLiteral = (Parser, 'Null Lexer') <|
+nullLiteral = Parser@'Null Lexer' <|
     next(
-        string('null'),
-        always(null));
+        string 'null',
+        always null);
 
 }
