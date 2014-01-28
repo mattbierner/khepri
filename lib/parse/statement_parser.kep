@@ -119,7 +119,7 @@ in
 var variableDeclarationList = let
     initialiser = next(
         punctuator('='),
-        expression |> (expected, "variable initilizer")),
+        expression |> expected@"variable initilizer"),
 
     variableDeclaration = nodea(
         enumeration(
@@ -139,7 +139,7 @@ variableStatement = Parser('Variable Statement',
 // With Statement
 ////////////////////////////////////////
 withStatement = (Parser, 'With Statement') <| let
-    withIdentifier = pattern |> (expected, "pattern"),
+    withIdentifier = pattern |> expected@"pattern",
 
     withBinding = either(
         importPattern,
@@ -173,7 +173,7 @@ ifStatement = Parser('If Statement',
             keyword('if'),
             enumeration(
                 between(punctuator('('), punctuator(')'),
-                    expression |> (expected, "if condition")),
+                    expression |> expected@"if condition"),
                 statement,
                 optional(null, next(
                     keyword('else'),
@@ -218,7 +218,7 @@ in
             keyword('switch'),
             enumeration(
                 between(punctuator('('), punctuator(')'),
-                    expression |> (expected, "switch discriminant")),
+                    expression |> expected@"switch discriminant"),
                 caseBlock)),
         ast_statement.SwitchStatement.create);
 
@@ -363,6 +363,6 @@ statement = @Parser :'Statement'
         :tryStatement
         :debuggerStatement
         :expressionStatement)
-    |> (expected, 'statement');
+    |> expected@'statement';
 
 }

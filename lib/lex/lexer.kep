@@ -62,35 +62,35 @@ var buildToken = \p ->
  ******************************************************************************/
 var literalImpl = choice(
     makeToken(lexToken.StringToken, stringLiteral)
-        |> (expected, "string literal"),
+        |> expected@"string literal",
     makeToken(lexToken.RegularExpressionToken, regularExpressionLiteral)
-        |> (expected, "regular expression literal"),
+        |> expected@"regular expression literal",
     makeToken(lexToken.BooleanToken, booleanLiteral)
-        |> (expected, "boolean literal"),
+        |> expected@"boolean literal",
     makeToken(lexToken.NullToken, nullLiteral)
-        |> (expected, "null literal"),
+        |> expected@"null literal",
     makeToken(lexToken.NumberToken, numericLiteral)
-        |> (expected, "number literal"));
+        |> expected@"number literal");
 
 var tokenImpl = choice(
     attempt
         <| makeToken(lexToken.IdentifierToken, identifier)
-        |> (expected, "identifier"),
+        |> expected@"identifier",
     attempt
         <| literalImpl,
     attempt
         <| makeToken(lexToken.KeywordToken, reservedWord)
-        |> (expected, "reserved word"),
+        |> expected@"reserved word",
     makeToken(lexToken.PunctuatorToken, punctuator)
-        |> (expected, "puctuator"));
+        |> expected@"puctuator");
 
 var inputElementImpl = choice(
     makeToken(lexToken.CommentToken, comment)
-        |> (expected, "comment"),
+        |> expected@"comment",
     makeToken(lexToken.WhitespaceToken, whitespace)
-        |> (expected, "whitespace"),
+        |> expected@"whitespace",
     makeToken(lexToken.LineTerminatorToken, lineTerminator)
-        |> (expected, "line terminator"),
+        |> expected@"line terminator",
     tokenImpl);
 
 literal = buildToken(literalImpl);

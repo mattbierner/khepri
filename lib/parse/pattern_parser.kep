@@ -86,7 +86,7 @@ arrayPattern = (Parser, 'Array Pattern') <|
     node(
         between(punctuator('['), punctuator(']'),
             eager <| sepBy1(sep, topLevelPattern)
-                |> (expected, "array pattern element")),
+                |> expected@"array pattern element"),
         ast_pattern.ArrayPattern.create);
 
 // Object Pattern
@@ -113,7 +113,7 @@ objectPattern = (Parser, 'Object Pattern') <|
     node(
         between(punctuator('{'), punctuator('}'),
             eager <| sepBy1(sep, objectPatternElement)
-                |> (expected, "object pattern element")),
+                |> expected@"object pattern element"),
         ast_pattern.ObjectPattern.create);
 
 // As Pattern
@@ -127,7 +127,7 @@ asPattern = (Parser, 'As Pattern') <|
             choice(
                 arrayPattern,
                 objectPattern)
-                |> (expected, 'object or array pattern')),
+                |> expected@'object or array pattern'),
         ast_pattern.AsPattern.create);
 
 // Import Pattern

@@ -56,7 +56,7 @@ khepriPackage = (Parser, 'Package') <|
         next(
             keyword('package'),
             enumeration(
-                packageExports |> (expected, 'package export list'),
+                packageExports |> expected@'package export list',
                 packageBody)),
             ast_package.Package.create);
 

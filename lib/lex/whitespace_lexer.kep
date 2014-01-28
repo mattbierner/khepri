@@ -65,7 +65,7 @@ bom = character bomChar;
 /**
  * Any Unicode space separator
  */
-usp = match(`^\s$`);
+usp = match `^\s$`;
 
 // Whitespace
 ////////////////////////////////////////
