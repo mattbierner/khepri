@@ -6,7 +6,7 @@ layout: base
 Khepri is an ECMAScript derived programming language that compiles to plain old Javascript.
 Focusing on functional-style programming, Khepri makes Javascript more concise, more consistent, and more fun.
 
-Unlike many other *script languages, Khepri does not aim to replace Javascript with heavy weight language features.
+Unlike many other \*script languages, Khepri does not aim to replace Javascript with heavy weight language features.
 Instead it adds, removes, and reworks Javascript's syntax to make the language more flexible and expressive.
 
 # Overview
