@@ -1,12 +1,14 @@
-var fs = require('fs');
+#!/usr/bin/env node
+
 var path = require('path');
+var fs = require('fs');
 
 var mkdirp = require('mkdirp');
 
 var unparse = require('ecma-unparse').unparse;
 var unparse_print = require('ecma-unparse').print;
 
-var index = path.join(__dirname, 'index');
+var index = path.join(__dirname, '..', 'index');
 var khepri_compile = require(index).compile.compile;
 var lexer = require(index).lex.lexer;
 var parser = require(index).parse.parser;
@@ -21,7 +23,7 @@ var compile = function(input, options) {
         var unparsed = unparse.unparse(khepri_compile.compile(ast, options));
         return unparse_print.print(unparsed);
     } catch (e) {
-        console.error(e + '');
+        console.error(e.stack + '');
         process.exit(1);
     }
 };

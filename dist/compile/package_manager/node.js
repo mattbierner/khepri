@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/package_manager/node.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "khepri-ast/declaration", "khepri-ast/expression", "khepri-ast/statement",
     "khepri-ast/value"
 ], (function(require, exports, ast_declaration, ast_expression, ast_statement, ast_value) {
