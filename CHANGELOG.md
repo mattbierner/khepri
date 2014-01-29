@@ -1,6 +1,6 @@
 # ChangeLog #
 
-## 0.11.2 - January 28, 2014
+## 0.11.3 - January 28, 2014
 * Moved compile to `bin/khepri`
 
 ## 0.11.1 - January 28, 2014
