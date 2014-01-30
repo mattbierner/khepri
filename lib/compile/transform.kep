@@ -198,7 +198,7 @@ in
 /**
  * 
  */
-var functionExpression = \loc, id, parameters, body -> let
+var functionExpression = \loc, id, parameters, functionBody -> let
     params = parameters.elements
         |> (filter@\x -> x.type !== 'EllipsisPattern')
         |> _transform,
@@ -228,6 +228,11 @@ var functionExpression = \loc, id, parameters, body -> let
                 _transform(parameters.id),
                 identifier(null, 'arguments'))
             :[]),
+    
+    body = ?functionBody.type === "BlockStatement"
+        :functionBody
+        :khepri_statement.BlockStatement.create(null,
+            khepri_statement.ReturnStatement.create(null, functionBody)),
     
     strict = isStrict(body.body),
     

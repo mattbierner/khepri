@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/declaration",
     "khepri-ast/expression", "khepri-ast/statement", "khepri-ast/pattern", "khepri-ast/value", "../position",
     "./common", "./token_parser", "./program_parser", "./value_parser", "./pattern_parser"
@@ -20,7 +24,6 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
         memo = __o["memo"],
         next = __o["next"],
         optional = __o["optional"],
-        RecParser = __o["RecParser"],
         Parser = __o["Parser"],
         between = __o0["between"],
         chainl = __o0["chainl"],
@@ -39,16 +42,16 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
         literal = __o5["literal"],
         stringLiteral = __o5["stringLiteral"],
         arrayElement, arrayElements, arrayLiteral, propertyName, propertyInitializer, objectProperties,
-            objectLiteral, curryExpression, primaryExpression, args, argumentList, callExpression, dotAccessor,
-            bracketAccessor, accessor, memberExpression, newExpression, leftHandReferenceExpression,
-            unaryOperator, unaryExpression, binaryExpression, conditionalExpression, letExpression,
-            assignmentOperator, assignmentExpression, expression, topLevelExpression, sourceElements = (
-                function() {
-                    var args = arguments,
-                        __o6 = require("./program_parser"),
-                        sourceElements = __o6["sourceElements"];
-                    return sourceElements.apply(undefined, args);
-                });
+            objectLiteral, functionExpression, operatorExpression, tupleExpression, primaryExpression,
+            curryExpression, args, argumentList, callExpression, dotAccessor, bracketAccessor, accessor,
+            memberExpression, newExpression, leftHandReferenceExpression, unaryOperator, unaryExpression,
+            binaryExpression, conditionalExpression, letExpression, assignmentOperator, assignmentExpression,
+            expression, topLevelExpression, sourceElements = (function() {
+                var args = arguments,
+                    __o6 = require("./program_parser"),
+                    sourceElements = __o6["sourceElements"];
+                return sourceElements.apply(undefined, args);
+            });
     (expression = (function() {
         var args = arguments;
         return expression.apply(undefined, args);
@@ -71,17 +74,14 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
     var formalParameterList = pattern.argumentsPattern,
         statementBody = node(between(punctuator("{"), punctuator("}"), sourceElements), ast_statement.BlockStatement
             .create),
-        lambdaBody = node(expression, (function(loc, x) {
-            return ast_statement.BlockStatement.create(loc, [ast_statement.ReturnStatement.create(null,
-                x)]);
-        })),
-        functionBody = either(statementBody, lambdaBody),
-        functionExpression = Parser("Function Expression", nodea(cons(optional(null, next(keyword("function"),
-                optional(null, identifier))), next(punctuator("\\"), enumeration(formalParameterList,
-                next(punctuator("->"), expected("function body", functionBody))))), ast_expression.FunctionExpression
-            .create)),
-        letBinding = Parser("Let Binding", nodea(enumeration(then(expected("pattern", pattern.topLevelPattern),
-            punctuator("=")), expected("let binding expression", expression)), ast_declaration.Binding.create));
+        lambdaBody = expression,
+        functionBody = either(statementBody, lambdaBody);
+    (functionExpression = Parser("Function Expression", nodea(cons(optional(null, next(keyword("function"),
+            optional(null, identifier))), next(punctuator("\\"), enumeration(formalParameterList,
+            next(punctuator("->"), expected("function body", functionBody))))), ast_expression.FunctionExpression
+        .create)));
+    var letBinding = Parser("Let Binding", nodea(enumeration(then(expected("pattern", pattern.topLevelPattern),
+        punctuator("=")), expected("let binding expression", expression)), ast_declaration.Binding.create));
     (letExpression = Parser("Let Expression", (function() {
         var letBindings = expected("let bindings", sepBy1(punctuator(","), letBinding)),
             letBody = expected("let body expression", expression);
@@ -109,12 +109,13 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
             var loc = __o6["loc"],
                 value = __o6["value"];
             return always(ast_expression.TernaryOperatorExpression.create(loc, value));
-        }))),
-        operatorExpression = Parser("Operator Expression", choice(unaryOperatorExpression,
-            binaryOperatorExpression, ternayOperatorExpression));
+        })));
+    (operatorExpression = Parser("Operator Expression", choice(unaryOperatorExpression,
+        binaryOperatorExpression, ternayOperatorExpression)));
+    (tupleExpression = Parser("Tuple Expression", between(punctuator("("), punctuator(")"), either(attempt(then(
+        operatorExpression, lookahead(punctuator(")")))), expression))));
     (primaryExpression = Parser("Primary Expression", choice(letExpression, conditionalExpression, identifier,
-        literal, arrayLiteral, objectLiteral, functionExpression, between(punctuator("("), punctuator(
-            ")"), either(attempt(then(operatorExpression, lookahead(punctuator(")")))), expression)))));
+        literal, arrayLiteral, objectLiteral, functionExpression, tupleExpression)));
     (argumentList = Parser("Argument List", (function() {
         var argument = expected("argument", expression);
         return between(punctuator("("), punctuator(")"), eager(sepBy(punctuator(","), argument)));
@@ -304,8 +305,11 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "
     (exports.propertyInitializer = propertyInitializer);
     (exports.objectProperties = objectProperties);
     (exports.objectLiteral = objectLiteral);
-    (exports.curryExpression = curryExpression);
+    (exports.functionExpression = functionExpression);
+    (exports.operatorExpression = operatorExpression);
+    (exports.tupleExpression = tupleExpression);
     (exports.primaryExpression = primaryExpression);
+    (exports.curryExpression = curryExpression);
     (exports.args = args);
     (exports.argumentList = argumentList);
     (exports.callExpression = callExpression);

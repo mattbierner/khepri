@@ -8,6 +8,7 @@ package (
     checkStage)
 with
     import 'khepri-ast::node' ast_node#{setUserData},
+    import 'khepri-ast::expression' ast_expression,
     import 'khepri-ast::pattern' ast_pattern,
     import 'khepri-ast::value' ast_value,
     
@@ -492,7 +493,9 @@ _check = \node -> {
                  :addImmutableBinding(node.id.name, node.loc)
                  :pass,
              checkChild('params'),
-             child(checkChild('body'), 'body'));
+             ?node.body.type === "BlockStatement"
+                 :child(checkChild('body'), 'body')
+                 :checkChild('body'));
 
 // Pattern
     case 'EllipsisPattern':

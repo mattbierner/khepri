@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/transform.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression", "ecma-ast/node",
     "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause", "khepri-ast/declaration",
     "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/program", "khepri-ast/statement",
@@ -101,7 +105,7 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
                 prefix = variableDeclaration(null, vars);
             return blockStatement(loc, concat(prefix, body.body));
         }),
-        functionExpression = (function(loc, id, parameters, body) {
+        functionExpression = (function(loc, id, parameters, functionBody) {
             var params = _transform(filter((function(x) {
                 return (x.type !== "EllipsisPattern");
             }), parameters.elements)),
@@ -121,6 +125,8 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
                     ecma_expression.ThisExpression.create(null)) : []), (parameters.id ?
                     variableDeclarator(null, _transform(parameters.id), identifier(null, "arguments")) : []
                 )),
+                body = ((functionBody.type === "BlockStatement") ? functionBody : khepri_statement.BlockStatement
+                    .create(null, khepri_statement.ReturnStatement.create(null, functionBody))),
                 strict = isStrict(body.body),
                 prefix = concat(elementsPrefix, argumentsPrefix);
             return ecma_expression.FunctionExpression.create(loc, _transform(id), params, blockStatement(
@@ -374,11 +380,11 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
         return packageBlock(node.loc, node.exports, node.body);
     }));
     (_transform = (function(node) {
-        if (!node) return node;
+        if ((!node)) return node;
         if (Array.isArray(node)) return map(_transform, node);
-        if (!(node instanceof khepri_node.Node)) return node;
+        if ((!(node instanceof khepri_node.Node))) return node;
         var t = transformers[node.type];
-        if (!t) return node;
+        if ((!t)) return node;
         return t(node);
     }));
     (transform = (function(__o) {
