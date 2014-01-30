@@ -49,7 +49,7 @@ foldl = \f z s -> {
 };
 
 // Curry Operator
-reverse = foldl@(flip cons, end);
+reverse = foldl@(flip cons, NIL);
 
 // Let Expression
 toArray = let builder = \p, c -> { p.push c; return p; } in
@@ -57,11 +57,11 @@ toArray = let builder = \p, c -> { p.push c; return p; } in
 
 from = let
     fromImpl = \arr i len ->
-        // Conditional Expression
+        // Conditional expression
         ? i >= len
             :NIL
             :stream(
-                arr.(i),  // Get computed member i
+                arr.(i), // Get computed member i
                 fromImpl@(arr, i + 1, len))
 in
     // Unpacking with as pattern.
@@ -76,10 +76,10 @@ Using the stream library in another file
 package ()
 with
     // Import the stream library and unpack
-    import 'stream' stream#{cons toArray reverse}
+    import 'stream' stream#{cons foldl reverse}
 in {
     // Declare global.
-    // Khepri is lexically scope and vars must be defined before use
+    // Khepri is lexically scoped and vars must be defined before use
     static console;
     
     var s = stream.from [2, 3, 4];

@@ -1,3 +1,4 @@
+exclude: ["dependencies", "dist", "node_modules", "build.js"]
 markdown: redcarpet
 redcarpet:
   extensions: ["fenced_code_blocks"]

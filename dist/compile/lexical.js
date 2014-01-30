@@ -1,10 +1,7 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
- * DO NOT EDIT
-*/
-define(["require", "exports", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/value", "neith/zipper", "neith/tree",
-    "khepri-ast-zipper", "bes/record", "bes/object", "./scope"
-], (function(require, exports, ast_node, ast_pattern, ast_value, zipper, tree, __o, record, object, __o0) {
+define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value",
+    "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "bes/object", "./scope"
+], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, object,
+    __o0) {
     "use strict";
     var setUserData = ast_node["setUserData"],
         khepriZipper = __o["khepriZipper"],
@@ -339,9 +336,12 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/pattern", "khepri-a
             case "BinaryOperatorExpression":
             case "TernaryOperatorExpression":
                 return pass;
+            case "TupleExpression":
+                return checkChild("elements");
             case "FunctionExpression":
                 return realBlock((node.id ? addImmutableBinding(node.id.name, node.loc) : pass),
-                    checkChild("params"), child(checkChild("body"), "body"));
+                    checkChild("params"), ((node.body.type === "BlockStatement") ? child(checkChild(
+                        "body"), "body") : checkChild("body")));
             case "EllipsisPattern":
                 return pass;
             case "SinkPattern":

@@ -23,27 +23,37 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
                 return p.concat(c);
             }), []) : x);
         }),
+        concatArgs = (function() {
+            var args = arguments;
+            return ast_expression.TupleExpression.create(null, flatten(map((function(x) {
+                return (((!x) || Array.isArray(x)) ? x : ((x.type === "TupleExpression") ?
+                    x.elements : x));
+            }), args)));
+        }),
         peepholes = ({}),
-        addPeephole = (function(type, condition, f) {
+        addPeephole = (function(types, up, condition, f) {
             var entry = ({
                 "condition": condition,
-                "map": f
+                "map": f,
+                "up": up
             });
-            (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
+            types.forEach((function(type) {
+                (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
+            }));
         });
-    addPeephole("ReturnStatement", (function(node) {
+    addPeephole(["ReturnStatement"], false, (function(node) {
         return (node.argument && (node.argument.type === "LetExpression"));
     }), (function(node) {
         return ast_statement.WithStatement.create(null, node.argument.bindings, ast_statement.BlockStatement
             .create(null, [ast_statement.ReturnStatement.create(node.loc, node.argument.body)]));
     }));
-    addPeephole("ExpressionStatement", (function(node) {
+    addPeephole(["ExpressionStatement"], false, (function(node) {
         return (node.expression && (node.expression.type === "LetExpression"));
     }), (function(node) {
         return ast_statement.WithStatement.create(null, node.expression.bindings, ast_statement.BlockStatement
             .create(null, [ast_statement.ExpressionStatement.create(node.loc, node.expression.body)]));
     }));
-    addPeephole("ExpressionStatement", (function(node) {
+    addPeephole(["ExpressionStatement"], false, (function(node) {
         return ((node.expression && (node.expression.type === "AssignmentExpression")) && (node.expression
             .right.type === "LetExpression"));
     }), (function(node) {
@@ -52,7 +62,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
                 .create(node.expression.loc, node.expression.operator, node.expression.left,
                     node.expression.right.body))]));
     }));
-    addPeephole("ArrayPattern", (function(_) {
+    addPeephole(["ArrayPattern"], false, (function(_) {
         return true;
     }), (function(__o1) {
         var loc = __o1["loc"],
@@ -63,7 +73,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
                 null, "number", i), x);
         }), elements)), ud);
     }));
-    addPeephole("ObjectPatternElement", (function(node) {
+    addPeephole(["ObjectPatternElement"], false, (function(node) {
         return (!node.target);
     }), (function(node) {
         var loc = node["loc"],
@@ -79,25 +89,21 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
                 return node;
         }
     }));
-    addPeephole("CurryExpression", (function(node) {
-        return (!node.args.length);
-    }), (function(node) {
-        return node.base;
-    }));
-    addPeephole("CurryExpression", (function(node) {
+    addPeephole(["CurryExpression"], true, (function(node) {
         return (node.base.type === "CurryExpression");
     }), (function(node) {
-        return ast_expression.CurryExpression.create(null, node.base.base, concat(node.base.args, node.args));
+        return ast_expression.CurryExpression.create(null, node.base.base, concatArgs(node.base.args,
+            node.args));
     }));
-    addPeephole("BinaryExpression", (function(node) {
+    addPeephole(["BinaryExpression"], true, (function(node) {
         return ((node.operator === "|>") && ((((node.right.type === "CurryExpression") || (node.right.type ===
                 "BinaryOperatorExpression")) || (node.right.type === "UnaryOperatorExpression")) ||
             (node.right.type === "TernaryOperatorExpression")));
     }), (function(node) {
         return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ?
-            node.right.base : node.right), concat((node.right.args || []), node.left));
+            node.right.base : node.right), concatArgs((node.right.args || []), node.left));
     }));
-    addPeephole("BinaryExpression", (function(__o1) {
+    addPeephole(["BinaryExpression"], true, (function(__o1) {
         var operator = __o1["operator"],
             left = __o1["left"];
         return ((operator === "<|") && ((((left.type === "CurryExpression") || (left.type ===
@@ -105,22 +111,59 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
             .type === "TernaryOperatorExpression")));
     }), (function(node) {
         return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ?
-            node.left.base : node.left), concat((node.left.args || []), node.right));
+            node.left.base : node.left), concatArgs((node.left.args || []), node.right));
     }));
-    var opt = (function(z) {
-        var t = tree.modifyNode((function(node) {
-            if ((!node)) return node;
+    var transform = (function(node) {
+        var transforms = (peepholes[node.type] || [])
+            .filter((function(x) {
+                return x.condition(node);
+            })),
+            down = transforms.filter((function(x) {
+                return (!x.up);
+            })),
+            up = transforms.filter((function(x) {
+                return x.up;
+            }));
+        return down.reduce((function(p, c) {
+            return c.map(p, transform);
+        }), node);
+    }),
+        transformDown = (function(node) {
             var transforms = (peepholes[node.type] || [])
                 .filter((function(x) {
-                    return x.condition(node);
+                    return ((!x.up) && x.condition(node));
                 }));
             return transforms.reduce((function(p, c) {
-                return c.map(p);
+                return c.map(p, transformDown);
             }), node);
-        }), z),
-            next = zipper.nextDfs(t);
-        return (next ? opt(next) : t);
-    });
+        }),
+        transformUp = (function(node) {
+            var transforms = (peepholes[node.type] || [])
+                .filter((function(x) {
+                    return (x.up && x.condition(node));
+                }));
+            return transforms.reduce((function(p, c) {
+                return c.map(p, transformUp);
+            }), node);
+        }),
+        opt = (function(z) {
+            var t = tree.modifyNode((function(node) {
+                return (node && transformDown(node));
+            }), z);
+            if (zipper.isLeaf(t)) {
+                do {
+                    (t = tree.modifyNode((function(node) {
+                        return (node && transformUp(node));
+                    }), t));
+                    if (zipper.isLast(t)) {
+                        if (zipper.isRoot(t)) return t;
+                        (t = zipper.up(t));
+                    } else return opt(zipper.right(t));
+                }
+                while (true);
+            }
+            return opt(zipper.down(t));
+        });
     (optimize = (function(__o1) {
         var options = __o1["options"],
             ast = __o1["ast"];
