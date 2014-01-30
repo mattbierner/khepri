@@ -78,7 +78,7 @@ var argParse = require('optimist')
     .usage(
         ["Compile Khepri to Javascript.",
         "",
-        "Usage: khepri [options] [-o out_file] in_file",
+        "Usage: khepri [options] [-o out_file] [in_file]",
         "",
         "Compiles Khepri input from `in_file` to Javascript in `out_file`. If `in_file` is",
         "not specified, reads input from stdin. If `in_file` is a directory, compiles all",

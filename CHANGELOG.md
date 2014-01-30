@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.11.4 - January 29, 2014
+* Added read from stdin support to compile.
+* Added `--help` and `--version` flags.
+
 ## 0.11.3 - January 28, 2014
 * Moved compile to `bin/khepri`
 
