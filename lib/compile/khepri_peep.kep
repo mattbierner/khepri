@@ -30,6 +30,16 @@ var flatten = \x ->
         :reduce(x, \p, c -> p.concat(c), [])
         :x;
 
+var concatArgs = \args(...) ->
+    ast_expression.TupleExpression.create(null,
+        flatten <| map(\x ->
+            ?!x || Array.isArray(x)
+                :x
+                :?x.type === 'TupleExpression'
+                    :x.elements
+                    :x,
+            args));
+
 /*
  ******************************************************************************/
 var peepholes = {};
@@ -123,12 +133,6 @@ addPeephole('ObjectPatternElement',
         }
     });
 
-/**
- * Curry nothing is identity.
- */
-addPeephole('CurryExpression',
-    \node -> !node.args.length,
-    \node -> node.base);
 
 /**
  * Flatten currying of curry.
@@ -138,7 +142,7 @@ addPeephole('CurryExpression',
     \node ->
         ast_expression.CurryExpression.create(null,
             node.base.base,
-            concat(
+            concatArgs(
                 node.base.args,
                 node.args)));
 
@@ -153,7 +157,7 @@ addPeephole('BinaryExpression',
     \node ->
         ast_expression.CallExpression.create(null,
             (?node.right.type === 'CurryExpression' :node.right.base :node.right),
-            concat(node.right.args || [], node.left)));
+            concatArgs(node.right.args || [], node.left)));
 
 /**
  * Rewrite right pipe of curried expression to a call.
@@ -169,7 +173,7 @@ addPeephole('BinaryExpression',
     \node ->
         ast_expression.CallExpression.create(null,
             (?node.left.type === 'CurryExpression' :node.left.base :node.left),
-            concat(node.left.args || [], node.right)));
+            concatArgs(node.left.args || [], node.right)));
 
 
 /* Interface

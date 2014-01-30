@@ -303,7 +303,8 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
         return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args));
     }));
     addTransform("CallExpression", (function(node) {
-        return callExpression(node.loc, node.callee, node.args);
+        return callExpression(node.loc, node.callee, ((node.args.type === "TupleExpression") ? node.args
+            .elements : [node.args]));
     }));
     addTransform("MemberExpression", (function(node) {
         return ecma_expression.MemberExpression.create(node.loc, _transform(node.object), _transform(
@@ -313,7 +314,11 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
         return letExpression(node.loc, node.bindings, node.body);
     }));
     addTransform("CurryExpression", (function(node) {
-        return curryExpression(node.loc, node.base, node.args);
+        return curryExpression(node.loc, node.base, ((node.args.type === "TupleExpression") ? node.args
+            .elements : [node.args]));
+    }));
+    addTransform("TupleExpression", (function(node) {
+        return ecma_expression.SequenceExpression.create(node.loc, _transform(node.elements));
     }));
     addTransform("UnaryOperatorExpression", (function(node) {
         return functionExpression(node.loc, null, khepri_pattern.ArgumentsPattern.create(null, null, [

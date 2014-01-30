@@ -87,7 +87,8 @@ with
         Parser},
     import 'bennu::lang' {
         between
-        chainl
+        chainl1
+        chainr1
         sepBy
         sepBy1
         then},
@@ -150,15 +151,8 @@ arrayLiteral = Parser@'Array Literal' <|
 
 // Object Literal
 ////////////////////////////////////////
-/**
- * Parser for an object property name.
- */
-propertyName = Parser@'Property Name' <|
-    stringLiteral;
+propertyName = stringLiteral;
 
-/**
- * Parser for any property initializer.
- */
 propertyInitializer = Parser@'Property Initializer' <|
     nodea(
         enumeration(
@@ -168,15 +162,9 @@ propertyInitializer = Parser@'Property Initializer' <|
             expression),
         ast_value.ObjectValue.create);
 
-/**
- * Parser for a set or more properties in an object literal.
- */
 objectProperties = Parser@'Object Properties' <|
     eager <| sepBy(punctuator ',', propertyInitializer);
 
-/**
- * Parser for an ECMAScript object literal.
- */
 objectLiteral = Parser@'Object Literal' <|
     node(
         between(punctuator '{', punctuator '}',
@@ -198,11 +186,6 @@ var functionBody = either(
     statementBody,
     lambdaBody);
 
-/**
- * Parser for an function expression.
- * 
- * May be named or anon.
- */
 functionExpression = Parser@'Function Expression' <|
     nodea(
         cons(
@@ -322,13 +305,13 @@ operatorExpression = Parser@'Operator Expression' <|
 
 // Tuple Expression
 ////////////////////////////////////////
-tupleExpression = Parser@'Tuple Expression' <|
-    between(punctuator '(', punctuator ')',
-        either(
-            attempt <| then(
-                operatorExpression,
-                lookahead(punctuator ')')),
-            expression));
+tupleExpression = Parser@'Tuple Expression' <| let
+    element = expression |> expected@"element"
+in
+    node(
+        between(punctuator '(', punctuator ')',
+            eager <| sepBy(punctuator ',', element)),
+        ast_expression.TupleExpression.create);
 
 // Primary Expression
 ////////////////////////////////////////
@@ -341,23 +324,9 @@ primaryExpression = Parser@'Primary Expression' <|
         arrayLiteral,
         objectLiteral,
         functionExpression,
+        attempt <| between(punctuator '(', punctuator ')',
+            operatorExpression),
         tupleExpression);
-
-// Argument
-////////////////////////////////////////
-argumentList = Parser@'Argument List' <| let
-    argument = expression |> expected@"argument"
-in
-    between(punctuator '(', punctuator ')',
-        eager(sepBy(punctuator ',', argument)));
-
-args = Parser@'Arguments' <|
-    node(
-        argumentList,
-        \loc, args -> {
-            args.loc = loc;
-            return args;
-        });
 
 // Accessor
 ////////////////////////////////////////
@@ -385,7 +354,7 @@ newExpression = Parser@'New Expression' <|
             keyword 'new',
             enumeration(
                 memberExpression |> expected@"member expression",
-                args |> expected@"argument list")),
+                tupleExpression |> expected@"argument list")),
         ast_expression.NewExpression.create);
 
 // Member Expression
@@ -408,55 +377,28 @@ memberExpression = Parser@'Member Expression' <|
 
 // Curry Expression
 ////////////////////////////////////////
-curryExpression = Parser@'Curry Expression' <| let
-    application = either(
-        args,
-        node(
-            eager <| enumeration(memberExpression),
-            \loc, args -> {
-                args.loc = loc;
-                return args;
-            })),
-    
-    reducer = \f args -> 
-        ast_expression.CurryExpression.create(
-            SourceLocation.merge(f.loc, args.loc),
-            f,
-            args)
-in
-    binds(
-        enumeration(
-            memberExpression,
-            many(
-                next(
-                    punctuator '@',
-                    application))),
-        foldl@reducer \>> always);
+curryExpression = Parser@'Curry Expression' <|
+    chainl1(
+        next(
+            punctuator '@',
+            always(\f args -> 
+                ast_expression.CurryExpression.create(
+                    SourceLocation.merge(f.loc, args.loc),
+                    f,
+                    args))),
+        memberExpression);
 
 // Call Expression
 ////////////////////////////////////////
-var application = either(
-    args,
-    node(
-        eager <| enumeration(curryExpression),
-        \loc, args -> {
-            args.loc = loc;
-            return args;
-        }));
-
-callExpression = Parser@'Call Expression' <| let
-    reducer = \p c ->
-        ast_expression.CallExpression.create(
-            SourceLocation.merge(p.loc, c.loc),
-            p,
-            c)
-in
-    binds(
-        enumeration(
-            curryExpression,
-            many(application)),
-        foldl@reducer \>> always);
-
+callExpression = Parser@'Call Expression' <|
+    chainl1(
+        always(\p c ->
+            ast_expression.CallExpression.create(
+                SourceLocation.merge(p.loc, c.loc),
+                p,
+                c)),
+        curryExpression);
+    
 // Call Expression
 ////////////////////////////////////////
 var leftHandSideExpression = Parser@'Call Expression' <| let
@@ -475,7 +417,7 @@ in
     binds(
         enumeration(
             callExpression,
-            many(either(application, accessor))),
+            many(either(curryExpression, accessor))),
         foldl@reducer \>> always);
 
 // Unary Expression

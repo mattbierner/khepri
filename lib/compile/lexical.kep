@@ -485,6 +485,9 @@ _check = \node -> {
     case 'BinaryOperatorExpression':
     case 'TernaryOperatorExpression':
         return pass;
+        
+    case 'TupleExpression':
+        return checkChild('elements');
     
 // Function
     case 'FunctionExpression':

@@ -340,6 +340,8 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             case "BinaryOperatorExpression":
             case "TernaryOperatorExpression":
                 return pass;
+            case "TupleExpression":
+                return checkChild("elements");
             case "FunctionExpression":
                 return realBlock((node.id ? addImmutableBinding(node.id.name, node.loc) : pass),
                     checkChild("params"), ((node.body.type === "BlockStatement") ? child(checkChild(
