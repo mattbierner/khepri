@@ -54,7 +54,7 @@ define(["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-str
         "\u000b"))),
         escapeCharacter = choice(singleEscapeCharacter, decimalDigit, character("u"), character("x")),
         nonEscapeCharacter = token((function(tok) {
-            return (!(test(escapeCharacter, tok) || test(lineTerminator, tok)));
+            return !(test(escapeCharacter, tok) || test(lineTerminator, tok));
         }));
     (hexEscapeSequence = next(character("x"), bind(times(2, hexDigit), fromCharCodeParser)));
     (unicodeEscapeSequence = next(character("u"), bind(times(4, hexDigit), fromCharCodeParser)));
@@ -64,11 +64,11 @@ define(["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-str
             return f(g(x));
         });
     })((function(x) {
-        return (!x);
+        return !x;
     }), test.bind(null, decimalDigit)))), always("\u0000")), hexEscapeSequence, unicodeEscapeSequence));
     (singleStringCharacter = choice(attempt(lineContinuation), next(escape, escapeSequence), token((function(
         tok) {
-        return (!((test(singleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok)));
+        return !((test(singleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok));
     }))));
     (singleStringCharacters = many(singleStringCharacter));
     (singleStringLiteral = Parser("Single String Literal", between(singleQuote, singleQuote, bind(
@@ -79,7 +79,7 @@ define(["require", "exports", "bennu/parse", "bennu/text", "bennu/lang", "nu-str
         })(always, join)))));
     (doubleStringCharacter = choice(attempt(lineContinuation), next(escape, escapeSequence), token((function(
         tok) {
-        return (!((test(doubleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok)));
+        return !((test(doubleQuote, tok) || test(escape, tok)) || test(lineTerminator, tok));
     }))));
     (doubleStringCharacters = many(doubleStringCharacter));
     (doubleStringLiteral = Parser("Double String Literal", between(doubleQuote, doubleQuote, bind(

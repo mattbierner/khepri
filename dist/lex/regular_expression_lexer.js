@@ -31,7 +31,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
             return f(g(x));
         });
     })((function(x) {
-        return (!x);
+        return !x;
     }), test.bind(null, lineTerminator))));
     (regularExpressionBackslashSequence = next(character("\\"), bind(regularExpressionNonTerminator, (function(
         f, g) {
@@ -43,7 +43,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
         })
         .bind(null, "\\")))));
     (regularExpressionClassChar = either(attempt(token((function(tok) {
-        return (((!test(lineTerminator, tok)) && (tok !== "]")) && (tok !== "\\"));
+        return ((!test(lineTerminator, tok) && (tok !== "]")) && (tok !== "\\"));
     }))), regularExpressionBackslashSequence));
     (regularExpressionClassChars = many(regularExpressionClassChar));
     (regularExpressionClass = between(character("["), character("]"), bind(regularExpressionClassChars, (
@@ -51,11 +51,11 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
             return always((("[" + join(body)) + "]"));
         }))));
     (regularExpressionFirstChar = choice(token((function(tok) {
-        return (((((!test(lineTerminator, tok)) && (tok !== "*")) && (tok !== "\\")) && (tok !==
+        return ((((!test(lineTerminator, tok) && (tok !== "*")) && (tok !== "\\")) && (tok !==
             "`")) && (tok !== "["));
     })), regularExpressionBackslashSequence, regularExpressionClass));
     (regularExpressionChar = choice(token((function(tok) {
-        return ((((!test(lineTerminator, tok)) && (tok !== "\\")) && (tok !== "`")) && (tok !==
+        return (((!test(lineTerminator, tok) && (tok !== "\\")) && (tok !== "`")) && (tok !==
             "["));
     })), regularExpressionBackslashSequence, regularExpressionClass));
     (regularExpressionChars = many(regularExpressionChar));

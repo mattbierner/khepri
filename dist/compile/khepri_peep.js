@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/khepri_peep.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper", "khepri-ast/node",
     "khepri-ast/statement", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_statement, ast_expression, ast_pattern, ast_value) {
@@ -64,7 +60,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
         }), elements)), ud);
     }));
     addPeephole("ObjectPatternElement", (function(node) {
-        return (!node.target);
+        return !node.target;
     }), (function(node) {
         var loc = node["loc"],
             key = node["key"];
@@ -80,7 +76,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
         }
     }));
     addPeephole("CurryExpression", (function(node) {
-        return (!node.args.length);
+        return !node.args.length;
     }), (function(node) {
         return node.base;
     }));
@@ -109,7 +105,7 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
     }));
     var opt = (function(z) {
         var t = tree.modifyNode((function(node) {
-            if ((!node)) return node;
+            if (!node) return node;
             var transforms = (peepholes[node.type] || [])
                 .filter((function(x) {
                     return x.condition(node);

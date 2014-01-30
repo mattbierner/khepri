@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/parser.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bennu/parse", "nu-stream/stream", "../position", "./program_parser"], (function(require,
     exports, parse, stream, __o, __o0) {
     "use strict";
@@ -62,7 +58,7 @@ define(["require", "exports", "bennu/parse", "nu-stream/stream", "../position", 
     }));
     (ParserState.prototype.next = (function(tok) {
         var self = this;
-        if ((!self._next)) {
+        if (!self._next) {
             var r = rest(self.input),
                 end = (isEmpty(r) ? tok.loc.end : first(r)
                     .loc.start),

@@ -8,7 +8,8 @@ var mkdirp = require('mkdirp');
 var unparse = require('ecma-unparse').unparse;
 var unparse_print = require('ecma-unparse').print;
 
-var index = path.join(__dirname, '..', 'index');
+var root = path.join(__dirname, '..');
+var index = path.join(root, 'index');
 var khepri_compile = require(index).compile.compile;
 var lexer = require(index).lex.lexer;
 var parser = require(index).parse.parser;
@@ -16,19 +17,18 @@ var parser = require(index).parse.parser;
 var KHEPRI_EXT = /^\.kep$/i;
 
 
-var compile = function(input, options) {
+var compile = function(input, header, options, ok, err) {
     try {
         var lex = lexer.lex(input);
         var ast = parser.parseStream(lex);
-        var unparsed = unparse.unparse(khepri_compile.compile(ast, options));
-        return unparse_print.print(unparsed);
+        var unparsed = unparse.unparse(khepri_compile.compile(ast, options));        
+        return ok(header + unparse_print.print(unparsed));
     } catch (e) {
-        console.error(e.stack + '');
-        process.exit(1);
+        return err(e);
     }
 };
 
-var compileFile = function(inFile, outFile, header, options) {
+var compileFile = function(inFile, outFile, header, options, ok, error) {
     fs.realpath(inFile, function(err, resolvedPath) {
         if (err) throw err;
         
@@ -43,7 +43,9 @@ var compileFile = function(inFile, outFile, header, options) {
                             subPath,
                             outFile && path.join(outFile, file),
                             header,
-                            options);
+                            options,
+                            ok,
+                            error);
                     }
                     
                     if (path.extname(file).match(KHEPRI_EXT))
@@ -51,7 +53,8 @@ var compileFile = function(inFile, outFile, header, options) {
                             subPath,
                             outFile && path.join(outFile, path.basename(file, '.kep') + '.js'),
                             header,
-                            options);
+                            options,
+                            ok, error);
                 });
             });
         
@@ -60,38 +63,53 @@ var compileFile = function(inFile, outFile, header, options) {
             
             if (outFile)
                 console.log("Khepri'" + inFile + "' to:'" + outFile + "'");
-            
-            var out = header + compile(data, options);
-            if (outFile) {
-                // create output directory if not exists
-                mkdirp(path.dirname(outFile), function(err) {
-                    fs.writeFile(outFile, out, 'utf8', function(err) {
-                        if (err) throw err;
-                    });
-                });
-                console.log("Compiled '" + inFile + "' to '" + outFile + "'");
-            } else {
-                process.stdout.write(out);
-            }
+
+            compile(data, header, options,
+                function(data) { ok(data, inFile, outFile); },
+                function(data) { error(data, inFile, outFile); });
         });
     });
 };
 
 
 // Arguments
-var argv = require('optimist')
-    .usage('Compile Khepri to Javascript.\nUsage: $0')
-    .demand(1)
-    .options('header', {
-        'default': ''
-    })
-    .describe('header', "Javascript header to prefix output file.")
+var argParse = require('optimist')
+    .wrap(80)
+    .usage(
+        ["Compile Khepri to Javascript.",
+        "",
+        "Usage: khepri [options] [-o out_file] in_file",
+        "",
+        "Compiles Khepri input from `in_file` to Javascript in `out_file`. If `in_file` is",
+        "not specified, reads input from stdin. If `in_file` is a directory, compiles all",
+        "*.kep files to output files paths building to paths rooted at `out_file`",
+        "When `out_file` is not specified, writes output to stdout."].join('\n'))
+    .boolean('help')
+        .describe('help', "Print usage info")
     .boolean('version')
-    .describe('version', "Print version number")
-    .argv;
+        .describe('version', "Print version number")
+    .options('o', {
+        'describe': 'Output file or directory'
+    })
+    .options('package_manager', {
+        'default': 'amd',
+        'describe': 'Package manager to target. (amd | node)'
+    })
+    .options('header', {
+        'default': '',
+        'describe': 'Javascript header to prefix output.'
+    });
+
+var argv = argParse.argv;
 
 if (argv.version) {
-    console.log("s");
+    var pack = require(path.join(root, 'package.json'));
+    process.stdout.write(pack.version + '\n');
+    return 0;
+}
+
+if (argv.help) {
+    argParse.showHelp(process.stdout.write.bind(process.stdout));
     return 0;
 }
 
@@ -102,4 +120,25 @@ var inFile = argv._[0],
 var options = {};
 if ('package_manager' in argv) options.package_manager = argv.package_manager;
 
-compileFile(inFile, outFile, header, options);
+var err = function(e) { console.error(e + ''); };
+
+var ok = (!outFile ?
+    process.stdout.write.bind(process.stdout) :
+    function(out, inFile, outFile) {
+        mkdirp(path.dirname(outFile), function(err) {
+            fs.writeFile(outFile, out, 'utf8', function(err) {
+                if (err) throw err;
+                console.log("Compiled '" + inFile + "' to '" + outFile + "'");
+            });
+        });
+    });
+
+if (!inFile) {
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', function(data) {
+        compile(data, header, options, ok, err);
+    });
+} else {
+    compileFile(inFile, outFile, header, options, ok, err);
+}
