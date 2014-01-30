@@ -300,11 +300,12 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
             node.consequent), _transform(node.alternate));
     }));
     addTransform("NewExpression", (function(node) {
-        return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args));
+        return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args
+            .elements));
     }));
     addTransform("CallExpression", (function(node) {
         return callExpression(node.loc, node.callee, ((node.args.type === "TupleExpression") ? node.args
-            .elements : [node.args]));
+            .elements : (Array.isArray(node.args) ? node.args : [node.args])));
     }));
     addTransform("MemberExpression", (function(node) {
         return ecma_expression.MemberExpression.create(node.loc, _transform(node.object), _transform(
@@ -315,7 +316,7 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
     }));
     addTransform("CurryExpression", (function(node) {
         return curryExpression(node.loc, node.base, ((node.args.type === "TupleExpression") ? node.args
-            .elements : [node.args]));
+            .elements : (Array.isArray(node.args) ? node.args : [node.args])));
     }));
     addTransform("TupleExpression", (function(node) {
         return ecma_expression.SequenceExpression.create(node.loc, _transform(node.elements));

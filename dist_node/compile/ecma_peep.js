@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/ecma_peep.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var tree = require("neith")["tree"],
     zipper = require("neith")["zipper"],

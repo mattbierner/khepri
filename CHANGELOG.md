@@ -1,5 +1,12 @@
 # ChangeLog #
 
+## 0.12.0 - January 30, 2014
+* Allow `TupleExpression` as valid subexpressions. If not used in a call or curry,
+  these are mapped to Javascript sequence expressions.
+** Changes AST output of primary expressions.
+* Fixed forms `f(+)` for operator expressions which translates to `f((+))`.
+* Improved nested currying of curried expression so `f@1@2@3` generates `f.bind(null, 1, 2, 3);`
+
 ## 0.11.4 - January 29, 2014
 * Added read from stdin support to compile.
 * Added `--help` and `--version` flags.

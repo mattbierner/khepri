@@ -1,6 +1,7 @@
 "use strict";
 var ast_node = require("khepri-ast")["node"],
     setUserData = ast_node["setUserData"],
+    ast_expression = require("khepri-ast")["expression"],
     ast_pattern = require("khepri-ast")["pattern"],
     ast_value = require("khepri-ast")["value"],
     zipper = require("neith")["zipper"],
@@ -334,9 +335,12 @@ var ok = (function(x) {
         case "BinaryOperatorExpression":
         case "TernaryOperatorExpression":
             return pass;
+        case "TupleExpression":
+            return checkChild("elements");
         case "FunctionExpression":
             return realBlock((node.id ? addImmutableBinding(node.id.name, node.loc) : pass), checkChild(
-                "params"), child(checkChild("body"), "body"));
+                "params"), ((node.body.type === "BlockStatement") ? child(checkChild("body"), "body") :
+                checkChild("body")));
         case "EllipsisPattern":
             return pass;
         case "SinkPattern":

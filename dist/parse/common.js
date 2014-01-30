@@ -36,7 +36,7 @@ define(["require", "exports", "bennu/parse", "nu-stream/stream", "../position"],
                 } else {
                     while ((stack.length > 0)) {
                         var o2 = stack[(stack.length - 1)];
-                        if (((!tok.right && (o2.precedence === tok.precedence)) || (o2.precedence <
+                        if ((((!tok.right) && (o2.precedence === tok.precedence)) || (o2.precedence <
                             tok.precedence))) {
                             stack.pop();
                             var rt = out.pop(),

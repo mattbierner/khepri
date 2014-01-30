@@ -52,7 +52,7 @@ define(["require", "exports", "bennu/parse", "bennu/lang", "bennu/text", "nu-str
             return f(g(x));
         });
     })(always, (function(x) {
-        return -x;
+        return (-x);
     })))), next(optional(null, positiveSign), unsignedInteger))));
     var hexIntegerLiteralDigits = Parser("Hex Integer Literal Digits Lexer", bind(hexDigits, (function(num) {
         return always(parseInt(num, 16));

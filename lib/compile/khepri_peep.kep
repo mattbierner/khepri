@@ -44,20 +44,25 @@ var concatArgs = \args(...) ->
  ******************************************************************************/
 var peepholes = {};
 
-var addPeephole = \type, condition, f -> {
+var addPeephole = \types, up, condition, f -> {
     var entry = {
         'condition': condition,
-        'map': f
+        'map': f,
+        'up': up
     };
-    peepholes.(type) = ?peepholes.(type) :peepholes.(type).concat(entry) :[entry];
+    
+    types.forEach <|\ type -> {
+        peepholes.(type) = ?peepholes.(type)
+            :peepholes.(type).concat(entry)
+            :[entry];
+    };
 };
-
 /* Peepholes
  ******************************************************************************/
 /**
  * Rewrite `return let` to a with statement.
  */
-addPeephole('ReturnStatement',
+addPeephole(['ReturnStatement'], false,
     \node ->
         (node.argument && node.argument.type === 'LetExpression'),
     \node ->
@@ -69,7 +74,7 @@ addPeephole('ReturnStatement',
 /**
  * Rewrite top level let expressions to with statements.
  */
-addPeephole('ExpressionStatement',
+addPeephole(['ExpressionStatement'], false,
     \node ->
         (node.expression && node.expression.type === 'LetExpression'),
     \node ->
@@ -81,7 +86,7 @@ addPeephole('ExpressionStatement',
 /**
  * Rewrite top level let expressions to with statements.
  */
-addPeephole('ExpressionStatement',
+addPeephole(['ExpressionStatement'], false,
     \node ->
         (  node.expression
         && node.expression.type === 'AssignmentExpression'
@@ -99,7 +104,7 @@ addPeephole('ExpressionStatement',
 /**
  * Convert all array patterns to object patterns
  */
-addPeephole('ArrayPattern',
+addPeephole(['ArrayPattern'], false,
     \_ -> true,
     \{loc elements ud} ->
         setUserData(
@@ -114,7 +119,7 @@ addPeephole('ArrayPattern',
 /**
  * Convert all array patterns to object patterns
  */
-addPeephole('ObjectPatternElement',
+addPeephole(['ObjectPatternElement'], false,
     \node -> !node.target,
     \node#{loc key} -> {
         switch(key.type) {
@@ -137,7 +142,7 @@ addPeephole('ObjectPatternElement',
 /**
  * Flatten currying of curry.
  */
-addPeephole('CurryExpression',
+addPeephole(['CurryExpression'], true,
     \node -> node.base.type === 'CurryExpression',
     \node ->
         ast_expression.CurryExpression.create(null,
@@ -149,7 +154,7 @@ addPeephole('CurryExpression',
 /**
  * Rewrite left pipe of curried expression to a call.
  */
-addPeephole('BinaryExpression',
+addPeephole(['BinaryExpression'], true,
     \node ->
         (node.operator === '|>' &&
             node.right.type === 'CurryExpression' || node.right.type === 'BinaryOperatorExpression' ||
@@ -162,7 +167,7 @@ addPeephole('BinaryExpression',
 /**
  * Rewrite right pipe of curried expression to a call.
  */
-addPeephole('BinaryExpression',
+addPeephole(['BinaryExpression'], true,
     \{operator left} ->
         (operator === '<|'
         &&  (  left.type === 'CurryExpression'
@@ -178,15 +183,39 @@ addPeephole('BinaryExpression',
 
 /* Interface
  ******************************************************************************/
+var transform = \node -> {
+    var transforms = (peepholes.(node.type) || []).filter(\x -> x.condition(node));
+    var down = transforms.filter(\x -> !x.up);
+    var up = transforms.filter(\x -> x.up);
+
+    return down.reduce(\p c -> c.map(p, transform), node);
+};
+
+var transformDown = \node -> {
+    var transforms = (peepholes.(node.type) || []).filter(\x -> !x.up && x.condition(node));
+    return transforms.reduce(\p c -> c.map(p, transformDown), node);
+};
+
+var transformUp = \node -> {
+    var transforms = (peepholes.(node.type) || []).filter(\x -> x.up && x.condition(node));
+    return transforms.reduce(\p c -> c.map(p, transformUp), node);
+};
+
 var opt = \z -> {
-    var t = tree.modifyNode(\node -> {
-        if (!node) return node;
-        var transforms = (peepholes.(node.type) || []).filter(\x -> x.condition(node));
-        return transforms.reduce(\p c -> c.map(p), node);
-    }, z);
+    var t = tree.modifyNode(\node -> (node && transformDown(node)), z);
     
-    var next = zipper.nextDfs(t);
-    return ?next :opt(next) :t;
+    if (zipper.isLeaf(t)) {
+        do {
+            t = tree.modifyNode(\node -> (node && transformUp(node)), t);
+            if (zipper.isLast(t)) {
+                if (zipper.isRoot(t))
+                    return t;
+                t = zipper.up(t);
+            } else
+                return opt(zipper.right(t));
+        } while (true);
+    }
+    return opt(zipper.down(t));
 };
 
 optimize = \{options ast} ->

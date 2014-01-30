@@ -543,14 +543,16 @@ addTransform('ConditionalExpression', \node ->
 addTransform('NewExpression', \node ->
     ecma_expression.NewExpression.create(node.loc,
         _transform(node.callee),
-        _transform(node.args)));
+        _transform(node.args.elements)));
 
 addTransform('CallExpression', \node ->
     callExpression(node.loc,
         node.callee,
         ?node.args.type === 'TupleExpression'
             :node.args.elements
-            :[node.args]));
+            :?Array.isArray(node.args)
+                :node.args
+                :[node.args]));
 
 addTransform('MemberExpression', \node ->
     ecma_expression.MemberExpression.create(node.loc,
@@ -568,7 +570,9 @@ addTransform('CurryExpression', \node ->
         node.base,
         ?node.args.type === 'TupleExpression'
             :node.args.elements
-            :[node.args]));
+            :?Array.isArray(node.args)
+                :node.args
+                :[node.args]));
 
 addTransform('TupleExpression', \node ->
     ecma_expression.SequenceExpression.create(node.loc,

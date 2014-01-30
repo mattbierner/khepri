@@ -24,7 +24,7 @@ var compile = function(input, header, options, ok, err) {
         var unparsed = unparse.unparse(khepri_compile.compile(ast, options));        
         return ok(header + unparse_print.print(unparsed));
     } catch (e) {
-        return err(e);
+        return err(e.stack);
     }
 };
 
@@ -122,8 +122,12 @@ if ('package_manager' in argv) options.package_manager = argv.package_manager;
 
 var err = function(e) { console.error(e + ''); };
 
+
 var ok = (!outFile ?
-    process.stdout.write.bind(process.stdout) :
+    function(x) {
+        process.stdout.setEncoding('utf8');
+        process.stdout.write(x);
+    } :
     function(out, inFile, outFile) {
         mkdirp(path.dirname(outFile), function(err) {
             fs.writeFile(outFile, out, 'utf8', function(err) {

@@ -381,22 +381,22 @@ curryExpression = Parser@'Curry Expression' <|
     chainl1(
         next(
             punctuator '@',
-            always(\f args -> 
+            always <|\f args -> 
                 ast_expression.CurryExpression.create(
                     SourceLocation.merge(f.loc, args.loc),
                     f,
-                    args))),
+                    args)),
         memberExpression);
 
 // Call Expression
 ////////////////////////////////////////
 callExpression = Parser@'Call Expression' <|
     chainl1(
-        always(\p c ->
+        always <|\p c ->
             ast_expression.CallExpression.create(
                 SourceLocation.merge(p.loc, c.loc),
                 p,
-                c)),
+                c),
         curryExpression);
     
 // Call Expression
