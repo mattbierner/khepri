@@ -25,3 +25,6 @@
 [submodule "dependencies/seshet"]
         path = dependencies/seshet
         url = https://github.com/mattbierner/seshet.git
+[submodule "dependencies/ecma-unparse"]
+	path = dependencies/ecma-unparse
+	url = https://github.com/mattbierner/ecma-unparse.git
