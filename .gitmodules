@@ -25,3 +25,6 @@
 [submodule "dependencies/ecma-unparse"]
 	path = dependencies/ecma-unparse
 	url = https://github.com/mattbierner/ecma-unparse.git
+[submodule "dependencies/khepri-ast"]
+	path = dependencies/khepri-ast
+	url = https://github.com/mattbierner/khepri-ast.git
