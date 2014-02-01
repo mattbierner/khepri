@@ -1,5 +1,12 @@
 # ChangeLog #
 
+## 0.13.0 - January 31, 2014
+* Removed `TupleExpression`.
+* Split `ApplicationExpression` from regular `CallExpression.`
+** Application has lower precedence than curry. `f x`
+** Call has same precedence as member expressions. This  allows chaining of calls
+  and member access. `f(1)`
+
 ## 0.12.0 - January 30, 2014
 * Allow `TupleExpression` as valid subexpressions. If not used in a call or curry,
   these are mapped to Javascript sequence expressions.

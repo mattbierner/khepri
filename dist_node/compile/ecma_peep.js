@@ -35,12 +35,14 @@ var tree = require("neith")["tree"],
 addPeephole(["VariableDeclaration"], false, (function(_) {
     return true;
 }), (function(node) {
-    var declarations = node.declarations.filter((function(x) {
-        return (!(!x));
-    }));
-    return modify(node, ({
-        "declarations": declarations
-    }), ({}));
+    return (function() {
+        var declarations = node.declarations.filter((function(x) {
+            return (!(!x));
+        }));
+        return modify(node, ({
+            "declarations": declarations
+        }), ({}));
+    })();
 }));
 addPeephole(["VariableDeclaration"], true, (function(node) {
     return (!node.declarations.length);
@@ -131,9 +133,11 @@ addPeephole(["BinaryExpression", "LogicalExpression"], true, (function(__o1) {
 }), (function(__o1) {
     var operator = __o1["operator"],
         left = __o1["left"],
-        right = __o1["right"],
-        value = arithmetic[operator](left.value, right.value);
-    return ast_value.Literal.create(null, (typeof value), value);
+        right = __o1["right"];
+    return (function() {
+        var value = arithmetic[operator](left.value, right.value);
+        return ast_value.Literal.create(null, (typeof value), value);
+    })();
 }));
 var arithmetic0 = ({
     "!": (function(x) {
@@ -162,9 +166,11 @@ addPeephole(["UnaryExpression"], true, (function(__o1) {
     return (arithmetic0[operator] && isPrimitive0(argument));
 }), (function(__o1) {
     var operator = __o1["operator"],
-        argument = __o1["argument"],
-        value = arithmetic0[operator](argument.value);
-    return ast_value.Literal.create(null, (typeof value), value);
+        argument = __o1["argument"];
+    return (function() {
+        var value = arithmetic0[operator](argument.value);
+        return ast_value.Literal.create(null, (typeof value), value);
+    })();
 }));
 var transform = (function(node) {
     var transforms = (peepholes[node.type] || [])

@@ -96,16 +96,20 @@ var ok = (function(x) {
     }),
     modifyScope = (function(f) {
         return (function(s, ok, err) {
-            var scope = f(s.scope),
-                newState = State.setScope(s, scope);
-            return ok(scope, newState);
+            return (function() {
+                var scope = f(s.scope),
+                    newState = State.setScope(s, scope);
+                return ok(scope, newState);
+            })();
         });
     }),
     modifyRealScope = (function(f) {
         return (function(s, ok, err) {
-            var scope = f(s.realScope),
-                newState = State.setRealScope(s, scope);
-            return ok(scope, newState);
+            return (function() {
+                var scope = f(s.realScope),
+                    newState = State.setRealScope(s, scope);
+                return ok(scope, newState);
+            })();
         });
     }),
     setScope = (function(s) {
@@ -165,9 +169,11 @@ var ok = (function(x) {
     }),
     hasFreeBinding = (function(id, loc) {
         return seq(hasBinding(id, loc), examineScope((function(s) {
-            var current = s.getBinding(id);
-            return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") + loc)) :
-                pass);
+            return (function() {
+                var current = s.getBinding(id);
+                return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") +
+                    loc)) : pass);
+            })();
         })));
     }),
     checkCanAssign = (function(id, loc) {

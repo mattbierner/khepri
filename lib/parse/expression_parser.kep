@@ -2,9 +2,6 @@
  * @fileOverview Khepri expression parsers.
  */
 package (
-// Array Literal
-    arrayElement
-    arrayElements
     arrayLiteral
     
 // Object Literal
@@ -19,10 +16,6 @@ package (
 // Operator
     operatorExpression
     
-// Tuple
-    tupleExpression
-    
-// Primary Expression
     primaryExpression
     
 // Curry Expression
@@ -30,8 +23,9 @@ package (
     
 // Call Expression
     args
-    argumentList
-    callExpression
+    
+// Application Expression
+    applicationExpression
     
 // Member Expression
     dotAccessor
@@ -49,7 +43,7 @@ package (
     unaryOperator
     unaryExpression
     
-// Binary Expfression
+// Binary Expression
     binaryExpression
     
 // Conditional Expression
@@ -127,23 +121,13 @@ memberExpression = \args(...) -> memberExpression.apply(undefined, args);
  ******************************************************************************/
 // Array Literal
 ////////////////////////////////////////
-/**
- * Parser for an element in an array literal.
- */
-arrayElement = Parser('Array Element',
-    expression);
-
-/**
- * Parser for the elements of an array literal.
- */
-arrayElements = Parser@'Array Elements' <|
-    eager <| sepBy(punctuator ',', arrayElement)
-        |> expected@"array element";
-
-/**
- * Parser for an ECMASccript array literal.
- */
-arrayLiteral = Parser@'Array Literal' <|
+arrayLiteral = Parser@'Array Literal' <| let
+    arrayElement = expression,
+    
+    arrayElements = Parser@'Array Elements' <|
+        eager <| sepBy(punctuator ',', arrayElement)
+            |> expected@"array element"
+in
     node(
         between(punctuator '[', punctuator ']',
             arrayElements),
@@ -224,7 +208,7 @@ in
         next(
             keyword 'let',
             enumeration(
-                eager(letBindings),
+                eager letBindings,
                 next(
                     keyword 'in',
                     letBody))),
@@ -303,16 +287,6 @@ operatorExpression = Parser@'Operator Expression' <|
         binaryOperatorExpression,
         ternayOperatorExpression);
 
-// Tuple Expression
-////////////////////////////////////////
-tupleExpression = Parser@'Tuple Expression' <| let
-    element = expression |> expected@"element"
-in
-    node(
-        between(punctuator '(', punctuator ')',
-            eager <| sepBy(punctuator ',', element)),
-        ast_expression.TupleExpression.create);
-
 // Primary Expression
 ////////////////////////////////////////
 primaryExpression = Parser@'Primary Expression' <|
@@ -326,7 +300,21 @@ primaryExpression = Parser@'Primary Expression' <|
         functionExpression,
         attempt <| between(punctuator '(', punctuator ')',
             operatorExpression),
-        tupleExpression);
+        between(punctuator '(', punctuator ')',
+            expression |> expected@"expression"));
+
+// args
+////////////////////////////////////////
+args = Parser@'Arguments' <| let
+    element = expression |> expected@"argument"
+in
+    node(
+        between(punctuator '(', punctuator ')',
+            eager <| sepBy(punctuator ',', element)),
+        \loc x -> {
+            x.loc = loc;
+            return x;
+        });
 
 // Accessor
 ////////////////////////////////////////
@@ -354,7 +342,7 @@ newExpression = Parser@'New Expression' <|
             keyword 'new',
             enumeration(
                 memberExpression |> expected@"member expression",
-                tupleExpression |> expected@"argument list")),
+                args |> expected@"argument list")),
         ast_expression.NewExpression.create);
 
 // Member Expression
@@ -375,31 +363,7 @@ memberExpression = Parser@'Member Expression' <|
             many accessor),
         foldl@accessorReducer \>> always);
 
-// Curry Expression
-////////////////////////////////////////
-curryExpression = Parser@'Curry Expression' <|
-    chainl1(
-        next(
-            punctuator '@',
-            always <|\f args -> 
-                ast_expression.CurryExpression.create(
-                    SourceLocation.merge(f.loc, args.loc),
-                    f,
-                    args)),
-        memberExpression);
-
-// Call Expression
-////////////////////////////////////////
-callExpression = Parser@'Call Expression' <|
-    chainl1(
-        always <|\p c ->
-            ast_expression.CallExpression.create(
-                SourceLocation.merge(p.loc, c.loc),
-                p,
-                c),
-        curryExpression);
-    
-// Call Expression
+// Lefthand side Expression
 ////////////////////////////////////////
 var leftHandSideExpression = Parser@'Call Expression' <| let
     reducer = \p c ->
@@ -416,9 +380,33 @@ var leftHandSideExpression = Parser@'Call Expression' <| let
 in
     binds(
         enumeration(
-            callExpression,
-            many(either(curryExpression, accessor))),
+            memberExpression,
+            many <| either(args, accessor)),
         foldl@reducer \>> always);
+
+// Curry Expression
+////////////////////////////////////////
+curryExpression = Parser@'Curry Expression' <|
+    chainl1(
+        next(
+            punctuator '@',
+            always <|\f args -> 
+                ast_expression.CurryExpression.create(
+                    SourceLocation.merge(f.loc, args.loc),
+                    f,
+                    args)),
+        leftHandSideExpression);
+
+// Application Expression
+////////////////////////////////////////
+applicationExpression = Parser@'Call Expression' <|
+    chainl1(
+        always <|\p c ->
+            ast_expression.CallExpression.create(
+                SourceLocation.merge(p.loc, c.loc),
+                p,
+                [c]),
+        curryExpression);
 
 // Unary Expression
 ////////////////////////////////////////
@@ -428,7 +416,7 @@ unaryOperator = Parser@'Unary Operator' <|
         punctuator('++', '--', '~', '!'));
 
 unaryExpression = Parser@'Unary Expression' <| let
-    reducer = \argument, op -> 
+    reducer = \argument op -> 
         ast_expression.UnaryExpression.create(
             SourceLocation.merge(op.loc, argument.loc),
             op.value,
@@ -436,12 +424,11 @@ unaryExpression = Parser@'Unary Expression' <| let
 in
     binds(
         enumeration(
-            many(unaryOperator),
-            leftHandSideExpression  |> expected@"unary argument"),
+            many unaryOperator,
+            applicationExpression |> expected@"unary argument"),
         \ops, expression ->
             always(foldr(reducer, expression, ops)));
 
-        
 // Binary Expressions
 ////////////////////////////////////////
 var multiplicativeOperator = punctuator('*', '/', '%');
@@ -545,13 +532,14 @@ binaryExpression = Parser@'Binary Expression' <|
 ////////////////////////////////////////
 expression = binaryExpression;
 
+
 // Left Hand Reference Expression
 ////////////////////////////////////////
 leftHandReferenceExpression = Parser@'Left Hand Reference Expression' <|
     binds(
         enumeration(
             identifier |> memo,
-            many(accessor) |> memo),
+            many accessor |> memo),
         foldl@accessorReducer \>> always);
 
 // Assignment Expression

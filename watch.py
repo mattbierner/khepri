@@ -10,7 +10,7 @@ from watchdog.observers.kqueue import KqueueObserver as Observer
 from watchdog.events import PatternMatchingEventHandler
 
 
-KHEPRI = "node %s" % os.path.join(os.path.dirname(os.path.realpath(__file__)), "compile.js")
+KHEPRI = "node %s" % os.path.join(os.path.dirname(os.path.realpath(__file__)), "bin/khepri")
 KHEPRI_FILE_PATTERN = '*.kep'
 
 class KhepriMatchingEventHandler(PatternMatchingEventHandler):

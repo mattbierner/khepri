@@ -548,11 +548,7 @@ addTransform('NewExpression', \node ->
 addTransform('CallExpression', \node ->
     callExpression(node.loc,
         node.callee,
-        ?node.args.type === 'TupleExpression'
-            :node.args.elements
-            :?Array.isArray(node.args)
-                :node.args
-                :[node.args]));
+        node.args));
 
 addTransform('MemberExpression', \node ->
     ecma_expression.MemberExpression.create(node.loc,
@@ -568,11 +564,7 @@ addTransform('LetExpression', \node ->
 addTransform('CurryExpression', \node ->
     curryExpression(node.loc,
         node.base,
-        ?node.args.type === 'TupleExpression'
-            :node.args.elements
-            :?Array.isArray(node.args)
-                :node.args
-                :[node.args]));
+        node.args));
 
 addTransform('TupleExpression', \node ->
     ecma_expression.SequenceExpression.create(node.loc,

@@ -6,7 +6,7 @@ package (
 {
 
 var copy = \obj ->
-    Object.keys(obj).reduce(\p, c -> {
+    (Object.keys(obj)).reduce(\p, c -> {
         p.(c) = obj.(c);
         return p;
     }, new obj.constructor());

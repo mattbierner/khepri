@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var __o = require("bennu")["parse"],
     always = __o["always"],
@@ -51,17 +47,16 @@ var __o = require("bennu")["parse"],
     literal = __o5["literal"],
     stringLiteral = __o5["stringLiteral"],
     pattern = require("./pattern_parser"),
-    arrayElement, arrayElements, arrayLiteral, propertyName, propertyInitializer, objectProperties, objectLiteral,
-        functionExpression, operatorExpression, tupleExpression, primaryExpression, curryExpression, args, argumentList,
-        callExpression, dotAccessor, bracketAccessor, accessor, memberExpression, newExpression,
-        leftHandReferenceExpression, unaryOperator, unaryExpression, binaryExpression, conditionalExpression,
-        letExpression, assignmentOperator, assignmentExpression, expression, topLevelExpression, sourceElements = (
-            function() {
-                var args = arguments,
-                    __o6 = require("./program_parser"),
-                    sourceElements = __o6["sourceElements"];
-                return sourceElements.apply(undefined, args);
-            });
+    arrayLiteral, propertyName, propertyInitializer, objectProperties, objectLiteral, functionExpression,
+        operatorExpression, primaryExpression, curryExpression, args, applicationExpression, dotAccessor,
+        bracketAccessor, accessor, memberExpression, newExpression, leftHandReferenceExpression, unaryOperator,
+        unaryExpression, binaryExpression, conditionalExpression, letExpression, assignmentOperator,
+        assignmentExpression, expression, topLevelExpression, sourceElements = (function() {
+            var args = arguments,
+                __o6 = require("./program_parser"),
+                sourceElements = __o6["sourceElements"];
+            return sourceElements.apply(undefined, args);
+        });
 (expression = (function() {
     var args = arguments;
     return expression.apply(undefined, args);
@@ -70,10 +65,12 @@ var __o = require("bennu")["parse"],
     var args = arguments;
     return memberExpression.apply(undefined, args);
 }));
-(arrayElement = Parser("Array Element", expression));
-(arrayElements = expected("array element", Parser("Array Elements", eager(sepBy(punctuator(","), arrayElement)))));
-(arrayLiteral = Parser("Array Literal", node(between(punctuator("["), punctuator("]"), arrayElements), ast_expression.ArrayExpression
-    .create)));
+(arrayLiteral = Parser("Array Literal", (function() {
+    var arrayElement = expression,
+        arrayElements = expected("array element", Parser("Array Elements", eager(sepBy(punctuator(","),
+            arrayElement))));
+    return node(between(punctuator("["), punctuator("]"), arrayElements), ast_expression.ArrayExpression.create);
+})()));
 (propertyName = stringLiteral);
 (propertyInitializer = Parser("Property Initializer", nodea(enumeration(then(propertyName, punctuator(":")), expression),
     ast_value.ObjectValue.create)));
@@ -119,14 +116,17 @@ var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(ke
     })));
 (operatorExpression = Parser("Operator Expression", choice(unaryOperatorExpression, binaryOperatorExpression,
     ternayOperatorExpression)));
-(tupleExpression = Parser("Tuple Expression", (function() {
-    var element = expected("element", expression);
-    return node(between(punctuator("("), punctuator(")"), eager(sepBy(punctuator(","), element))),
-        ast_expression.TupleExpression.create);
-})()));
 (primaryExpression = Parser("Primary Expression", choice(letExpression, conditionalExpression, identifier, literal,
     arrayLiteral, objectLiteral, functionExpression, attempt(between(punctuator("("), punctuator(")"),
-        operatorExpression)), tupleExpression)));
+        operatorExpression)), between(punctuator("("), punctuator(")"), expected("expression", expression)))));
+(args = Parser("Arguments", (function() {
+    var element = expected("argument", expression);
+    return node(between(punctuator("("), punctuator(")"), eager(sepBy(punctuator(","), element))), (
+        function(loc, x) {
+            (x.loc = loc);
+            return x;
+        }));
+})()));
 (accessor = Parser("Accessor", node(next(punctuator("."), either(bind(identifier, (function(x) {
     return always([x, false]);
 })), bind(between(punctuator("("), punctuator(")"), expected("accessor expression", expression)), (
@@ -142,7 +142,7 @@ var unaryOperatorExpression = Parser("Unary Operator Expression", bind(either(ke
     });
 }))));
 (newExpression = Parser("New Expression", nodea(next(keyword("new"), enumeration(expected("member expression",
-    memberExpression), expected("argument list", tupleExpression))), ast_expression.NewExpression.create)));
+    memberExpression), expected("argument list", args))), ast_expression.NewExpression.create)));
 var accessorReducer = (function(p, c) {
     return ast_expression.MemberExpression.create(SourceLocation.merge(p.loc, c.loc), p, c.property, c.computed);
 });
@@ -152,31 +152,31 @@ var accessorReducer = (function(p, c) {
         return f(g.apply(null, arguments));
     });
 })(always, foldl.bind(null, accessorReducer)))));
-(curryExpression = Parser("Curry Expression", chainl1(next(punctuator("@"), always((function(f, args) {
-    return ast_expression.CurryExpression.create(SourceLocation.merge(f.loc, args.loc), f, args);
-}))), memberExpression)));
-(callExpression = Parser("Call Expression", chainl1(always((function(p, c) {
-    return ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, c);
-})), curryExpression)));
 var leftHandSideExpression = Parser("Call Expression", (function() {
     var reducer = (function(p, c) {
         return (c.hasOwnProperty("property") ? ast_expression.MemberExpression.create(SourceLocation.merge(
             p.loc, c.loc), p, c.property, c.computed) : ast_expression.CallExpression.create(
             SourceLocation.merge(p.loc, c.loc), p, c));
     });
-    return binds(enumeration(callExpression, many(either(curryExpression, accessor))), (function(f, g) {
+    return binds(enumeration(memberExpression, many(either(args, accessor))), (function(f, g) {
         return (function() {
             return f(g.apply(null, arguments));
         });
     })(always, foldl.bind(null, reducer)));
 })());
+(curryExpression = Parser("Curry Expression", chainl1(next(punctuator("@"), always((function(f, args) {
+    return ast_expression.CurryExpression.create(SourceLocation.merge(f.loc, args.loc), f, args);
+}))), leftHandSideExpression)));
+(applicationExpression = Parser("Call Expression", chainl1(always((function(p, c) {
+    return ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, [c]);
+})), curryExpression)));
 (unaryOperator = Parser("Unary Operator", either(keyword("typeof", "void"), punctuator("++", "--", "~", "!"))));
 (unaryExpression = Parser("Unary Expression", (function() {
     var reducer0 = (function(argument, op) {
         return ast_expression.UnaryExpression.create(SourceLocation.merge(op.loc, argument.loc), op.value,
             argument);
     });
-    return binds(enumeration(many(unaryOperator), expected("unary argument", leftHandSideExpression)), (
+    return binds(enumeration(many(unaryOperator), expected("unary argument", applicationExpression)), (
         function(ops, expression) {
             return always(foldr(reducer0, expression, ops));
         }));
@@ -273,8 +273,6 @@ var deleteOperator = keyword("delete"),
         return ast_expression.UnaryExpression.create(loc, op.value, expression);
     })));
 (topLevelExpression = choice(deleteExpression, assignmentExpression, expression));
-(exports.arrayElement = arrayElement);
-(exports.arrayElements = arrayElements);
 (exports.arrayLiteral = arrayLiteral);
 (exports.propertyName = propertyName);
 (exports.propertyInitializer = propertyInitializer);
@@ -282,12 +280,10 @@ var deleteOperator = keyword("delete"),
 (exports.objectLiteral = objectLiteral);
 (exports.functionExpression = functionExpression);
 (exports.operatorExpression = operatorExpression);
-(exports.tupleExpression = tupleExpression);
 (exports.primaryExpression = primaryExpression);
 (exports.curryExpression = curryExpression);
 (exports.args = args);
-(exports.argumentList = argumentList);
-(exports.callExpression = callExpression);
+(exports.applicationExpression = applicationExpression);
 (exports.dotAccessor = dotAccessor);
 (exports.bracketAccessor = bracketAccessor);
 (exports.accessor = accessor);

@@ -16,7 +16,7 @@ var concat = Function.prototype.call.bind(Array.prototype.concat);
 var map = Function.prototype.call.bind(Array.prototype.map);
 
 var path = \path ->
-    path.split('::').join('/');
+    (path.split('::')).join('/');
 
 /* Package Manager
  ******************************************************************************/

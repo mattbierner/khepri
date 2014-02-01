@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile/khepri_peep.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var tree = require("neith")["tree"],
     zipper = require("neith")["zipper"],
@@ -27,13 +23,6 @@ var tree = require("neith")["tree"],
         return (Array.isArray(x) ? reduce(x, (function(p, c) {
             return p.concat(c);
         }), []) : x);
-    }),
-    concatArgs = (function() {
-        var args = arguments;
-        return ast_expression.TupleExpression.create(null, flatten(map((function(x) {
-            return (((!x) || Array.isArray(x)) ? x : ((x.type === "TupleExpression") ? x.elements :
-                x));
-        }), args)));
     }),
     peepholes = ({}),
     addPeephole = (function(types, up, condition, f) {
@@ -97,7 +86,7 @@ addPeephole(["ObjectPatternElement"], false, (function(node) {
 addPeephole(["CurryExpression"], true, (function(node) {
     return (node.base.type === "CurryExpression");
 }), (function(node) {
-    return ast_expression.CurryExpression.create(null, node.base.base, concatArgs(node.base.args, node.args));
+    return ast_expression.CurryExpression.create(null, node.base.base, concat(node.base.args, node.args));
 }));
 addPeephole(["BinaryExpression"], true, (function(node) {
     return ((node.operator === "|>") && ((((node.right.type === "CurryExpression") || (node.right.type ===
@@ -105,7 +94,7 @@ addPeephole(["BinaryExpression"], true, (function(node) {
         .type === "TernaryOperatorExpression")));
 }), (function(node) {
     return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ? node.right.base :
-        node.right), concatArgs((node.right.args || []), node.left));
+        node.right), concat((node.right.args || []), node.left));
 }));
 addPeephole(["BinaryExpression"], true, (function(__o1) {
     var operator = __o1["operator"],
@@ -115,7 +104,7 @@ addPeephole(["BinaryExpression"], true, (function(__o1) {
         "TernaryOperatorExpression")));
 }), (function(node) {
     return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ? node.left.base :
-        node.left), concatArgs((node.left.args || []), node.right));
+        node.left), concat((node.left.args || []), node.right));
 }));
 var transform = (function(node) {
     var transforms = (peepholes[node.type] || [])

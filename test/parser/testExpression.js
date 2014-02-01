@@ -94,10 +94,10 @@ function(parse,
                 assert.equal(expr.type, 'BinaryExpression');
                 assert.equal(expr.operator, '+');
                 assert.equal(expr.left.name, 'a');
-                assert.equal(expr.right.elements[0].type, 'BinaryExpression');
-                assert.equal(expr.right.elements[0].operator, '+');
-                assert.equal(expr.right.elements[0].left.name, 'b');
-                assert.equal(expr.right.elements[0].right.name, 'c');
+                assert.equal(expr.right.type, 'BinaryExpression');
+                assert.equal(expr.right.operator, '+');
+                assert.equal(expr.right.left.name, 'b');
+                assert.equal(expr.right.right.name, 'c');
             }],
             ["Binary Expression Precedence",
             function(){
@@ -133,7 +133,7 @@ function(parse,
                 var expr = testParser(lexer.lex("new a();"));
                 assert.equal(expr.type, 'NewExpression');
                 assert.equal(expr.callee.name, 'a');
-                assert.equal(expr.args.elements.length, 0);
+                assert.equal(expr.args.length, 0);
             }],
             ["Many New Expression",
             function(){
@@ -141,16 +141,16 @@ function(parse,
                 assert.equal(expr.type, 'NewExpression');
                 assert.equal(expr.callee.type, 'NewExpression');
                 assert.equal(expr.callee.callee.name, 'a');
-                assert.equal(expr.callee.args.elements.length, 0);
-                assert.equal(expr.args.elements.length, 0);
+                assert.equal(expr.callee.args.length, 0);
+                assert.equal(expr.args.length, 0);
             }],
             ["New Expression Args",
             function(){
                 var expr = testParser(lexer.lex("new a(1);"));
                 assert.equal(expr.type, 'NewExpression');
                 assert.equal(expr.callee.name, 'a');
-                assert.equal(expr.args.elements.length, 1);
-                assert.equal(expr.args.elements[0].value, 1);
+                assert.equal(expr.args.length, 1);
+                assert.equal(expr.args[0].value, 1);
             }],
             ["Many New Expression Args",
             function(){
@@ -158,10 +158,10 @@ function(parse,
                 assert.equal(expr.type, 'NewExpression');
                 assert.equal(expr.callee.type, 'NewExpression');
                 assert.equal(expr.callee.callee.name, 'a');
-                assert.equal(expr.callee.args.elements.length, 1);
-                assert.equal(expr.callee.args.elements[0].value, 1);
-                assert.equal(expr.args.elements.length, 1);
-                assert.equal(expr.args.elements[0].value, 2);
+                assert.equal(expr.callee.args.length, 1);
+                assert.equal(expr.callee.args[0].value, 1);
+                assert.equal(expr.args.length, 1);
+                assert.equal(expr.args[0].value, 2);
             }],
             
             ["Simple Call Expression ",
@@ -169,15 +169,15 @@ function(parse,
                 var expr = testParser(lexer.lex("a();"));
                 assert.equal(expr.type, 'CallExpression');
                 assert.equal(expr.callee.name, 'a');
-                assert.equal(expr.args.elements.length, 0);
+                assert.equal(expr.args.length, 0);
             }],
             ["Call Expression with args",
             function(){
                 var expr = testParser(lexer.lex("a(b);"));
                 assert.equal(expr.type, 'CallExpression');
                 assert.equal(expr.callee.name, 'a');
-                assert.equal(expr.args.elements.length, 1);
-                assert.equal(expr.args.elements[0].name, 'b');
+                assert.equal(expr.args.length, 1);
+                assert.equal(expr.args[0].name, 'b');
             }],
             ["Multiple Call Expression",
             function(){
@@ -185,10 +185,10 @@ function(parse,
                 assert.equal(expr.type, 'CallExpression');
                 assert.equal(expr.callee.type, 'CallExpression');
                 assert.equal(expr.callee.callee.name, 'a');
-                assert.equal(expr.callee.args.elements.length, 1);
-                assert.equal(expr.callee.args.elements[0].name, 'b');
-                assert.equal(expr.args.elements.length, 1);
-                assert.equal(expr.args.elements[0].name, 'c');
+                assert.equal(expr.callee.args.length, 1);
+                assert.equal(expr.callee.args[0].name, 'b');
+                assert.equal(expr.args.length, 1);
+                assert.equal(expr.args[0].name, 'c');
             }],
             
             ["Simple Dot Accessor",
