@@ -24,7 +24,7 @@ var compile = function(input, header, options, ok, err) {
         var unparsed = unparse.unparse(khepri_compile.compile(ast, options));        
         return ok(header + unparse_print.print(unparsed));
     } catch (e) {
-        return err(e.stack + '');
+        return err(e + '');
     }
 };
 
