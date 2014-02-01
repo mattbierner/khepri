@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/parse/expression_parser.kep'
+ * DO NOT EDIT
+*/
 "use strict";
 var __o = require("bennu")["parse"],
     always = __o["always"],
@@ -164,21 +168,29 @@ var leftHandSideExpression = Parser("Call Expression", (function() {
         });
     })(always, foldl.bind(null, reducer)));
 })());
-(curryExpression = Parser("Curry Expression", chainl1(next(punctuator("@"), always((function(f, args) {
-    return ast_expression.CurryExpression.create(SourceLocation.merge(f.loc, args.loc), f, args);
-}))), leftHandSideExpression)));
+(curryExpression = Parser("Curry Expression", (function() {
+    var reducer0 = (function(f, args) {
+        return ast_expression.CurryExpression.create(SourceLocation.merge(f.loc, args.loc), f, args);
+    });
+    return binds(enumeration(leftHandSideExpression, many(next(punctuator("@"), either(args,
+        leftHandSideExpression)))), (function(f, g) {
+        return (function() {
+            return f(g.apply(null, arguments));
+        });
+    })(always, foldl.bind(null, reducer0)));
+})()));
 (applicationExpression = Parser("Call Expression", chainl1(always((function(p, c) {
     return ast_expression.CallExpression.create(SourceLocation.merge(p.loc, c.loc), p, [c]);
 })), curryExpression)));
 (unaryOperator = Parser("Unary Operator", either(keyword("typeof", "void"), punctuator("++", "--", "~", "!"))));
 (unaryExpression = Parser("Unary Expression", (function() {
-    var reducer0 = (function(argument, op) {
+    var reducer1 = (function(argument, op) {
         return ast_expression.UnaryExpression.create(SourceLocation.merge(op.loc, argument.loc), op.value,
             argument);
     });
     return binds(enumeration(many(unaryOperator), expected("unary argument", applicationExpression)), (
         function(ops, expression) {
-            return always(foldr(reducer0, expression, ops));
+            return always(foldr(reducer1, expression, ops));
         }));
 })()));
 var multiplicativeOperator = punctuator("*", "/", "%"),

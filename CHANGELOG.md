@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.13.1 - Feb 1, 2014
+* Fixed curry expression with argument list.
+
 ## 0.13.0 - January 31, 2014
 * Removed `TupleExpression`.
 * Split `ApplicationExpression` from regular `CallExpression.`

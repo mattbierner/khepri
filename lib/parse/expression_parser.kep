@@ -386,16 +386,23 @@ in
 
 // Curry Expression
 ////////////////////////////////////////
-curryExpression = Parser@'Curry Expression' <|
-    chainl1(
-        next(
-            punctuator '@',
-            always <|\f args -> 
-                ast_expression.CurryExpression.create(
-                    SourceLocation.merge(f.loc, args.loc),
-                    f,
-                    args)),
-        leftHandSideExpression);
+curryExpression = Parser@'Curry Expression' <| let
+    reducer = \f args -> 
+        ast_expression.CurryExpression.create(
+            SourceLocation.merge(f.loc, args.loc),
+            f,
+            args)
+in
+    binds(
+        enumeration(
+            leftHandSideExpression,
+            many(
+                next(
+                    punctuator '@',
+                    either(
+                        args,
+                        leftHandSideExpression)))),
+        foldl@reducer \>> always);
 
 // Application Expression
 ////////////////////////////////////////
