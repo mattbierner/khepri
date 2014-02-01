@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECMA Unparse</title>
+    <style>
+        .content > * {
+            width: 100%;
+            position: relative;
+        }
+        
+        .content > * > * {
+            padding: 0 2em;
+            display: block;
+        }
+        
+        .console textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .ParseError {
+            color: red;
+        }
+
+        #text_out {
+            border: 1px solid black;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body lang="en">
+    <div class="content">
+        <div class='console'>
+            <h2>Input</h2>
+            <div>
+                <textarea rows='20'></textarea>
+                <button>Tokenize</button>
+            </div>
+        </div>
+        <div class='output'>
+            <h2>Output</h2>
+            <span class="ParseError"></span>
+            <p>
+                <span id='parse_out'></span>
+            </p>
+            <pre id='text_out'></pre>
+        </div>
+    </div>
+    
+    <script type="application/javascript" src="resources/require.js"></script>
+    <script type="application/javascript" src="resources/jquery-1.8.3.min.js"></script>
+    
+    <script type="application/javascript">
+        requirejs.config({
+            paths: {
+                'ecma_unparse': 'lib',
+            
+                'nu-stream': 'dependencies/nu/dist',
+                
+                'ecma_ast': 'dependencies/ecma-ast/lib',
+                
+                'bennu': 'resources/bennu/dist',
+                'seshet': 'resources/seshat/dist/seshet',
+                'seshat': 'resources/seshat/dist/seshet',
+                
+                'ecma': 'resources/parse-ecma/lib'
+            }
+        });
+        $(function () {
+            require([
+                'nu-stream/stream',
+                'ecma/lex/lexer', 'ecma/parse/parser',
+                'ecma_unparse/unparse', 'ecma_unparse/print'],
+            function(
+                stream,
+                lexer,
+                parser,
+                ecma_unparse, print, serialization)
+            {
+                var lexOut = $('.LexOut');
+                $('button').click(function () {
+                    var input = $('textarea').val();
+                    var ast;
+                  //  try {
+                        ast = parser.parse(input);
+                        
+                        var raw = ecma_unparse.unparse(ast);
+                        var nodes = print.print(raw);
+                        
+                        $('.ParseError').text('');
+                        $('#text_out').text(nodes);
+                  //  } catch (e) {
+                      //  $('.ParseError').text(e);
+                      //  $('#parse_out').text('');
+                  //  }
+                    
+                });
+            });
+        });
+    </script>
+
+</body>
+    
+</html>

@@ -1,0 +1,30 @@
+{
+    "name": "ecma-unparse",
+    "version": "3.2.4",
+    "description": "Simple ECMAscript AST to text transform",
+    "author": "Matt Bierner",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/mattbierner/ecma-unparse.git"
+    },
+    "keywords": [
+        "ecmascript",
+       "unparse"],
+
+    "main": "index.js",
+    "directories": {
+        "lib": "lib/"
+    },
+    "files": [
+        "dependencies/",
+        "lib/",
+        "dist_node/",
+        "index.js",
+        "test.js"
+    ],
+    "dependencies": {
+        "nu-stream": "3.1.x",
+        "ecma-ast": "2.4.x"
+    }
+}
