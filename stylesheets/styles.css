@@ -97,11 +97,9 @@ textarea {
   font-family: sans-serif;
 }
 
-/*
- * Addresses margins handled incorrectly in IE6/7
- */
 body {
   margin: 0;
+  min-width: 320px;
 }
 
 /* =============================================================================
@@ -642,14 +640,12 @@ header #pages {
 header #pages ul {
     display: table;
     width: 100%;
-    table-layout: fixed;
     position: relative;
 }
 
 header #pages li {
     display: table-cell;
     text-align: center;
-    width: 100%;
 }
 
 header #pages a {
@@ -799,11 +795,11 @@ footer .credits {
 }
 
 footer .credits.left {
-    padding-left: 2em;
+    margin-left: 2em;
 }
 
 footer .credits.right {
-    padding-right: 2em;
+    margin-right: 2em;
 }
 
 #bottom-logo {
@@ -887,4 +883,14 @@ footer .credits.right {
         padding-right: 1em;
     }
      
+}
+
+
+@media print, screen and (max-width: 420px) {
+
+
+    footer .credits {
+        padding: 0 1em 0.5em 1em;
+    }
+
 }
