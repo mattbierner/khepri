@@ -45,6 +45,10 @@ article.wrapper {
     text-align: left;
 }
 
+#console-output pre {
+    white-space: pre-wrap;
+}
+
 
 #console {
     padding: 8px 15px;
