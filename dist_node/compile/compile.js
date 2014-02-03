@@ -1,5 +1,9 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/compile.kep'
+ * DO NOT EDIT
+*/
 "use strict";
-var lexical = require("./lexical"),
+var lexical = require("./stage/lexical"),
     transform = require("./transform"),
     khepri_peep = require("./khepri_peep"),
     ecma_peep = require("./ecma_peep"),
@@ -27,7 +31,7 @@ var lexical = require("./lexical"),
     return (function() {
         return f(g.apply(null, arguments));
     });
-})(lexical.checkStage, (function(root, options) {
+})(lexical.check, (function(root, options) {
     return ({
         "ast": root,
         "options": (options || ({}))

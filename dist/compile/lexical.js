@@ -10,7 +10,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     var setUserData = ast_node["setUserData"],
         khepriZipper = __o["khepriZipper"],
         Scope = __o0["Scope"],
-        check, checkStage, map = Function.prototype.call.bind(Array.prototype.map),
+        check, map = Function.prototype.call.bind(Array.prototype.map),
         reduce = Function.prototype.call.bind(Array.prototype.reduce),
         reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
         Tail = (function(f, s, ok, err) {
@@ -80,8 +80,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         }),
         move = (function(op) {
             return modifyState((function(s) {
-                var c = op(s.ctx);
-                return State.setCtx(s, c);
+                return State.setCtx(s, op(s.ctx));
             }));
         }),
         examineScope = (function(f) {
@@ -265,6 +264,10 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         setNode = (function(x) {
             return move(tree.setNode.bind(null, x));
         }),
+        up = move(zipper.up),
+        down = move(zipper.down),
+        left = move(zipper.left),
+        right = move(zipper.right),
         checks = ({}),
         addCheck = (function(type, check) {
             if (Array.isArray(type)) type.forEach((function(x) {
@@ -316,8 +319,8 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     }))));
     addCheck("UnaryExpression", checkChild("argument"));
     addCheck("AssignmentExpression", seq(checkChild("left"), inspect((function(node) {
-        return ((node.left.type === "Identifier") ? checkCanAssign(node.left.name, node.left.loc
-            .start) : pass);
+        return ((node.left.type === "Identifier") ? checkCanAssign(node.left.name, node.left.loc) :
+            pass);
     })), checkChild("right")));
     addCheck(["LogicalExpression", "BinaryExpression"], seq(checkChild("left"), checkChild("right")));
     addCheck("ConditionalExpression", seq(checkChild("test"), checkChild("consequent"), checkChild("alternate")));
@@ -356,7 +359,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             return n;
         })), checkTop), "target");
     }))));
-    addCheck("ObjectPattern", inspect((function(node) {
+    addCheck(["ObjectPattern", "ArrayPattern"], inspect((function(node) {
         return examineScope((function(s) {
             if (((!node.ud) || (!node.ud.id))) {
                 var unused = s.getUnusedId("__o"),
@@ -391,39 +394,24 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     (_check = (function(node) {
         if (Array.isArray(node)) {
             if ((!node.length)) return pass;
-            return seq(move(zipper.down), seqa(map(node, (function(_, i) {
-                return ((i === (node.length - 1)) ? checkTop : next(checkTop, move(
-                    zipper.right)));
-            }))), move(zipper.up));
+            return seq(down, seqa(map(node, (function(_, i) {
+                return ((i === (node.length - 1)) ? checkTop : next(checkTop, right));
+            }))), up);
         }
         if (((node instanceof ast_node.Node) && checks[node.type])) return checks[node.type];
         return pass;
     }));
-    var builtins = ["Array", "Boolean", "Date", "decodeURI", "decodeURIComponent", "encodeURI",
-        "encodeURIComponent", "Error", "eval", "EvalError", "Function", "Infinity", "isFinite", "isNaN", "JSON",
-        "Math", "NaN", "Number", "Object", "parseInt", "parseFloat", "RangeError", "ReferenceError", "RegExp",
-        "String", "SyntaxError", "TypeError", "undefined", "URIError"
-    ],
-        checkAst = (function(ast, globals) {
-            var scope = reduce(globals, Scope.addImmutableBinding, new(Scope)(({}), null, ({}))),
-                state = new(State)(khepriZipper(ast), scope, scope);
-            return trampoline(checkTop(state, (function(x, s) {
-                return tree.node(zipper.root(s.ctx));
-            }), (function(err, s) {
-                throw err;
-            })));
-        });
+    var checkAst = (function(ast, globals) {
+        var scope = reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}))),
+            state = new(State)(khepriZipper(ast), scope, scope);
+        return trampoline(checkTop(state, (function(x, s) {
+            return tree.node(zipper.root(s.ctx));
+        }), (function(err, s) {
+            throw err;
+        })));
+    });
     (check = (function(ast, globals) {
-        return checkAst(ast, (globals || builtins));
-    }));
-    (checkStage = (function(__o1) {
-        var options = __o1["options"],
-            ast = __o1["ast"];
-        return ({
-            "ast": check(ast, ((options && options.globals) || builtins)),
-            "options": options
-        });
+        return checkAst(ast, globals);
     }));
     (exports.check = check);
-    (exports.checkStage = checkStage);
 }));

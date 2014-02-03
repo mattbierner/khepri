@@ -1,7 +1,7 @@
 package (
     compile)
 with
-    import './lexical' lexical,
+    import './stage/lexical' lexical,
     import './transform' transform,
     import './khepri_peep' khepri_peep,
     import './ecma_peep' ecma_peep
@@ -10,7 +10,7 @@ in {
 compile =
     (\root options ->
         ({'ast': root, 'options': options || {}}))
-    \>> lexical.checkStage
+    \>> lexical.check
     \>> khepri_peep.optimize
     \>> transform.transform
     \>> ecma_peep.optimize

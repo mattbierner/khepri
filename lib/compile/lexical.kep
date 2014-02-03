@@ -1,11 +1,8 @@
 /**
  * @fileOverview
- * 
- * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 package (
-    check
-    checkStage)
+    check)
 with
     import 'khepri-ast::node' ast_node#{setUserData},
     import 'khepri-ast::expression' ast_expression,
@@ -79,10 +76,9 @@ var modifyState = \f -> bind(extract, \s -> setState(f(s)));
 
 var examineState = \f -> bind(extract, \s -> f(s));
 
-var move = \op -> modifyState(\s -> {
-    var c = op(s.ctx);
-    return State.setCtx(s, c);
-});
+var move = \op ->
+    modifyState(\s ->
+        State.setCtx(s, op(s.ctx)));
 
 var examineScope = \f -> bind(extract, \s -> f(s.scope));
 
@@ -196,7 +192,9 @@ var checkCanAssign = \id, loc ->
  */
 var getUnusedId = \id, loc -> 
     examineRealScope <|\ s ->
-        ok(?s.hasOwnBinding(id) :s.getUnusedId(id) :id);
+        ok(?s.hasOwnBinding(id)
+            :s.getUnusedId(id)
+            :id);
 
 /**
  * 
@@ -300,6 +298,14 @@ var modifyNode = \f ->
 var setNode = \x ->
     move tree.setNode@x;
 
+var up = move zipper.up;
+
+var down = move zipper.down;
+
+var left = move zipper.left;
+
+var right = move zipper.right;
+    
 /*
  ******************************************************************************/
 var checks = {};
@@ -449,7 +455,7 @@ addCheck@'AssignmentExpression' <|
         checkChild 'left',
         inspect <|\ node ->
             ?node.left.type === 'Identifier'
-                :checkCanAssign(node.left.name, node.left.loc.start)
+                :checkCanAssign(node.left.name, node.left.loc)
                 :pass,
         checkChild 'right');
 
@@ -537,7 +543,7 @@ addCheck@'AsPattern' <|
                 checkTop),
             'target'));
 
-addCheck@'ObjectPattern' <|
+addCheck@['ObjectPattern', 'ArrayPattern'] <|
     inspect <|\ node -> 
         examineScope(\s -> {
             if (!node.ud || !node.ud.id) {
@@ -559,7 +565,7 @@ addCheck@'ObjectPatternElement' <|
     seq(
         checkChild 'target',
         checkChild 'key');
-    
+
 addCheck@'ArgumentsPattern' <|
     seq(
         checkChild 'id',
@@ -589,12 +595,12 @@ _check = \node -> {
             return pass;
         
         return seq(
-            move(zipper.down),
+            down,
             seqa(map(node, \_ i -> 
                 ?i === node.length - 1
                     :checkTop
-                    :next(checkTop, move(zipper.right)))),
-            move(zipper.up));
+                    :next(checkTop, right))),
+            up);
     }
     
     if (node instanceof ast_node.Node && checks.(node.type))
@@ -604,42 +610,11 @@ _check = \node -> {
 };
 
 
-var builtins = [
-    'Array',
-    'Boolean',
-    'Date',
-    'decodeURI',
-    'decodeURIComponent',
-    'encodeURI',
-    'encodeURIComponent',
-    'Error',
-    'eval',
-    'EvalError',
-    'Function',
-    'Infinity',
-    'isFinite',
-    'isNaN',
-    'JSON',
-    'Math',
-    'NaN',
-    'Number',
-    'Object',
-    'parseInt',
-    'parseFloat',
-    'RangeError',
-    'ReferenceError',
-    'RegExp',
-    'String',
-    'SyntaxError',
-    'TypeError',
-    'undefined',
-    'URIError'];
-
 /**
  * 
  */
 var checkAst = \ast globals -> {
-    var scope = reduce(globals, Scope.addImmutableBinding, new Scope({}, null, {}));
+    var scope = reduce(globals || [], Scope.addImmutableBinding, new Scope({}, null, {}));
     var state = new State(khepriZipper(ast), scope, scope);
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };
@@ -648,14 +623,7 @@ var checkAst = \ast globals -> {
  * 
  */
 check = \ast globals ->
-    checkAst(ast, globals || builtins);
+    checkAst(ast, globals);
 
-/**
- * 
- */
-checkStage = \{options ast} -> ({
-    'ast': check(ast, ((options && options.globals) || builtins)),
-    'options': options
-});
 
 }

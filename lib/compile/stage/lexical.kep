@@ -1,0 +1,51 @@
+/**
+ * @fileOverview
+ */
+package (
+    check)
+with
+    import '../lexical' lexical
+in {
+
+
+var builtins = [
+    'Array',
+    'Boolean',
+    'Date',
+    'decodeURI',
+    'decodeURIComponent',
+    'encodeURI',
+    'encodeURIComponent',
+    'Error',
+    'eval',
+    'EvalError',
+    'Function',
+    'Infinity',
+    'isFinite',
+    'isNaN',
+    'JSON',
+    'Math',
+    'NaN',
+    'Number',
+    'Object',
+    'parseInt',
+    'parseFloat',
+    'RangeError',
+    'ReferenceError',
+    'RegExp',
+    'String',
+    'SyntaxError',
+    'TypeError',
+    'undefined',
+    'URIError'];
+
+
+/**
+ * 
+ */
+check = \{options ast} -> ({
+    'ast': lexical.check(ast, ((options && options.globals) || builtins)),
+    'options': options
+});
+
+}
