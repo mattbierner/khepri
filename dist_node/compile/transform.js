@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/transform.kep'
+ * DO NOT EDIT
+*/
 "use strict";
 var ecma_clause = require("ecma-ast")["clause"],
     ecma_declaration = require("ecma-ast")["declaration"],
@@ -113,9 +117,9 @@ var returnStatement = (function(loc, argument) {
     }),
     functionExpression = (function(loc, id, parameters, functionBody) {
         return (function() {
-            var params = _transform(filter.bind(null, (function(x) {
+            var params = _transform(filter((function(x) {
                 return (x.type !== "EllipsisPattern");
-            }))(parameters.elements)),
+            }), parameters.elements)),
                 elementsPrefix = flatten(map((function(x) {
                     switch (x.type) {
                         case "IdentifierPattern":
@@ -138,7 +142,8 @@ var returnStatement = (function(loc, argument) {
             return ecma_expression.FunctionExpression.create(loc, _transform(id), params, blockStatement(body.loc,
                 concat((strict ? khepri_statement.ExpressionStatement.create(null, khepri_value.Literal.create(
                     null, "string", "use strict")) : []), variableDeclaration(null, prefix), (function() {
-                    var block = _transform(body.body);
+                    var block = _transform(body)
+                        .body;
                     return (strict ? block.slice(1) : block);
                 })())));
         })();
@@ -303,7 +308,7 @@ addTransform("ConditionalExpression", (function(node) {
         _transform(node.alternate));
 }));
 addTransform("NewExpression", (function(node) {
-    return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args.elements));
+    return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args));
 }));
 addTransform("CallExpression", (function(node) {
     return callExpression(node.loc, node.callee, node.args);

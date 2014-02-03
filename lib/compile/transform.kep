@@ -543,7 +543,7 @@ addTransform('ConditionalExpression', \node ->
 addTransform('NewExpression', \node ->
     ecma_expression.NewExpression.create(node.loc,
         _transform(node.callee),
-        _transform(node.args.elements)));
+        _transform(node.args)));
 
 addTransform('CallExpression', \node ->
     callExpression(node.loc,

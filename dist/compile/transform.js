@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/transform.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression", "ecma-ast/node",
     "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause", "khepri-ast/declaration",
     "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/program", "khepri-ast/statement",
@@ -107,9 +111,9 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
         }),
         functionExpression = (function(loc, id, parameters, functionBody) {
             return (function() {
-                var params = _transform(filter.bind(null, (function(x) {
+                var params = _transform(filter((function(x) {
                     return (x.type !== "EllipsisPattern");
-                }))(parameters.elements)),
+                }), parameters.elements)),
                     elementsPrefix = flatten(map((function(x) {
                         switch (x.type) {
                             case "IdentifierPattern":
@@ -134,7 +138,8 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
                     blockStatement(body.loc, concat((strict ? khepri_statement.ExpressionStatement.create(
                             null, khepri_value.Literal.create(null, "string", "use strict")) : []),
                         variableDeclaration(null, prefix), (function() {
-                            var block = _transform(body.body);
+                            var block = _transform(body)
+                                .body;
                             return (strict ? block.slice(1) : block);
                         })())));
             })();
@@ -304,8 +309,7 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
             node.consequent), _transform(node.alternate));
     }));
     addTransform("NewExpression", (function(node) {
-        return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args
-            .elements));
+        return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args));
     }));
     addTransform("CallExpression", (function(node) {
         return callExpression(node.loc, node.callee, node.args);

@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.13.2 - Feb 3, 2014
+* Fixed new expression.
+
 ## 0.13.1 - Feb 1, 2014
 * Fixed curry expression with argument list.
 
