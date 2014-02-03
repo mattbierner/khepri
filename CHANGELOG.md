@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.13.3 - Feb 3, 2014
+* Split `lex` and `parse` into own package.
+
 ## 0.13.2 - Feb 3, 2014
 * Fixed new expression.
 
