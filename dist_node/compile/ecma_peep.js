@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/ecma_peep.kep'
+ * DO NOT EDIT
+*/
 "use strict";
 var tree = require("neith")["tree"],
     zipper = require("neith")["zipper"],
@@ -63,8 +67,8 @@ addPeephole(["Program", "BlockStatement"], true, (function(_) {
 }), (function(node) {
     return modify(node, ({
         "body": node.body.reduceRight((function(p, c) {
-            return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p[0].type ===
-                "VariableDeclaration")) ? concat(modify(c, ({
+            return (((((c && (c.type === "VariableDeclaration")) && p.length) && p[0]) && (p[0]
+                .type === "VariableDeclaration")) ? concat(modify(c, ({
                 "declarations": concat(c.declarations, p[0].declarations)
             }), ({})), p.slice(1)) : concat(c, p));
         }), [])

@@ -291,7 +291,7 @@
                         $('#time').text(diff);
                         
                         $('.ParseError').text('');
-                        walk(ast, function(x){
+                        walk(ast, function(x) {
                             $('.ParseOut').append(x);
                         });
                     } catch (e) {

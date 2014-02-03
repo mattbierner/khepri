@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/lexical.kep'
+ * DO NOT EDIT
+*/
 "use strict";
 var ast_node = require("khepri-ast")["node"],
     setUserData = ast_node["setUserData"],
@@ -15,14 +19,16 @@ var ast_node = require("khepri-ast")["node"],
     check, checkStage, map = Function.prototype.call.bind(Array.prototype.map),
     reduce = Function.prototype.call.bind(Array.prototype.reduce),
     reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
-    cont = (function(f, args) {
-        var c = [f, args];
-        (c._next = true);
-        return c;
+    Tail = (function(f, s, ok, err) {
+        var self = this;
+        (self.f = f);
+        (self.s = s);
+        (self.ok = ok);
+        (self.err = err);
     }),
     trampoline = (function(f) {
         var value = f;
-        while ((value && value._next))(value = value[0].apply(undefined, value[1]));
+        while ((value instanceof Tail))(value = value.f(value.s, value.ok, value.err));
         return value;
     }),
     State = record.declare(null, ["ctx", "realScope", "scope", "vars", "unique"]);
@@ -41,9 +47,9 @@ var ok = (function(x) {
     }),
     bind = (function(p, f) {
         return (function(s, ok, err) {
-            return cont(p, [s, (function(x, s) {
+            return new(Tail)(p, s, (function(x, s) {
                 return f(x)(s, ok, err);
-            }), err]);
+            }), err);
         });
     }),
     next = (function(p, n) {
@@ -247,10 +253,15 @@ var ok = (function(x) {
         return seq(move(tree.child.bind(null, edge)), f, move(zipper.up));
     }),
     checkCtx = (function(node) {
-        return _check(tree.node(node));
+        return _check((node && tree.node(node)));
     }),
     checkTop = (function(s, ok, err) {
         return checkCtx(s.ctx)(s, ok, err);
+    }),
+    inspect = (function(f) {
+        return examineState((function(s) {
+            return f(tree.node(s.ctx));
+        }));
     }),
     checkChild = child.bind(null, checkTop),
     modifyNode = (function(f) {
@@ -258,7 +269,126 @@ var ok = (function(x) {
     }),
     setNode = (function(x) {
         return move(tree.setNode.bind(null, x));
+    }),
+    checks = ({}),
+    addCheck = (function(type, check) {
+        if (Array.isArray(type)) type.forEach((function(x) {
+            return addCheck(x, check);
+        }));
+        else(checks[type] = check);
     });
+addCheck("Program", checkChild("body"));
+addCheck("PackageExports", checkChild("exports"));
+addCheck("PackageExport", inspect((function(node) {
+    return addMutableBindingChecked(node.id.name, node.loc);
+})));
+addCheck("Package", seq(addImmutableBindingChecked("require", null), addImmutableBindingChecked("exports", null),
+    addImmutableBindingChecked("module", null), checkChild("exports"), inspect((function(node) {
+        return ((node.body.type === "WithStatement") ? child(seq(checkChild("bindings"), child(checkChild(
+            "body"), "body")), "body") : child(checkChild("body"), "body"));
+    }))));
+addCheck("SwitchCase", seq(checkChild("test"), checkChild("consequent")));
+addCheck("CatchClause", block(inspect((function(node) {
+    return addImmutableBindingChecked(node.param.name, node.param.loc);
+})), child(checkChild("body"), "body")));
+addCheck(["StaticDeclaration", "VariableDeclaration"], checkChild("declarations"));
+addCheck("StaticDeclarator", inspect((function(node) {
+    return addImmutableBindingChecked(node.id.name, node.loc);
+})));
+addCheck("VariableDeclarator", seq(inspect((function(node) {
+    return addMutableBindingChecked(node.id.name, node.loc);
+})), checkChild("id"), checkChild("init")));
+addCheck("Binding", seq(checkChild("pattern"), checkChild("value")));
+addCheck("BlockStatement", block(checkChild("body")));
+addCheck("ExpressionStatement", checkChild("expression"));
+addCheck("IfStatement", seq(checkChild("test"), block(checkChild("consequent")), block(checkChild("alternate"))));
+addCheck("WithStatement", block(checkChild("bindings"), child(checkChild("body"), "body")));
+addCheck("SwitchStatement", block(checkChild("discriminant"), checkChild("cases")));
+addCheck(["ReturnStatement", "ThrowStatement"], checkChild("argument"));
+addCheck("TryStatement", seq(checkChild("block"), block(checkChild("handler")), block(checkChild("finalizer"))));
+addCheck("WhileStatement", seq(checkChild("test"), block(checkChild("body"))));
+addCheck("DoWhileStatement", seq(block(checkChild("body")), checkChild("test")));
+addCheck("ForStatement", block(checkChild("init"), checkChild("test"), checkChild("update"), block(checkChild("body"))));
+addCheck("FunctionExpression", realBlock(inspect((function(node) {
+    return (node.id ? addImmutableBinding(node.id.name, node.loc) : pass);
+})), checkChild("params"), inspect((function(node) {
+    return ((node.body.type === "BlockStatement") ? child(checkChild("body"), "body") : checkChild(
+        "body"));
+}))));
+addCheck("UnaryExpression", checkChild("argument"));
+addCheck("AssignmentExpression", seq(checkChild("left"), inspect((function(node) {
+    return ((node.left.type === "Identifier") ? checkCanAssign(node.left.name, node.left.loc.start) :
+        pass);
+})), checkChild("right")));
+addCheck(["LogicalExpression", "BinaryExpression"], seq(checkChild("left"), checkChild("right")));
+addCheck("ConditionalExpression", seq(checkChild("test"), checkChild("consequent"), checkChild("alternate")));
+addCheck(["CallExpression", "NewExpression"], seq(checkChild("callee"), checkChild("args")));
+addCheck("MemberExpression", seq(checkChild("object"), inspect((function(node) {
+    return (node.computed ? checkChild("property") : pass);
+}))));
+addCheck("ArrayExpression", checkChild("elements"));
+addCheck("ObjectExpression", checkChild("properties"));
+addCheck("LetExpression", block(checkChild("bindings"), checkChild("body")));
+addCheck("CurryExpression", seq(checkChild("base"), checkChild("args")));
+addCheck("SinkPattern", bind(getUnusedId("_"), (function(x) {
+    return seq(modifyNode((function(node) {
+        var n = setUserData(node, (node.ud || ({}))),
+            id = ast_value.Identifier.create(null, x);
+        (n.ud.id = id);
+        return n;
+    })), inspect((function(node) {
+        return addReservedBinding(x, node.loc);
+    })));
+})));
+addCheck("IdentifierPattern", inspect((function(node) {
+    if (node.reserved) return addReservedBinding(node.id.name, node.loc);
+    return seq(addUniqueImmutableBinding(node.id.name, node.loc), checkChild("id"), modifyNode((function(
+        node) {
+        var n = setUserData(node, (node.ud || ({})));
+        (n.ud.id = ast_value.Identifier.create(null, node.id.name));
+        return n;
+    })));
+})));
+addCheck("ImportPattern", checkChild("pattern"));
+addCheck("AsPattern", seq(checkChild("id"), inspect((function(node) {
+    return child(seq(modifyNode((function(target) {
+        var n = setUserData(target, (target.ud || ({})));
+        (n.ud.id = node.id);
+        return n;
+    })), checkTop), "target");
+}))));
+addCheck("ObjectPattern", inspect((function(node) {
+    return examineScope((function(s) {
+        if (((!node.ud) || (!node.ud.id))) {
+            var unused = s.getUnusedId("__o"),
+                id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier.create(
+                    null, unused));
+            (id.reserved = true);
+            var n = setUserData(node, (node.ud || ({})));
+            (n.ud.id = id);
+            return seq(setNode(ast_pattern.AsPattern.create(null, id, node)), checkTop);
+        }
+        return checkChild("elements");
+    }));
+})));
+addCheck("ObjectPatternElement", seq(checkChild("target"), checkChild("key")));
+addCheck("ArgumentsPattern", seq(checkChild("id"), checkChild("elements"), checkChild("self")));
+addCheck("ObjectValue", checkChild("value"));
+addCheck("Identifier", inspect((function(node) {
+    return (function() {
+        var name = node.name;
+        return examineScope((function(s) {
+            return (s.hasMapping(name) ? (function() {
+                var mappedName = s.getMapping(name);
+                return seq(modifyNode((function(x) {
+                    return ast_node.modify(x, ({}), ({
+                        "name": mappedName
+                    }));
+                })), hasFreeBinding(mappedName, node.loc));
+            })() : hasFreeBinding(name, node.loc));
+        }));
+    })();
+})));
 (_check = (function(node) {
     if (Array.isArray(node)) {
         if ((!node.length)) return pass;
@@ -266,149 +396,7 @@ var ok = (function(x) {
             return ((i === (node.length - 1)) ? checkTop : next(checkTop, move(zipper.right)));
         }))), move(zipper.up));
     }
-    if ((!(node instanceof ast_node.Node))) return pass;
-    switch (node.type) {
-        case "Program":
-            return checkChild("body");
-        case "Package":
-            return seq(addImmutableBindingChecked("require", null), addImmutableBindingChecked("exports", null),
-                addImmutableBindingChecked("module", null), checkChild("exports"), ((node.body.type ===
-                    "WithStatement") ? child(seq(checkChild("bindings"), child(checkChild("body"), "body")),
-                    "body") : child(checkChild("body"), "body")));
-        case "PackageExports":
-            return checkChild("exports");
-        case "PackageExport":
-            return addMutableBindingChecked(node.id.name, node.loc);
-        case "CatchClause":
-            return block(addImmutableBindingChecked(node.param.name, node.param.loc), child(checkChild("body"),
-                "body"));
-        case "SwitchCase":
-            return seq(checkChild("test"), checkChild("consequent"));
-        case "StaticDeclaration":
-        case "VariableDeclaration":
-            return checkChild("declarations");
-        case "StaticDeclarator":
-            return addImmutableBindingChecked(node.id.name, node.loc);
-        case "VariableDeclarator":
-            return seq(addMutableBindingChecked(node.id.name, node.loc), checkChild("id"), checkChild("init"));
-        case "Binding":
-            return seq(checkChild("pattern"), checkChild("value"));
-        case "BlockStatement":
-            return block(checkChild("body"));
-        case "ExpressionStatement":
-            return checkChild("expression");
-        case "IfStatement":
-            return seq(checkChild("test"), block(checkChild("consequent")), block(checkChild("alternate")));
-        case "WithStatement":
-            return block(checkChild("bindings"), child(checkChild("body"), "body"));
-        case "SwitchStatement":
-            return block(checkChild("discriminant"), checkChild("cases"));
-        case "ReturnStatement":
-        case "ThrowStatement":
-            return checkChild("argument");
-        case "TryStatement":
-            return seq(checkChild("block"), block(checkChild("handler")), block(checkChild("finalizer")));
-        case "WhileStatement":
-            return seq(checkChild("test"), block(checkChild("body")));
-        case "DoWhileStatement":
-            return seq(block(checkChild("body")), checkChild("test"));
-        case "ForStatement":
-            return block(checkChild("init"), checkChild("test"), checkChild("update"), block(checkChild("body")));
-        case "UnaryExpression":
-            return checkChild("argument");
-        case "AssignmentExpression":
-            return seq(checkChild("left"), ((node.left.type === "Identifier") ? checkCanAssign(node.left.name,
-                node.left.loc.start) : pass), checkChild("right"));
-        case "LogicalExpression":
-        case "BinaryExpression":
-            return seq(checkChild("left"), checkChild("right"));
-        case "ConditionalExpression":
-            return seq(checkChild("test"), checkChild("consequent"), checkChild("alternate"));
-        case "CallExpression":
-        case "NewExpression":
-            return seq(checkChild("callee"), checkChild("args"));
-        case "MemberExpression":
-            return seq(checkChild("object"), (node.computed ? checkChild("property") : pass));
-        case "ArrayExpression":
-            return checkChild("elements");
-        case "ObjectExpression":
-            return checkChild("properties");
-        case "LetExpression":
-            return block(checkChild("bindings"), checkChild("body"));
-        case "CurryExpression":
-            return seq(checkChild("base"), checkChild("args"));
-        case "UnaryOperatorExpression":
-        case "BinaryOperatorExpression":
-        case "TernaryOperatorExpression":
-            return pass;
-        case "TupleExpression":
-            return checkChild("elements");
-        case "FunctionExpression":
-            return realBlock((node.id ? addImmutableBinding(node.id.name, node.loc) : pass), checkChild(
-                "params"), ((node.body.type === "BlockStatement") ? child(checkChild("body"), "body") :
-                checkChild("body")));
-        case "EllipsisPattern":
-            return pass;
-        case "SinkPattern":
-            return bind(getUnusedId("_"), (function(x) {
-                return seq(modifyNode((function(node) {
-                    var n = setUserData(node, (node.ud || ({}))),
-                        id = ast_value.Identifier.create(null, x);
-                    (n.ud.id = id);
-                    return n;
-                })), addReservedBinding(x, node.loc));
-            }));
-        case "IdentifierPattern":
-            if (node.reserved) return addReservedBinding(node.id.name, node.loc);
-            return seq(addUniqueImmutableBinding(node.id.name, node.loc), checkChild("id"), modifyNode((
-                function(node) {
-                    var n = setUserData(node, (node.ud || ({})));
-                    (n.ud.id = ast_value.Identifier.create(null, node.id.name));
-                    return n;
-                })));
-        case "ImportPattern":
-            return checkChild("pattern");
-        case "AsPattern":
-            return seq(checkChild("id"), child(seq(modifyNode((function(target) {
-                var n = setUserData(target, (target.ud || ({})));
-                (n.ud.id = node.id);
-                return n;
-            })), checkTop), "target"));
-        case "ArrayPattern":
-        case "ObjectPattern":
-            return examineScope((function(s) {
-                if (((!node.ud) || (!node.ud.id))) {
-                    var unused = s.getUnusedId("__o"),
-                        id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier.create(
-                            null, unused));
-                    (id.reserved = true);
-                    var n = setUserData(node, (node.ud || ({})));
-                    (n.ud.id = id);
-                    return seq(setNode(ast_pattern.AsPattern.create(null, id, node)), checkTop);
-                }
-                return checkChild("elements");
-            }));
-        case "ObjectPatternElement":
-            return seq(checkChild("target"), checkChild("key"));
-        case "ArgumentsPattern":
-            return seq(checkChild("id"), checkChild("elements"), checkChild("self"));
-        case "ObjectValue":
-            return checkChild("value");
-        case "Identifier":
-            {
-                var name = node.name;
-                return examineScope((function(s) {
-                    return (s.hasMapping(name) ? (function() {
-                        var mappedName = s.getMapping(name);
-                        return seq(modifyNode((function(x) {
-                            return ast_node.modify(x, ({}), ({
-                                "name": mappedName
-                            }));
-                        })), hasFreeBinding(mappedName, node.loc));
-                    })() : hasFreeBinding(name, node.loc));
-                }));
-            }
-    }
+    if (((node instanceof ast_node.Node) && checks[node.type])) return checks[node.type];
     return pass;
 }));
 var builtins = ["Array", "Boolean", "Date", "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent",

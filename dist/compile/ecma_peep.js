@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile/ecma_peep.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "neith/tree", "neith/zipper", "ecma-ast-zipper", "ecma-ast/node", "ecma-ast/value",
     "ecma-ast/declaration", "ecma-ast/statement", "ecma-ast/expression"
 ], (function(require, exports, tree, zipper, __o, __o0, ast_value, ast_declaration, ast_statement, ast_expression) {
@@ -58,8 +62,8 @@ define(["require", "exports", "neith/tree", "neith/zipper", "ecma-ast-zipper", "
     }), (function(node) {
         return modify(node, ({
             "body": node.body.reduceRight((function(p, c) {
-                return ((((c && (c.type === "VariableDeclaration")) && p.length) && (p[
-                    0].type === "VariableDeclaration")) ? concat(modify(c, ({
+                return (((((c && (c.type === "VariableDeclaration")) && p.length) && p[
+                    0]) && (p[0].type === "VariableDeclaration")) ? concat(modify(c, ({
                     "declarations": concat(c.declarations, p[0].declarations)
                 }), ({})), p.slice(1)) : concat(c, p));
             }), [])

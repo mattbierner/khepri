@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/parse/parser.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "nu-stream/stream", "../position", "./program_parser"], (function(require,
     exports, parse, stream, __o, __o0) {
     "use strict";

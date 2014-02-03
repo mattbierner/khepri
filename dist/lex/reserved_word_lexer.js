@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/lex/reserved_word_lexer.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/text", "./boolean_lexer", "./null_lexer"], (function(require,
     exports, __o, __o0, __o1, __o2) {
     "use strict";

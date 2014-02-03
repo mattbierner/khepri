@@ -93,7 +93,7 @@ addPeephole(['Program', 'BlockStatement'], true,
     \node ->
         modify(node, {
             'body': node.body.reduceRight(\p c ->
-                ?(c && c.type === 'VariableDeclaration' && p.length && p.(0).type === 'VariableDeclaration')
+                ?(c && c.type === 'VariableDeclaration' && p.length && p.(0) && p.(0).type === 'VariableDeclaration')
                     :concat(modify(c, {
                         'declarations': concat(c.declarations, p.(0).declarations)
                     }, {}), p.slice(1))

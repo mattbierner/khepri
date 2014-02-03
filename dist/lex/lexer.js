@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/lex/lexer.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bennu/parse", "bennu/lang", "nu-stream/stream", "khepri-ast/token", "../position",
     "./boolean_lexer", "./comment_lexer", "./identifier_lexer", "./line_terminator_lexer", "./null_lexer",
     "./number_lexer", "./punctuator_lexer", "./reserved_word_lexer", "./string_lexer", "./whitespace_lexer",

@@ -29,16 +29,17 @@ var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
 
 /* Continuation
  ******************************************************************************/
-var cont = \f, args -> {
-    var c = [f, args];
-    c._next = true;
-    return c;
+var Tail = function \f s ok err =self-> {
+    self.f = f;
+    self.s = s;
+    self.ok = ok;
+    self.err = err;
 };
 
 var trampoline = \f -> {
     var value = f;
-    while (value && value._next)
-        value = value.(0).apply(undefined, value.(1));
+    while (value instanceof Tail)
+        value = value.f(value.s, value.ok, value.err);
     return value;
 };
 
@@ -62,7 +63,7 @@ var error = \x -> \s, _, err -> err(x, s);
 
 var bind = \p f ->
     \s ok err ->
-        cont(p, [s, \x, s -> f(x)(s, ok, err), err]);
+        new Tail(p, s, \x, s -> f(x)(s, ok, err), err);
 
 var next = \p n -> bind(p, \_ -> n);
 
@@ -283,10 +284,13 @@ var child = \f edge ->
         move zipper.up);
 
 var checkCtx = \node ->
-    _check <| tree.node node;
+    _check <| (node && tree.node(node));
 
 var checkTop = \s ok err ->
     checkCtx(s.ctx)(s, ok, err);
+
+var inspect = \f ->
+    examineState(\s -> f(tree.node s.ctx));
     
 var checkChild = child@checkTop;
 
@@ -298,256 +302,244 @@ var setNode = \x ->
 
 /*
  ******************************************************************************/
-_check = \node -> {
-    
-    if (Array.isArray(node)) {
-        if (!node.length)
-            return pass;
-        return seq(
-            move(zipper.down),
-            seqa(map(node, \_ i -> 
-                ?i === node.length - 1
-                    :checkTop
-                    :next(checkTop, move(zipper.right)))),
-            move(zipper.up));
-    }
-    
-    if (!(node instanceof ast_node.Node))
-        return pass;
-    
-    switch (node.type)
-    {
-// Program
-    case 'Program':
-        return checkChild('body');
-    
-// Package
-    case 'Package':
-        return seq(
-            addImmutableBindingChecked('require', null),
-            addImmutableBindingChecked('exports', null),
-            addImmutableBindingChecked('module', null),
-            checkChild('exports'),
+var checks = {};
+
+var addCheck = \type, check -> {
+    if (Array.isArray(type))
+        type.forEach <|\x -> addCheck(x, check);
+    else
+        checks.(type) = check;
+};
+
+// Program and Packages
+addCheck@'Program' <|
+    checkChild 'body';
+
+addCheck@'PackageExports' <|
+    checkChild 'exports';
+
+addCheck@'PackageExport' <|
+    inspect <|\ node ->
+        addMutableBindingChecked(node.id.name, node.loc);
+
+addCheck@'Package' <|
+    seq(
+        addImmutableBindingChecked('require', null),
+        addImmutableBindingChecked('exports', null),
+        addImmutableBindingChecked('module', null),
+        checkChild 'exports',
+        inspect <|\ node ->
             ?node.body.type === 'WithStatement'
                 :child(
                     seq(
-                        checkChild('bindings'),
-                        child(checkChild('body'), 'body')), 'body')
-                :child(checkChild('body'), 'body'));
-        
-    case 'PackageExports':
-        return checkChild('exports');
-        
-    case 'PackageExport':
-        return addMutableBindingChecked(node.id.name, node.loc);
+                        checkChild 'bindings',
+                        child(checkChild 'body', 'body')),
+                    'body')
+                :child(checkChild 'body', 'body'));
 
 // Clause
-    case 'CatchClause':
-        return block(
+addCheck@'SwitchCase' <|
+    seq(
+        checkChild 'test',
+        checkChild 'consequent');
+
+addCheck@'CatchClause' <|
+    block(
+        inspect <|\ node ->
             addImmutableBindingChecked(node.param.name, node.param.loc),
-            child(checkChild('body'), 'body'));
-    
-    case 'SwitchCase':
-        return seq(
-            checkChild('test'),
-            checkChild('consequent'));
-    
+        child(
+            checkChild 'body',
+            'body'));
+
 // Declarations
-    case 'StaticDeclaration':
-    case 'VariableDeclaration':
-        return checkChild('declarations');
+addCheck@['StaticDeclaration', 'VariableDeclaration'] <|
+    checkChild 'declarations';
+
+addCheck@'StaticDeclarator' <|
+    inspect <|\ node ->
+        addImmutableBindingChecked(node.id.name, node.loc);
     
-    case 'StaticDeclarator':
-        return addImmutableBindingChecked(node.id.name, node.loc);
-        
-    case 'VariableDeclarator':
-        return seq(
+addCheck@'VariableDeclarator' <|
+    seq(
+        inspect <|\ node ->
             addMutableBindingChecked(node.id.name, node.loc),
-            checkChild('id'),
-            checkChild('init'));
-        
-    case 'Binding': 
-        return seq(
-            checkChild('pattern'),
-            checkChild('value'));
-        
+        checkChild 'id',
+        checkChild 'init');
+    
+addCheck@'Binding' <|
+    seq(
+        checkChild 'pattern',
+        checkChild 'value');
+
 // Statement
-    case 'BlockStatement':
-        return block(checkChild('body'));
-    
-    case 'ExpressionStatement':
-        return checkChild('expression');
-    
-    case 'IfStatement':
-        return seq(
-            checkChild('test'),
-            block(
-                checkChild('consequent')),
-            block(
-                checkChild('alternate')));
-        
-    case 'WithStatement':
-        return block(
-            checkChild('bindings'),
-            child(checkChild('body'), 'body'));
-    
-    case 'SwitchStatement':
-        return block(
-            checkChild('discriminant'),
-            checkChild('cases'));
-        
-    case'ReturnStatement':
-    case 'ThrowStatement':
-        return checkChild('argument');
-    
-    case 'TryStatement':
-        return seq(
-            checkChild('block'),
-            block(
-                checkChild('handler')),
-            block(
-                checkChild('finalizer')));
-    
-    case 'WhileStatement':
-        return seq(
-            checkChild('test'),
-            block(
-                checkChild('body')));
-    
-    case 'DoWhileStatement':
-        return seq(
-            block(
-                checkChild('body')),
-            checkChild('test'));
-    
-    case 'ForStatement':
-        return block(
-            checkChild('init'),
-            checkChild('test'),
-            checkChild('update'),
-            block(
-                checkChild('body')));
-    
+addCheck@'BlockStatement' <|
+    block(
+        checkChild 'body');
+
+addCheck@'ExpressionStatement' <|
+    checkChild 'expression';
+
+addCheck@'IfStatement' <|
+    seq(
+        checkChild 'test',
+        block(
+            checkChild 'consequent'),
+        block(
+            checkChild 'alternate'));
+
+addCheck@'WithStatement' <|
+     block(
+        checkChild 'bindings',
+        child(checkChild 'body', 'body'));
+
+addCheck@'SwitchStatement' <|
+    block(
+        checkChild 'discriminant',
+        checkChild 'cases');
+
+addCheck@['ReturnStatement', 'ThrowStatement'] <|
+    checkChild 'argument';
+
+addCheck@'TryStatement' <|
+    seq(
+        checkChild 'block',
+        block(
+            checkChild 'handler'),
+        block(
+            checkChild 'finalizer'));
+
+addCheck@'WhileStatement' <|
+    seq(
+        checkChild 'test',
+        block(
+            checkChild 'body'));
+
+addCheck@'DoWhileStatement' <|
+    seq(
+        block(
+            checkChild 'body'),
+        checkChild 'test');
+
+addCheck@'ForStatement' <|
+    block(
+        checkChild 'init',
+        checkChild 'test',
+        checkChild 'update',
+        block(
+            checkChild 'body'));
+
 // Expression
-    case 'UnaryExpression':
-        return checkChild('argument');
-    
-     case 'AssignmentExpression':
-        return seq(
-            checkChild('left'),
-            ?node.left.type === 'Identifier'
-                :checkCanAssign(node.left.name, node.left.loc.start)
-                :pass,
-            checkChild('right'));
-    
-    case 'LogicalExpression':
-    case 'BinaryExpression':
-        return seq(
-            checkChild('left'),
-            checkChild('right'));
-    
-    case 'ConditionalExpression':
-        return seq(
-            checkChild('test'),
-            checkChild('consequent'),
-            checkChild('alternate'));
-    
-    case 'CallExpression':
-    case 'NewExpression':
-        return seq(
-            checkChild('callee'),
-            checkChild('args'));
-    
-    case 'MemberExpression':
-        return seq(
-            checkChild('object'),
-            ?node.computed 
-                :checkChild('property')
-                :pass);
-        
-    case 'ArrayExpression':
-        return checkChild('elements');
-    
-    case 'ObjectExpression':
-        return checkChild('properties');
-    
-    case 'LetExpression':
-        return block(
-            checkChild('bindings'),
-            checkChild('body'));
-    
-    case 'CurryExpression':
-        return seq(
-            checkChild('base'),
-            checkChild('args'));
-        
-    case 'UnaryOperatorExpression':
-    case 'BinaryOperatorExpression':
-    case 'TernaryOperatorExpression':
-        return pass;
-        
-    case 'TupleExpression':
-        return checkChild('elements');
-    
-// Function
-    case 'FunctionExpression':
-        return realBlock(
+addCheck@'FunctionExpression' <|
+    realBlock(
+         inspect <|\ node ->
              ?node.id
                  :addImmutableBinding(node.id.name, node.loc)
                  :pass,
-             checkChild('params'),
+         checkChild 'params',
+         inspect <|\ node ->
              ?node.body.type === "BlockStatement"
-                 :child(checkChild('body'), 'body')
-                 :checkChild('body'));
+                 :child(checkChild 'body', 'body')
+                 :checkChild 'body');
 
-// Pattern
-    case 'EllipsisPattern':
-        return pass;
+addCheck@'UnaryExpression' <|
+    checkChild 'argument';
+
+addCheck@'AssignmentExpression' <|
+    seq(
+        checkChild 'left',
+        inspect <|\ node ->
+            ?node.left.type === 'Identifier'
+                :checkCanAssign(node.left.name, node.left.loc.start)
+                :pass,
+        checkChild 'right');
+
+addCheck@['LogicalExpression','BinaryExpression'] <|
+    seq(
+        checkChild 'left',
+        checkChild 'right');
+
+addCheck@'ConditionalExpression' <|
+    seq(
+        checkChild 'test',
+        checkChild 'consequent',
+        checkChild 'alternate');
+
+addCheck@['CallExpression', 'NewExpression'] <|
+    seq(
+        checkChild 'callee',
+        checkChild 'args');
+
+addCheck@'MemberExpression' <|
+    seq(
+        checkChild 'object',
+        inspect <|\ node ->
+            ?node.computed 
+                :checkChild 'property'
+                :pass);
     
-    case 'SinkPattern':
-        return bind(
-            getUnusedId('_'),
-            \x -> seq(
-                modifyNode(\node -> {
-                    var n = setUserData(node, node.ud || {});
-                    var id = ast_value.Identifier.create(null, x);
-                    n.ud.id = id;
-                    return n;
-                }),
-                addReservedBinding(x, node.loc)));
-    
-    case 'IdentifierPattern':
+addCheck@'ArrayExpression' <|
+    checkChild 'elements';
+
+addCheck@'ObjectExpression' <|
+    checkChild 'properties';
+
+addCheck@'LetExpression' <|
+    block(
+        checkChild 'bindings',
+        checkChild 'body');
+
+addCheck@'CurryExpression' <|
+    seq(
+        checkChild 'base',
+        checkChild 'args');
+
+// Patterns
+addCheck@'SinkPattern'<|
+    bind(
+        getUnusedId('_'),
+        \x -> seq(
+            modifyNode <|\node -> {
+                var n = setUserData(node, node.ud || {});
+                var id = ast_value.Identifier.create(null, x);
+                n.ud.id = id;
+                return n;
+            },
+            inspect <|\ node -> addReservedBinding(x, node.loc)));
+
+addCheck@'IdentifierPattern' <|
+    inspect <|\ node -> {
         if (node.reserved)
             return addReservedBinding(node.id.name, node.loc);
         
         return seq(
             addUniqueImmutableBinding(node.id.name, node.loc),
-            checkChild('id'),
+            checkChild 'id',
             modifyNode(\node ->{
                 var n = setUserData(node, node.ud || {});
                 n.ud.id = ast_value.Identifier.create(null, node.id.name);
                 return n;
             }));
-        
-    case 'ImportPattern':
-        return checkChild('pattern');
+    };
     
-   case 'AsPattern':
-        return seq(
-            checkChild('id'),
-            child(
-                seq(
-                   modifyNode(\target -> {
-                        var n = setUserData(target, target.ud || {});
-                        n.ud.id = node.id;
-                        return n;
-                    }),
-                    checkTop),
-                'target'));
-    
-    case 'ArrayPattern':
-    case 'ObjectPattern':
-        return examineScope(\s -> {
+addCheck@'ImportPattern' <|
+    checkChild 'pattern';
+
+addCheck@'AsPattern' <|
+    seq(
+        checkChild 'id',
+        inspect <|\ node -> child(
+            seq(
+               modifyNode(\target -> {
+                    var n = setUserData(target, target.ud || {});
+                    n.ud.id = node.id;
+                    return n;
+                }),
+                checkTop),
+            'target'));
+
+addCheck@'ObjectPattern' <|
+    inspect <|\ node -> 
+        examineScope(\s -> {
             if (!node.ud || !node.ud.id) {
                 var unused = s.getUnusedId('__o');
                 var id = ast_pattern.IdentifierPattern.create(node.loc,
@@ -560,26 +552,27 @@ _check = \node -> {
                     setNode(ast_pattern.AsPattern.create(null, id, node)),
                     checkTop);
             }
-            return checkChild('elements');
+            return checkChild 'elements';
         });
+
+addCheck@'ObjectPatternElement' <|
+    seq(
+        checkChild 'target',
+        checkChild 'key');
     
-    case 'ObjectPatternElement':
-        return seq(
-            checkChild('target'),
-            checkChild('key'));
-        
-    case 'ArgumentsPattern':
-        return seq(
-            checkChild('id'),
-            checkChild('elements'),
-            checkChild('self'));
-    
+addCheck@'ArgumentsPattern' <|
+    seq(
+        checkChild 'id',
+        checkChild 'elements',
+        checkChild 'self');
+
 // Value
-    case 'ObjectValue':
-        return checkChild('value');
-    
-    case 'Identifier':
-        return let name = node.name in examineScope <|\ s ->
+addCheck@'ObjectValue' <|
+    checkChild 'value';
+
+addCheck@'Identifier' <|
+    inspect <|\ node ->
+        let name = node.name in examineScope <|\ s ->
             ?s.hasMapping(name)
                 :let mappedName = s.getMapping(name) in
                     seq(
@@ -587,10 +580,29 @@ _check = \node -> {
                             ast_node.modify(x, {}, {'name': mappedName})),
                         hasFreeBinding(mappedName, node.loc))
                 :hasFreeBinding(name, node.loc);
+
+/*
+ ******************************************************************************/
+_check = \node -> {
+    if (Array.isArray(node)) {
+        if (!node.length)
+            return pass;
+        
+        return seq(
+            move(zipper.down),
+            seqa(map(node, \_ i -> 
+                ?i === node.length - 1
+                    :checkTop
+                    :next(checkTop, move(zipper.right)))),
+            move(zipper.up));
     }
+    
+    if (node instanceof ast_node.Node && checks.(node.type))
+        return checks.(node.type);
     
     return pass;
 };
+
 
 var builtins = [
     'Array',

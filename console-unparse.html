@@ -42,6 +42,8 @@
                     <option value="amd">AMD</option>
                     <option value="node">Node</option>
                 </select>
+                
+                <span id='time'></span>
             </div>
         </div>
         <div class='output'>
@@ -74,18 +76,21 @@
             }
         });
 
+
         $(function () {
             require([
-                'nu-stream/stream',
                'khepri/lex/lexer',
                'khepri/parse/parser',
                'khepri/compile/compile',
                'ecma-unparse/unparse',
                'ecma-unparse/print'],
-            function(stream,
-                    lexer, parser, compile,
+            function(
+                    lexer,
+                    parser,
+                    compile,
                     unparse,
-                    unparse_print) {
+                    unparse_print)
+            {
                     
                 $('button').click(function () {
                     var input = $('textarea').val();
@@ -97,12 +102,21 @@
                     };
                     
                     try {
+                        //console.profile();
+                        var start = new Date().getTime();
+                        
                         var lex = lexer.lex(input);
                         var ast = parser.parseStream(lex);
                         
                         var ecam_ast = compile.compile(ast, options);
                         var unparsed = unparse.unparse(ecam_ast);
                         var s = unparse_print.print(unparsed);
+                        
+                        var end = new Date().getTime();
+                        var diff = end - start;
+                        //console.profileEnd();
+                        console.log(diff);
+                        $('#time').text(diff);
                         
                         $('#text_out').text(s);
                     } catch (e) {
