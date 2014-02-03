@@ -1,13 +1,11 @@
 define(['bennu/parse',
-        'khepri/compile/lexical',
-        'khepri/lex/lexer',
-        'khepri/parse/parser',
-        'khepri/parse/expression_parser'],
+        'khepri/lexical',
+        'khepri-parse/lex/lexer',
+        'khepri-parse/parse/parser'],
 function(parse,
         lexical,
         lexer,
-        parser,
-        expression){
+        parser){
     
     var testParser = function(stream) {
         return parser.parseStream(stream);

@@ -1,0 +1,144 @@
+/**
+ * @fileOverview
+ */
+package (
+    Scope)
+with
+    import 'bes::object' {setProperty},
+    import 'bes::record' record
+in {
+
+/* Scope
+ ******************************************************************************/
+/**
+ * Holds information about a lexical scope.
+ * 
+ * @param record Maps identifiers to binding information for this scope.
+ * @param outer Parent scope.
+ * @param mappin Maps identifiers to their actual names in this scope.
+ */
+Scope = record.declare(null, [
+    'record',
+    'outer',
+    'mapping']);
+
+/**
+ * Does this scope have a given binding?
+ */
+Scope.prototype.hasOwnBinding = \id =self->
+    Object.prototype.hasOwnProperty.call(self.record, id);
+
+/**
+ * Does this scope or its parents have a given binding?
+ */
+Scope.prototype.hasBinding = \id =self->
+    self.hasOwnBinding(id) || (self.outer && self.outer.hasBinding(id));
+
+/**
+ * Get information for a given binding. Returns null if binding does not exist.
+ */
+Scope.prototype.getBinding = \id =self->
+    ?self.hasOwnBinding(id)
+        :self.record.(id)
+        :?self.outer
+            :self.outer.getBinding(id)
+            :null;
+
+/**
+ * Does this scope have its own a mapping for a given identifier.
+ */
+Scope.prototype.hasOwnMapping = \id =self->
+    Object.prototype.hasOwnProperty.call(self.mapping, id);
+
+/**
+ * Does this scope have any mapping for a given identifier.
+ */
+Scope.prototype.hasMapping = \id =self->
+    self.hasOwnMapping(id) || (self.outer && self.outer.hasMapping(id));
+
+/**
+ * Get the mapped value for a given identifier.
+ */
+Scope.prototype.getMapping = \id =self->
+    ?self.hasOwnMapping(id)
+        :self.mapping.(id)
+        :self.outer && self.outer.getMapping(id);
+
+/**
+ * Get an unused identifier in this scope.
+ */
+Scope.prototype.getUnusedId = \id =self-> {
+    if (!self.hasBinding(id))
+        return id;
+    for (var i = 0; ; i = i + 1)
+        if (!self.hasBinding(id + i))
+            return id + i;
+};
+
+/**
+ * Create a new modified scope with a given binding.
+ * 
+ * @param s Scope.
+ * @param id Identifier for new binding.
+ * @param info Binding information.
+ */
+Scope.addBinding = \s, id, info ->
+    new Scope(
+        setProperty(s.record, id, info, true),
+        s.outer,
+        s.mapping);
+
+/**
+ * Create a new modified scope with a new mutable binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addMutableBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': true,
+        'loc': loc
+    });
+
+/**
+ * Create a new modified scope with a new immutable binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addImmutableBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': false,
+        'loc': loc
+    });
+
+/**
+ * Create a new modified scope with a new reserved binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addReservedBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': false,
+        'reserved': true,
+        'loc': loc
+    });
+
+/**
+ * Create a new modified scope with a new mapping
+ * 
+ * @s Scope
+ * @param from Key value.
+ * @param to Value to map to.
+ */
+Scope.addMapping = \s, from, to ->
+    new Scope(
+        s.record,
+        s.outer,
+        setProperty(s.mapping, from, to, true));
+
+}

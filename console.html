@@ -192,6 +192,7 @@
                 'nu-stream': 'dependencies/nu/dist',
                 'seshet': 'dependencies/seshet/dist/seshet',
                 'bes': 'dependencies/bes/dist',
+                'khepri-parse': 'dependencies/khepri-parse/dist',
                 
                 'ecma-unparse': '../ecma-unparse/dist',
                 'ecma-ast': '../ecma-ast/dist',
@@ -204,7 +205,7 @@
         });
         
         $(function(){
-            require(['nu-stream/stream', 'khepri/compile/lexical', 'khepri/lex/lexer', 'khepri/parse/parser', 'khepri-ast/node'],
+            require(['nu-stream/stream', 'khepri/lexical', 'khepri-parse/lex/lexer', 'khepri-parse/parse/parser', 'khepri-ast/node'],
                 function(stream, lexical, lexer, parser, node)
             {
                 var lexOut = $('.LexOut');

@@ -60,6 +60,8 @@
         requirejs.config({
             paths: {
                 'khepri': 'dist',
+                 
+                'khepri-parse': 'dependencies/khepri-parse/dist',
                 
                 'bennu': 'dependencies/bennu/dist',
                 'nu-stream': 'dependencies/nu/dist',
@@ -76,23 +78,21 @@
             }
         });
 
-
-        $(function () {
-            require([
-               'khepri/lex/lexer',
-               'khepri/parse/parser',
-               'khepri/compile/compile',
-               'ecma-unparse/unparse',
-               'ecma-unparse/print'],
-            function(
-                    lexer,
-                    parser,
-                    compile,
-                    unparse,
-                    unparse_print)
-            {
-                    
-                $('button').click(function () {
+        require([
+           'khepri-parse/lex/lexer',
+           'khepri-parse/parse/parser',
+           'khepri/compile',
+           'ecma-unparse/unparse',
+           'ecma-unparse/print'],
+        function(
+                lexer,
+                parser,
+                compile,
+                unparse,
+                unparse_print)
+        {
+            $(function() {
+                $('button').click(function() {
                     var input = $('textarea').val();
                     $('.ParseError').text('');
                     $('#text_out').text('');

@@ -8,11 +8,12 @@ var mkdirp = require('mkdirp');
 var unparse = require('ecma-unparse').unparse;
 var unparse_print = require('ecma-unparse').print;
 
+var lexer = require('khepri-parse').lex.lexer;
+var parser = require('khepri-parse').parse.parser;
+
 var root = path.join(__dirname, '..');
 var index = path.join(root, 'index');
-var khepri_compile = require(index).compile.compile;
-var lexer = require(index).lex.lexer;
-var parser = require(index).parse.parser;
+var khepri_compile = require(index).compile;
 
 var KHEPRI_EXT = /^\.kep$/i;
 

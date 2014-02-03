@@ -19,9 +19,10 @@
                 'nu-stream': '../dependencies/nu/dist',
                 'seshet': '../dependencies/seshet/dist/seshet',
                 'bes': '../dependencies/bes/dist',
+                'khepri-parse': '../dependencies/khepri-parse/dist',
                 
                 'ecma': '../dependencies/parse-ecma/lib',
-                'khepri-ast': '../../khepri-ast/dist',
+                'khepri-ast': '../dependencies/khepri-ast/dist',
                 'ecma-ast': '../dependencies/ecma-ast/dist',
                 'khepri': '../dist',
                 'test': '.',
@@ -32,11 +33,9 @@
             }
         });
         require(
-            ['testLex', 'testParse', 'testCompile'],
-            function(testLex, testParse, testCompile)
+            ['testCompile'],
+            function(testCompile)
             {
-                testLex();
-                testParse();
                 testCompile();
             });
     </script>
