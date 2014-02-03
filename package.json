@@ -57,7 +57,10 @@
         "require-directory": "1.2.x"
     },
     "devDependencies": {
-        "nodeunit": "0.8.x",
-        "requirejs": "2.1.x"
+        "nodeunit": "0.8.x"
+    },
+    
+    "scripts": {
+        "test": "node test.js"
     }
 }

@@ -13,7 +13,7 @@ with
     import 'ecma-ast::node' ecma_node,
     import 'ecma-ast::program' ecma_program,
     import 'ecma-ast::statement' ecma_statement,
-    import 'ecma-ast::value'ecma_value ,
+    import 'ecma-ast::value'ecma_value,
     
     import 'khepri-ast::clause' khepri_clause,
     import 'khepri-ast::declaration' khepri_declaration,

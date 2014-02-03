@@ -49,14 +49,6 @@ var addPeephole = \types, up, condition, f -> {
 /* Peepholes
  ******************************************************************************/
 /**
- * Remove noop variable declarations.
- */
-/*addPeephole('VariableDeclarator',
-    \node ->
-        (node.init && node.init.type === 'Identifier' && node.id.name === node.init.name),
-    \_ -> null);*/
-
-/**
  * Filter out empty variable declarators.
  */
 addPeephole(['VariableDeclaration'], false,
@@ -87,7 +79,8 @@ addPeephole(['Program', 'BlockStatement'], true,
         }, {}));
 
 /**
- * Merge var declarations */
+ * Merge var declarations
+ */
 addPeephole(['Program', 'BlockStatement'], true,
     \_ -> true,
     \node ->
@@ -102,7 +95,8 @@ addPeephole(['Program', 'BlockStatement'], true,
             }, {}));
 
 /**
- * Remove top level empty statements */
+ * Remove top level empty statements
+ */
 addPeephole(['Program', 'BlockStatement'], true,
     \_ -> true,
     \node ->
