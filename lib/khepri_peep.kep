@@ -62,9 +62,22 @@ addPeephole(['ReturnStatement'], false,
                 [ast_statement.ReturnStatement.create(node.loc, node.argument.body)])));
 
 /**
+ * Rewrite `\...-> let` to a with statement.
+ */
+addPeephole(['FunctionExpression'], false,
+    \node ->
+        (node.body.type === 'LetExpression'),
+    \node ->
+        ast_statement.BlockStatement.create(null, [
+            ast_statement.WithStatement.create(null,
+                node.body.bindings,
+                ast_statement.BlockStatement.create(null, 
+                    [ast_statement.ReturnStatement.create(node.loc, node.body.body)]))]));
+
+/**
  * Rewrite top level let expressions to with statements.
  */
-addPeephole(['ExpressionStatement'], false,
+addPeephole(['ExpressionStatement'], true,
     \node ->
         (node.expression && node.expression.type === 'LetExpression'),
     \node ->
@@ -76,7 +89,7 @@ addPeephole(['ExpressionStatement'], false,
 /**
  * Rewrite top level let expressions to with statements.
  */
-addPeephole(['ExpressionStatement'], false,
+addPeephole(['ExpressionStatement'], true,
     \node ->
         (  node.expression
         && node.expression.type === 'AssignmentExpression'
@@ -92,7 +105,7 @@ addPeephole(['ExpressionStatement'], false,
 
 
 /**
- * Convert all array patterns to object patterns
+ * Convert array patterns to object patterns
  */
 addPeephole(['ArrayPattern'], false,
     \_ -> true,
@@ -107,7 +120,7 @@ addPeephole(['ArrayPattern'], false,
             ud));
 
 /**
- * Convert all array patterns to object patterns
+ * Normalize object patterns to ('key': pattern) form.
  */
 addPeephole(['ObjectPatternElement'], false,
     \node -> !node.target,
@@ -146,13 +159,19 @@ addPeephole(['CurryExpression'], true,
  */
 addPeephole(['BinaryExpression'], true,
     \node ->
-        (node.operator === '|>' &&
-            node.right.type === 'CurryExpression' || node.right.type === 'BinaryOperatorExpression' ||
-            node.right.type === 'UnaryOperatorExpression' || node.right.type === 'TernaryOperatorExpression'),
+        (node.operator === '|>'
+        &&  (  node.right.type === 'CurryExpression' 
+            || node.right.type === 'BinaryOperatorExpression'
+            || node.right.type === 'UnaryOperatorExpression'
+            || node.right.type === 'TernaryOperatorExpression')),
     \node ->
         ast_expression.CallExpression.create(null,
-            (?node.right.type === 'CurryExpression' :node.right.base :node.right),
-            concat(node.right.args || [], node.left)));
+            ?node.right.type === 'CurryExpression'
+                :node.right.base
+                :node.right,
+            concat(
+                node.right.args || [],
+                node.left)));
 
 /**
  * Rewrite right pipe of curried expression to a call.
@@ -167,8 +186,12 @@ addPeephole(['BinaryExpression'], true,
     
     \node ->
         ast_expression.CallExpression.create(null,
-            (?node.left.type === 'CurryExpression' :node.left.base :node.left),
-            concat(node.left.args || [], node.right)));
+            ?node.left.type === 'CurryExpression'
+                :node.left.base
+                :node.left,
+            concat(
+                node.left.args || [],
+                node.right)));
 
 
 /* Interface

@@ -91,7 +91,7 @@ var innerPattern = let
         innerBase = khepri_expression.MemberExpression.create(null, base, key, true)
     in
         ?pattern
-            :(flatten <| innerPattern(innerBase, pattern, f))
+            :flatten <| innerPattern(innerBase, pattern, f)
             :f(identifier(null, key.value), innerBase)
 in
     \base, pattern, f -> {

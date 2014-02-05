@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.13.4 - Feb 4, 2014
+* Fixed let expression in lambda body not converting to with statement.
+
 ## 0.13.3 - Feb 3, 2014
 * Split `lex` and `parse` into own package.
 
@@ -13,8 +16,8 @@
 * Removed `TupleExpression`.
 * Split `ApplicationExpression` from regular `CallExpression.`
 ** Application has lower precedence than curry. `f x`
-** Call has same precedence as member expressions. This  allows chaining of calls
-  and member access. `f(1)`
+** Call has same precedence as member expressions. This allows chaining of calls
+  and member access. `f(1).z.w(34).g`
 
 ## 0.12.0 - January 30, 2014
 * Allow `TupleExpression` as valid subexpressions. If not used in a call or curry,
@@ -36,7 +39,7 @@
 ## 0.11.0 - January 28, 2014
 * New expressions must supply an argument list.
 * Changed curry syntax.
-** Form is `TARGET@EXPR` where expr may either be a curry expression or a list
+** Form is `TARGET@EXPR` where EXPR may either be a curry expression or a list
   or arguments.
 ** Left associative.
 ** `f@1`, `f@(1,2)`
@@ -55,7 +58,7 @@
 ** Now prefixed by `?` followed by the test then the two choices prefixed with `:`.
 ** This simplifies the grammar and makes it possible to use conditional
   expressions in the test without parens. `??x>3:10:4:6:7;`
-* Allow package managers to customize behave of with imports.
+* Allow package managers to customize behavior of `with` imports.
 
 ## 0.9.0 - January 19, 2014
 * Fat arrow `this` unpacks.

@@ -2,7 +2,7 @@
 ECMAScript derived programming language
 
 ### About
-Khepri is an ECMAScript derived programming language that both restricts
+Khepri is an ECMAScript derived programming language that tweaks
 ECMAScript and introduces new features to make the language more concise 
 and consistent. Khepri compiles to plain old Javascript and does not require
 any runtime libraries and Khepri and Javascript can also be freely mixed in a
