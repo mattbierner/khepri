@@ -68,11 +68,14 @@ addPeephole(['FunctionExpression'], false,
     \node ->
         (node.body.type === 'LetExpression'),
     \node ->
-        ast_statement.BlockStatement.create(null, [
-            ast_statement.WithStatement.create(null,
-                node.body.bindings,
-                ast_statement.BlockStatement.create(null, 
-                    [ast_statement.ReturnStatement.create(node.loc, node.body.body)]))]));
+        ast_expression.FunctionExpression.create(null,
+            node.id,
+            node.params,
+            ast_statement.BlockStatement.create(null, [
+                ast_statement.WithStatement.create(null,
+                    node.body.bindings,
+                    ast_statement.BlockStatement.create(null, 
+                        [ast_statement.ReturnStatement.create(node.loc, node.body.body)]))])));
 
 /**
  * Rewrite top level let expressions to with statements.

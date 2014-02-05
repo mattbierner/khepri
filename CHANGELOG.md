@@ -1,6 +1,6 @@
 # ChangeLog #
 
-## 0.13.4 - Feb 4, 2014
+## 0.13.5 - Feb 4, 2014
 * Fixed let expression in lambda body not converting to with statement.
 
 ## 0.13.3 - Feb 3, 2014

@@ -48,9 +48,9 @@ addPeephole(["ReturnStatement"], false, (function(node) {
 addPeephole(["FunctionExpression"], false, (function(node) {
     return (node.body.type === "LetExpression");
 }), (function(node) {
-    return ast_statement.BlockStatement.create(null, [ast_statement.WithStatement.create(null, node.body.bindings,
-        ast_statement.BlockStatement.create(null, [ast_statement.ReturnStatement.create(node.loc, node.body
-            .body)]))]);
+    return ast_expression.FunctionExpression.create(null, node.id, node.params, ast_statement.BlockStatement.create(
+        null, [ast_statement.WithStatement.create(null, node.body.bindings, ast_statement.BlockStatement.create(
+            null, [ast_statement.ReturnStatement.create(node.loc, node.body.body)]))]));
 }));
 addPeephole(["ExpressionStatement"], true, (function(node) {
     return (node.expression && (node.expression.type === "LetExpression"));
