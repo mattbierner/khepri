@@ -210,7 +210,7 @@ var functionExpression = \loc, id, parameters, functionBody -> let
             case 'IdentifierPattern':
                 return [];
             case 'AsPattern':
-                return innerPattern(_transform(x.id), x.target, variableDeclarator@null);
+                return flatten <| innerPattern(_transform(x.id), x.target, variableDeclarator@null);
             default:
                 return innerPattern(_transform(x), x, variableDeclarator@null);
             }
@@ -355,7 +355,7 @@ var multiCompose = \loc, f, g ->
 
 var packageBlock = \loc, exports, body -> let
     imports = ?body.type === 'WithStatement'
-        : filter(\x -> x.type === 'ImportPattern', body.bindings)
+        :filter(\x -> x.type === 'ImportPattern', body.bindings)
         :[],
     
     exportedNames = map(\x -> x.id.name, exports.exports),
