@@ -46,3 +46,13 @@ exports.curried_args_evaled_once = function(test) {
     
     test.done();
 };
+
+exports.curried_results_in_new_function = function(test) {
+    test.equal(
+        testParser(
+            "var add = \\x, y -> x + y; add.displayName = 'x';"+
+            "var c = add@2; c.displayName;"),
+        1);
+    
+    test.done();
+};
