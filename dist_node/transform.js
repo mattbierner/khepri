@@ -29,16 +29,22 @@ var record = require("bes")["record"],
     NIL = stream["NIL"],
     tree = require("neith")["tree"],
     treeZipper = tree["treeZipper"],
-    __o = require("neith")["walk"],
-    preWalk = __o["preWalk"],
+    zipper_walk = require("neith")["walk"],
+    preWalk = zipper_walk["preWalk"],
+    postWalk = zipper_walk["postWalk"],
     zipper = require("neith")["zipper"],
+    scope = require("./scope"),
     transform, transformStage, concat = Function.prototype.call.bind(Array.prototype.concat),
     reduce = Function.prototype.call.bind(Array.prototype.reduce),
+    reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
     filter = (function(f, a) {
         return Array.prototype.filter.call(a, f);
     }),
     map = (function(f, a) {
         return Array.prototype.map.call(a, f);
+    }),
+    id = (function(x) {
+        return x;
     }),
     flatten = (function(x) {
         return (Array.isArray(x) ? reduce(x, (function(p, c) {
@@ -53,23 +59,62 @@ var record = require("bes")["record"],
         }
         return false;
     }),
-    State = record.declare(null, ["node", "packageManager"]),
-    khepriZipper = treeZipper.bind(null, (function(ctx) {
-        return khepri_zipper.getChildren(ctx.node);
-    }), (function(ctx, key) {
-        return ctx.setNode(khepri_zipper.getChild(ctx.node, key));
-    }), (function(ctx, pairs, value) {
-        return ctx.setNode(khepri_zipper.construct(ctx.node, stream.map((function(x) {
-            return tree.Pair(x.key, x.value.node);
-        }), pairs), (function() {
-            var v = value();
-            return reduce(Object.keys(v), (function(p, c) {
-                (p[c] = v[c].node);
-                return p;
-            }), ({}));
-        })));
-    })),
-    expressionStatement, _transform, packageManager, identifier = (function(loc, name) {
+    State = record.declare(null, ["node", "scope", "packageManager"]);
+(State.empty = State.create(null, scope.Scope.empty, null));
+var khepriZipper = treeZipper.bind(null, (function(ctx) {
+    return khepri_zipper.getChildren(ctx.node);
+}), (function(ctx, key) {
+    return ctx.setNode(khepri_zipper.getChild(ctx.node, key));
+}), (function(ctx, pairs, value) {
+    return ctx.setNode(khepri_zipper.construct(ctx.node, stream.map((function(x) {
+        return tree.Pair(x.key, x.value.node);
+    }), pairs), (function() {
+        var v = value();
+        return reduce(Object.keys(v), (function(p, c) {
+            (p[c] = v[c].node);
+            return p;
+        }), ({}));
+    })));
+})),
+    next = (function(a, b) {
+        return (function(ctx) {
+            return b(a(ctx));
+        });
+    }),
+    seqa = (function(arr) {
+        return reduceRight(arr, (function(p, c) {
+            return next(c, p);
+        }), (function(x) {
+            return x;
+        }));
+    }),
+    seq = (function() {
+        var args = arguments;
+        return seqa(args);
+    }),
+    examineScope = (function(f) {
+        return (function(ctx) {
+            return f(zipper.extract(ctx)
+                .scope)(ctx);
+        });
+    }),
+    setScope = (function(s) {
+        return zipper.modify((function(state) {
+            return state.setScope(s);
+        }));
+    }),
+    realBlock = (function() {
+        var body = arguments;
+        return examineScope((function(s) {
+            return seq(setScope(new(scope.Scope)(({}), s, ({}), ({}))), seqa(body), setScope(s));
+        }));
+    }),
+    modifyNode = (function(f) {
+        return tree.modifyNode.bind(null, (function(ctx) {
+            return ctx.setNode(f(ctx.node));
+        }));
+    }),
+    _transform, packageManager, identifier = (function(loc, name) {
         return ecma_value.Identifier.create(loc, name);
     }),
     stringLiteral = (function(loc, value) {
@@ -97,9 +142,9 @@ var record = require("bes")["record"],
                 case "AsPattern":
                     return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target, f)));
                 case "ObjectPattern":
-                    return map((function(__o0) {
-                        var target = __o0["target"],
-                            key = __o0["key"];
+                    return map((function(__o) {
+                        var target = __o["target"],
+                            key = __o["key"];
                         return flatten(objectElementUnpack(pattern.ud.id, target, key, f));
                     }), pattern.elements);
                 default:
@@ -130,13 +175,10 @@ var record = require("bes")["record"],
     }),
     blockStatement = (function(loc, body) {
         return ecma_statement.BlockStatement.create(loc, _transform(body));
-    });
-(expressionStatement = (function(loc, expression) {
-    return ecma_statement.ExpressionStatement.create(loc, _transform(expression));
-}));
-var returnStatement = (function(loc, argument) {
-    return ecma_statement.ReturnStatement.create(loc, _transform(argument));
-}),
+    }),
+    returnStatement = (function(loc, argument) {
+        return ecma_statement.ReturnStatement.create(loc, _transform(argument));
+    }),
     withStatement = (function(loc, bindings, body) {
         var vars = flatten(map((function(imp) {
             var base = ((imp.type === "ImportPattern") ? packageManager.importPackage(imp.from.value) :
@@ -177,41 +219,36 @@ var returnStatement = (function(loc, argument) {
             })())));
     }),
     letExpression = (function(loc, bindings, body) {
-        return callExpression(loc, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(null, null, []),
-            blockStatement(null, [withStatement(null, bindings, blockStatement(null, [returnStatement(null,
-                body)]))])), []);
+        return khepri_expression.CallExpression.create(loc, khepri_expression.FunctionExpression.create(null, null,
+            khepri_pattern.ArgumentsPattern.create(null, null, []), blockStatement(null, [withStatement(null,
+                bindings, blockStatement(null, [returnStatement(null, body)]))])), []);
     }),
     curryExpression = (function(loc, base, args) {
-        return callExpression(null, memberExpression(null, base, identifier(null, "bind")), concat(nullLiteral(null),
-            args));
-    }),
-    assignmentExpression = (function(loc, operator, left, right) {
-        return ecma_expression.AssignmentExpression.create(loc, operator, _transform(left), _transform(right));
+        return khepri_expression.CallExpression.create(null, khepri_expression.MemberExpression.create(null, base,
+            identifier(null, "bind")), concat(nullLiteral(null), args));
     }),
     pipeline = (function(loc, value, target) {
-        return callExpression(loc, target, [value]);
+        return khepri_expression.CallExpression.create(loc, target, [value]);
     }),
     singleCompose = (function(loc, f, g) {
-        return callExpression(loc, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(null, null, [
-            khepri_pattern.IdentifierPattern.create(null, identifier(null, "f")), khepri_pattern.IdentifierPattern
-            .create(null, identifier(null, "g"))
-        ]), blockStatement(null, [returnStatement(null, functionExpression(null, null, khepri_pattern.ArgumentsPattern
-            .create(null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null,
-                "x"))]), blockStatement(null, [returnStatement(null, callExpression(null,
-                identifier(null, "f"), [callExpression(null, identifier(null, "g"), [
-                    identifier(null, "x")
-                ])]))])))])), [f, g]);
+        return khepri_expression.CallExpression.create(loc, khepri_expression.FunctionExpression.create(null, null,
+            khepri_pattern.ArgumentsPattern.create(null, null, [khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, "f")), khepri_pattern.IdentifierPattern.create(null, identifier(null,
+                "g"))]), khepri_expression.FunctionExpression.create(null, null, khepri_pattern.ArgumentsPattern
+                .create(null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x"))]),
+                khepri_expression.CallExpression.create(null, identifier(null, "f"), [callExpression(null,
+                    identifier(null, "g"), [identifier(null, "x")])]))), [f, g]);
     }),
     multiCompose = (function(loc, f, g) {
-        return callExpression(loc, functionExpression(null, null, khepri_pattern.ArgumentsPattern.create(null, null, [
-            khepri_pattern.IdentifierPattern.create(null, identifier(null, "f")), khepri_pattern.IdentifierPattern
-            .create(null, identifier(null, "g"))
-        ]), blockStatement(null, [returnStatement(null, functionExpression(null, null, khepri_pattern.ArgumentsPattern
-            .create(null, null, []), blockStatement(null, [returnStatement(null, callExpression(
-                null, identifier(null, "f"), [callExpression(null, memberExpression(
-                    null, identifier(null, "g"), identifier(null, "apply")), [
-                    nullLiteral(null), identifier(null, "arguments")
-                ])]))])))])), [f, g]);
+        return khepri_expression.CallExpression.create(loc, khepri_expression.FunctionExpression.create(null, null,
+            khepri_pattern.ArgumentsPattern.create(null, null, [khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, "f")), khepri_pattern.IdentifierPattern.create(null, identifier(null,
+                "g"))]), khepri_expression.FunctionExpression.create(null, null, khepri_pattern.ArgumentsPattern
+                .create(null, null, []), khepri_expression.CallExpression.create(null, identifier(null, "f"), [
+                    khepri_expression.CallExpression.create(null, memberExpression(null, identifier(null,
+                        "g"), identifier(null, "apply")), [nullLiteral(null), identifier(null,
+                        "arguments")])
+                ]))), [f, g]);
     }),
     packageBlock = (function(loc, exports, body) {
         var imports = ((body.type === "WithStatement") ? filter((function(x) {
@@ -228,73 +265,74 @@ var returnStatement = (function(loc, argument) {
                 x) {
                 return (x.type !== "ImportPattern");
             }), body.bindings), body.body) : body);
-        return _transform(packageManager.definePackage(loc, exportedNames, imports, targets, fBody));
+        return packageManager.definePackage(loc, exportedNames, imports, targets, fBody);
     }),
     transformers = ({}),
-    addTransform = (function(target, f) {
-        (transformers[target] = f);
+    addTransform = (function(type, pre, post) {
+        var entry = ({
+            "pre": pre,
+            "post": post
+        });
+        (transformers[type] = (transformers[type] ? transformers[type].concat(entry) : [entry]));
     });
-addTransform("VariableDeclaration", (function(node) {
-    return variableDeclaration(node.loc, node.declarations);
+addTransform("VariableDeclaration", id, (function(node) {
+    return ecma_declaration.VariableDeclaration.create(node.loc, node.declarations);
 }));
-addTransform("VariableDeclarator", (function(node) {
-    return variableDeclarator(node.loc, node.id, node.init);
+addTransform("VariableDeclarator", id, (function(node) {
+    return ecma_declaration.VariableDeclarator.create(node.loc, node.id, node.init);
 }));
 addTransform("StaticDeclaration", (function(node) {
     return ecma_statement.EmptyStatement.create(node.loc);
 }));
-addTransform("CatchClause", (function(node) {
-    return ecma_clause.CatchClause.create(node.loc, _transform(node.param), _transform(node.body));
+addTransform("CatchClause", id, (function(node) {
+    return ecma_clause.CatchClause.create(node.loc, node.param, node.body);
 }));
-addTransform("SwitchCase", (function(node) {
-    return ecma_clause.SwitchCase.create(node.loc, _transform(node.test), _transform(node.consequent));
+addTransform("SwitchCase", id, (function(node) {
+    return ecma_clause.SwitchCase.create(node.loc, node.test, node.consequent);
 }));
-addTransform("BlockStatement", (function(node) {
-    return blockStatement(node.loc, node.body);
+addTransform("BlockStatement", id, (function(node) {
+    return ecma_statement.BlockStatement.create(node.loc, node.body);
 }));
-addTransform("ExpressionStatement", (function(node) {
-    return expressionStatement(node.loc, node.expression);
+addTransform("ExpressionStatement", id, (function(node) {
+    return ecma_statement.ExpressionStatement.create(node.loc, node.expression);
 }));
-addTransform("IfStatement", (function(node) {
-    return ecma_statement.IfStatement.create(node.loc, _transform(node.test), _transform(node.consequent),
-        _transform(node.alternate));
+addTransform("IfStatement", id, (function(node) {
+    return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
 }));
 addTransform("WithStatement", (function(node) {
     return withStatement(node.loc, node.bindings, node.body);
 }));
-addTransform("SwitchStatement", (function(node) {
-    return ecma_statement.SwitchStatement.create(node.loc, _transform(node.discriminant), _transform(node.cases));
+addTransform("SwitchStatement", id, (function(node) {
+    return ecma_statement.SwitchStatement.create(node.loc, node.discriminant, node.cases);
 }));
-addTransform("ReturnStatement", (function(node) {
-    return returnStatement(node.loc, node.argument);
+addTransform("ReturnStatement", id, (function(node) {
+    return ecma_statement.ReturnStatement.create(node.loc, node.argument);
 }));
-addTransform("ThrowStatement", (function(node) {
-    return ecma_statement.ThrowStatement.create(node.loc, _transform(node.argument));
+addTransform("ThrowStatement", id, (function(node) {
+    return ecma_statement.ThrowStatement.create(node.loc, node.argument);
 }));
 addTransform("BreakStatement", (function(node) {
     return ecma_statement.BreakStatement.create(node.loc, null);
 }));
 addTransform("ContinueStatement", (function(node) {
-    return ecma_statement.ThrowStatement.create(node.loc, null);
+    return ecma_statement.ContinueStatement.create(node.loc, null);
 }));
-addTransform("TryStatement", (function(node) {
-    return ecma_statement.TryStatement.create(node.loc, _transform(node.block), _transform(node.handler),
-        _transform(node.finalizer));
+addTransform("TryStatement", id, (function(node) {
+    return ecma_statement.TryStatement.create(node.loc, node.block, node.handler, node.finalizer);
 }));
-addTransform("WhileStatement", (function(node) {
-    return ecma_statement.WhileStatement.create(node.loc, _transform(node.test), _transform(node.body));
+addTransform("WhileStatement", id, (function(node) {
+    return ecma_statement.WhileStatement.create(node.loc, node.test, node.body);
 }));
-addTransform("DoWhileStatement", (function(node) {
-    return ecma_statement.DoWhileStatement.create(node.loc, _transform(node.body), _transform(node.test));
+addTransform("DoWhileStatement", id, (function(node) {
+    return ecma_statement.DoWhileStatement.create(node.loc, node.body, node.test);
 }));
-addTransform("ForStatement", (function(node) {
-    return ecma_statement.ForStatement.create(node.loc, _transform(node.init), _transform(node.test),
-        _transform(node.update), _transform(node.body));
+addTransform("ForStatement", id, (function(node) {
+    return ecma_statement.ForStatement.create(node.loc, node.init, node.test, node.update, node.body);
 }));
-addTransform("AssignmentExpression", (function(node) {
-    return assignmentExpression(node.loc, node.operator, node.left, node.right);
+addTransform("AssignmentExpression", id, (function(node) {
+    return ecma_expression.AssignmentExpression.create(node.loc, node.operator, node.left, node.right);
 }));
-addTransform("UnaryExpression", (function(node) {
+addTransform("UnaryExpression", id, (function(node) {
     var op = node.operator;
     switch (op) {
         case "++":
@@ -304,7 +342,7 @@ addTransform("UnaryExpression", (function(node) {
             (op = "-");
             break;
     }
-    return ecma_expression.UnaryExpression.create(node.loc, op, _transform(node.argument));
+    return ecma_expression.UnaryExpression.create(node.loc, op, node.argument);
 }));
 addTransform("BinaryExpression", (function(node) {
     switch (node.operator) {
@@ -321,27 +359,25 @@ addTransform("BinaryExpression", (function(node) {
         case "<|":
             return pipeline(node.loc, node.right, node.left);
         default:
-            return ecma_expression.BinaryExpression.create(node.loc, node.operator, _transform(node.left),
-                _transform(node.right));
+            return node;
     }
+}), (function(node) {
+    return ecma_expression.BinaryExpression.create(node.loc, node.operator, node.left, node.right);
 }));
-addTransform("LogicalExpression", (function(node) {
-    return ecma_expression.LogicalExpression.create(node.loc, node.operator, _transform(node.left), _transform(
-        node.right));
+addTransform("LogicalExpression", id, (function(node) {
+    return ecma_expression.LogicalExpression.create(node.loc, node.operator, node.left, node.right);
 }));
-addTransform("ConditionalExpression", (function(node) {
-    return ecma_expression.ConditionalExpression.create(node.loc, _transform(node.test), _transform(node.consequent),
-        _transform(node.alternate));
+addTransform("ConditionalExpression", id, (function(node) {
+    return ecma_expression.ConditionalExpression.create(node.loc, node.test, node.consequent, node.alternate);
 }));
-addTransform("NewExpression", (function(node) {
-    return ecma_expression.NewExpression.create(node.loc, _transform(node.callee), _transform(node.args));
+addTransform("NewExpression", id, (function(node) {
+    return ecma_expression.NewExpression.create(node.loc, node.callee, node.args);
 }));
-addTransform("CallExpression", (function(node) {
-    return callExpression(node.loc, node.callee, node.args);
+addTransform("CallExpression", id, (function(node) {
+    return ecma_expression.CallExpression.create(node.loc, node.callee, node.args);
 }));
-addTransform("MemberExpression", (function(node) {
-    return ecma_expression.MemberExpression.create(node.loc, _transform(node.object), _transform(node.property),
-        node.computed);
+addTransform("MemberExpression", id, (function(node) {
+    return ecma_expression.MemberExpression.create(node.loc, node.object, node.property, node.computed);
 }));
 addTransform("LetExpression", (function(node) {
     return letExpression(node.loc, node.bindings, node.body);
@@ -350,54 +386,54 @@ addTransform("CurryExpression", (function(node) {
     return curryExpression(node.loc, node.base, node.args);
 }));
 addTransform("UnaryOperatorExpression", (function(node) {
-    return functionExpression(node.loc, null, khepri_pattern.ArgumentsPattern.create(null, null, [
-        khepri_pattern.IdentifierPattern.create(null, identifier(null, "x"))
-    ]), blockStatement(null, [returnStatement(null, khepri_expression.UnaryExpression.create(null, node.op,
-        identifier(null, "x")))]));
+    return khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
+            null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x"))]),
+        khepri_expression.UnaryExpression.create(null, node.op, identifier(null, "x")));
 }));
 addTransform("BinaryOperatorExpression", (function(node) {
     var kind = (((node.op === "||") || (node.op === "&&")) ? khepri_expression.LogicalExpression :
         khepri_expression.BinaryExpression);
-    return functionExpression(node.loc, null, khepri_pattern.ArgumentsPattern.create(null, null, [
-        khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")), khepri_pattern.IdentifierPattern
-        .create(null, identifier(null, "y"))
-    ]), blockStatement(null, [returnStatement(null, kind.create(null, node.op, identifier(null, "x"),
-        identifier(null, "y")))]));
+    return khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
+        null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")), khepri_pattern.IdentifierPattern
+            .create(null, identifier(null, "y"))
+        ]), kind.create(null, node.op, identifier(null, "x"), identifier(null, "y")));
 }));
 addTransform("TernaryOperatorExpression", (function(node) {
-    return functionExpression(node.loc, null, khepri_pattern.ArgumentsPattern.create(null, null, [
-        khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")), khepri_pattern.IdentifierPattern
-        .create(null, identifier(null, "y")), khepri_pattern.IdentifierPattern.create(null, identifier(
-            null, "z"))
-    ]), blockStatement(null, [returnStatement(null, khepri_expression.ConditionalExpression.create(null,
-        identifier(null, "x"), identifier(null, "y"), identifier(null, "z")))]));
+    return khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
+        null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")), khepri_pattern.IdentifierPattern
+            .create(null, identifier(null, "y")), khepri_pattern.IdentifierPattern.create(null, identifier(
+                null, "z"))
+        ]), khepri_expression.ConditionalExpression.create(null, identifier(null, "x"), identifier(null,
+        "y"), identifier(null, "z")));
 }));
 addTransform("FunctionExpression", (function(node) {
     return functionExpression(node.loc, node.id, node.params, node.body);
 }));
-addTransform("ArrayExpression", (function(node) {
-    return ecma_expression.ArrayExpression.create(node.loc, _transform(node.elements));
+addTransform("ArrayExpression", id, (function(node) {
+    return ecma_expression.ArrayExpression.create(node.loc, node.elements);
 }));
-addTransform("ObjectExpression", (function(node) {
-    return ecma_expression.ObjectExpression.create(node.loc, _transform(node.properties));
+addTransform("ObjectExpression", id, (function(node) {
+    return ecma_expression.ObjectExpression.create(node.loc, node.properties);
 }));
-addTransform("ObjectValue", (function(node) {
-    return ecma_value.ObjectValue.create(node.loc, _transform(node.key), _transform(node.value));
+addTransform("ObjectValue", id, (function(node) {
+    return ecma_value.ObjectValue.create(node.loc, node.key, node.value);
 }));
 addTransform("ArgumentsPattern", (function(node) {
-    return identifier(node.loc, node.id.name);
+    return (function(node) {
+        return node.id;
+    });
 }));
 addTransform("IdentifierPattern", (function(node) {
-    return identifier(node.loc, node.id.name);
+    return node.id;
 }));
 addTransform("AsPattern", (function(node) {
-    return _transform(node.id);
+    return node.id;
 }));
 addTransform("ArrayPattern", (function(node) {
-    return _transform(node.ud.id);
+    return node.ud.id;
 }));
 addTransform("ObjectPattern", (function(node) {
-    return _transform(node.ud.id);
+    return node.ud.id;
 }));
 addTransform("EllipsisPattern", (function(node) {
     return ((node.ud && node.ud.id) ? _transform(node.ud.id) : null);
@@ -405,28 +441,65 @@ addTransform("EllipsisPattern", (function(node) {
 addTransform("SinkPattern", (function(node) {
     return ((node.ud && node.ud.id) ? _transform(node.ud.id) : null);
 }));
-addTransform("Program", (function(node) {
-    return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? _transform(node.body) : [
-        _transform(node.body)
-    ]));
+addTransform("Program", id, (function(node) {
+    return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? node.body : [node.body]));
 }));
 addTransform("Package", (function(node) {
     return packageBlock(node.loc, node.exports, node.body);
 }));
-var walk = preWalk.bind(null, tree.modifyNode.bind(null, (function(ctx) {
-    return ctx.setNode(_transform(ctx.node));
-})));
+addTransform("Identifier", (function(node) {
+    return identifier(node.loc, node.name);
+}));
+var _t = (function(node) {
+    if ((!node)) return id;
+    if (Array.isArray(node)) return modifyNode((function() {
+        return map(_transform, node);
+    }));
+    if ((!(node instanceof khepri_node.Node))) return id;
+    var t = transformers[node.type];
+    if ((!t)) return id;
+    return modifyNode((function(x) {
+        return t[0].pre(x, _transform);
+    }));
+}),
+    _transformp = (function(node) {
+        if ((!node)) return node;
+        if (Array.isArray(node)) return map(_transform, node);
+        if ((!(node instanceof khepri_node.Node))) return node;
+        var t = transformers[node.type];
+        if (((!t) || (!t[0].post))) return node;
+        return t[0].post(node);
+    }),
+    _tp = (function(node) {
+        if ((!node)) return id;
+        if (Array.isArray(node)) return modifyNode((function() {
+            return map(_transformp, node);
+        }));
+        if ((!(node instanceof khepri_node.Node))) return id;
+        var t = transformers[node.type];
+        if (((!t) || (!t[0].post))) return id;
+        return modifyNode((function(x) {
+            return t[0].post(x, t[0].post);
+        }));
+    }),
+    walk = zipper_walk.walk.bind(null, (function(ctx) {
+        return _t(tree.node(ctx)
+            .node)(ctx);
+    }), (function(ctx) {
+        return _tp(tree.node(ctx)
+            .node)(ctx);
+    }));
 (_transform = (function(node) {
     if ((!node)) return node;
     if (Array.isArray(node)) return map(_transform, node);
     if ((!(node instanceof khepri_node.Node))) return node;
     var t = transformers[node.type];
     if ((!t)) return node;
-    return t(node);
+    return t[0].pre(node, _transform);
 }));
-(transform = (function(__o0) {
-    var options = __o0["options"],
-        ast = __o0["ast"],
+(transform = (function(__o) {
+    var options = __o["options"],
+        ast = __o["ast"],
         amd_manager = require("./package_manager/amd"),
         node_manager = require("./package_manager/node");
     (packageManager = amd_manager);

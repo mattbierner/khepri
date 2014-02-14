@@ -31,18 +31,22 @@ with
     import 'nu-stream::stream' stream#{foldl from NIL},
     
     import 'neith::tree' tree#{treeZipper},
-    import 'neith::walk' {preWalk},
+    import 'neith::walk' zipper_walk#{preWalk postWalk},
     import 'neith::zipper' zipper,
         
+    import './scope' scope,
     import './package_manager::amd' _,
     import './package_manager::node' _
 in {
 
 var concat = Function.prototype.call.bind(Array.prototype.concat);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
+var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
 
 var filter = \f, a -> Array.prototype.filter.call(a, f);
 var map = \f, a ->  Array.prototype.map.call(a, f);
+
+var id = \x -> x;
 
 var flatten = \x ->
     ?Array.isArray(x)
@@ -62,7 +66,10 @@ var isStrict = \elems -> {
 
 var State = record.declare(null, [
     'node',
+    'scope',
     'packageManager']);
+
+State.empty = State.create(null, scope.Scope.empty, null);
 
 var khepriZipper = treeZipper@(
     \ctx ->
@@ -76,10 +83,33 @@ var khepriZipper = treeZipper@(
                 stream.map(\x -> tree.Pair(x.key, x.value.node), pairs),
                 \() -> let v = value() in reduce(Object.keys(v), \p c -> { p.(c) = v.(c).node; return p; }, {}))));
 
+var next = \a, b ->
+    \ctx ->
+        b(a(ctx));
+
+var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p), \x -> x);
+
+var seq = \args(...) -> seqa(args);
+
+var examineScope = \f ->
+    \ctx ->
+        f(zipper.extract(ctx).scope)(ctx);
+
+var setScope = \s -> zipper.modify(\state -> state.setScope(s));
+
+var realBlock = \body(...) ->
+    examineScope(\s ->
+        seq(
+            setScope(new scope.Scope({}, s, {}, {})),
+            seqa(body),
+            setScope(s)));
+
+var modifyNode = \f ->
+    tree.modifyNode @ \ctx ->
+        ctx.setNode(f(ctx.node));
+
 /* Forward
  ******************************************************************************/
-var expressionStatement;
-
 var _transform;
 
 /* State
@@ -197,13 +227,6 @@ var blockStatement = \loc, body ->
 /**
  * 
  */
-expressionStatement = \loc, expression ->
-    ecma_statement.ExpressionStatement.create(loc,
-        _transform(expression));
-
-/**
- * 
- */
 var returnStatement = \loc, argument ->
     ecma_statement.ReturnStatement.create(loc,
         _transform(argument));
@@ -297,8 +320,8 @@ var letExpression = \loc, bindings, body ->
             map(\x -> unpackAssign(x.pattern, x.value), bindings),
             _transform(body)));
  */
-    callExpression(loc,
-        functionExpression(null,
+    khepri_expression.CallExpression.create(loc,
+        khepri_expression.FunctionExpression.create(null,
             null,
             khepri_pattern.ArgumentsPattern.create(null, null, []),
             blockStatement(null, [
@@ -312,8 +335,8 @@ var letExpression = \loc, bindings, body ->
  * 
  */
 var curryExpression = \loc, base, args ->
-    callExpression(null,
-        memberExpression(null,
+    khepri_expression.CallExpression.create(null,
+        khepri_expression.MemberExpression.create(null,
             base,
             identifier(null, 'bind')),
         concat(
@@ -323,17 +346,8 @@ var curryExpression = \loc, base, args ->
 /**
  * 
  */
-var assignmentExpression = \loc, operator, left, right ->
-    ecma_expression.AssignmentExpression.create(loc,
-        operator,
-        _transform(left),
-        _transform(right));
-
-/**
- * 
- */
 var pipeline = \loc, value, target ->
-    callExpression(loc,
+    khepri_expression.CallExpression.create(loc,
         target,
         [value]);
 
@@ -341,53 +355,45 @@ var pipeline = \loc, value, target ->
  * 
  */
 var singleCompose = \loc, f, g ->
-    callExpression(loc,
-        functionExpression(null, null,
+    khepri_expression.CallExpression.create(loc,
+        khepri_expression.FunctionExpression.create(null, null,
             khepri_pattern.ArgumentsPattern.create(null, null, [
                 khepri_pattern.IdentifierPattern.create(null,
                     identifier(null, 'f')),
                 khepri_pattern.IdentifierPattern.create(null,
                     identifier(null, 'g'))]),
-        blockStatement(null, [
-            returnStatement(null, 
-                functionExpression(null, null,
-                    khepri_pattern.ArgumentsPattern.create(null, null, [
-                        khepri_pattern.IdentifierPattern.create(null,
-                            identifier(null, 'x'))]),
-                    blockStatement(null, [
-                        returnStatement(null,
-                            callExpression(null,
-                                identifier(null, 'f'), [
-                                    callExpression(null,
-                                        identifier(null, 'g'),
-                                        [identifier(null, 'x')])]))])))])),
+            khepri_expression.FunctionExpression.create(null, null,
+                khepri_pattern.ArgumentsPattern.create(null, null, [
+                    khepri_pattern.IdentifierPattern.create(null,
+                        identifier(null, 'x'))]),
+                khepri_expression.CallExpression.create(null,
+                    identifier(null, 'f'), [
+                        callExpression(null,
+                            identifier(null, 'g'),
+                            [identifier(null, 'x')])]))),
         [f, g]);
 
 /**
  * 
  */
 var multiCompose = \loc, f, g ->
-    callExpression(loc,
-        functionExpression(null, null,
+    khepri_expression.CallExpression.create(loc,
+        khepri_expression.FunctionExpression.create(null, null,
             khepri_pattern.ArgumentsPattern.create(null, null, [
                 khepri_pattern.IdentifierPattern.create(null,
                     identifier(null, 'f')),
                 khepri_pattern.IdentifierPattern.create(null,
                     identifier(null, 'g'))]),
-        blockStatement(null, [
-            returnStatement(null, 
-                functionExpression(null, null,
-                    khepri_pattern.ArgumentsPattern.create(null, null, []),
-                    blockStatement(null, [
-                        returnStatement(null,
-                            callExpression(null,
-                                identifier(null, 'f'), [
-                                    callExpression(null,
-                                         memberExpression(null,
-                                             identifier(null, 'g'),
-                                             identifier(null, 'apply')),
-                                         [nullLiteral(null),
-                                         identifier(null, 'arguments')])]))])))])),
+        khepri_expression.FunctionExpression.create(null, null,
+            khepri_pattern.ArgumentsPattern.create(null, null, []),
+            khepri_expression.CallExpression.create(null,
+                identifier(null, 'f'), [
+                    khepri_expression.CallExpression.create(null,
+                         memberExpression(null,
+                             identifier(null, 'g'),
+                             identifier(null, 'apply')),
+                         [nullLiteral(null),
+                         identifier(null, 'arguments')])]))),
         [f, g]);
 
 /* Package
@@ -410,234 +416,269 @@ var packageBlock = \loc, exports, body -> let
             body.body)
         :body
 in
-    _transform(
-        packageManager.definePackage(loc, exportedNames, imports, targets, fBody));
+    packageManager.definePackage(loc, exportedNames, imports, targets, fBody);
 
 /* Transform
  ******************************************************************************/
 var transformers = {};
 
-var addTransform = \target f -> {
-    transformers.(target) = f;
+var addTransform = \type pre post -> {
+    var entry = {
+        'pre': pre,
+        'post': post
+    };
+    
+    transformers.(type) = ?transformers.(type)
+        :transformers.(type).concat(entry)
+        :[entry];
 };
 
 // Declarations
-addTransform('VariableDeclaration', \node ->
-    variableDeclaration(node.loc,
-        node.declarations));
+addTransform('VariableDeclaration',
+    id,
+    \node ->
+        ecma_declaration.VariableDeclaration.create(node.loc,
+            node.declarations));
 
-addTransform('VariableDeclarator', \node ->
-    variableDeclarator(node.loc,
-        node.id,
-        node.init));
+addTransform('VariableDeclarator',
+    id,
+    \node ->
+        ecma_declaration.VariableDeclarator.create(node.loc,
+            node.id,
+            node.init));
 
-addTransform('StaticDeclaration', \node ->
-    ecma_statement.EmptyStatement.create(node.loc));
+addTransform('StaticDeclaration',
+    \node ->
+        ecma_statement.EmptyStatement.create(node.loc));
 
 // Clauses
-addTransform('CatchClause', \node ->
-    ecma_clause.CatchClause.create(node.loc,
-        _transform(node.param),
-        _transform(node.body)));
+addTransform('CatchClause',
+    id,
+    \node ->
+        ecma_clause.CatchClause.create(node.loc,
+            node.param,
+            node.body));
 
-addTransform('SwitchCase', \node ->
-    ecma_clause.SwitchCase.create(node.loc,
-        _transform(node.test),
-        _transform(node.consequent)));
+addTransform('SwitchCase',
+    id,
+    \node ->
+        ecma_clause.SwitchCase.create(node.loc,
+            node.test,
+            node.consequent));
 
 // Statement
-addTransform('BlockStatement', \node ->
-    blockStatement(node.loc,
-        node.body));
+addTransform('BlockStatement',
+    id,
+    \node ->
+        ecma_statement.BlockStatement.create(node.loc,
+            node.body));
 
-addTransform('ExpressionStatement', \node ->
-    expressionStatement(node.loc,
-        node.expression));
+addTransform('ExpressionStatement',
+    id,
+    \node ->
+        ecma_statement.ExpressionStatement.create(node.loc,
+            node.expression));
 
-addTransform('IfStatement', \node ->
-    ecma_statement.IfStatement.create(node.loc,
-        _transform(node.test),
-        _transform(node.consequent),
-        _transform(node.alternate)));
-    
+addTransform('IfStatement',
+    id,
+    \node ->
+        ecma_statement.IfStatement.create(node.loc,
+            node.test,
+            node.consequent,
+            node.alternate));
+
 addTransform('WithStatement', \node ->
     withStatement(node.loc,
         node.bindings,
         node.body));
 
-addTransform('SwitchStatement', \node ->
-    ecma_statement.SwitchStatement.create(node.loc,
-        _transform(node.discriminant),
-        _transform(node.cases)));
+addTransform('SwitchStatement',
+    id,
+    \node ->
+        ecma_statement.SwitchStatement.create(node.loc,
+            node.discriminant,
+            node.cases));
 
-addTransform('ReturnStatement', \node ->
-    returnStatement(node.loc,
-        node.argument));
+addTransform('ReturnStatement',
+    id,
+    \node ->
+        ecma_statement.ReturnStatement.create(node.loc,
+            node.argument));
 
-addTransform('ThrowStatement', \node ->
-    ecma_statement.ThrowStatement.create(node.loc,
-        _transform(node.argument)));
-    
-addTransform('BreakStatement', \node ->
-    ecma_statement.BreakStatement.create(node.loc,
-        null));
+addTransform('ThrowStatement',
+    id,
+    \node ->
+        ecma_statement.ThrowStatement.create(node.loc,
+            node.argument));
 
-addTransform('ContinueStatement', \node ->
-    ecma_statement.ThrowStatement.create(node.loc,
-        null));
+addTransform('BreakStatement',
+    \node ->
+        ecma_statement.BreakStatement.create(node.loc,
+            null));
 
-addTransform('TryStatement', \node ->
-    ecma_statement.TryStatement.create(node.loc,
-        _transform(node.block),
-        _transform(node.handler),
-        _transform(node.finalizer)));
+addTransform('ContinueStatement',
+    \node ->
+        ecma_statement.ContinueStatement.create(node.loc,
+            null));
 
-addTransform('WhileStatement', \node ->
-    ecma_statement.WhileStatement.create(node.loc,
-        _transform(node.test),
-        _transform(node.body)));
+addTransform('TryStatement',
+    id,
+    \node ->
+        ecma_statement.TryStatement.create(node.loc,
+            node.block,
+            node.handler,
+            node.finalizer));
 
-addTransform('DoWhileStatement', \node ->
-    ecma_statement.DoWhileStatement.create(node.loc,
-        _transform(node.body),
-        _transform(node.test)));
+addTransform('WhileStatement',
+    id,
+    \node ->
+        ecma_statement.WhileStatement.create(node.loc,
+            node.test,
+            node.body));
 
-addTransform('ForStatement', \node ->
-    ecma_statement.ForStatement.create(node.loc,
-        _transform(node.init),
-        _transform(node.test),
-        _transform(node.update),
-        _transform(node.body)));
+addTransform('DoWhileStatement',
+    id,
+    \node ->
+        ecma_statement.DoWhileStatement.create(node.loc,
+            node.body,
+            node.test));
+
+addTransform('ForStatement',
+    id,
+    \node ->
+        ecma_statement.ForStatement.create(node.loc,
+            node.init,
+            node.test,
+            node.update,
+            node.body));
 
 // Expression
-addTransform('AssignmentExpression', \node ->
-    assignmentExpression(node.loc,
-        node.operator,
-        node.left,
-        node.right));
-
-addTransform('UnaryExpression', \node ->  {
-    var op = node.operator;
-    switch (op) {
-    case '++': op = '+'; break;
-    case '--': op = '-'; break;
-    }
-    
-    return ecma_expression.UnaryExpression.create(node.loc,
-        op,
-        _transform(node.argument));
-});
-
-addTransform('BinaryExpression', \node -> {
-    switch (node.operator) {
-    case '\\>':
-        return singleCompose(node.loc,
-            node.right,
-            node.left);
-    
-    case '\\>>':
-        return multiCompose(node.loc,
-            node.right,
-            node.left);
-    
-    case '<\\':
-        return singleCompose(node.loc,
-            node.left,
-            node.right);
-    
-    case '<<\\':
-        return multiCompose(node.loc,
-            node.left,
-            node.right);
-    
-    case '|>':
-        return pipeline(node.loc,
-            node.left,
-            node.right);
-        
-    case '<|':
-        return pipeline(node.loc,
-            node.right,
-            node.left);
-    
-    default:
-        return ecma_expression.BinaryExpression.create(node.loc,
+addTransform('AssignmentExpression',
+    id,
+    \node ->
+        ecma_expression.AssignmentExpression.create(node.loc,
             node.operator,
-            _transform(node.left),
-            _transform(node.right));
-    }
-});
+            node.left,
+            node.right));
 
-addTransform('LogicalExpression', \node ->
-    ecma_expression.LogicalExpression.create(node.loc,
-        node.operator,
-        _transform(node.left),
-        _transform(node.right)));
+addTransform('UnaryExpression',
+    id,
+    \node ->  {
+        var op = node.operator;
+        switch (op) {
+        case '++': op = '+'; break;
+        case '--': op = '-'; break;
+        }
+        
+        return ecma_expression.UnaryExpression.create(node.loc,
+            op,
+            node.argument);
+    });
 
-addTransform('ConditionalExpression', \node ->
-    ecma_expression.ConditionalExpression.create(node.loc,
-        _transform(node.test),
-        _transform(node.consequent),
-        _transform(node.alternate)));
+addTransform('BinaryExpression',
+    \node -> {
+        switch (node.operator) {
+        case '\\>':
+            return singleCompose(node.loc, node.right, node.left);
+        case '\\>>':
+            return multiCompose(node.loc, node.right, node.left);
+        case '<\\':
+            return singleCompose(node.loc, node.left, node.right);
+        case '<<\\':
+            return multiCompose(node.loc, node.left, node.right);
+        case '|>':
+            return pipeline(node.loc, node.left, node.right);
+        case '<|':
+            return pipeline(node.loc, node.right, node.left);
+        default:
+            return node;
+        }
+    },
+    \node ->
+        ecma_expression.BinaryExpression.create(node.loc,
+            node.operator,
+            node.left,
+            node.right));
 
-addTransform('NewExpression', \node ->
-    ecma_expression.NewExpression.create(node.loc,
-        _transform(node.callee),
-        _transform(node.args)));
+addTransform('LogicalExpression',
+    id,
+    \node ->
+        ecma_expression.LogicalExpression.create(node.loc,
+            node.operator,
+            node.left,
+            node.right));
 
-addTransform('CallExpression', \node ->
-    callExpression(node.loc,
-        node.callee,
-        node.args));
+addTransform('ConditionalExpression',
+    id,
+    \node ->
+        ecma_expression.ConditionalExpression.create(node.loc,
+            node.test,
+            node.consequent,
+            node.alternate));
 
-addTransform('MemberExpression', \node ->
-    ecma_expression.MemberExpression.create(node.loc,
-        _transform(node.object),
-        _transform(node.property),
-        node.computed));
+addTransform('NewExpression',
+    id,
+    \node ->
+        ecma_expression.NewExpression.create(node.loc,
+            node.callee,
+            node.args));
 
-addTransform('LetExpression', \node ->
-    letExpression(node.loc,
-        node.bindings,
-        node.body));
+addTransform('CallExpression',
+    id,
+    \node ->
+        ecma_expression.CallExpression.create(node.loc,
+            node.callee,
+            node.args));
 
-addTransform('CurryExpression', \node ->
-    curryExpression(node.loc,
-        node.base,
-        node.args));
+addTransform('MemberExpression',
+    id,
+    \node ->
+        ecma_expression.MemberExpression.create(node.loc,
+            node.object,
+            node.property,
+            node.computed));
 
-addTransform('UnaryOperatorExpression', \node ->
-    functionExpression(node.loc, null,
-        khepri_pattern.ArgumentsPattern.create(null, null, [
-            khepri_pattern.IdentifierPattern.create(null,
-                identifier(null, 'x'))]),
-        blockStatement(null, [
-            returnStatement(null, 
-                khepri_expression.UnaryExpression.create(null,
-                    node.op,
-                    identifier(null, 'x')))])));
+addTransform('LetExpression',
+    \node ->
+        letExpression(node.loc,
+            node.bindings,
+            node.body));
 
-addTransform('BinaryOperatorExpression', \node -> {
-    var kind = ?(node.op === '||' || node.op === '&&')
-        :khepri_expression.LogicalExpression
-        :khepri_expression.BinaryExpression;
-    
-    return functionExpression(node.loc, null,
-        khepri_pattern.ArgumentsPattern.create(null, null, [
-            khepri_pattern.IdentifierPattern.create(null,
-                identifier(null, 'x')),
-            khepri_pattern.IdentifierPattern.create(null,
-                identifier(null, 'y'))]),
-        blockStatement(null, [
-            returnStatement(null, 
-                kind.create(null,
-                    node.op,
-                    identifier(null, 'x'),
-                    identifier(null, 'y')))]));
-});
+addTransform('CurryExpression',
+    \node ->
+        curryExpression(node.loc,
+            node.base,
+            node.args));
+
+addTransform('UnaryOperatorExpression',
+    \node ->
+        khepri_expression.FunctionExpression.create(node.loc, null,
+            khepri_pattern.ArgumentsPattern.create(null, null, [
+                khepri_pattern.IdentifierPattern.create(null,
+                    identifier(null, 'x'))]),
+            khepri_expression.UnaryExpression.create(null,
+                node.op,
+                identifier(null, 'x'))));
+
+addTransform('BinaryOperatorExpression',
+    \node -> let
+        kind = ? node.op === '||' || node.op === '&&'
+            :khepri_expression.LogicalExpression
+            :khepri_expression.BinaryExpression
+    in
+        khepri_expression.FunctionExpression.create(node.loc, null,
+            khepri_pattern.ArgumentsPattern.create(null, null, [
+                khepri_pattern.IdentifierPattern.create(null,
+                    identifier(null, 'x')),
+                khepri_pattern.IdentifierPattern.create(null,
+                    identifier(null, 'y'))]),
+            kind.create(null,
+                node.op,
+                identifier(null, 'x'),
+                identifier(null, 'y'))));
 
 addTransform('TernaryOperatorExpression', \node ->
-    functionExpression(node.loc, null,
+    khepri_expression.FunctionExpression.create(node.loc, null,
         khepri_pattern.ArgumentsPattern.create(null, null, [
             khepri_pattern.IdentifierPattern.create(null,
                 identifier(null, 'x')),
@@ -645,49 +686,52 @@ addTransform('TernaryOperatorExpression', \node ->
                 identifier(null, 'y')),
                 khepri_pattern.IdentifierPattern.create(null,
                 identifier(null, 'z'))]),
-        blockStatement(null, [
-            returnStatement(null, 
-                khepri_expression.ConditionalExpression.create(null,
-                    identifier(null, 'x'),
-                    identifier(null, 'y'),
-                    identifier(null, 'z')))])));
+        khepri_expression.ConditionalExpression.create(null,
+            identifier(null, 'x'),
+            identifier(null, 'y'),
+            identifier(null, 'z'))));
 
-addTransform('FunctionExpression', \node ->
-    functionExpression(node.loc,
-        node.id,
-        node.params,
-        node.body));
+addTransform('FunctionExpression',
+    \node ->
+        functionExpression(node.loc,
+            node.id,
+            node.params,
+            node.body));
 
-addTransform('ArrayExpression', \node ->
-    ecma_expression.ArrayExpression.create(node.loc,
-        _transform(node.elements)));
+addTransform('ArrayExpression',
+    id,
+    \node ->
+        ecma_expression.ArrayExpression.create(node.loc,
+            node.elements));
 
-addTransform('ObjectExpression', \node ->
-    ecma_expression.ObjectExpression.create(node.loc,
-        _transform(node.properties)));
+addTransform('ObjectExpression',
+    id,
+    \node ->
+        ecma_expression.ObjectExpression.create(node.loc,
+            node.properties));
 
-addTransform('ObjectValue', \node ->
-    ecma_value.ObjectValue.create(node.loc,
-        _transform(node.key),
-        _transform(node.value)));
+addTransform('ObjectValue',
+    id,
+    \node ->
+        ecma_value.ObjectValue.create(node.loc,
+            node.key,
+            node.value));
 
 // Patterns
 addTransform('ArgumentsPattern', \node ->
-    identifier(node.loc,
-        node.id.name));
+    \node -> node.id);
 
-addTransform('IdentifierPattern', \node ->
-    identifier(node.loc,
-        node.id.name));
+addTransform('IdentifierPattern',
+    \node -> node.id);
 
-addTransform('AsPattern', \node ->
-    _transform(node.id));
+addTransform('AsPattern',
+    \node -> node.id);
 
-addTransform('ArrayPattern', \node ->
-    _transform(node.ud.id));
+addTransform('ArrayPattern',
+    \node -> node.ud.id);
 
-addTransform('ObjectPattern', \node ->
-    _transform(node.ud.id));
+addTransform('ObjectPattern',
+    \node -> node.ud.id);
 
 addTransform('EllipsisPattern', \node ->
     ?(node.ud && node.ud.id)
@@ -700,24 +744,83 @@ addTransform('SinkPattern', \node ->
         :null);
 
 // Program
-addTransform('Program', \node ->
-    ecma_program.Program.create(node.loc,
-        ?Array.isArray(node.body)
-            :_transform(node.body)
-            :[_transform(node.body)]));
+addTransform('Program',
+    id,
+    \node ->
+        ecma_program.Program.create(node.loc,
+            ?Array.isArray(node.body)
+                :node.body
+                :[node.body]));
 
 // Package
-addTransform('Package', \node ->
-    packageBlock(node.loc,
-        node.exports,
-        node.body));
+addTransform('Package',
+    \node ->
+        packageBlock(node.loc,
+            node.exports,
+            node.body));
+
+// Value
+addTransform('Identifier', \node ->
+    identifier(node.loc, node.name));
 
 /*
  * 
  *****************************************************************************/
-var walk = preWalk
-    @(tree.modifyNode @ \ctx ->
-        ctx.setNode(_transform(ctx.node)));
+
+var _t = \node -> {
+    if (!node)
+        return id;
+    
+    if (Array.isArray(node))
+        return modifyNode <|\ -> map(_transform, node);
+    
+    if (!(node instanceof khepri_node.Node))
+        return id;
+    
+    var t = transformers.(node.type);
+    
+    if (!t) return id;
+    return modifyNode \x -> t.(0).pre(x, _transform);
+};
+
+var _transformp = \node -> {
+    if (!node)
+        return node;
+    
+    if (Array.isArray(node))
+        return map(_transform, node);
+    
+    if (!(node instanceof khepri_node.Node))
+        return node;
+    
+    var t = transformers.(node.type);
+    
+    if (!t || !t.(0).post) return node;
+    return t.(0).post(node);
+};
+
+
+var _tp = \node -> {
+    if (!node)
+        return id;
+    
+    if (Array.isArray(node))
+        return modifyNode <|\ -> map(_transformp, node);
+    
+    if (!(node instanceof khepri_node.Node))
+        return id;
+    
+    var t = transformers.(node.type);
+    
+    if (!t || !t.(0).post) return id;
+    return modifyNode \x -> t.(0).post(x, t.(0).post);
+};
+
+
+var walk = zipper_walk.walk@(
+    \ctx -> _t(tree.node(ctx).node)(ctx),
+    \ctx -> _tp(tree.node(ctx).node)(ctx));
+
 
 _transform = \node -> {
     if (!node)
@@ -732,7 +835,7 @@ _transform = \node -> {
     var t = transformers.(node.type);
     
     if (!t) return node;
-    return t(node);
+    return t.(0).pre(node, _transform);
 };
 
 transform = \{options ast} -> {

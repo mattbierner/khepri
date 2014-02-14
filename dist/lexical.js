@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/lexical.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value",
     "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "bes/object", "./scope"
 ], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, object,
@@ -113,6 +117,9 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                 return s;
             }));
         }),
+        unique = (function(s, ok, err) {
+            return ok(s.unique, s.setUnique((s.unique + 1)));
+        }),
         pass = ok(),
         registerVar = (function(name) {
             return bind(examineState((function(s) {
@@ -126,20 +133,21 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         block = (function() {
             var body = arguments;
             return examineScope((function(s) {
-                return seq(setScope(new(Scope)(({}), s, s.mapping)), seqa(body), setScope(s));
+                return seq(setScope(new(Scope)(({}), s, s.mapping, s.definitions)), seqa(body),
+                    setScope(s));
             }));
         }),
         emptyBlock = (function() {
             var body = arguments;
             return examineScope((function(s) {
-                return seq(setScope(new(Scope)(({}), s, ({}))), seqa(body), setScope(s));
+                return seq(setScope(new(Scope)(({}), s, ({}), ({}))), seqa(body), setScope(s));
             }));
         }),
         realBlock = (function() {
             var body = arguments;
             return examineRealScope((function(s) {
-                return seq(setRealScope(new(Scope)(({}), s, ({}))), emptyBlock.apply(undefined,
-                    body), setRealScope(s));
+                return seq(setRealScope(new(Scope)(({}), s, ({}), ({}))), emptyBlock.apply(
+                    undefined, body), setRealScope(s));
             }));
         }),
         checkCanAddOwnBinding = (function(id, loc) {
@@ -185,19 +193,26 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                 return Scope.addMapping(s, id, newId);
             }));
         }),
+        addUid = (function(id) {
+            return bind(unique, (function(uid) {
+                return modifyScope((function(s) {
+                    return Scope.addUid(s, id, uid);
+                }));
+            }));
+        }),
         addMutableBinding = (function(id, loc) {
             return seq(modifyScope((function(s) {
                 return Scope.addMutableBinding(s, id, loc);
             })), modifyRealScope((function(s) {
                 return Scope.addMutableBinding(s, id, loc);
-            })), addMapping(id, id));
+            })), addUid(id), addMapping(id, id));
         }),
         addImmutableBinding = (function(id, loc) {
             return seq(modifyScope((function(s) {
                 return Scope.addImmutableBinding(s, id, loc);
             })), modifyRealScope((function(s) {
                 return Scope.addImmutableBinding(s, id, loc);
-            })), addMapping(id, id));
+            })), addUid(id), addMapping(id, id));
         }),
         addUniqueMutableBinding = (function(id, loc) {
             return seq(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
@@ -372,8 +387,10 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             return (s.hasMapping(name) ? (function() {
                 var mappedName = s.getMapping(name);
                 return seq(modifyNode((function(x) {
-                    return ast_node.modify(x, ({}), ({
+                    return setUserData(ast_node.modify(x, ({}), ({
                         "name": mappedName
+                    })), ({
+                        "uid": s.getUid(name)
                     }));
                 })), hasFreeBinding(mappedName, node.loc));
             })() : hasFreeBinding(name, node.loc));
@@ -390,8 +407,8 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         return pass;
     }));
     var checkAst = (function(ast, globals) {
-        var scope = reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}))),
-            state = new(State)(khepriZipper(ast), scope, scope);
+        var scope = reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
+            state = new(State)(khepriZipper(ast), scope, scope, ({}), 0);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));
         }), (function(err, s) {

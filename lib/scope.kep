@@ -20,7 +20,10 @@ in {
 Scope = record.declare(null, [
     'record',
     'outer',
-    'mapping']);
+    'mapping',
+    'definitions']);
+
+Scope.empty = Scope.create({}, null, {}, {});
 
 /**
  * Does this scope have a given binding?
@@ -42,6 +45,15 @@ Scope.prototype.getBinding = \id =self->
         :self.record.(id)
         :?self.outer
             :self.outer.getBinding(id)
+            :null;
+
+/**
+ */
+Scope.prototype.getUid = \id =self->
+    ?self.hasOwnBinding(id)
+        :self.definitions.(id)
+        :?self.outer
+            :self.outer.getUid(id)
             :null;
 
 /**
@@ -76,6 +88,16 @@ Scope.prototype.getUnusedId = \id =self-> {
 };
 
 /**
+ */
+Scope.addUid = \s, id, uid->
+    new Scope(
+        s.record,
+        s.outer,
+        s.mapping,
+        setProperty(s.definitions, id, uid, true));
+
+
+/**
  * Create a new modified scope with a given binding.
  * 
  * @param s Scope.
@@ -86,7 +108,8 @@ Scope.addBinding = \s, id, info ->
     new Scope(
         setProperty(s.record, id, info, true),
         s.outer,
-        s.mapping);
+        s.mapping,
+        s.definitions);
 
 /**
  * Create a new modified scope with a new mutable binding.
@@ -139,6 +162,7 @@ Scope.addMapping = \s, from, to ->
     new Scope(
         s.record,
         s.outer,
-        setProperty(s.mapping, from, to, true));
+        setProperty(s.mapping, from, to, true),
+        s.definitions);
 
 }

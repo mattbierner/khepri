@@ -1,8 +1,13 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/scope.kep'
+ * DO NOT EDIT
+*/
 define(["require", "exports", "bes/object", "bes/record"], (function(require, exports, __o, record) {
     "use strict";
     var setProperty = __o["setProperty"],
         Scope;
-    (Scope = record.declare(null, ["record", "outer", "mapping"]));
+    (Scope = record.declare(null, ["record", "outer", "mapping", "definitions"]));
+    (Scope.empty = Scope.create(({}), null, ({}), ({})));
     (Scope.prototype.hasOwnBinding = (function(id) {
         var self = this;
         return Object.prototype.hasOwnProperty.call(self.record, id);
@@ -14,6 +19,11 @@ define(["require", "exports", "bes/object", "bes/record"], (function(require, ex
     (Scope.prototype.getBinding = (function(id) {
         var self = this;
         return (self.hasOwnBinding(id) ? self.record[id] : (self.outer ? self.outer.getBinding(id) :
+            null));
+    }));
+    (Scope.prototype.getUid = (function(id) {
+        var self = this;
+        return (self.hasOwnBinding(id) ? self.definitions[id] : (self.outer ? self.outer.getUid(id) :
             null));
     }));
     (Scope.prototype.hasOwnMapping = (function(id) {
@@ -35,8 +45,11 @@ define(["require", "exports", "bes/object", "bes/record"], (function(require, ex
             (i = (i + 1)))
             if ((!self.hasBinding((id + i)))) return (id + i);
     }));
+    (Scope.addUid = (function(s, id, uid) {
+        return new(Scope)(s.record, s.outer, s.mapping, setProperty(s.definitions, id, uid, true));
+    }));
     (Scope.addBinding = (function(s, id, info) {
-        return new(Scope)(setProperty(s.record, id, info, true), s.outer, s.mapping);
+        return new(Scope)(setProperty(s.record, id, info, true), s.outer, s.mapping, s.definitions);
     }));
     (Scope.addMutableBinding = (function(s, id, loc) {
         return Scope.addBinding(s, id, ({
@@ -58,7 +71,7 @@ define(["require", "exports", "bes/object", "bes/record"], (function(require, ex
         }));
     }));
     (Scope.addMapping = (function(s, from, to) {
-        return new(Scope)(s.record, s.outer, setProperty(s.mapping, from, to, true));
+        return new(Scope)(s.record, s.outer, setProperty(s.mapping, from, to, true), s.definitions);
     }));
     (exports.Scope = Scope);
 }));

@@ -180,9 +180,9 @@ var transformUp = \node -> {
     return transforms.reduce(\p c -> c.map(p, transformUp), node);
 };
 
-var opt = walk
-    @(tree.modifyNode @ \node -> (node && transformDown(node)))
-    @(tree.modifyNode @ \node -> (node && transformUp(node)));
+var opt = walk@(
+    tree.modifyNode @ \node -> (node && transformDown(node)),
+    tree.modifyNode @ \node -> (node && transformUp(node)));
 
 optimize = \{options ast} ->
     ({
