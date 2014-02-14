@@ -1,5 +1,9 @@
-define(["require", "exports", "./stage/lexical", "./transform", "./khepri_peep", "./ecma_peep"], (function(require,
-    exports, lexical, transform, khepri_peep, ecma_peep) {
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile.kep'
+ * DO NOT EDIT
+*/
+define(["require", "exports", "./stage/lexical", "./stage/transform", "./khepri_peep", "./ecma_peep"], (function(
+    require, exports, lexical, transform, khepri_peep, ecma_peep) {
     "use strict";
     var compile;
     (compile = (function(f, g) {

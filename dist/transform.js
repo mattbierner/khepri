@@ -21,7 +21,7 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         treeZipper = tree["treeZipper"],
         preWalk = zipper_walk["preWalk"],
         postWalk = zipper_walk["postWalk"],
-        transform, transformStage, concat = Function.prototype.call.bind(Array.prototype.concat),
+        transform, concat = Function.prototype.call.bind(Array.prototype.concat),
         reduce = Function.prototype.call.bind(Array.prototype.reduce),
         reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
         filter = (function(f, a) {
@@ -148,9 +148,8 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         }),
         withStatement = (function(loc, bindings, body) {
             var vars = flatten(map((function(imp) {
-                var base = ((imp.type === "ImportPattern") ? packageManager.importPackage(imp.from
-                    .value) : imp.value);
-                return unpack(imp.pattern, base);
+                return unpack(imp.pattern, ((imp.type === "ImportPattern") ? packageManager.importPackage(
+                    imp.from.value) : imp.value));
             }), bindings)),
                 prefix = variableDeclaration(null, vars);
             return khepri_statement.BlockStatement.create(loc, concat(prefix, body.body));
@@ -191,6 +190,27 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
                 null, null, khepri_pattern.ArgumentsPattern.create(null, null, []), khepri_statement.BlockStatement
                 .create(null, [withStatement(null, bindings, khepri_statement.BlockStatement.create(
                     null, [khepri_statement.ReturnStatement.create(null, body)]))])), []);
+        }),
+        unaryOperatorExpression = (function(loc, op) {
+            return khepri_expression.FunctionExpression.create(loc, null, khepri_pattern.ArgumentsPattern.create(
+                    null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x"))]),
+                khepri_expression.UnaryExpression.create(null, op, identifier(null, "x")));
+        }),
+        binaryOperatorExpression = (function(loc, op) {
+            var kind = (((op === "||") || (op === "&&")) ? khepri_expression.LogicalExpression :
+                khepri_expression.BinaryExpression);
+            return khepri_expression.FunctionExpression.create(loc, null, khepri_pattern.ArgumentsPattern.create(
+                null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")),
+                    khepri_pattern.IdentifierPattern.create(null, identifier(null, "y"))
+                ]), kind.create(null, op, identifier(null, "x"), identifier(null, "y")));
+        }),
+        ternaryOperatorExpression = (function(loc) {
+            return khepri_expression.FunctionExpression.create(loc, null, khepri_pattern.ArgumentsPattern.create(
+                null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")),
+                    khepri_pattern.IdentifierPattern.create(null, identifier(null, "y")),
+                    khepri_pattern.IdentifierPattern.create(null, identifier(null, "z"))
+                ]), khepri_expression.ConditionalExpression.create(null, identifier(null, "x"),
+                identifier(null, "y"), identifier(null, "z")));
         }),
         curryExpression = (function(loc, base, args) {
             return khepri_expression.CallExpression.create(null, khepri_expression.MemberExpression.create(
@@ -242,71 +262,75 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             return packageManager.definePackage(loc, exportedNames, imports, targets, fBody);
         }),
         transformers = ({}),
-        addTransform = (function(type, pre, post) {
+        _t, addTransform = (function(type, pre, post) {
             var entry = ({
                 "pre": pre,
                 "post": post
             });
             (transformers[type] = (transformers[type] ? transformers[type].concat(entry) : [entry]));
         });
-    addTransform("VariableDeclaration", id, (function(node) {
+    addTransform("VariableDeclaration", id, modifyNode.bind(null, (function(node) {
         return ecma_declaration.VariableDeclaration.create(node.loc, node.declarations);
-    }));
-    addTransform("VariableDeclarator", id, (function(node) {
+    })));
+    addTransform("VariableDeclarator", id, modifyNode.bind(null, (function(node) {
         return ecma_declaration.VariableDeclarator.create(node.loc, node.id, node.init);
-    }));
-    addTransform("StaticDeclaration", (function(node) {
+    })));
+    addTransform("StaticDeclaration", modifyNode.bind(null, (function(node) {
         return ecma_statement.EmptyStatement.create(node.loc);
-    }));
-    addTransform("CatchClause", id, (function(node) {
+    })));
+    addTransform("CatchClause", id, modifyNode.bind(null, (function(node) {
         return ecma_clause.CatchClause.create(node.loc, node.param, node.body);
-    }));
-    addTransform("SwitchCase", id, (function(node) {
+    })));
+    addTransform("SwitchCase", id, modifyNode.bind(null, (function(node) {
         return ecma_clause.SwitchCase.create(node.loc, node.test, node.consequent);
-    }));
-    addTransform("BlockStatement", id, (function(node) {
+    })));
+    addTransform("BlockStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.BlockStatement.create(node.loc, node.body);
-    }));
-    addTransform("ExpressionStatement", id, (function(node) {
+    })));
+    addTransform("ExpressionStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.ExpressionStatement.create(node.loc, node.expression);
-    }));
-    addTransform("IfStatement", id, (function(node) {
+    })));
+    addTransform("IfStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
+    })));
+    addTransform("WithStatement", (function(ctx) {
+        return _t(modifyNode((function(node) {
+            return withStatement(node.loc, node.bindings, node.body);
+        }), ctx));
     }));
-    addTransform("WithStatement", (function(node, k) {
-        return k(withStatement(node.loc, node.bindings, node.body));
-    }));
-    addTransform("SwitchStatement", id, (function(node) {
+    addTransform("SwitchStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.SwitchStatement.create(node.loc, node.discriminant, node.cases);
-    }));
-    addTransform("ReturnStatement", id, (function(node) {
+    })));
+    addTransform("ReturnStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.ReturnStatement.create(node.loc, node.argument);
-    }));
-    addTransform("ThrowStatement", id, (function(node) {
+    })));
+    addTransform("ThrowStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.ThrowStatement.create(node.loc, node.argument);
-    }));
-    addTransform("BreakStatement", (function(node) {
+    })));
+    addTransform("BreakStatement", modifyNode.bind(null, (function(node) {
         return ecma_statement.BreakStatement.create(node.loc, null);
-    }));
-    addTransform("ContinueStatement", (function(node) {
+    })));
+    addTransform("ContinueStatement", modifyNode.bind(null, (function(node) {
         return ecma_statement.ContinueStatement.create(node.loc, null);
-    }));
-    addTransform("TryStatement", id, (function(node) {
+    })));
+    addTransform("TryStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.TryStatement.create(node.loc, node.block, node.handler, node.finalizer);
-    }));
-    addTransform("WhileStatement", id, (function(node) {
+    })));
+    addTransform("WhileStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.WhileStatement.create(node.loc, node.test, node.body);
-    }));
-    addTransform("DoWhileStatement", id, (function(node) {
+    })));
+    addTransform("DoWhileStatement", id, modifyNode.bind(null, (function(node) {
         return ecma_statement.DoWhileStatement.create(node.loc, node.body, node.test);
-    }));
-    addTransform("ForStatement", id, (function(node) {
-        return ecma_statement.ForStatement.create(node.loc, node.init, node.test, node.update, node.body);
-    }));
-    addTransform("AssignmentExpression", id, (function(node) {
-        return ecma_expression.AssignmentExpression.create(node.loc, node.operator, node.left, node.right);
-    }));
-    addTransform("UnaryExpression", id, (function(node) {
+    })));
+    addTransform("ForStatement", id, modifyNode.bind(null, (function(node) {
+        return ecma_statement.ForStatement.create(node.loc, node.init, node.test, node.update, node
+            .body);
+    })));
+    addTransform("AssignmentExpression", id, modifyNode.bind(null, (function(node) {
+        return ecma_expression.AssignmentExpression.create(node.loc, node.operator, node.left, node
+            .right);
+    })));
+    addTransform("UnaryExpression", id, modifyNode.bind(null, (function(node) {
         var op = node.operator;
         switch (op) {
             case "++":
@@ -317,8 +341,8 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
                 break;
         }
         return ecma_expression.UnaryExpression.create(node.loc, op, node.argument);
-    }));
-    addTransform("BinaryExpression", (function(node) {
+    })));
+    addTransform("BinaryExpression", modifyNode.bind(null, (function(node) {
         switch (node.operator) {
             case "\\>":
                 return singleCompose(node.loc, node.right, node.left);
@@ -335,155 +359,118 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             default:
                 return node;
         }
-    }), (function(node) {
+    })), modifyNode.bind(null, (function(node) {
         return ecma_expression.BinaryExpression.create(node.loc, node.operator, node.left, node.right);
-    }));
-    addTransform("LogicalExpression", id, (function(node) {
+    })));
+    addTransform("LogicalExpression", id, modifyNode.bind(null, (function(node) {
         return ecma_expression.LogicalExpression.create(node.loc, node.operator, node.left, node.right);
-    }));
-    addTransform("ConditionalExpression", id, (function(node) {
-        return ecma_expression.ConditionalExpression.create(node.loc, node.test, node.consequent, node.alternate);
-    }));
-    addTransform("NewExpression", id, (function(node) {
+    })));
+    addTransform("ConditionalExpression", id, modifyNode.bind(null, (function(node) {
+        return ecma_expression.ConditionalExpression.create(node.loc, node.test, node.consequent,
+            node.alternate);
+    })));
+    addTransform("NewExpression", id, modifyNode.bind(null, (function(node) {
         return ecma_expression.NewExpression.create(node.loc, node.callee, node.args);
-    }));
-    addTransform("CallExpression", id, (function(node) {
+    })));
+    addTransform("CallExpression", id, modifyNode.bind(null, (function(node) {
         return ecma_expression.CallExpression.create(node.loc, node.callee, node.args);
-    }));
-    addTransform("MemberExpression", id, (function(node) {
+    })));
+    addTransform("MemberExpression", id, modifyNode.bind(null, (function(node) {
         return ecma_expression.MemberExpression.create(node.loc, node.object, node.property, node.computed);
-    }));
-    addTransform("LetExpression", (function(node) {
+    })));
+    addTransform("LetExpression", modifyNode.bind(null, (function(node) {
         return letExpression(node.loc, node.bindings, node.body);
-    }));
-    addTransform("CurryExpression", (function(node) {
+    })));
+    addTransform("CurryExpression", modifyNode.bind(null, (function(node) {
         return curryExpression(node.loc, node.base, node.args);
+    })));
+    addTransform("UnaryOperatorExpression", (function(ctx) {
+        return _t(modifyNode((function(node) {
+            return unaryOperatorExpression(node.loc, node.op);
+        }), ctx));
     }));
-    addTransform("UnaryOperatorExpression", (function(node, k) {
-        return k(khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern
-            .create(null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x"))]),
-            khepri_expression.UnaryExpression.create(null, node.op, identifier(null, "x"))));
+    addTransform("BinaryOperatorExpression", (function(ctx) {
+        return _t(modifyNode((function(node) {
+            return binaryOperatorExpression(node.loc, node.op);
+        }), ctx));
     }));
-    addTransform("BinaryOperatorExpression", (function(node, k) {
-        var kind = (((node.op === "||") || (node.op === "&&")) ? khepri_expression.LogicalExpression :
-            khepri_expression.BinaryExpression);
-        return k(khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern
-            .create(null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")),
-                khepri_pattern.IdentifierPattern.create(null, identifier(null, "y"))
-            ]), kind.create(null, node.op, identifier(null, "x"), identifier(null, "y"))));
+    addTransform("TernaryOperatorExpression", (function(ctx) {
+        return _t(modifyNode((function(node) {
+            return ternaryOperatorExpression(node.loc);
+        }), ctx));
     }));
-    addTransform("TernaryOperatorExpression", (function(node, k) {
-        return k(khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern
-            .create(null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")),
-                khepri_pattern.IdentifierPattern.create(null, identifier(null, "y")),
-                khepri_pattern.IdentifierPattern.create(null, identifier(null, "z"))
-            ]), khepri_expression.ConditionalExpression.create(null, identifier(null, "x"),
-                identifier(null, "y"), identifier(null, "z"))));
-    }));
-    addTransform("FunctionExpression", (function(node) {
+    addTransform("FunctionExpression", modifyNode.bind(null, (function(node) {
         return functionExpression(node.loc, node.id, node.params, node.body);
-    }), (function(node) {
+    })), modifyNode.bind(null, (function(node) {
         return ecma_expression.FunctionExpression.create(null, node.id, node.params, node.body);
-    }));
-    addTransform("ArrayExpression", id, (function(node) {
+    })));
+    addTransform("ArrayExpression", id, modifyNode.bind(null, (function(node) {
         return ecma_expression.ArrayExpression.create(node.loc, node.elements);
-    }));
-    addTransform("ObjectExpression", id, (function(node) {
+    })));
+    addTransform("ObjectExpression", id, modifyNode.bind(null, (function(node) {
         return ecma_expression.ObjectExpression.create(node.loc, node.properties);
-    }));
-    addTransform("ObjectValue", id, (function(node) {
+    })));
+    addTransform("ObjectValue", id, modifyNode.bind(null, (function(node) {
         return ecma_value.ObjectValue.create(node.loc, node.key, node.value);
-    }));
-    addTransform("ArgumentsPattern", (function(node) {
+    })));
+    addTransform("ArgumentsPattern", modifyNode.bind(null, (function(node) {
         return node.id;
-    }));
-    addTransform("IdentifierPattern", (function(node) {
+    })));
+    addTransform("IdentifierPattern", modifyNode.bind(null, (function(node) {
         return node.id;
-    }));
-    addTransform("AsPattern", (function(node) {
+    })));
+    addTransform("AsPattern", modifyNode.bind(null, (function(node) {
         return node.id;
-    }));
-    addTransform("ArrayPattern", (function(node) {
+    })));
+    addTransform("ArrayPattern", modifyNode.bind(null, (function(node) {
         return node.ud.id;
-    }));
-    addTransform("ObjectPattern", (function(node) {
+    })));
+    addTransform("ObjectPattern", modifyNode.bind(null, (function(node) {
         return node.ud.id;
-    }));
-    addTransform("EllipsisPattern", (function(node) {
+    })));
+    addTransform("EllipsisPattern", modifyNode.bind(null, (function(node) {
         return (node.ud && node.ud.id);
-    }));
-    addTransform("SinkPattern", (function(node) {
+    })));
+    addTransform("SinkPattern", modifyNode.bind(null, (function(node) {
         return (node.ud && node.ud.id);
-    }));
-    addTransform("Program", id, (function(node) {
+    })));
+    addTransform("Program", id, modifyNode.bind(null, (function(node) {
         return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? node.body : [node.body]));
-    }));
-    addTransform("Package", (function(node) {
+    })));
+    addTransform("Package", modifyNode.bind(null, (function(node) {
         return packageBlock(node.loc, node.exports, node.body);
-    }));
-    addTransform("Identifier", (function(node) {
+    })));
+    addTransform("Identifier", modifyNode.bind(null, (function(node) {
         return identifier(node.loc, node.name);
-    }));
-    var _transform, _t = (function(node) {
-            if ((!node)) return id;
-            if (Array.isArray(node)) return modifyNode.bind(null, (function() {
-                return map(_transform, node);
-            }));
-            if ((!(node instanceof khepri_node.Node))) return id;
-            var t = transformers[node.type];
-            if ((!t)) return id;
-            return modifyNode.bind(null, (function(x) {
-                return t[0].pre(x, _transform);
-            }));
-        }),
-        _transformp = (function(node) {
-            if ((!node)) return node;
-            if (Array.isArray(node)) return map(_transform, node);
-            if ((!(node instanceof khepri_node.Node))) return node;
-            var t = transformers[node.type];
-            if (((!t) || (!t[0].post))) return node;
-            return t[0].post(node);
-        }),
-        _tp = (function(node) {
-            if ((!node)) return id;
-            if (Array.isArray(node)) return modifyNode.bind(null, (function() {
-                return map(_transformp, node);
-            }));
-            if ((!(node instanceof khepri_node.Node))) return id;
+    })));
+    var _trans = (function(node) {
+        if (((!node) || (!(node instanceof khepri_node.Node)))) return id;
+        var t = transformers[node.type];
+        if ((!t)) return id;
+        return t[0].pre;
+    }),
+        _transp = (function(node) {
+            if (((!node) || (!(node instanceof khepri_node.Node)))) return id;
             var t = transformers[node.type];
             if (((!t) || (!t[0].post))) return id;
-            return modifyNode.bind(null, (function(x) {
-                return t[0].post(x, t[0].post);
-            }));
-        }),
-        walk = zipper_walk.walk.bind(null, (function(ctx) {
-            return _t(tree.node(ctx)
-                .node)(ctx);
-        }), (function(ctx) {
-            return _tp(tree.node(ctx)
-                .node)(ctx);
-        }));
-    (_transform = (function(node) {
-        if ((!node)) return node;
-        if (Array.isArray(node)) return map(_transform, node);
-        if ((!(node instanceof khepri_node.Node))) return node;
-        var t = transformers[node.type];
-        if ((!t)) return node;
-        return t[0].pre(node, _transform);
+            return t[0].post;
+        });
+    (_t = (function(ctx) {
+        return _trans(tree.node(ctx)
+            .node)(ctx);
     }));
-    (transform = (function(__o) {
-        var options = __o["options"],
-            ast = __o["ast"],
-            amd_manager = require("./package_manager/amd"),
+    var _tp = (function(ctx) {
+        return _transp(tree.node(ctx)
+            .node)(ctx);
+    }),
+        walk = zipper_walk.walk.bind(null, _t, _tp);
+    (transform = (function(ast, manager) {
+        var amd_manager = require("./package_manager/amd"),
             node_manager = require("./package_manager/node");
         (packageManager = amd_manager);
-        if ((options.package_manager === "node"))(packageManager = node_manager);
-        return ({
-            "options": options,
-            "ast": tree.node(walk(khepriZipper(State.create(ast, packageManager))))
-                .node
-        });
+        if ((manager === "node"))(packageManager = node_manager);
+        return tree.node(walk(khepriZipper(State.create(ast, packageManager))))
+            .node;
     }));
     (exports.transform = transform);
-    (exports.transformStage = transformStage);
 }));

@@ -1,6 +1,10 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/compile.kep'
+ * DO NOT EDIT
+*/
 "use strict";
 var lexical = require("./stage/lexical"),
-    transform = require("./transform"),
+    transform = require("./stage/transform"),
     khepri_peep = require("./khepri_peep"),
     ecma_peep = require("./ecma_peep"),
     compile;

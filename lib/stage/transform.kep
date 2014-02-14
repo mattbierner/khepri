@@ -1,0 +1,19 @@
+/**
+ * @fileOverview
+ */
+package (
+    transform)
+with 
+    import '../transform' transformer
+in {
+
+
+transform = \{options ast} -> {
+    var packageManager = options.package_manager || 'amd';
+    return ({
+        'options': options,
+        'ast': transformer.transform(ast, packageManager)
+    });
+};
+
+}

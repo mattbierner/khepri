@@ -4,8 +4,7 @@
  * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 package (
-    transform
-    transformStage)
+    transform)
 with 
     import 'bes::record' record,
     
@@ -194,12 +193,12 @@ var unpackAssign = \pattern, value ->
  */
 var withStatement = \loc, bindings, body -> let
     vars = bindings
-        |> map@\imp -> {
-            var base = ?imp.type === 'ImportPattern'
-                :packageManager.importPackage(imp.from.value)
-                :imp.value;
-            return unpack(imp.pattern, base);
-        }
+        |> (map @ \imp ->
+            unpack(
+                imp.pattern,
+                ?imp.type === 'ImportPattern'
+                    :packageManager.importPackage(imp.from.value)
+                    :imp.value))
         |> flatten,
     
     prefix = variableDeclaration(null, vars)
@@ -288,6 +287,54 @@ var letExpression = \loc, bindings, body ->
                     khepri_statement.BlockStatement.create(null, [
                         khepri_statement.ReturnStatement.create(null, body)]))])),
      []);
+
+/**
+ * 
+ */
+var unaryOperatorExpression = \loc op -> 
+    khepri_expression.FunctionExpression.create(loc, null,
+        khepri_pattern.ArgumentsPattern.create(null, null, [
+            khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'x'))]),
+        khepri_expression.UnaryExpression.create(null,
+            op,
+            identifier(null, 'x')));
+
+/**
+ * 
+ */
+var binaryOperatorExpression = \loc op -> let
+    kind = ? op === '||' || op === '&&'
+        :khepri_expression.LogicalExpression
+        :khepri_expression.BinaryExpression
+in
+    khepri_expression.FunctionExpression.create(loc, null,
+        khepri_pattern.ArgumentsPattern.create(null, null, [
+            khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'x')),
+            khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'y'))]),
+        kind.create(null,
+            op,
+            identifier(null, 'x'),
+            identifier(null, 'y')));
+
+/**
+ * 
+ */
+var ternaryOperatorExpression = \loc ->
+    khepri_expression.FunctionExpression.create(loc, null,
+        khepri_pattern.ArgumentsPattern.create(null, null, [
+            khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'x')),
+            khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'y')),
+                khepri_pattern.IdentifierPattern.create(null,
+                identifier(null, 'z'))]),
+        khepri_expression.ConditionalExpression.create(null,
+            identifier(null, 'x'),
+            identifier(null, 'y'),
+            identifier(null, 'z')));
 
 /**
  * Curry expression translation.
@@ -379,7 +426,7 @@ in
 /* Transform
  ******************************************************************************/
 var transformers = {};
-
+var _t;
 var addTransform = \type pre post -> {
     var entry = {
         'pre': pre,
@@ -394,32 +441,32 @@ var addTransform = \type pre post -> {
 // Declarations
 addTransform('VariableDeclaration',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_declaration.VariableDeclaration.create(node.loc,
             node.declarations));
 
 addTransform('VariableDeclarator',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_declaration.VariableDeclarator.create(node.loc,
             node.id,
             node.init));
 
 addTransform('StaticDeclaration',
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.EmptyStatement.create(node.loc));
 
 // Clauses
 addTransform('CatchClause',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_clause.CatchClause.create(node.loc,
             node.param,
             node.body));
 
 addTransform('SwitchCase',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_clause.SwitchCase.create(node.loc,
             node.test,
             node.consequent));
@@ -427,62 +474,65 @@ addTransform('SwitchCase',
 // Statement
 addTransform('BlockStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.BlockStatement.create(node.loc,
             node.body));
 
 addTransform('ExpressionStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.ExpressionStatement.create(node.loc,
             node.expression));
 
 addTransform('IfStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.IfStatement.create(node.loc,
             node.test,
             node.consequent,
             node.alternate));
 
 addTransform('WithStatement',
-    \node k ->
-        k <| withStatement(node.loc,
-            node.bindings,
-            node.body));
+    \ctx ->
+        _t(
+            modifyNode(\node ->
+                withStatement(node.loc,
+                    node.bindings,
+                    node.body),
+                ctx)));
 
 addTransform('SwitchStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.SwitchStatement.create(node.loc,
             node.discriminant,
             node.cases));
 
 addTransform('ReturnStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.ReturnStatement.create(node.loc,
             node.argument));
 
 addTransform('ThrowStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.ThrowStatement.create(node.loc,
             node.argument));
 
 addTransform('BreakStatement',
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.BreakStatement.create(node.loc,
             null));
 
 addTransform('ContinueStatement',
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.ContinueStatement.create(node.loc,
             null));
 
 addTransform('TryStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.TryStatement.create(node.loc,
             node.block,
             node.handler,
@@ -490,21 +540,21 @@ addTransform('TryStatement',
 
 addTransform('WhileStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.WhileStatement.create(node.loc,
             node.test,
             node.body));
 
 addTransform('DoWhileStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.DoWhileStatement.create(node.loc,
             node.body,
             node.test));
 
 addTransform('ForStatement',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_statement.ForStatement.create(node.loc,
             node.init,
             node.test,
@@ -514,7 +564,7 @@ addTransform('ForStatement',
 // Expression
 addTransform('AssignmentExpression',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.AssignmentExpression.create(node.loc,
             node.operator,
             node.left,
@@ -522,7 +572,7 @@ addTransform('AssignmentExpression',
 
 addTransform('UnaryExpression',
     id,
-    \node -> {
+    modifyNode @ \node -> {
         var op = node.operator;
         switch (op) {
         case '++': op = '+'; break;
@@ -535,7 +585,7 @@ addTransform('UnaryExpression',
     });
 
 addTransform('BinaryExpression',
-    \node -> {
+    modifyNode @ \node -> {
         switch (node.operator) {
         case '\\>':
             return singleCompose(node.loc, node.right, node.left);
@@ -553,7 +603,7 @@ addTransform('BinaryExpression',
             return node;
         }
     },
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.BinaryExpression.create(node.loc,
             node.operator,
             node.left,
@@ -561,7 +611,7 @@ addTransform('BinaryExpression',
 
 addTransform('LogicalExpression',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.LogicalExpression.create(node.loc,
             node.operator,
             node.left,
@@ -569,7 +619,7 @@ addTransform('LogicalExpression',
 
 addTransform('ConditionalExpression',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.ConditionalExpression.create(node.loc,
             node.test,
             node.consequent,
@@ -577,87 +627,66 @@ addTransform('ConditionalExpression',
 
 addTransform('NewExpression',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.NewExpression.create(node.loc,
             node.callee,
             node.args));
 
 addTransform('CallExpression',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.CallExpression.create(node.loc,
             node.callee,
             node.args));
 
 addTransform('MemberExpression',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.MemberExpression.create(node.loc,
             node.object,
             node.property,
             node.computed));
 
 addTransform('LetExpression',
-    \node ->
+    modifyNode @ \node ->
         letExpression(node.loc,
             node.bindings,
             node.body));
 
 addTransform('CurryExpression',
-    \node ->
+    modifyNode @ \node ->
         curryExpression(node.loc,
             node.base,
             node.args));
 
 addTransform('UnaryOperatorExpression',
-    \node, k ->
-        k <| khepri_expression.FunctionExpression.create(node.loc, null,
-            khepri_pattern.ArgumentsPattern.create(null, null, [
-                khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'x'))]),
-            khepri_expression.UnaryExpression.create(null,
-                node.op,
-                identifier(null, 'x'))));
+    \ctx ->
+        _t(
+            modifyNode(\node ->
+                unaryOperatorExpression(node.loc, node.op),
+                ctx)));
 
 addTransform('BinaryOperatorExpression',
-    \node, k -> let
-        kind = ? node.op === '||' || node.op === '&&'
-            :khepri_expression.LogicalExpression
-            :khepri_expression.BinaryExpression
-    in
-        k <| khepri_expression.FunctionExpression.create(node.loc, null,
-            khepri_pattern.ArgumentsPattern.create(null, null, [
-                khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'x')),
-                khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'y'))]),
-            kind.create(null,
-                node.op,
-                identifier(null, 'x'),
-                identifier(null, 'y'))));
+    \ctx ->
+        _t(
+            modifyNode(\node ->
+                binaryOperatorExpression(node.loc, node.op),
+                ctx)));
 
 addTransform('TernaryOperatorExpression',
-    \node, k ->
-        k <| khepri_expression.FunctionExpression.create(node.loc, null,
-            khepri_pattern.ArgumentsPattern.create(null, null, [
-                khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'x')),
-                khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'y')),
-                    khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'z'))]),
-            khepri_expression.ConditionalExpression.create(null,
-                identifier(null, 'x'),
-                identifier(null, 'y'),
-                identifier(null, 'z'))));
+    \ctx ->
+        _t(
+            modifyNode(\node ->
+                ternaryOperatorExpression(node.loc),
+                ctx)));
 
 addTransform('FunctionExpression',
-    \node ->
+    modifyNode @ \node ->
         functionExpression(node.loc,
             node.id,
             node.params,
             node.body),
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.FunctionExpression.create(null,
             node.id,
             node.params,
@@ -665,49 +694,49 @@ addTransform('FunctionExpression',
 
 addTransform('ArrayExpression',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.ArrayExpression.create(node.loc,
             node.elements));
 
 addTransform('ObjectExpression',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_expression.ObjectExpression.create(node.loc,
             node.properties));
 
 addTransform('ObjectValue',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_value.ObjectValue.create(node.loc,
             node.key,
             node.value));
 
 // Patterns
 addTransform('ArgumentsPattern',
-    \node -> node.id);
+    modifyNode @ \node -> node.id);
 
 addTransform('IdentifierPattern',
-    \node -> node.id);
+    modifyNode @ \node -> node.id);
 
 addTransform('AsPattern',
-    \node -> node.id);
+    modifyNode @ \node -> node.id);
 
 addTransform('ArrayPattern',
-    \node -> node.ud.id);
+    modifyNode @ \node -> node.ud.id);
 
 addTransform('ObjectPattern',
-    \node -> node.ud.id);
+    modifyNode @ \node -> node.ud.id);
 
 addTransform('EllipsisPattern',
-    \node -> (node.ud && node.ud.id));
+    modifyNode @ \node -> (node.ud && node.ud.id));
 
 addTransform('SinkPattern',
-    \node -> (node.ud && node.ud.id));
+    modifyNode @ \node -> (node.ud && node.ud.id));
 
 // Program
 addTransform('Program',
     id,
-    \node ->
+    modifyNode @ \node ->
         ecma_program.Program.create(node.loc,
             ?Array.isArray(node.body)
                 :node.body
@@ -715,105 +744,64 @@ addTransform('Program',
 
 // Package
 addTransform('Package',
-    \node ->
+    modifyNode @ \node ->
         packageBlock(node.loc,
             node.exports,
             node.body));
 
 // Value
-addTransform('Identifier', \node ->
-    identifier(node.loc, node.name));
+addTransform('Identifier',
+    modifyNode @ \node ->
+        identifier(node.loc, node.name));
 
 /*
  * 
  *****************************************************************************/
-var _transform;
-
-var _t = \node -> {
-    if (!node)
-        return id;
-    
-    if (Array.isArray(node))
-        return modifyNode @ \ -> map(_transform, node);
-    
-    if (!(node instanceof khepri_node.Node))
+var _trans = \node -> {
+    if (!node || !(node instanceof khepri_node.Node))
         return id;
     
     var t = transformers.(node.type);
     
     if (!t) return id;
-    return modifyNode @ \x -> t.(0).pre(x, _transform);
+    return t.(0).pre;
 };
 
-var _transformp = \node -> {
-    if (!node)
-        return node;
-    
-    if (Array.isArray(node))
-        return map(_transform, node);
-    
-    if (!(node instanceof khepri_node.Node))
-        return node;
-    
-    var t = transformers.(node.type);
-    
-    if (!t || !t.(0).post) return node;
-    return t.(0).post(node);
-};
-
-
-var _tp = \node -> {
-    if (!node)
-        return id;
-    
-    if (Array.isArray(node))
-        return modifyNode @ \ -> map(_transformp, node);
-    
-    if (!(node instanceof khepri_node.Node))
+var _transp = \node -> {
+    if (!node || !(node instanceof khepri_node.Node))
         return id;
     
     var t = transformers.(node.type);
     
     if (!t || !t.(0).post) return id;
-    return modifyNode @ \x -> t.(0).post(x, t.(0).post);
+    return t.(0).post;
 };
 
+_t = \ctx ->
+    _trans(tree.node(ctx).node)(ctx);
 
-var walk = zipper_walk.walk@(
-    \ctx -> _t(tree.node(ctx).node)(ctx),
-    \ctx -> _tp(tree.node(ctx).node)(ctx));
+var _tp = \ctx ->
+    _transp(tree.node(ctx).node)(ctx);
+    
+var walk = zipper_walk.walk@(_t, _tp);
 
-_transform = \node -> {
-    if (!node)
-        return node;
-    
-    if (Array.isArray(node))
-        return map(_transform, node);
-    
-    if (!(node instanceof khepri_node.Node))
-        return node;
-    
-    var t = transformers.(node.type);
-    
-    if (!t) return node;
-    return t.(0).pre(node, _transform);
-};
-
-transform = \{options ast} -> {
+/**
+ * 
+ */
+transform = \ast manager -> {
     // @TODO: Much evil
     with 
         import './package_manager/amd' amd_manager,
         import './package_manager/node' node_manager
     in {
         packageManager = amd_manager;
-        
-        if (options.package_manager === 'node')
+        if (manager === 'node')
             packageManager = node_manager;
 
-        return ({
-            'options': options,
-            'ast': tree.node(walk(khepriZipper(State.create(ast, packageManager)))).node
-        });
+        return tree.node(
+            walk(
+                khepriZipper(
+                    State.create(ast, packageManager)))).node;
     }
 };
 

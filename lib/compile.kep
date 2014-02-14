@@ -2,7 +2,7 @@ package (
     compile)
 with
     import './stage/lexical' lexical,
-    import './transform' transform,
+    import './stage/transform' transform,
     import './khepri_peep' khepri_peep,
     import './ecma_peep' ecma_peep
 in {
