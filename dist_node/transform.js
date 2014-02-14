@@ -405,9 +405,7 @@ addTransform("ObjectValue", id, (function(node) {
     return ecma_value.ObjectValue.create(node.loc, node.key, node.value);
 }));
 addTransform("ArgumentsPattern", (function(node) {
-    return (function(node) {
-        return node.id;
-    });
+    return node.id;
 }));
 addTransform("IdentifierPattern", (function(node) {
     return node.id;
@@ -422,10 +420,10 @@ addTransform("ObjectPattern", (function(node) {
     return node.ud.id;
 }));
 addTransform("EllipsisPattern", (function(node) {
-    return ((node.ud && node.ud.id) ? _transform(node.ud.id) : null);
+    return (node.ud && node.ud.id);
 }));
 addTransform("SinkPattern", (function(node) {
-    return ((node.ud && node.ud.id) ? _transform(node.ud.id) : null);
+    return (node.ud && node.ud.id);
 }));
 addTransform("Program", id, (function(node) {
     return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? node.body : [node.body]));

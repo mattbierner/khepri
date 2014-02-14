@@ -681,7 +681,7 @@ addTransform('ObjectValue',
             node.value));
 
 // Patterns
-addTransform('ArgumentsPattern', \node ->
+addTransform('ArgumentsPattern',
     \node -> node.id);
 
 addTransform('IdentifierPattern',
@@ -696,15 +696,11 @@ addTransform('ArrayPattern',
 addTransform('ObjectPattern',
     \node -> node.ud.id);
 
-addTransform('EllipsisPattern', \node ->
-    ?(node.ud && node.ud.id)
-        :_transform(node.ud.id)
-        :null);
+addTransform('EllipsisPattern',
+    \node -> (node.ud && node.ud.id));
 
-addTransform('SinkPattern', \node ->
-    ?(node.ud && node.ud.id)
-        :_transform(node.ud.id)
-        :null);
+addTransform('SinkPattern',
+    \node -> (node.ud && node.ud.id));
 
 // Program
 addTransform('Program',
@@ -783,7 +779,6 @@ var _tp = \node -> {
 var walk = zipper_walk.walk@(
     \ctx -> _t(tree.node(ctx).node)(ctx),
     \ctx -> _tp(tree.node(ctx).node)(ctx));
-
 
 _transform = \node -> {
     if (!node)
