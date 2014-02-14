@@ -130,40 +130,41 @@ var nullLiteral = \loc ->
 
 /* Declaration
  ******************************************************************************/
-var variableDeclaration = \loc, declarations ->
-    ecma_declaration.VariableDeclaration.create(loc,
-        _transform(declarations));
+var variableDeclaration = khepri_declaration.VariableDeclaration.create;
 
-var variableDeclarator = \loc, id, init ->
-    ecma_declaration.VariableDeclarator.create(loc,
-        _transform(id),
-        _transform(init));
+var variableDeclarator = ecma_declaration.VariableDeclarator.create;
 
 /* Unpacks
  ******************************************************************************/
+/**
+ * Expand a single complex binding to a list of identifier bindings.
+ * 
+ * @param base Value being unpacked.
+ * @param pattern Pattern unpacking base value.
+ */
 var innerPattern = let
-    objectElementUnpack = \base, pattern, key, f -> let
+    objectElementUnpack = \base, pattern, key -> let
         innerBase = khepri_expression.MemberExpression.create(null, base, key, true)
     in
         ?pattern
-            :flatten <| innerPattern(innerBase, pattern, f)
-            :f(identifier(null, key.value), innerBase)
+            :flatten <| innerPattern(innerBase, pattern)
+            :khepri_declaration.Binding.create(null, identifier(null, key.value), innerBase)
 in
-    \base, pattern, f -> {
+    \base, pattern -> {
         switch (pattern.type) {
         case 'IdentifierPattern':
-            return f(
+            return khepri_declaration.Binding.create(null,
                 identifier(null, pattern.id.name),
                 base);
         
         case 'AsPattern':
             return concat(
-                f(pattern.id, base),
-                flatten <| innerPattern(pattern.id, pattern.target, f));
+                innerPattern(base, pattern.id),
+                flatten <| innerPattern(pattern.id, pattern.target));
         
         case 'ObjectPattern':
             return pattern.elements
-                |> map@\{target key} -> objectElementUnpack(pattern.ud.id, target, key, f)
+                |> (map @ \{target key} -> objectElementUnpack(pattern.ud.id, target, key))
                 |> flatten;
         
         default:
@@ -174,22 +175,18 @@ in
 /**
  * 
  */
-var unpack = let
-    make = variableDeclarator@null
-in
-    \pattern, value ->
-        innerPattern(value, pattern, make)
-            |> flatten;
+var unpack = \pattern, value ->
+    innerPattern(value, pattern)
+        |> flatten
+        |> (map @ \x -> variableDeclarator(null, x.pattern, x.value));
 
 /**
  * 
  */
-var unpackAssign = let
-    make = ecma_expression.AssignmentExpression.create @ null @ '='
-in
-    \pattern, value ->
-        innerPattern(value, pattern, make)
-            |> flatten;
+var unpackAssign = \pattern, value ->
+    innerPattern(value, pattern)
+        |> flatten
+        |> (map @ \x -> ecma_expression.AssignmentExpression.create(null,'=', x.pattern, x.value));
 
 /* Pattern
  ******************************************************************************/
@@ -218,21 +215,7 @@ var memberExpression = \loc, object, property, computed ->
 /* Statements
  ******************************************************************************/
 /**
- * 
- */
-var blockStatement = \loc, body ->
-    ecma_statement.BlockStatement.create(loc,
-        _transform(body));
-
-/**
- * 
- */
-var returnStatement = \loc, argument ->
-    ecma_statement.ReturnStatement.create(loc,
-        _transform(argument));
-
-/**
- * 
+ * With statement translation.
  */
 var withStatement = \loc, bindings, body -> let
     vars = bindings
@@ -246,7 +229,7 @@ var withStatement = \loc, bindings, body -> let
     
     prefix = variableDeclaration(null, vars)
 in
-    blockStatement(loc,
+    khepri_statement.BlockStatement.create(loc,
         concat(
             prefix,
             body.body));
@@ -268,17 +251,18 @@ var functionExpression = \loc, id, parameters, functionBody -> let
             case 'IdentifierPattern':
                 return [];
             case 'AsPattern':
-                return flatten <| innerPattern(_transform(x.id), x.target, variableDeclarator@null);
+                return flatten <| innerPattern(_transform(x.id), x.target);
             default:
-                return innerPattern(_transform(x), x, variableDeclarator@null);
+                return innerPattern(_transform(x), x);
             }
         }
-        |> flatten,
+        |> flatten
+        |> (map @ \x -> variableDeclarator(null, x.pattern, x.value)),
     
     argumentsPrefix = concat(
         ?parameters.self
             :variableDeclarator(null,
-                _transform(parameters.self),
+                parameters.self,
                 ecma_expression.ThisExpression.create(null))
             :[],
         ?parameters.id
@@ -301,8 +285,8 @@ in
     ecma_expression.FunctionExpression.create(loc,
         _transform(id),
         params,
-        blockStatement(body.loc,
-            concat(
+        ecma_statement.BlockStatement.create(body.loc,
+            _transform <| concat(
                 ?strict
                     :khepri_statement.ExpressionStatement.create(null,
                         khepri_value.Literal.create(null, 'string', "use strict"))
@@ -312,7 +296,7 @@ in
                     ?strict :block.slice(1) :block)));
 
 /**
- * 
+ * Let expression translation.
  */
 var letExpression = \loc, bindings, body ->
 /* ecma_expression.SequenceExpression.create(null,
@@ -324,15 +308,15 @@ var letExpression = \loc, bindings, body ->
         khepri_expression.FunctionExpression.create(null,
             null,
             khepri_pattern.ArgumentsPattern.create(null, null, []),
-            blockStatement(null, [
+            khepri_statement.BlockStatement.create(null, [
                 withStatement(null,
                     bindings,
-                    blockStatement(null, [
-                        returnStatement(null, body)]))])),
+                    khepri_statement.BlockStatement.create(null, [
+                        khepri_statement.ReturnStatement.create(null, body)]))])),
      []);
 
 /**
- * 
+ * Curry expression translation.
  */
 var curryExpression = \loc, base, args ->
     khepri_expression.CallExpression.create(null,
@@ -344,9 +328,9 @@ var curryExpression = \loc, base, args ->
             args));
 
 /**
- * 
+ * Pipe operator translation.
  */
-var pipeline = \loc, value, target ->
+var pipe = \loc, value, target ->
     khepri_expression.CallExpression.create(loc,
         target,
         [value]);
@@ -487,10 +471,11 @@ addTransform('IfStatement',
             node.consequent,
             node.alternate));
 
-addTransform('WithStatement', \node ->
-    withStatement(node.loc,
-        node.bindings,
-        node.body));
+addTransform('WithStatement',
+    \node k ->
+        k <| withStatement(node.loc,
+            node.bindings,
+            node.body));
 
 addTransform('SwitchStatement',
     id,
@@ -587,9 +572,9 @@ addTransform('BinaryExpression',
         case '<<\\':
             return multiCompose(node.loc, node.left, node.right);
         case '|>':
-            return pipeline(node.loc, node.left, node.right);
+            return pipe(node.loc, node.left, node.right);
         case '<|':
-            return pipeline(node.loc, node.right, node.left);
+            return pipe(node.loc, node.right, node.left);
         default:
             return node;
         }
@@ -651,8 +636,8 @@ addTransform('CurryExpression',
             node.args));
 
 addTransform('UnaryOperatorExpression',
-    \node ->
-        khepri_expression.FunctionExpression.create(node.loc, null,
+    \node, k ->
+        k <| khepri_expression.FunctionExpression.create(node.loc, null,
             khepri_pattern.ArgumentsPattern.create(null, null, [
                 khepri_pattern.IdentifierPattern.create(null,
                     identifier(null, 'x'))]),
@@ -661,12 +646,12 @@ addTransform('UnaryOperatorExpression',
                 identifier(null, 'x'))));
 
 addTransform('BinaryOperatorExpression',
-    \node -> let
+    \node, k -> let
         kind = ? node.op === '||' || node.op === '&&'
             :khepri_expression.LogicalExpression
             :khepri_expression.BinaryExpression
     in
-        khepri_expression.FunctionExpression.create(node.loc, null,
+        k <| khepri_expression.FunctionExpression.create(node.loc, null,
             khepri_pattern.ArgumentsPattern.create(null, null, [
                 khepri_pattern.IdentifierPattern.create(null,
                     identifier(null, 'x')),
@@ -677,19 +662,20 @@ addTransform('BinaryOperatorExpression',
                 identifier(null, 'x'),
                 identifier(null, 'y'))));
 
-addTransform('TernaryOperatorExpression', \node ->
-    khepri_expression.FunctionExpression.create(node.loc, null,
-        khepri_pattern.ArgumentsPattern.create(null, null, [
-            khepri_pattern.IdentifierPattern.create(null,
-                identifier(null, 'x')),
-            khepri_pattern.IdentifierPattern.create(null,
-                identifier(null, 'y')),
+addTransform('TernaryOperatorExpression',
+    \node, k ->
+        k <| khepri_expression.FunctionExpression.create(node.loc, null,
+            khepri_pattern.ArgumentsPattern.create(null, null, [
                 khepri_pattern.IdentifierPattern.create(null,
-                identifier(null, 'z'))]),
-        khepri_expression.ConditionalExpression.create(null,
-            identifier(null, 'x'),
-            identifier(null, 'y'),
-            identifier(null, 'z'))));
+                    identifier(null, 'x')),
+                khepri_pattern.IdentifierPattern.create(null,
+                    identifier(null, 'y')),
+                    khepri_pattern.IdentifierPattern.create(null,
+                    identifier(null, 'z'))]),
+            khepri_expression.ConditionalExpression.create(null,
+                identifier(null, 'x'),
+                identifier(null, 'y'),
+                identifier(null, 'z'))));
 
 addTransform('FunctionExpression',
     \node ->

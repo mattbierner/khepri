@@ -123,47 +123,41 @@ var khepriZipper = treeZipper.bind(null, (function(ctx) {
     nullLiteral = (function(loc) {
         return ecma_value.Literal.create(loc, "null", null);
     }),
-    variableDeclaration = (function(loc, declarations) {
-        return ecma_declaration.VariableDeclaration.create(loc, _transform(declarations));
-    }),
-    variableDeclarator = (function(loc, id, init) {
-        return ecma_declaration.VariableDeclarator.create(loc, _transform(id), _transform(init));
-    }),
+    variableDeclaration = khepri_declaration.VariableDeclaration.create,
+    variableDeclarator = ecma_declaration.VariableDeclarator.create,
     innerPattern = (function() {
-        var objectElementUnpack = (function(base, pattern, key, f) {
+        var objectElementUnpack = (function(base, pattern, key) {
             var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
-            return (pattern ? flatten(innerPattern(innerBase, pattern, f)) : f(identifier(null, key.value),
-                innerBase));
+            return (pattern ? flatten(innerPattern(innerBase, pattern)) : khepri_declaration.Binding.create(
+                null, identifier(null, key.value), innerBase));
         });
-        return (function(base, pattern, f) {
+        return (function(base, pattern) {
             switch (pattern.type) {
                 case "IdentifierPattern":
-                    return f(identifier(null, pattern.id.name), base);
+                    return khepri_declaration.Binding.create(null, identifier(null, pattern.id.name), base);
                 case "AsPattern":
-                    return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target, f)));
+                    return concat(innerPattern(base, pattern.id), flatten(innerPattern(pattern.id, pattern.target)));
                 case "ObjectPattern":
-                    return map((function(__o) {
+                    return flatten(map((function(__o) {
                         var target = __o["target"],
                             key = __o["key"];
-                        return flatten(objectElementUnpack(pattern.ud.id, target, key, f));
-                    }), pattern.elements);
+                        return objectElementUnpack(pattern.ud.id, target, key);
+                    }), pattern.elements));
                 default:
                     return [];
             }
         });
     })(),
-    unpack = (function() {
-        var make = variableDeclarator.bind(null, null);
-        return (function(pattern, value) {
-            return flatten(innerPattern(value, pattern, make));
-        });
-    })(),
-    unpackAssign = (function() {
-        var make0 = ecma_expression.AssignmentExpression.create.bind(null, null, "=");
-        return (function(pattern, value) {
-            return flatten(innerPattern(value, pattern, make0));
-        });
-    })(),
+    unpack = (function(pattern, value) {
+        return map((function(x) {
+            return variableDeclarator(null, x.pattern, x.value);
+        }), flatten(innerPattern(value, pattern)));
+    }),
+    unpackAssign = (function(pattern, value) {
+        return map((function(x) {
+            return ecma_expression.AssignmentExpression.create(null, "=", x.pattern, x.value);
+        }), flatten(innerPattern(value, pattern)));
+    }),
     identifierPattern = (function(loc, name) {
         return identifier(loc, name);
     }),
@@ -173,12 +167,6 @@ var khepriZipper = treeZipper.bind(null, (function(ctx) {
     memberExpression = (function(loc, object, property, computed) {
         return ecma_expression.MemberExpression.create(loc, _transform(object), _transform(property), computed);
     }),
-    blockStatement = (function(loc, body) {
-        return ecma_statement.BlockStatement.create(loc, _transform(body));
-    }),
-    returnStatement = (function(loc, argument) {
-        return ecma_statement.ReturnStatement.create(loc, _transform(argument));
-    }),
     withStatement = (function(loc, bindings, body) {
         var vars = flatten(map((function(imp) {
             var base = ((imp.type === "ImportPattern") ? packageManager.importPackage(imp.from.value) :
@@ -186,48 +174,53 @@ var khepriZipper = treeZipper.bind(null, (function(ctx) {
             return unpack(imp.pattern, base);
         }), bindings)),
             prefix = variableDeclaration(null, vars);
-        return blockStatement(loc, concat(prefix, body.body));
+        return khepri_statement.BlockStatement.create(loc, concat(prefix, body.body));
     }),
     functionExpression = (function(loc, id, parameters, functionBody) {
         var params = _transform(filter((function(x) {
             return (x.type !== "EllipsisPattern");
         }), parameters.elements)),
-            elementsPrefix = flatten(map((function(x) {
+            elementsPrefix = map((function(x) {
+                return variableDeclarator(null, x.pattern, x.value);
+            }), flatten(map((function(x) {
                 switch (x.type) {
                     case "IdentifierPattern":
                         return [];
                     case "AsPattern":
-                        return flatten(innerPattern(_transform(x.id), x.target, variableDeclarator.bind(
-                            null, null)));
+                        return flatten(innerPattern(_transform(x.id), x.target));
                     default:
-                        return innerPattern(_transform(x), x, variableDeclarator.bind(null, null));
+                        return innerPattern(_transform(x), x);
                 }
-            }), parameters.elements)),
-            argumentsPrefix = concat((parameters.self ? variableDeclarator(null, _transform(parameters.self),
-                ecma_expression.ThisExpression.create(null)) : []), (parameters.id ? variableDeclarator(null,
-                _transform(parameters.id), identifier(null, "arguments")) : [])),
+            }), parameters.elements))),
+            argumentsPrefix = concat((parameters.self ? variableDeclarator(null, parameters.self, ecma_expression.ThisExpression
+                .create(null)) : []), (parameters.id ? variableDeclarator(null, _transform(parameters.id),
+                identifier(null, "arguments")) : [])),
             body = ((functionBody.type === "BlockStatement") ? functionBody : khepri_statement.BlockStatement.create(
                 null, khepri_statement.ReturnStatement.create(null, functionBody))),
             strict = isStrict(body.body),
             prefix = concat(elementsPrefix, argumentsPrefix);
-        return ecma_expression.FunctionExpression.create(loc, _transform(id), params, blockStatement(body.loc,
-            concat((strict ? khepri_statement.ExpressionStatement.create(null, khepri_value.Literal.create(null,
-                "string", "use strict")) : []), variableDeclaration(null, prefix), (function() {
+        return ecma_expression.FunctionExpression.create(loc, _transform(id), params, ecma_statement.BlockStatement
+            .create(body.loc, _transform(concat((strict ? khepri_statement.ExpressionStatement.create(null,
+                khepri_value.Literal.create(null, "string", "use strict")) : []), variableDeclaration(
+                null, prefix), (function() {
                 var block = _transform(body)
                     .body;
                 return (strict ? block.slice(1) : block);
-            })())));
+            })()))));
     }),
     letExpression = (function(loc, bindings, body) {
         return khepri_expression.CallExpression.create(loc, khepri_expression.FunctionExpression.create(null, null,
-            khepri_pattern.ArgumentsPattern.create(null, null, []), blockStatement(null, [withStatement(null,
-                bindings, blockStatement(null, [returnStatement(null, body)]))])), []);
+            khepri_pattern.ArgumentsPattern.create(null, null, []), khepri_statement.BlockStatement.create(null, [
+                withStatement(null, bindings, khepri_statement.BlockStatement.create(null, [
+                    khepri_statement.ReturnStatement.create(null, body)
+                ]))
+            ])), []);
     }),
     curryExpression = (function(loc, base, args) {
         return khepri_expression.CallExpression.create(null, khepri_expression.MemberExpression.create(null, base,
             identifier(null, "bind")), concat(nullLiteral(null), args));
     }),
-    pipeline = (function(loc, value, target) {
+    pipe = (function(loc, value, target) {
         return khepri_expression.CallExpression.create(loc, target, [value]);
     }),
     singleCompose = (function(loc, f, g) {
@@ -299,8 +292,8 @@ addTransform("ExpressionStatement", id, (function(node) {
 addTransform("IfStatement", id, (function(node) {
     return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
 }));
-addTransform("WithStatement", (function(node) {
-    return withStatement(node.loc, node.bindings, node.body);
+addTransform("WithStatement", (function(node, k) {
+    return k(withStatement(node.loc, node.bindings, node.body));
 }));
 addTransform("SwitchStatement", id, (function(node) {
     return ecma_statement.SwitchStatement.create(node.loc, node.discriminant, node.cases);
@@ -355,9 +348,9 @@ addTransform("BinaryExpression", (function(node) {
         case "<<\\":
             return multiCompose(node.loc, node.left, node.right);
         case "|>":
-            return pipeline(node.loc, node.left, node.right);
+            return pipe(node.loc, node.left, node.right);
         case "<|":
-            return pipeline(node.loc, node.right, node.left);
+            return pipe(node.loc, node.right, node.left);
         default:
             return node;
     }
@@ -385,26 +378,26 @@ addTransform("LetExpression", (function(node) {
 addTransform("CurryExpression", (function(node) {
     return curryExpression(node.loc, node.base, node.args);
 }));
-addTransform("UnaryOperatorExpression", (function(node) {
-    return khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
+addTransform("UnaryOperatorExpression", (function(node, k) {
+    return k(khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
             null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x"))]),
-        khepri_expression.UnaryExpression.create(null, node.op, identifier(null, "x")));
+        khepri_expression.UnaryExpression.create(null, node.op, identifier(null, "x"))));
 }));
-addTransform("BinaryOperatorExpression", (function(node) {
+addTransform("BinaryOperatorExpression", (function(node, k) {
     var kind = (((node.op === "||") || (node.op === "&&")) ? khepri_expression.LogicalExpression :
         khepri_expression.BinaryExpression);
-    return khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
-        null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")), khepri_pattern.IdentifierPattern
-            .create(null, identifier(null, "y"))
-        ]), kind.create(null, node.op, identifier(null, "x"), identifier(null, "y")));
+    return k(khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
+        null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")),
+            khepri_pattern.IdentifierPattern.create(null, identifier(null, "y"))
+        ]), kind.create(null, node.op, identifier(null, "x"), identifier(null, "y"))));
 }));
-addTransform("TernaryOperatorExpression", (function(node) {
-    return khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
-        null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")), khepri_pattern.IdentifierPattern
-            .create(null, identifier(null, "y")), khepri_pattern.IdentifierPattern.create(null, identifier(
-                null, "z"))
+addTransform("TernaryOperatorExpression", (function(node, k) {
+    return k(khepri_expression.FunctionExpression.create(node.loc, null, khepri_pattern.ArgumentsPattern.create(
+        null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null, "x")),
+            khepri_pattern.IdentifierPattern.create(null, identifier(null, "y")), khepri_pattern.IdentifierPattern
+            .create(null, identifier(null, "z"))
         ]), khepri_expression.ConditionalExpression.create(null, identifier(null, "x"), identifier(null,
-        "y"), identifier(null, "z")));
+        "y"), identifier(null, "z"))));
 }));
 addTransform("FunctionExpression", (function(node) {
     return functionExpression(node.loc, node.id, node.params, node.body);
