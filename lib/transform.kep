@@ -104,13 +104,11 @@ var realBlock = \body(...) ->
             seqa(body),
             setScope(s)));
 
-var modifyNode = \f ->
-    tree.modifyNode @ \ctx ->
-        ctx.setNode(f(ctx.node));
-
-/* Forward
- ******************************************************************************/
-var _transform;
+var modifyNode = \f ctx ->
+    tree.modifyNode(
+        \s ->
+            s.setNode(f(s.node)),
+        ctx);
 
 /* State
  ******************************************************************************/
@@ -214,12 +212,11 @@ in
 /* Expressions
  ******************************************************************************/
 /**
- * 
+ * Function Expression Normalization.
  */
 var functionExpression = \loc, id, parameters, functionBody -> let
     params = parameters.elements
-        |> (filter@\x -> x.type !== 'EllipsisPattern')
-        |> _transform,
+        |> (filter@\x -> x.type !== 'EllipsisPattern'),
     
     elementsPrefix = parameters.elements
         |> map@\x -> {
@@ -228,9 +225,9 @@ var functionExpression = \loc, id, parameters, functionBody -> let
             case 'IdentifierPattern':
                 return [];
             case 'AsPattern':
-                return flatten <| innerPattern(_transform(x.id), x.target);
+                return flatten <| innerPattern(x.id, x.target);
             default:
-                return innerPattern(_transform(x), x);
+                return innerPattern(x, x);
             }
         }
         |> flatten
@@ -244,7 +241,7 @@ var functionExpression = \loc, id, parameters, functionBody -> let
             :[],
         ?parameters.id
             :variableDeclarator(null,
-                _transform(parameters.id),
+                parameters.id,
                 identifier(null, 'arguments'))
             :[]),
     
@@ -259,21 +256,21 @@ var functionExpression = \loc, id, parameters, functionBody -> let
         elementsPrefix,
         argumentsPrefix)
 in
-    ecma_expression.FunctionExpression.create(loc,
-        _transform(id),
+    khepri_expression.FunctionExpression.create(loc,
+        id,
         params,
-        ecma_statement.BlockStatement.create(body.loc,
-            _transform <| concat(
+        khepri_statement.BlockStatement.create(body.loc,
+            concat(
                 ?strict
                     :khepri_statement.ExpressionStatement.create(null,
                         khepri_value.Literal.create(null, 'string', "use strict"))
                      :[],
                 variableDeclaration(null, prefix),
-                let block = _transform(body).body in
+                let block = body.body in
                     ?strict :block.slice(1) :block)));
 
 /**
- * Let expression translation.
+ * Let expression normalization.
  */
 var letExpression = \loc, bindings, body ->
 /* ecma_expression.SequenceExpression.create(null,
@@ -525,7 +522,7 @@ addTransform('AssignmentExpression',
 
 addTransform('UnaryExpression',
     id,
-    \node ->  {
+    \node -> {
         var op = node.operator;
         switch (op) {
         case '++': op = '+'; break;
@@ -659,6 +656,11 @@ addTransform('FunctionExpression',
         functionExpression(node.loc,
             node.id,
             node.params,
+            node.body),
+    \node ->
+        ecma_expression.FunctionExpression.create(null,
+            node.id,
+            node.params,
             node.body));
 
 addTransform('ArrayExpression',
@@ -725,13 +727,14 @@ addTransform('Identifier', \node ->
 /*
  * 
  *****************************************************************************/
+var _transform;
 
 var _t = \node -> {
     if (!node)
         return id;
     
     if (Array.isArray(node))
-        return modifyNode <|\ -> map(_transform, node);
+        return modifyNode @ \ -> map(_transform, node);
     
     if (!(node instanceof khepri_node.Node))
         return id;
@@ -739,7 +742,7 @@ var _t = \node -> {
     var t = transformers.(node.type);
     
     if (!t) return id;
-    return modifyNode \x -> t.(0).pre(x, _transform);
+    return modifyNode @ \x -> t.(0).pre(x, _transform);
 };
 
 var _transformp = \node -> {
@@ -764,7 +767,7 @@ var _tp = \node -> {
         return id;
     
     if (Array.isArray(node))
-        return modifyNode <|\ -> map(_transformp, node);
+        return modifyNode @ \ -> map(_transformp, node);
     
     if (!(node instanceof khepri_node.Node))
         return id;
@@ -772,7 +775,7 @@ var _tp = \node -> {
     var t = transformers.(node.type);
     
     if (!t || !t.(0).post) return id;
-    return modifyNode \x -> t.(0).post(x, t.(0).post);
+    return modifyNode @ \x -> t.(0).post(x, t.(0).post);
 };
 
 

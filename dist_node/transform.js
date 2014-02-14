@@ -109,12 +109,12 @@ var khepriZipper = treeZipper.bind(null, (function(ctx) {
             return seq(setScope(new(scope.Scope)(({}), s, ({}), ({}))), seqa(body), setScope(s));
         }));
     }),
-    modifyNode = (function(f) {
-        return tree.modifyNode.bind(null, (function(ctx) {
-            return ctx.setNode(f(ctx.node));
-        }));
+    modifyNode = (function(f, ctx) {
+        return tree.modifyNode((function(s) {
+            return s.setNode(f(s.node));
+        }), ctx);
     }),
-    _transform, packageManager, identifier = (function(loc, name) {
+    packageManager, identifier = (function(loc, name) {
         return ecma_value.Identifier.create(loc, name);
     }),
     stringLiteral = (function(loc, value) {
@@ -168,9 +168,9 @@ var khepriZipper = treeZipper.bind(null, (function(ctx) {
         return khepri_statement.BlockStatement.create(loc, concat(prefix, body.body));
     }),
     functionExpression = (function(loc, id, parameters, functionBody) {
-        var params = _transform(filter((function(x) {
+        var params = filter((function(x) {
             return (x.type !== "EllipsisPattern");
-        }), parameters.elements)),
+        }), parameters.elements),
             elementsPrefix = map((function(x) {
                 return variableDeclarator(null, x.pattern, x.value);
             }), flatten(map((function(x) {
@@ -178,26 +178,24 @@ var khepriZipper = treeZipper.bind(null, (function(ctx) {
                     case "IdentifierPattern":
                         return [];
                     case "AsPattern":
-                        return flatten(innerPattern(_transform(x.id), x.target));
+                        return flatten(innerPattern(x.id, x.target));
                     default:
-                        return innerPattern(_transform(x), x);
+                        return innerPattern(x, x);
                 }
             }), parameters.elements))),
             argumentsPrefix = concat((parameters.self ? variableDeclarator(null, parameters.self, ecma_expression.ThisExpression
-                .create(null)) : []), (parameters.id ? variableDeclarator(null, _transform(parameters.id),
-                identifier(null, "arguments")) : [])),
+                .create(null)) : []), (parameters.id ? variableDeclarator(null, parameters.id, identifier(null,
+                "arguments")) : [])),
             body = ((functionBody.type === "BlockStatement") ? functionBody : khepri_statement.BlockStatement.create(
                 null, khepri_statement.ReturnStatement.create(null, functionBody))),
             strict = isStrict(body.body),
             prefix = concat(elementsPrefix, argumentsPrefix);
-        return ecma_expression.FunctionExpression.create(loc, _transform(id), params, ecma_statement.BlockStatement
-            .create(body.loc, _transform(concat((strict ? khepri_statement.ExpressionStatement.create(null,
-                khepri_value.Literal.create(null, "string", "use strict")) : []), variableDeclaration(
-                null, prefix), (function() {
-                var block = _transform(body)
-                    .body;
+        return khepri_expression.FunctionExpression.create(loc, id, params, khepri_statement.BlockStatement.create(
+            body.loc, concat((strict ? khepri_statement.ExpressionStatement.create(null, khepri_value.Literal.create(
+                null, "string", "use strict")) : []), variableDeclaration(null, prefix), (function() {
+                var block = body.body;
                 return (strict ? block.slice(1) : block);
-            })()))));
+            })())));
     }),
     letExpression = (function(loc, bindings, body) {
         return khepri_expression.CallExpression.create(loc, khepri_expression.FunctionExpression.create(null, null,
@@ -394,6 +392,8 @@ addTransform("TernaryOperatorExpression", (function(node, k) {
 }));
 addTransform("FunctionExpression", (function(node) {
     return functionExpression(node.loc, node.id, node.params, node.body);
+}), (function(node) {
+    return ecma_expression.FunctionExpression.create(null, node.id, node.params, node.body);
 }));
 addTransform("ArrayExpression", id, (function(node) {
     return ecma_expression.ArrayExpression.create(node.loc, node.elements);
@@ -434,18 +434,18 @@ addTransform("Package", (function(node) {
 addTransform("Identifier", (function(node) {
     return identifier(node.loc, node.name);
 }));
-var _t = (function(node) {
-    if ((!node)) return id;
-    if (Array.isArray(node)) return modifyNode((function() {
-        return map(_transform, node);
-    }));
-    if ((!(node instanceof khepri_node.Node))) return id;
-    var t = transformers[node.type];
-    if ((!t)) return id;
-    return modifyNode((function(x) {
-        return t[0].pre(x, _transform);
-    }));
-}),
+var _transform, _t = (function(node) {
+        if ((!node)) return id;
+        if (Array.isArray(node)) return modifyNode.bind(null, (function() {
+            return map(_transform, node);
+        }));
+        if ((!(node instanceof khepri_node.Node))) return id;
+        var t = transformers[node.type];
+        if ((!t)) return id;
+        return modifyNode.bind(null, (function(x) {
+            return t[0].pre(x, _transform);
+        }));
+    }),
     _transformp = (function(node) {
         if ((!node)) return node;
         if (Array.isArray(node)) return map(_transform, node);
@@ -456,13 +456,13 @@ var _t = (function(node) {
     }),
     _tp = (function(node) {
         if ((!node)) return id;
-        if (Array.isArray(node)) return modifyNode((function() {
+        if (Array.isArray(node)) return modifyNode.bind(null, (function() {
             return map(_transformp, node);
         }));
         if ((!(node instanceof khepri_node.Node))) return id;
         var t = transformers[node.type];
         if (((!t) || (!t[0].post))) return id;
-        return modifyNode((function(x) {
+        return modifyNode.bind(null, (function(x) {
             return t[0].post(x, t[0].post);
         }));
     }),
