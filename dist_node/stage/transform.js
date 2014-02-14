@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/stage/transform.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var transformer = require("../transform"),
     transform;

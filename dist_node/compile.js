@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var lexical = require("./stage/lexical"),
     transform = require("./stage/transform"),

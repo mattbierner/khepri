@@ -713,24 +713,27 @@ addTransform('ObjectValue',
 
 // Patterns
 addTransform('ArgumentsPattern',
+    id,
     modifyNode @ \node -> node.id);
 
 addTransform('IdentifierPattern',
+    id,
     modifyNode @ \node -> node.id);
 
 addTransform('AsPattern',
+    id,
     modifyNode @ \node -> node.id);
 
-addTransform('ArrayPattern',
-    modifyNode @ \node -> node.ud.id);
-
 addTransform('ObjectPattern',
+    id,
     modifyNode @ \node -> node.ud.id);
 
 addTransform('EllipsisPattern',
+    id,
     modifyNode @ \node -> (node.ud && node.ud.id));
 
 addTransform('SinkPattern',
+    id,
     modifyNode @ \node -> (node.ud && node.ud.id));
 
 // Program

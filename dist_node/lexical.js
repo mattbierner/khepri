@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lexical.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var ast_node = require("khepri-ast")["node"],
     setUserData = ast_node["setUserData"],

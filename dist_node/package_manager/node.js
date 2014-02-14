@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/package_manager/node.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var ast_declaration = require("khepri-ast")["declaration"],
     ast_expression = require("khepri-ast")["expression"],

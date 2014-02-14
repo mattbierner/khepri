@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/ecma_peep.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var tree = require("neith")["tree"],
     __o = require("neith")["walk"],

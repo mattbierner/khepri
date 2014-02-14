@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/khepri_peep.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var tree = require("neith")["tree"],
     __o = require("neith")["walk"],

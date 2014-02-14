@@ -419,25 +419,22 @@ addTransform("ObjectExpression", id, modifyNode.bind(null, (function(node) {
 addTransform("ObjectValue", id, modifyNode.bind(null, (function(node) {
     return ecma_value.ObjectValue.create(node.loc, node.key, node.value);
 })));
-addTransform("ArgumentsPattern", modifyNode.bind(null, (function(node) {
+addTransform("ArgumentsPattern", id, modifyNode.bind(null, (function(node) {
     return node.id;
 })));
-addTransform("IdentifierPattern", modifyNode.bind(null, (function(node) {
+addTransform("IdentifierPattern", id, modifyNode.bind(null, (function(node) {
     return node.id;
 })));
-addTransform("AsPattern", modifyNode.bind(null, (function(node) {
+addTransform("AsPattern", id, modifyNode.bind(null, (function(node) {
     return node.id;
 })));
-addTransform("ArrayPattern", modifyNode.bind(null, (function(node) {
+addTransform("ObjectPattern", id, modifyNode.bind(null, (function(node) {
     return node.ud.id;
 })));
-addTransform("ObjectPattern", modifyNode.bind(null, (function(node) {
-    return node.ud.id;
-})));
-addTransform("EllipsisPattern", modifyNode.bind(null, (function(node) {
+addTransform("EllipsisPattern", id, modifyNode.bind(null, (function(node) {
     return (node.ud && node.ud.id);
 })));
-addTransform("SinkPattern", modifyNode.bind(null, (function(node) {
+addTransform("SinkPattern", id, modifyNode.bind(null, (function(node) {
     return (node.ud && node.ud.id);
 })));
 addTransform("Program", id, modifyNode.bind(null, (function(node) {

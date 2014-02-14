@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/scope.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var __o = require("bes")["object"],
     setProperty = __o["setProperty"],
