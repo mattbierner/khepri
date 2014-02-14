@@ -137,7 +137,7 @@ var variableDeclarator = ecma_declaration.VariableDeclarator.create;
 /* Unpacks
  ******************************************************************************/
 /**
- * Expand a single complex binding to a list of identifier bindings.
+ * Expand a complex binding to a list of identifier bindings.
  * 
  * @param base Value being unpacked.
  * @param pattern Pattern unpacking base value.
@@ -153,9 +153,10 @@ in
     \base, pattern -> {
         switch (pattern.type) {
         case 'IdentifierPattern':
-            return khepri_declaration.Binding.create(null,
-                identifier(null, pattern.id.name),
-                base);
+            return concat(
+                khepri_declaration.Binding.create(null,
+                    pattern.id,
+                    base));
         
         case 'AsPattern':
             return concat(
@@ -187,30 +188,6 @@ var unpackAssign = \pattern, value ->
     innerPattern(value, pattern)
         |> flatten
         |> (map @ \x -> ecma_expression.AssignmentExpression.create(null,'=', x.pattern, x.value));
-
-/* Pattern
- ******************************************************************************/
-var identifierPattern = \loc, name ->
-    identifier(loc, name);
-
-/* Basic Expressions
- ******************************************************************************/
-/**
- * 
- */
-var callExpression = \loc, callee, args ->
-    ecma_expression.CallExpression.create(loc,
-        _transform(callee),
-        _transform(args));
-
-/**
- * 
- */
-var memberExpression = \loc, object, property, computed ->
-    ecma_expression.MemberExpression.create(loc,
-        _transform(object),
-        _transform(property),
-        computed);
 
 /* Statements
  ******************************************************************************/
@@ -352,7 +329,7 @@ var singleCompose = \loc, f, g ->
                         identifier(null, 'x'))]),
                 khepri_expression.CallExpression.create(null,
                     identifier(null, 'f'), [
-                        callExpression(null,
+                        khepri_expression.CallExpression.create(null,
                             identifier(null, 'g'),
                             [identifier(null, 'x')])]))),
         [f, g]);
@@ -373,7 +350,7 @@ var multiCompose = \loc, f, g ->
             khepri_expression.CallExpression.create(null,
                 identifier(null, 'f'), [
                     khepri_expression.CallExpression.create(null,
-                         memberExpression(null,
+                         khepri_expression.MemberExpression.create(null,
                              identifier(null, 'g'),
                              identifier(null, 'apply')),
                          [nullLiteral(null),

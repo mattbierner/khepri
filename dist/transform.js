@@ -121,8 +121,7 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             return (function(base, pattern) {
                 switch (pattern.type) {
                     case "IdentifierPattern":
-                        return khepri_declaration.Binding.create(null, identifier(null, pattern.id.name),
-                            base);
+                        return concat(khepri_declaration.Binding.create(null, pattern.id, base));
                     case "AsPattern":
                         return concat(innerPattern(base, pattern.id), flatten(innerPattern(pattern.id,
                             pattern.target)));
@@ -146,16 +145,6 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             return map((function(x) {
                 return ecma_expression.AssignmentExpression.create(null, "=", x.pattern, x.value);
             }), flatten(innerPattern(value, pattern)));
-        }),
-        identifierPattern = (function(loc, name) {
-            return identifier(loc, name);
-        }),
-        callExpression = (function(loc, callee, args) {
-            return ecma_expression.CallExpression.create(loc, _transform(callee), _transform(args));
-        }),
-        memberExpression = (function(loc, object, property, computed) {
-            return ecma_expression.MemberExpression.create(loc, _transform(object), _transform(property),
-                computed);
         }),
         withStatement = (function(loc, bindings, body) {
             var vars = flatten(map((function(imp) {
@@ -220,7 +209,9 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
                 ]), khepri_expression.FunctionExpression.create(null, null, khepri_pattern.ArgumentsPattern
                     .create(null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null,
                         "x"))]), khepri_expression.CallExpression.create(null, identifier(null, "f"), [
-                        callExpression(null, identifier(null, "g"), [identifier(null, "x")])
+                        khepri_expression.CallExpression.create(null, identifier(null, "g"), [
+                            identifier(null, "x")
+                        ])
                     ]))), [f, g]);
         }),
         multiCompose = (function(loc, f, g) {
@@ -230,10 +221,10 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
                         null, identifier(null, "g"))
                 ]), khepri_expression.FunctionExpression.create(null, null, khepri_pattern.ArgumentsPattern
                     .create(null, null, []), khepri_expression.CallExpression.create(null, identifier(
-                        null, "f"), [khepri_expression.CallExpression.create(null, memberExpression(
-                        null, identifier(null, "g"), identifier(null, "apply")), [
-                        nullLiteral(null), identifier(null, "arguments")
-                    ])]))), [f, g]);
+                        null, "f"), [khepri_expression.CallExpression.create(null,
+                        khepri_expression.MemberExpression.create(null, identifier(null, "g"),
+                            identifier(null, "apply")), [nullLiteral(null), identifier(null,
+                            "arguments")])]))), [f, g]);
         }),
         packageBlock = (function(loc, exports, body) {
             var imports = ((body.type === "WithStatement") ? filter((function(x) {
