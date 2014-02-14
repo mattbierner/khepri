@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/scope.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "bes/object", "bes/record"], (function(require, exports, __o, record) {
     "use strict";
     var setProperty = __o["setProperty"],

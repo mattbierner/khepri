@@ -2,18 +2,16 @@
  * THIS FILE IS AUTO GENERATED from 'lib/khepri_peep.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper", "khepri-ast/node",
+define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepri-ast-zipper", "khepri-ast/node",
     "khepri-ast/statement", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value"
-], (function(require, exports, tree, zipper, __o, __o0, ast_statement, ast_expression, ast_pattern, ast_value) {
+], (function(require, exports, tree, __o, zipper, __o0, __o1, ast_statement, ast_expression, ast_pattern, ast_value) {
     "use strict";
-    var khepriZipper = __o["khepriZipper"],
-        modify = __o0["modify"],
-        Node = __o0["Node"],
-        setUserData = __o0["setUserData"],
-        optimize, concat = (function() {
-            var args = arguments;
-            return [].concat.apply([], args);
-        }),
+    var walk = __o["walk"],
+        khepriZipper = __o0["khepriZipper"],
+        modify = __o1["modify"],
+        Node = __o1["Node"],
+        setUserData = __o1["setUserData"],
+        optimize, concat = Array.prototype.concat.bind([]),
         map = (function(f, x) {
             return [].map.call(x, f);
         }),
@@ -65,10 +63,10 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
     }));
     addPeephole(["ArrayPattern"], false, (function(_) {
         return true;
-    }), (function(__o1) {
-        var loc = __o1["loc"],
-            elements = __o1["elements"],
-            ud = __o1["ud"];
+    }), (function(__o2) {
+        var loc = __o2["loc"],
+            elements = __o2["elements"],
+            ud = __o2["ud"];
         return setUserData(ast_pattern.ObjectPattern.create(loc, map((function(x, i) {
             return ast_pattern.ObjectPatternElement.create(null, ast_value.Literal.create(
                 null, "number", i), x);
@@ -103,9 +101,9 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
         return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ?
             node.right.base : node.right), concat((node.right.args || []), node.left));
     }));
-    addPeephole(["BinaryExpression"], true, (function(__o1) {
-        var operator = __o1["operator"],
-            left = __o1["left"];
+    addPeephole(["BinaryExpression"], true, (function(__o2) {
+        var operator = __o2["operator"],
+            left = __o2["left"];
         return ((operator === "<|") && ((((left.type === "CurryExpression") || (left.type ===
             "BinaryOperatorExpression")) || (left.type === "UnaryOperatorExpression")) || (left
             .type === "TernaryOperatorExpression")));
@@ -113,60 +111,32 @@ define(["require", "exports", "neith/tree", "neith/zipper", "khepri-ast-zipper",
         return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ?
             node.left.base : node.left), concat((node.left.args || []), node.right));
     }));
-    var transform = (function(node) {
+    var transformDown = (function(node) {
         var transforms = (peepholes[node.type] || [])
             .filter((function(x) {
-                return x.condition(node);
-            })),
-            down = transforms.filter((function(x) {
-                return (!x.up);
-            })),
-            up = transforms.filter((function(x) {
-                return x.up;
+                return ((!x.up) && x.condition(node));
             }));
-        return down.reduce((function(p, c) {
-            return c.map(p, transform);
+        return transforms.reduce((function(p, c) {
+            return c.map(p);
         }), node);
     }),
-        transformDown = (function(node) {
-            var transforms = (peepholes[node.type] || [])
-                .filter((function(x) {
-                    return ((!x.up) && x.condition(node));
-                }));
-            return transforms.reduce((function(p, c) {
-                return c.map(p, transformDown);
-            }), node);
-        }),
         transformUp = (function(node) {
             var transforms = (peepholes[node.type] || [])
                 .filter((function(x) {
                     return (x.up && x.condition(node));
                 }));
             return transforms.reduce((function(p, c) {
-                return c.map(p, transformUp);
+                return c.map(p);
             }), node);
         }),
-        opt = (function(z) {
-            var t = tree.modifyNode((function(node) {
-                return (node && transformDown(node));
-            }), z);
-            if (zipper.isLeaf(t)) {
-                do {
-                    (t = tree.modifyNode((function(node) {
-                        return (node && transformUp(node));
-                    }), t));
-                    if (zipper.isLast(t)) {
-                        if (zipper.isRoot(t)) return t;
-                        (t = zipper.up(t));
-                    } else return opt(zipper.right(t));
-                }
-                while (true);
-            }
-            return opt(zipper.down(t));
-        });
-    (optimize = (function(__o1) {
-        var options = __o1["options"],
-            ast = __o1["ast"];
+        opt = walk.bind(null, tree.modifyNode.bind(null, (function(node) {
+            return (node && transformDown(node));
+        })), tree.modifyNode.bind(null, (function(node) {
+            return (node && transformUp(node));
+        })));
+    (optimize = (function(__o2) {
+        var options = __o2["options"],
+            ast = __o2["ast"];
         return ({
             "options": options,
             "ast": tree.node(zipper.root(opt(khepriZipper(ast))))

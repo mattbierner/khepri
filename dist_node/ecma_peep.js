@@ -4,26 +4,25 @@
 */
 "use strict";
 var tree = require("neith")["tree"],
+    __o = require("neith")["walk"],
+    walk = __o["walk"],
     zipper = require("neith")["zipper"],
-    __o = require("ecma-ast-zipper"),
-    ecmaZipper = __o["ecmaZipper"],
-    __o0 = require("ecma-ast")["node"],
-    modify = __o0["modify"],
-    Node = __o0["Node"],
+    __o0 = require("ecma-ast-zipper"),
+    ecmaZipper = __o0["ecmaZipper"],
+    __o1 = require("ecma-ast")["node"],
+    modify = __o1["modify"],
+    Node = __o1["Node"],
     ast_value = require("ecma-ast")["value"],
     ast_declaration = require("ecma-ast")["declaration"],
     ast_statement = require("ecma-ast")["statement"],
     ast_expression = require("ecma-ast")["expression"],
-    optimize, concat = (function() {
-        var args = arguments;
-        return [].concat.apply([], args);
-    }),
+    optimize, concat = Array.prototype.concat.bind([]),
     map = (function(f, x) {
         return [].map.call(x, f);
     }),
     reduce = Function.prototype.call.bind(Array.prototype.reduce),
     flatten = (function(x) {
-        return (Array.isArray(x) ? [].concat.apply([], x.map(flatten)) : x);
+        return (Array.isArray(x) ? Array.prototype.concat.apply([], x.map(flatten)) : x);
     }),
     peepholes = ({}),
     addPeephole = (function(types, up, condition, f) {
@@ -39,14 +38,12 @@ var tree = require("neith")["tree"],
 addPeephole(["VariableDeclaration"], false, (function(_) {
     return true;
 }), (function(node) {
-    return (function() {
-        var declarations = node.declarations.filter((function(x) {
-            return (!(!x));
-        }));
-        return modify(node, ({
-            "declarations": declarations
-        }), ({}));
-    })();
+    var declarations = node.declarations.filter((function(x) {
+        return (!(!x));
+    }));
+    return modify(node, ({
+        "declarations": declarations
+    }), ({}));
 }));
 addPeephole(["VariableDeclaration"], true, (function(node) {
     return (!node.declarations.length);
@@ -129,19 +126,17 @@ var arithmetic = ({
         return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) || (node.kind ===
             "boolean")) || (node.kind === "null")));
     });
-addPeephole(["BinaryExpression", "LogicalExpression"], true, (function(__o1) {
-    var operator = __o1["operator"],
-        left = __o1["left"],
-        right = __o1["right"];
+addPeephole(["BinaryExpression", "LogicalExpression"], true, (function(__o2) {
+    var operator = __o2["operator"],
+        left = __o2["left"],
+        right = __o2["right"];
     return ((arithmetic[operator] && isPrimitive(left)) && isPrimitive(right));
-}), (function(__o1) {
-    var operator = __o1["operator"],
-        left = __o1["left"],
-        right = __o1["right"];
-    return (function() {
-        var value = arithmetic[operator](left.value, right.value);
-        return ast_value.Literal.create(null, (typeof value), value);
-    })();
+}), (function(__o2) {
+    var operator = __o2["operator"],
+        left = __o2["left"],
+        right = __o2["right"],
+        value = arithmetic[operator](left.value, right.value);
+    return ast_value.Literal.create(null, (typeof value), value);
 }));
 var arithmetic0 = ({
     "!": (function(x) {
@@ -164,42 +159,25 @@ var arithmetic0 = ({
         return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) || (node.kind ===
             "boolean")) || (node.kind === "null")));
     });
-addPeephole(["UnaryExpression"], true, (function(__o1) {
-    var operator = __o1["operator"],
-        argument = __o1["argument"];
+addPeephole(["UnaryExpression"], true, (function(__o2) {
+    var operator = __o2["operator"],
+        argument = __o2["argument"];
     return (arithmetic0[operator] && isPrimitive0(argument));
-}), (function(__o1) {
-    var operator = __o1["operator"],
-        argument = __o1["argument"];
-    return (function() {
-        var value = arithmetic0[operator](argument.value);
-        return ast_value.Literal.create(null, (typeof value), value);
-    })();
+}), (function(__o2) {
+    var operator = __o2["operator"],
+        argument = __o2["argument"],
+        value = arithmetic0[operator](argument.value);
+    return ast_value.Literal.create(null, (typeof value), value);
 }));
-var transform = (function(node) {
+var transformDown = (function(node) {
     var transforms = (peepholes[node.type] || [])
         .filter((function(x) {
-            return x.condition(node);
-        })),
-        down = transforms.filter((function(x) {
-            return (!x.up);
-        })),
-        up = transforms.filter((function(x) {
-            return x.up;
+            return ((!x.up) && x.condition(node));
         }));
-    return down.reduce((function(p, c) {
-        return c.map(p, transform);
+    return transforms.reduce((function(p, c) {
+        return c.map(p, transformDown);
     }), node);
 }),
-    transformDown = (function(node) {
-        var transforms = (peepholes[node.type] || [])
-            .filter((function(x) {
-                return ((!x.up) && x.condition(node));
-            }));
-        return transforms.reduce((function(p, c) {
-            return c.map(p, transformDown);
-        }), node);
-    }),
     transformUp = (function(node) {
         var transforms = (peepholes[node.type] || [])
             .filter((function(x) {
@@ -209,27 +187,14 @@ var transform = (function(node) {
             return c.map(p, transformUp);
         }), node);
     }),
-    opt = (function(z) {
-        var t = tree.modifyNode((function(node) {
-            return (node && transformDown(node));
-        }), z);
-        if (zipper.isLeaf(t)) {
-            do {
-                (t = tree.modifyNode((function(node) {
-                    return (node && transformUp(node));
-                }), t));
-                if (zipper.isLast(t)) {
-                    if (zipper.isRoot(t)) return t;
-                    (t = zipper.up(t));
-                } else return opt(zipper.right(t));
-            }
-            while (true);
-        }
-        return opt(zipper.down(t));
-    });
-(optimize = (function(__o1) {
-    var options = __o1["options"],
-        ast = __o1["ast"];
+    opt = walk.bind(null, tree.modifyNode.bind(null, (function(node) {
+        return (node && transformDown(node));
+    })), tree.modifyNode.bind(null, (function(node) {
+        return (node && transformUp(node));
+    })));
+(optimize = (function(__o2) {
+    var options = __o2["options"],
+        ast = __o2["ast"];
     return ({
         "options": options,
         "ast": tree.node(zipper.root(opt(ecmaZipper(ast))))

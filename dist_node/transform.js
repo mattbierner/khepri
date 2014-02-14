@@ -3,7 +3,8 @@
  * DO NOT EDIT
 */
 "use strict";
-var ecma_clause = require("ecma-ast")["clause"],
+var record = require("bes")["record"],
+    ecma_clause = require("ecma-ast")["clause"],
     ecma_declaration = require("ecma-ast")["declaration"],
     ecma_expression = require("ecma-ast")["expression"],
     ecma_node = require("ecma-ast")["node"],
@@ -15,10 +16,22 @@ var ecma_clause = require("ecma-ast")["clause"],
     khepri_expression = require("khepri-ast")["expression"],
     khepri_node = require("khepri-ast")["node"],
     setUserData = khepri_node["setUserData"],
+    Node = khepri_node["Node"],
+    modify = khepri_node["modify"],
     khepri_pattern = require("khepri-ast")["pattern"],
     khepri_program = require("khepri-ast")["program"],
     khepri_statement = require("khepri-ast")["statement"],
     khepri_value = require("khepri-ast")["value"],
+    khepri_zipper = require("khepri-ast-zipper"),
+    stream = require("nu-stream")["stream"],
+    foldl = stream["foldl"],
+    from = stream["from"],
+    NIL = stream["NIL"],
+    tree = require("neith")["tree"],
+    treeZipper = tree["treeZipper"],
+    __o = require("neith")["walk"],
+    preWalk = __o["preWalk"],
+    zipper = require("neith")["zipper"],
     transform, transformStage, concat = Function.prototype.call.bind(Array.prototype.concat),
     reduce = Function.prototype.call.bind(Array.prototype.reduce),
     filter = (function(f, a) {
@@ -28,7 +41,7 @@ var ecma_clause = require("ecma-ast")["clause"],
         return Array.prototype.map.call(a, f);
     }),
     flatten = (function(x) {
-        return (Array.isArray(x) ? reduce(x, (function(p, c, _) {
+        return (Array.isArray(x) ? reduce(x, (function(p, c) {
             return p.concat(c);
         }), []) : x);
     }),
@@ -40,6 +53,22 @@ var ecma_clause = require("ecma-ast")["clause"],
         }
         return false;
     }),
+    State = record.declare(null, ["node", "packageManager"]),
+    khepriZipper = treeZipper.bind(null, (function(ctx) {
+        return khepri_zipper.getChildren(ctx.node);
+    }), (function(ctx, key) {
+        return ctx.setNode(khepri_zipper.getChild(ctx.node, key));
+    }), (function(ctx, pairs, value) {
+        return ctx.setNode(khepri_zipper.construct(ctx.node, stream.map((function(x) {
+            return tree.Pair(x.key, x.value.node);
+        }), pairs), (function() {
+            var v = value();
+            return reduce(Object.keys(v), (function(p, c) {
+                (p[c] = v[c].node);
+                return p;
+            }), ({}));
+        })));
+    })),
     expressionStatement, _transform, packageManager, identifier = (function(loc, name) {
         return ecma_value.Identifier.create(loc, name);
     }),
@@ -68,9 +97,9 @@ var ecma_clause = require("ecma-ast")["clause"],
                 case "AsPattern":
                     return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target, f)));
                 case "ObjectPattern":
-                    return map((function(__o) {
-                        var target = __o["target"],
-                            key = __o["key"];
+                    return map((function(__o0) {
+                        var target = __o0["target"],
+                            key = __o0["key"];
                         return flatten(objectElementUnpack(pattern.ud.id, target, key, f));
                     }), pattern.elements);
                 default:
@@ -82,6 +111,12 @@ var ecma_clause = require("ecma-ast")["clause"],
         var make = variableDeclarator.bind(null, null);
         return (function(pattern, value) {
             return flatten(innerPattern(value, pattern, make));
+        });
+    })(),
+    unpackAssign = (function() {
+        var make0 = ecma_expression.AssignmentExpression.create.bind(null, null, "=");
+        return (function(pattern, value) {
+            return flatten(innerPattern(value, pattern, make0));
         });
     })(),
     identifierPattern = (function(loc, name) {
@@ -378,6 +413,9 @@ addTransform("Program", (function(node) {
 addTransform("Package", (function(node) {
     return packageBlock(node.loc, node.exports, node.body);
 }));
+var walk = preWalk.bind(null, tree.modifyNode.bind(null, (function(ctx) {
+    return ctx.setNode(_transform(ctx.node));
+})));
 (_transform = (function(node) {
     if ((!node)) return node;
     if (Array.isArray(node)) return map(_transform, node);
@@ -386,16 +424,17 @@ addTransform("Package", (function(node) {
     if ((!t)) return node;
     return t(node);
 }));
-(transform = (function(__o) {
-    var options = __o["options"],
-        ast = __o["ast"],
+(transform = (function(__o0) {
+    var options = __o0["options"],
+        ast = __o0["ast"],
         amd_manager = require("./package_manager/amd"),
         node_manager = require("./package_manager/node");
     (packageManager = amd_manager);
     if ((options.package_manager === "node"))(packageManager = node_manager);
     return ({
         "options": options,
-        "ast": _transform(ast)
+        "ast": tree.node(walk(khepriZipper(State.create(ast, packageManager))))
+            .node
     });
 }));
 (exports.transform = transform);

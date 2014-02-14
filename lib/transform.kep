@@ -7,6 +7,8 @@ package (
     transform
     transformStage)
 with 
+    import 'bes::record' record,
+    
     import 'ecma-ast::clause' ecma_clause,
     import 'ecma-ast::declaration' ecma_declaration,
     import 'ecma-ast::expression' ecma_expression,
@@ -18,12 +20,20 @@ with
     import 'khepri-ast::clause' khepri_clause,
     import 'khepri-ast::declaration' khepri_declaration,
     import 'khepri-ast::expression' khepri_expression,
-    import 'khepri-ast::node' khepri_node#{setUserData},
+    import 'khepri-ast::node' khepri_node#{setUserData Node modify},
     import 'khepri-ast::pattern' khepri_pattern,
     import 'khepri-ast::program' khepri_program,
     import 'khepri-ast::statement' khepri_statement,
     import 'khepri-ast::value' khepri_value,
     
+    import 'khepri-ast-zipper' khepri_zipper,
+    
+    import 'nu-stream::stream' stream#{foldl from NIL},
+    
+    import 'neith::tree' tree#{treeZipper},
+    import 'neith::walk' {preWalk},
+    import 'neith::zipper' zipper,
+        
     import './package_manager::amd' _,
     import './package_manager::node' _
 in {
@@ -36,7 +46,7 @@ var map = \f, a ->  Array.prototype.map.call(a, f);
 
 var flatten = \x ->
     ?Array.isArray(x)
-        :reduce(x, \p c _ -> p.concat(c), [])
+        :reduce(x, \p, c -> p.concat(c), [])
         :x;
 
 /**
@@ -50,6 +60,21 @@ var isStrict = \elems -> {
     return false;
 };
 
+var State = record.declare(null, [
+    'node',
+    'packageManager']);
+
+var khepriZipper = treeZipper@(
+    \ctx ->
+        khepri_zipper.getChildren(ctx.node),
+    \ctx, key ->
+        ctx.setNode(khepri_zipper.getChild(ctx.node, key)),
+    \ctx, pairs, value ->
+        ctx.setNode(
+            khepri_zipper.construct(
+                ctx.node,
+                stream.map(\x -> tree.Pair(x.key, x.value.node), pairs),
+                \() -> let v = value() in reduce(Object.keys(v), \p c -> { p.(c) = v.(c).node; return p; }, {}))));
 
 /* Forward
  ******************************************************************************/
@@ -121,6 +146,16 @@ in
  */
 var unpack = let
     make = variableDeclarator@null
+in
+    \pattern, value ->
+        innerPattern(value, pattern, make)
+            |> flatten;
+
+/**
+ * 
+ */
+var unpackAssign = let
+    make = ecma_expression.AssignmentExpression.create @ null @ '='
 in
     \pattern, value ->
         innerPattern(value, pattern, make)
@@ -257,6 +292,11 @@ in
  * 
  */
 var letExpression = \loc, bindings, body ->
+/* ecma_expression.SequenceExpression.create(null,
+        concat(
+            map(\x -> unpackAssign(x.pattern, x.value), bindings),
+            _transform(body)));
+ */
     callExpression(loc,
         functionExpression(null,
             null,
@@ -352,7 +392,6 @@ var multiCompose = \loc, f, g ->
 
 /* Package
  ******************************************************************************/
-
 var packageBlock = \loc, exports, body -> let
     imports = ?body.type === 'WithStatement'
         :filter(\x -> x.type === 'ImportPattern', body.bindings)
@@ -371,7 +410,8 @@ var packageBlock = \loc, exports, body -> let
             body.body)
         :body
 in
-    _transform(packageManager.definePackage(loc, exportedNames, imports, targets, fBody));
+    _transform(
+        packageManager.definePackage(loc, exportedNames, imports, targets, fBody));
 
 /* Transform
  ******************************************************************************/
@@ -675,6 +715,10 @@ addTransform('Package', \node ->
 /*
  * 
  *****************************************************************************/
+var walk = preWalk
+    @(tree.modifyNode @ \ctx ->
+        ctx.setNode(_transform(ctx.node)));
+
 _transform = \node -> {
     if (!node)
         return node;
@@ -704,7 +748,7 @@ transform = \{options ast} -> {
 
         return ({
             'options': options,
-            'ast': _transform(ast)
+            'ast': tree.node(walk(khepriZipper(State.create(ast, packageManager)))).node
         });
     }
 };

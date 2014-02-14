@@ -5,6 +5,7 @@ package (
     optimize)
 with
     import 'neith::tree' tree,
+    import 'neith::walk' {walk},
     import 'neith::zipper' zipper,
 
     import 'khepri-ast-zipper' {khepriZipper},
@@ -14,13 +15,9 @@ with
     import 'khepri-ast::expression' ast_expression,
     import 'khepri-ast::pattern' ast_pattern,
     import 'khepri-ast::value' ast_value
-
-
 in {
 
-var concat = \args(...) ->
-    [].concat.apply([], args);
-    
+var concat = Array.prototype.concat.bind([]);
 
 var map = \f, x -> [].map.call(x, f);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
@@ -196,43 +193,21 @@ addPeephole(['BinaryExpression'], true,
                 node.left.args || [],
                 node.right)));
 
-
 /* Interface
  ******************************************************************************/
-var transform = \node -> {
-    var transforms = (peepholes.(node.type) || []).filter(\x -> x.condition(node));
-    var down = transforms.filter(\x -> !x.up);
-    var up = transforms.filter(\x -> x.up);
-
-    return down.reduce(\p c -> c.map(p, transform), node);
-};
-
 var transformDown = \node -> {
     var transforms = (peepholes.(node.type) || []).filter(\x -> !x.up && x.condition(node));
-    return transforms.reduce(\p c -> c.map(p, transformDown), node);
+    return transforms.reduce(\p c -> c.map(p), node);
 };
 
 var transformUp = \node -> {
     var transforms = (peepholes.(node.type) || []).filter(\x -> x.up && x.condition(node));
-    return transforms.reduce(\p c -> c.map(p, transformUp), node);
+    return transforms.reduce(\p c -> c.map(p), node);
 };
 
-var opt = \z -> {
-    var t = tree.modifyNode(\node -> (node && transformDown(node)), z);
-    
-    if (zipper.isLeaf(t)) {
-        do {
-            t = tree.modifyNode(\node -> (node && transformUp(node)), t);
-            if (zipper.isLast(t)) {
-                if (zipper.isRoot(t))
-                    return t;
-                t = zipper.up(t);
-            } else
-                return opt(zipper.right(t));
-        } while (true);
-    }
-    return opt(zipper.down(t));
-};
+var opt = walk
+    @(tree.modifyNode @ \node -> (node && transformDown(node)))
+    @(tree.modifyNode @ \node -> (node && transformUp(node)));
 
 optimize = \{options ast} ->
     ({

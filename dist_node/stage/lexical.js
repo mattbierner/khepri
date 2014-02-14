@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/stage/lexical.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var lexical = require("../lexical"),
     check, builtins = ["Array", "Boolean", "Date", "decodeURI", "decodeURIComponent", "encodeURI", "encodeURIComponent",

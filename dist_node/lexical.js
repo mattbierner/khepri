@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lexical.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var ast_node = require("khepri-ast")["node"],
     setUserData = ast_node["setUserData"],
@@ -101,20 +97,16 @@ var ok = (function(x) {
     }),
     modifyScope = (function(f) {
         return (function(s, ok, err) {
-            return (function() {
-                var scope = f(s.scope),
-                    newState = State.setScope(s, scope);
-                return ok(scope, newState);
-            })();
+            var scope = f(s.scope),
+                newState = State.setScope(s, scope);
+            return ok(scope, newState);
         });
     }),
     modifyRealScope = (function(f) {
         return (function(s, ok, err) {
-            return (function() {
-                var scope = f(s.realScope),
-                    newState = State.setRealScope(s, scope);
-                return ok(scope, newState);
-            })();
+            var scope = f(s.realScope),
+                newState = State.setRealScope(s, scope);
+            return ok(scope, newState);
         });
     }),
     setScope = (function(s) {
@@ -174,11 +166,9 @@ var ok = (function(x) {
     }),
     hasFreeBinding = (function(id, loc) {
         return seq(hasBinding(id, loc), examineScope((function(s) {
-            return (function() {
-                var current = s.getBinding(id);
-                return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") +
-                    loc)) : pass);
-            })();
+            var current = s.getBinding(id);
+            return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") + loc)) :
+                pass);
         })));
     }),
     checkCanAssign = (function(id, loc) {
@@ -377,19 +367,17 @@ addCheck("ObjectPatternElement", seq(checkChild("target"), checkChild("key")));
 addCheck("ArgumentsPattern", seq(checkChild("id"), checkChild("elements"), checkChild("self")));
 addCheck("ObjectValue", checkChild("value"));
 addCheck("Identifier", inspect((function(node) {
-    return (function() {
-        var name = node.name;
-        return examineScope((function(s) {
-            return (s.hasMapping(name) ? (function() {
-                var mappedName = s.getMapping(name);
-                return seq(modifyNode((function(x) {
-                    return ast_node.modify(x, ({}), ({
-                        "name": mappedName
-                    }));
-                })), hasFreeBinding(mappedName, node.loc));
-            })() : hasFreeBinding(name, node.loc));
-        }));
-    })();
+    var name = node.name;
+    return examineScope((function(s) {
+        return (s.hasMapping(name) ? (function() {
+            var mappedName = s.getMapping(name);
+            return seq(modifyNode((function(x) {
+                return ast_node.modify(x, ({}), ({
+                    "name": mappedName
+                }));
+            })), hasFreeBinding(mappedName, node.loc));
+        })() : hasFreeBinding(name, node.loc));
+    }));
 })));
 (_check = (function(node) {
     if (Array.isArray(node)) {

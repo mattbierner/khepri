@@ -4,21 +4,20 @@
 */
 "use strict";
 var tree = require("neith")["tree"],
+    __o = require("neith")["walk"],
+    walk = __o["walk"],
     zipper = require("neith")["zipper"],
-    __o = require("khepri-ast-zipper"),
-    khepriZipper = __o["khepriZipper"],
-    __o0 = require("khepri-ast")["node"],
-    modify = __o0["modify"],
-    Node = __o0["Node"],
-    setUserData = __o0["setUserData"],
+    __o0 = require("khepri-ast-zipper"),
+    khepriZipper = __o0["khepriZipper"],
+    __o1 = require("khepri-ast")["node"],
+    modify = __o1["modify"],
+    Node = __o1["Node"],
+    setUserData = __o1["setUserData"],
     ast_statement = require("khepri-ast")["statement"],
     ast_expression = require("khepri-ast")["expression"],
     ast_pattern = require("khepri-ast")["pattern"],
     ast_value = require("khepri-ast")["value"],
-    optimize, concat = (function() {
-        var args = arguments;
-        return [].concat.apply([], args);
-    }),
+    optimize, concat = Array.prototype.concat.bind([]),
     map = (function(f, x) {
         return [].map.call(x, f);
     }),
@@ -69,10 +68,10 @@ addPeephole(["ExpressionStatement"], true, (function(node) {
 }));
 addPeephole(["ArrayPattern"], false, (function(_) {
     return true;
-}), (function(__o1) {
-    var loc = __o1["loc"],
-        elements = __o1["elements"],
-        ud = __o1["ud"];
+}), (function(__o2) {
+    var loc = __o2["loc"],
+        elements = __o2["elements"],
+        ud = __o2["ud"];
     return setUserData(ast_pattern.ObjectPattern.create(loc, map((function(x, i) {
         return ast_pattern.ObjectPatternElement.create(null, ast_value.Literal.create(null,
             "number", i), x);
@@ -107,9 +106,9 @@ addPeephole(["BinaryExpression"], true, (function(node) {
     return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ? node.right.base :
         node.right), concat((node.right.args || []), node.left));
 }));
-addPeephole(["BinaryExpression"], true, (function(__o1) {
-    var operator = __o1["operator"],
-        left = __o1["left"];
+addPeephole(["BinaryExpression"], true, (function(__o2) {
+    var operator = __o2["operator"],
+        left = __o2["left"];
     return ((operator === "<|") && ((((left.type === "CurryExpression") || (left.type ===
         "BinaryOperatorExpression")) || (left.type === "UnaryOperatorExpression")) || (left.type ===
         "TernaryOperatorExpression")));
@@ -117,60 +116,32 @@ addPeephole(["BinaryExpression"], true, (function(__o1) {
     return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ? node.left.base :
         node.left), concat((node.left.args || []), node.right));
 }));
-var transform = (function(node) {
+var transformDown = (function(node) {
     var transforms = (peepholes[node.type] || [])
         .filter((function(x) {
-            return x.condition(node);
-        })),
-        down = transforms.filter((function(x) {
-            return (!x.up);
-        })),
-        up = transforms.filter((function(x) {
-            return x.up;
+            return ((!x.up) && x.condition(node));
         }));
-    return down.reduce((function(p, c) {
-        return c.map(p, transform);
+    return transforms.reduce((function(p, c) {
+        return c.map(p);
     }), node);
 }),
-    transformDown = (function(node) {
-        var transforms = (peepholes[node.type] || [])
-            .filter((function(x) {
-                return ((!x.up) && x.condition(node));
-            }));
-        return transforms.reduce((function(p, c) {
-            return c.map(p, transformDown);
-        }), node);
-    }),
     transformUp = (function(node) {
         var transforms = (peepholes[node.type] || [])
             .filter((function(x) {
                 return (x.up && x.condition(node));
             }));
         return transforms.reduce((function(p, c) {
-            return c.map(p, transformUp);
+            return c.map(p);
         }), node);
     }),
-    opt = (function(z) {
-        var t = tree.modifyNode((function(node) {
-            return (node && transformDown(node));
-        }), z);
-        if (zipper.isLeaf(t)) {
-            do {
-                (t = tree.modifyNode((function(node) {
-                    return (node && transformUp(node));
-                }), t));
-                if (zipper.isLast(t)) {
-                    if (zipper.isRoot(t)) return t;
-                    (t = zipper.up(t));
-                } else return opt(zipper.right(t));
-            }
-            while (true);
-        }
-        return opt(zipper.down(t));
-    });
-(optimize = (function(__o1) {
-    var options = __o1["options"],
-        ast = __o1["ast"];
+    opt = walk.bind(null, tree.modifyNode.bind(null, (function(node) {
+        return (node && transformDown(node));
+    })), tree.modifyNode.bind(null, (function(node) {
+        return (node && transformUp(node));
+    })));
+(optimize = (function(__o2) {
+    var options = __o2["options"],
+        ast = __o2["ast"];
     return ({
         "options": options,
         "ast": tree.node(zipper.root(opt(khepriZipper(ast))))

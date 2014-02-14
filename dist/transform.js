@@ -2,15 +2,24 @@
  * THIS FILE IS AUTO GENERATED from 'lib/transform.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression", "ecma-ast/node",
-    "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause", "khepri-ast/declaration",
-    "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern", "khepri-ast/program", "khepri-ast/statement",
-    "khepri-ast/value", "./package_manager/amd", "./package_manager/node"
-], (function(require, exports, ecma_clause, ecma_declaration, ecma_expression, ecma_node, ecma_program,
+define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression",
+    "ecma-ast/node", "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause",
+    "khepri-ast/declaration", "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern",
+    "khepri-ast/program", "khepri-ast/statement", "khepri-ast/value", "khepri-ast-zipper", "nu-stream/stream",
+    "neith/tree", "neith/walk", "neith/zipper", "./package_manager/amd", "./package_manager/node"
+], (function(require, exports, record, ecma_clause, ecma_declaration, ecma_expression, ecma_node, ecma_program,
     ecma_statement, ecma_value, khepri_clause, khepri_declaration, khepri_expression, khepri_node,
-    khepri_pattern, khepri_program, khepri_statement, khepri_value, _, _0) {
+    khepri_pattern, khepri_program, khepri_statement, khepri_value, khepri_zipper, stream, tree, __o, zipper, _,
+    _0) {
     "use strict";
     var setUserData = khepri_node["setUserData"],
+        Node = khepri_node["Node"],
+        modify = khepri_node["modify"],
+        foldl = stream["foldl"],
+        from = stream["from"],
+        NIL = stream["NIL"],
+        treeZipper = tree["treeZipper"],
+        preWalk = __o["preWalk"],
         transform, transformStage, concat = Function.prototype.call.bind(Array.prototype.concat),
         reduce = Function.prototype.call.bind(Array.prototype.reduce),
         filter = (function(f, a) {
@@ -20,7 +29,7 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
             return Array.prototype.map.call(a, f);
         }),
         flatten = (function(x) {
-            return (Array.isArray(x) ? reduce(x, (function(p, c, _) {
+            return (Array.isArray(x) ? reduce(x, (function(p, c) {
                 return p.concat(c);
             }), []) : x);
         }),
@@ -32,6 +41,22 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
             }
             return false;
         }),
+        State = record.declare(null, ["node", "packageManager"]),
+        khepriZipper = treeZipper.bind(null, (function(ctx) {
+            return khepri_zipper.getChildren(ctx.node);
+        }), (function(ctx, key) {
+            return ctx.setNode(khepri_zipper.getChild(ctx.node, key));
+        }), (function(ctx, pairs, value) {
+            return ctx.setNode(khepri_zipper.construct(ctx.node, stream.map((function(x) {
+                return tree.Pair(x.key, x.value.node);
+            }), pairs), (function() {
+                var v = value();
+                return reduce(Object.keys(v), (function(p, c) {
+                    (p[c] = v[c].node);
+                    return p;
+                }), ({}));
+            })));
+        })),
         expressionStatement, _transform, packageManager, identifier = (function(loc, name) {
             return ecma_value.Identifier.create(loc, name);
         }),
@@ -61,9 +86,9 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
                         return concat(f(pattern.id, base), flatten(innerPattern(pattern.id, pattern.target,
                             f)));
                     case "ObjectPattern":
-                        return map((function(__o) {
-                            var target = __o["target"],
-                                key = __o["key"];
+                        return map((function(__o0) {
+                            var target = __o0["target"],
+                                key = __o0["key"];
                             return flatten(objectElementUnpack(pattern.ud.id, target, key, f));
                         }), pattern.elements);
                     default:
@@ -75,6 +100,12 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
             var make = variableDeclarator.bind(null, null);
             return (function(pattern, value) {
                 return flatten(innerPattern(value, pattern, make));
+            });
+        })(),
+        unpackAssign = (function() {
+            var make0 = ecma_expression.AssignmentExpression.create.bind(null, null, "=");
+            return (function(pattern, value) {
+                return flatten(innerPattern(value, pattern, make0));
             });
         })(),
         identifierPattern = (function(loc, name) {
@@ -379,6 +410,9 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
     addTransform("Package", (function(node) {
         return packageBlock(node.loc, node.exports, node.body);
     }));
+    var walk = preWalk.bind(null, tree.modifyNode.bind(null, (function(ctx) {
+        return ctx.setNode(_transform(ctx.node));
+    })));
     (_transform = (function(node) {
         if ((!node)) return node;
         if (Array.isArray(node)) return map(_transform, node);
@@ -387,16 +421,17 @@ define(["require", "exports", "ecma-ast/clause", "ecma-ast/declaration", "ecma-a
         if ((!t)) return node;
         return t(node);
     }));
-    (transform = (function(__o) {
-        var options = __o["options"],
-            ast = __o["ast"],
+    (transform = (function(__o0) {
+        var options = __o0["options"],
+            ast = __o0["ast"],
             amd_manager = require("./package_manager/amd"),
             node_manager = require("./package_manager/node");
         (packageManager = amd_manager);
         if ((options.package_manager === "node"))(packageManager = node_manager);
         return ({
             "options": options,
-            "ast": _transform(ast)
+            "ast": tree.node(walk(khepriZipper(State.create(ast, packageManager))))
+                .node
         });
     }));
     (exports.transform = transform);

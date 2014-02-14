@@ -11,16 +11,15 @@ with
     import 'khepri-ast::value' ast_value
 in {
 
-var concat = Function.prototype.call.bind(Array.prototype.concat);
+var concat = Array.prototype.concat.bind([]);
 var map = Function.prototype.call.bind(Array.prototype.map);
-
 
 /* Package Manager
  ******************************************************************************/
 importPackage = \path -> let
     segs = path.split('::')
 in
-    (segs.slice(1)).reduce(
+    segs.slice(1).reduce(
         \p c ->
             ast_expression.MemberExpression.create(null,
                 p,

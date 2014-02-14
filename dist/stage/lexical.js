@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/stage/lexical.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "../lexical"], (function(require, exports, lexical) {
     "use strict";
     var check, builtins = ["Array", "Boolean", "Date", "decodeURI", "decodeURIComponent", "encodeURI",

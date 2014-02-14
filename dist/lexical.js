@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/lexical.kep'
- * DO NOT EDIT
-*/
 define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value",
     "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "bes/object", "./scope"
 ], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, object,
@@ -95,20 +91,16 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         }),
         modifyScope = (function(f) {
             return (function(s, ok, err) {
-                return (function() {
-                    var scope = f(s.scope),
-                        newState = State.setScope(s, scope);
-                    return ok(scope, newState);
-                })();
+                var scope = f(s.scope),
+                    newState = State.setScope(s, scope);
+                return ok(scope, newState);
             });
         }),
         modifyRealScope = (function(f) {
             return (function(s, ok, err) {
-                return (function() {
-                    var scope = f(s.realScope),
-                        newState = State.setRealScope(s, scope);
-                    return ok(scope, newState);
-                })();
+                var scope = f(s.realScope),
+                    newState = State.setRealScope(s, scope);
+                return ok(scope, newState);
             });
         }),
         setScope = (function(s) {
@@ -169,11 +161,9 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         }),
         hasFreeBinding = (function(id, loc) {
             return seq(hasBinding(id, loc), examineScope((function(s) {
-                return (function() {
-                    var current = s.getBinding(id);
-                    return (current.reserved ? error(((("Undeclared identifier:'" + id) +
-                        "' at:") + loc)) : pass);
-                })();
+                var current = s.getBinding(id);
+                return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") +
+                    loc)) : pass);
             })));
         }),
         checkCanAssign = (function(id, loc) {
@@ -377,19 +367,17 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("ArgumentsPattern", seq(checkChild("id"), checkChild("elements"), checkChild("self")));
     addCheck("ObjectValue", checkChild("value"));
     addCheck("Identifier", inspect((function(node) {
-        return (function() {
-            var name = node.name;
-            return examineScope((function(s) {
-                return (s.hasMapping(name) ? (function() {
-                    var mappedName = s.getMapping(name);
-                    return seq(modifyNode((function(x) {
-                        return ast_node.modify(x, ({}), ({
-                            "name": mappedName
-                        }));
-                    })), hasFreeBinding(mappedName, node.loc));
-                })() : hasFreeBinding(name, node.loc));
-            }));
-        })();
+        var name = node.name;
+        return examineScope((function(s) {
+            return (s.hasMapping(name) ? (function() {
+                var mappedName = s.getMapping(name);
+                return seq(modifyNode((function(x) {
+                    return ast_node.modify(x, ({}), ({
+                        "name": mappedName
+                    }));
+                })), hasFreeBinding(mappedName, node.loc));
+            })() : hasFreeBinding(name, node.loc));
+        }));
     })));
     (_check = (function(node) {
         if (Array.isArray(node)) {
