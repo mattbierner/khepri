@@ -60,7 +60,7 @@ var ok = (function(x) {
     seqa = (function(arr) {
         return reduceRight(arr, (function(p, c) {
             return next(c, p);
-        }), ok());
+        }));
     }),
     seq = (function() {
         var args = arguments;
@@ -132,13 +132,6 @@ var ok = (function(x) {
             return (s.hasBinding(id) ? pass : error(((("Undeclared identifier:'" + id) + "' at:") + loc)));
         }));
     }),
-    hasFreeBinding = (function(id, loc) {
-        return seq(hasBinding(id, loc), examineScope((function(s) {
-            var current = s.getBinding(id);
-            return (current.reserved ? error(((("Undeclared identifier:'" + id) + "' at:") + loc)) :
-                pass);
-        })));
-    }),
     checkCanAssign = (function(id, loc) {
         return examineScope((function(s) {
             return (s.hasBinding(id) ? (function() {
@@ -166,7 +159,7 @@ var ok = (function(x) {
         })), addUid(id));
     }),
     addMutableBindingChecked = (function(id, loc) {
-        return seq(checkCanAddOwnBinding(id, loc), addMutableBindingChecked(id, loc));
+        return seq(checkCanAddOwnBinding(id, loc), addMutableBinding(id, loc));
     }),
     addImmutableBindingChecked = (function(id, loc) {
         return seq(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
@@ -295,7 +288,7 @@ addCheck("Identifier", inspect((function(node) {
         return setNode(setUserData(node, ({
             "uid": s.getUid(node.name)
         })));
-    })), hasFreeBinding(node.name, node.loc));
+    })), hasBinding(node.name, node.loc));
 })));
 (_check = (function(node) {
     if (Array.isArray(node)) {

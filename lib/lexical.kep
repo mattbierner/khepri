@@ -59,11 +59,11 @@ var error = \x -> \s, _, err -> err(x, s);
 
 var bind = \p f ->
     \s ok err ->
-        new Tail(p, s, \x, s -> f(x)(s, ok, err), err);
+        new Tail(p, s, \x s -> f(x)(s, ok, err), err);
 
 var next = \p n -> bind(p, \_ -> n);
 
-var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
+var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p));
 
 var seq = \args(...) -> seqa(args);
 
@@ -99,11 +99,11 @@ var pass = ok();
  * Create a new lexical block for body.
  */
 var block = \body(...) ->
-    examineScope(\s ->
+    examineScope <|\ s ->
         seq(
             setScope(new Scope({}, s, {}, s.definitions)),
             seqa(body),
-            setScope(s)));
+            setScope(s));
 
 /**
  * Test to see if the current scope already contains a binding for id.
@@ -127,18 +127,6 @@ var hasBinding = \id, loc ->
         ?s.hasBinding(id)
             :pass
             :error("Undeclared identifier:'" + id + "' at:" + loc);
-
-/**
- * 
- */
-var hasFreeBinding = \id, loc ->
-    seq(
-        hasBinding(id, loc),
-        examineScope <|\ s ->
-            let current = s.getBinding(id) in
-                ?current.reserved
-                    :error("Undeclared identifier:'" + id + "' at:" + loc)
-                    :pass);
 
 /**
  * 
@@ -177,13 +165,13 @@ var addImmutableBinding = \id, loc ->
          addUid(id));
 
 /**
- * Add a new mutable binding in the current scope
+ * Add a new mutable binding in the current scope.
  * Checks to make sure the new binding is valid.
  */
 var addMutableBindingChecked = \id, loc ->
     seq(
         checkCanAddOwnBinding(id, loc),
-        addMutableBindingChecked(id, loc));
+        addMutableBinding(id, loc));
 
 
 /**
@@ -502,7 +490,7 @@ addCheck@'Identifier' <|
         seq(
             examineScope <|\ s ->
                  setNode <| setUserData(node, {'uid': s.getUid(node.name)}),
-            hasFreeBinding(node.name, node.loc));
+            hasBinding(node.name, node.loc));
 
 /*
  ******************************************************************************/
