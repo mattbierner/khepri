@@ -110,28 +110,12 @@ var ok = (function(x) {
         return ok(s.unique, s.setUnique((s.unique + 1)));
     }),
     pass = ok(),
-    registerVar = (function(name) {
-        return bind(examineState((function(s) {
-            return ok(s.unique);
-        })), (function(uid) {
-            return seq(modifyState((function(s) {
-                return s.setUnique((uid + 1));
-            })), ok(uid));
-        }));
-    }),
     block = (function() {
         var body = arguments;
         return examineScope((function(s) {
-            return seq(setScope(new(Scope)(({}), s, s.mapping, s.definitions)), seqa(body), setScope(s));
+            return seq(setScope(new(Scope)(({}), s, ({}), s.definitions)), seqa(body), setScope(s));
         }));
     }),
-    emptyBlock = (function() {
-        var body = arguments;
-        return examineScope((function(s) {
-            return seq(setScope(new(Scope)(({}), s, ({}), ({}))), seqa(body), setScope(s));
-        }));
-    }),
-    realBlock = emptyBlock,
     checkCanAddOwnBinding = (function(id, loc) {
         return examineScope((function(s) {
             return ((!s.hasOwnBinding(id)) ? pass : (function() {
@@ -181,13 +165,10 @@ var ok = (function(x) {
             return Scope.addImmutableBinding(s, id, loc);
         })), addUid(id));
     }),
-    addUniqueMutableBinding = (function(id, loc) {
-        return seq(checkCanAddOwnBinding(id, loc), addMutableBinding(id, loc));
-    }),
     addMutableBindingChecked = (function(id, loc) {
-        return seq(checkCanAddOwnBinding(id, loc), addUniqueMutableBinding(id, loc));
+        return seq(checkCanAddOwnBinding(id, loc), addMutableBindingChecked(id, loc));
     }),
-    addUnusedImmutableBinding = (function(id, loc) {
+    addImmutableBindingChecked = (function(id, loc) {
         return seq(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
     }),
     _check, child = (function(f, edge) {
@@ -227,18 +208,18 @@ addCheck("PackageExports", checkChild("exports"));
 addCheck("PackageExport", inspect((function(node) {
     return addMutableBindingChecked(node.id.name, node.loc);
 })));
-addCheck("Package", seq(addUnusedImmutableBinding("require", null), addUnusedImmutableBinding("exports", null),
-    addUnusedImmutableBinding("module", null), checkChild("exports"), inspect((function(node) {
+addCheck("Package", seq(addImmutableBindingChecked("require", null), addImmutableBindingChecked("exports", null),
+    addImmutableBindingChecked("module", null), checkChild("exports"), inspect((function(node) {
         return ((node.body.type === "WithStatement") ? child(seq(checkChild("bindings"), child(checkChild(
             "body"), "body")), "body") : child(checkChild("body"), "body"));
     }))));
 addCheck("SwitchCase", seq(checkChild("test"), checkChild("consequent")));
 addCheck("CatchClause", block(inspect((function(node) {
-    return addUnusedImmutableBinding(node.param.name, node.param.loc);
+    return addImmutableBindingChecked(node.param.name, node.param.loc);
 })), checkChild("param"), child(checkChild("body"), "body")));
 addCheck(["StaticDeclaration", "VariableDeclaration"], checkChild("declarations"));
 addCheck("StaticDeclarator", inspect((function(node) {
-    return addUnusedImmutableBinding(node.id.name, node.loc);
+    return addImmutableBindingChecked(node.id.name, node.loc);
 })));
 addCheck("VariableDeclarator", seq(inspect((function(node) {
     return addMutableBindingChecked(node.id.name, node.loc);
@@ -254,7 +235,7 @@ addCheck("TryStatement", seq(checkChild("block"), block(checkChild("handler")), 
 addCheck("WhileStatement", seq(checkChild("test"), block(checkChild("body"))));
 addCheck("DoWhileStatement", seq(block(checkChild("body")), checkChild("test")));
 addCheck("ForStatement", block(checkChild("init"), checkChild("test"), checkChild("update"), block(checkChild("body"))));
-addCheck("FunctionExpression", realBlock(inspect((function(node) {
+addCheck("FunctionExpression", block(inspect((function(node) {
     return (node.id ? addImmutableBinding(node.id.name, node.loc) : pass);
 })), checkChild("params"), inspect((function(node) {
     return ((node.body.type === "BlockStatement") ? child(checkChild("body"), "body") : checkChild(
@@ -281,7 +262,7 @@ addCheck("SinkPattern", bind(unique, (function(uid) {
 })));
 addCheck("IdentifierPattern", inspect((function(node) {
     return (node.reserved ? seq(addImmutableBinding(node.id.name, node.loc), checkChild("id")) : seq(
-        addUnusedImmutableBinding(node.id.name, node.loc), checkChild("id")));
+        addImmutableBindingChecked(node.id.name, node.loc), checkChild("id")));
 })));
 addCheck("ImportPattern", checkChild("pattern"));
 addCheck("AsPattern", seq(checkChild("id"), inspect((function(node) {

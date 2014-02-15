@@ -95,36 +95,15 @@ var unique = \s, ok, err -> ok(s.unique, s.setUnique(s.unique + 1));
  ******************************************************************************/
 var pass = ok();
 
-var registerVar = \name ->
-    bind(examineState(\s -> ok(s.unique)), \uid ->
-        seq(
-            modifyState(\s -> s.setUnique(uid + 1)),
-            ok(uid)));
-
 /**
  * Create a new lexical block for body.
  */
 var block = \body(...) ->
     examineScope(\s ->
         seq(
-            setScope(new Scope({}, s, s.mapping, s.definitions)),
+            setScope(new Scope({}, s, {}, s.definitions)),
             seqa(body),
             setScope(s)));
-    
-/**
- * Create a new lexical block for body.
- */
-var emptyBlock = \body(...) ->
-    examineScope(\s ->
-        seq(
-            setScope(new Scope({}, s, {}, {})),
-            seqa(body),
-            setScope(s)));
-
-/**
- * Create a new lexical block for body.
- */
-var realBlock = emptyBlock;
 
 /**
  * Test to see if the current scope already contains a binding for id.
@@ -180,7 +159,8 @@ var addUid  = \id ->
     bind(unique, \uid -> modifyScope(\s -> Scope.addUid(s, id, uid)));
 
 /**
- * Adds a new mutable binding in the current scope. Does not perform any checks.
+ * Add a new mutable binding in the current scope.
+ * Does not perform any checks.
  */
 var addMutableBinding = \id, loc -> 
     seq(
@@ -188,7 +168,8 @@ var addMutableBinding = \id, loc ->
          addUid(id));
 
 /**
- * Adds a new immutable binding in the current scope. Does not perform any checks.
+ * Adds a new immutable binding in the current scope.
+ * Does not perform any checks.
  */
 var addImmutableBinding = \id, loc -> 
     seq(
@@ -196,19 +177,20 @@ var addImmutableBinding = \id, loc ->
          addUid(id));
 
 /**
- * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
+ * Add a new mutable binding in the current scope
+ * Checks to make sure the new binding is valid.
  */
-var addUniqueMutableBinding = \id, loc ->
-    seq(
-        checkCanAddOwnBinding(id, loc),
-        addMutableBinding(id, loc));
-
 var addMutableBindingChecked = \id, loc ->
     seq(
         checkCanAddOwnBinding(id, loc),
-        addUniqueMutableBinding(id, loc));
+        addMutableBindingChecked(id, loc));
 
-var addUnusedImmutableBinding = \id, loc ->
+
+/**
+ * Add a new immutable binding in the current scope.
+ * Checks to make sure the new binding is valid.
+ */
+var addImmutableBindingChecked = \id, loc ->
     seq(
         checkCanAddOwnBinding(id, loc),
         addImmutableBinding(id, loc));
@@ -274,9 +256,9 @@ addCheck@'PackageExport' <|
 
 addCheck@'Package' <|
     seq(
-        addUnusedImmutableBinding('require', null),
-        addUnusedImmutableBinding('exports', null),
-        addUnusedImmutableBinding('module', null),
+        addImmutableBindingChecked('require', null),
+        addImmutableBindingChecked('exports', null),
+        addImmutableBindingChecked('module', null),
         checkChild 'exports',
         inspect <|\ node ->
             ?node.body.type === 'WithStatement'
@@ -296,7 +278,7 @@ addCheck@'SwitchCase' <|
 addCheck@'CatchClause' <|
     block(
         inspect <|\ node ->
-            addUnusedImmutableBinding(node.param.name, node.param.loc),
+            addImmutableBindingChecked(node.param.name, node.param.loc),
         checkChild 'param',
         child(
             checkChild 'body',
@@ -308,7 +290,7 @@ addCheck@['StaticDeclaration', 'VariableDeclaration'] <|
 
 addCheck@'StaticDeclarator' <|
     inspect <|\ node ->
-        addUnusedImmutableBinding(node.id.name, node.loc);
+        addImmutableBindingChecked(node.id.name, node.loc);
     
 addCheck@'VariableDeclarator' <|
     seq(
@@ -381,7 +363,7 @@ addCheck@'ForStatement' <|
 
 // Expression
 addCheck@'FunctionExpression' <|
-    realBlock(
+    block(
          inspect <|\ node ->
              ?node.id
                  :addImmutableBinding(node.id.name, node.loc)
@@ -459,7 +441,7 @@ addCheck@'IdentifierPattern' <|
                 addImmutableBinding(node.id.name, node.loc),
                 checkChild 'id')
             :seq(
-                addUnusedImmutableBinding(node.id.name, node.loc),
+                addImmutableBindingChecked(node.id.name, node.loc),
                 checkChild 'id');
     
 addCheck@'ImportPattern' <|
@@ -487,7 +469,11 @@ addCheck@['ObjectPattern', 'ArrayPattern'] <|
                         setUserData(
                             ast_value.Identifier.create(null, '__o'),
                             {'uid': uid}));
-                    id.reserved = true;//TODO: hack
+                    
+                    //TODO: Hack. Tells later check not to complain if '__0' is not unique
+                    // but this doesn't matter since the uid is unique.
+                    id.reserved = true;
+                    
                     return seq(
                         setNode(ast_pattern.AsPattern.create(null, id, node)),
                         checkTop);
