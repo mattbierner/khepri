@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/scope.kep'
+ * DO NOT EDIT
+*/
 "use strict";
 var __o = require("bes")["object"],
     setProperty = __o["setProperty"],
@@ -35,7 +39,7 @@ var __o = require("bes")["object"],
 }));
 (Scope.prototype.getUnusedId = (function(id) {
     var self = this;
-    if ((!self.hasBinding(id))) return id;
+    if ((!self.hasOwnBinding(id))) return id;
     for (var i = 0;;
         (i = (i + 1)))
         if ((!self.hasBinding((id + i)))) return (id + i);

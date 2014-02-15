@@ -40,7 +40,7 @@ define(["require", "exports", "bes/object", "bes/record"], (function(require, ex
     }));
     (Scope.prototype.getUnusedId = (function(id) {
         var self = this;
-        if ((!self.hasBinding(id))) return id;
+        if ((!self.hasOwnBinding(id))) return id;
         for (var i = 0;;
             (i = (i + 1)))
             if ((!self.hasBinding((id + i)))) return (id + i);

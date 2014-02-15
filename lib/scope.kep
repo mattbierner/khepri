@@ -80,7 +80,7 @@ Scope.prototype.getMapping = \id =self->
  * Get an unused identifier in this scope.
  */
 Scope.prototype.getUnusedId = \id =self-> {
-    if (!self.hasBinding(id))
+    if (!self.hasOwnBinding(id))
         return id;
     for (var i = 0; ; i = i + 1)
         if (!self.hasBinding(id + i))

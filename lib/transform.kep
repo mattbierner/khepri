@@ -48,6 +48,13 @@ var flatten = \x ->
         :reduce(x, \p, c -> p.concat(c), [])
         :x;
 
+
+/* Forward
+ ******************************************************************************/
+var _transform = \args(...) -> _transform.apply(null, args);
+
+/* Ast
+ ******************************************************************************/
 /**
  * Is an array of source elements strict code?
  */
@@ -111,7 +118,7 @@ var move = \op ->
         s.setCtx(op(s.ctx)));
 
 var modify = \f ->
-    move(tree.modifyNode @ f);
+    move tree.modifyNode@f;
 
 var ctx = examineState(\s ->
     ok(s.ctx));
@@ -119,23 +126,19 @@ var ctx = examineState(\s ->
 var get = \op ->
     examineState(\s ->
         ok(op(s.ctx)));
-    
+
 var node = get tree.node;
 
-/*
-var enterBlock = examineScope(\s ->
-    setScope(new scope.Scope({}, s, {}, {})));
+var enterBlock = examineScope \s ->
+    setScope(new scope.Scope({}, s, {}, {}));
 
-var exitBlock = examineScope(\s ->
-    setScope(s.parent));
-*/
-
-
+var exitBlock = examineScope \s ->
+    setScope(s.outer);
 
 var addVar = \id uid ->
     examineScope(\s ->
-        ?s.hasMapping(uid)
-            :id
+        ?s.hasOwnMapping(uid)
+            :pass
             :let name = s.getUnusedId(id) in
                 setScope(scope.Scope.addMapping(
                     scope.Scope.addMutableBinding(s, name),
@@ -143,13 +146,8 @@ var addVar = \id uid ->
                     name)));
 
 var getMapping = \uid ->
-    \ctx ->
-        tree.node(ctx).scope.getMapping(uid);
-
-        
-/* Forward
- ******************************************************************************/
-var _transform = \args(...) -> _transform.apply(null, args);
+    examineScope \ s ->
+        ok(s.getMapping(uid));
 
 /* Values
  ******************************************************************************/
@@ -717,16 +715,20 @@ addTransform('TernaryOperatorExpression',
         _transform));
 
 addTransform('FunctionExpression',
-    modify \node ->
-        functionExpression(node.loc,
-            node.id,
-            node.params,
-            node.body),
-    modify \node ->
-        ecma_expression.FunctionExpression.create(null,
-            node.id,
-            node.params,
-            node.body));
+    seq(
+        enterBlock,
+        modify \node ->
+            functionExpression(node.loc,
+                node.id,
+                node.params,
+                node.body)),
+    seq(
+        exitBlock,
+        modify \node ->
+            ecma_expression.FunctionExpression.create(null,
+                node.id,
+                node.params,
+                node.body)));
 
 addTransform('ArrayExpression',
     null,
@@ -793,11 +795,13 @@ addTransform('Package',
 
 // Value
 addTransform('Identifier',
-    modify \node ->
-        identifier(null, node.name));
+    bind(node, \node ->
+        next(
+            addVar(node.name, node.ud.uid),
+            bind(getMapping(node.ud.uid), \name ->
+                modify \node -> identifier(node.loc, name)))));
 
 /*
- * 
  *****************************************************************************/
 var _trans = \node -> {
     if (node && node instanceof khepri_node.Node) {
@@ -844,8 +848,7 @@ var walk = \pre post ->
         return next(move zipper.down, walk(pre, post));
     }));
 
-/*
- * 
+/* API
  *****************************************************************************/
 /**
  * 

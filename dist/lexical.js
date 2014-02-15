@@ -25,7 +25,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             while ((value instanceof Tail))(value = value.f(value.s, value.ok, value.err));
             return value;
         }),
-        State = record.declare(null, ["ctx", "realScope", "scope", "vars", "unique"]);
+        State = record.declare(null, ["ctx", "scope", "vars", "unique"]);
     (State.addVar = (function(s, id, v) {
         return s.setVars(object.setProperty(s.vars, id, v, true));
     }));
@@ -88,11 +88,6 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                 return f(s.scope);
             }));
         }),
-        examineRealScope = (function(f) {
-            return bind(extract, (function(s) {
-                return f(s.realScope);
-            }));
-        }),
         modifyScope = (function(f) {
             return (function(s, ok, err) {
                 var scope = f(s.scope),
@@ -100,20 +95,8 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                 return ok(scope, newState);
             });
         }),
-        modifyRealScope = (function(f) {
-            return (function(s, ok, err) {
-                var scope = f(s.realScope),
-                    newState = State.setRealScope(s, scope);
-                return ok(scope, newState);
-            });
-        }),
         setScope = (function(s) {
             return modifyScope((function() {
-                return s;
-            }));
-        }),
-        setRealScope = (function(s) {
-            return modifyRealScope((function() {
                 return s;
             }));
         }),
@@ -143,13 +126,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                 return seq(setScope(new(Scope)(({}), s, ({}), ({}))), seqa(body), setScope(s));
             }));
         }),
-        realBlock = (function() {
-            var body = arguments;
-            return examineRealScope((function(s) {
-                return seq(setRealScope(new(Scope)(({}), s, ({}), ({}))), emptyBlock.apply(
-                    undefined, body), setRealScope(s));
-            }));
-        }),
+        realBlock = emptyBlock,
         checkCanAddOwnBinding = (function(id, loc) {
             return examineScope((function(s) {
                 return ((!s.hasOwnBinding(id)) ? pass : (function() {
@@ -183,16 +160,6 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                 })() : pass);
             }));
         }),
-        getUnusedId = (function(id, loc) {
-            return examineRealScope((function(s) {
-                return ok((s.hasOwnBinding(id) ? s.getUnusedId(id) : id));
-            }));
-        }),
-        addMapping = (function(id, newId) {
-            return modifyScope((function(s) {
-                return Scope.addMapping(s, id, newId);
-            }));
-        }),
         addUid = (function(id) {
             return bind(unique, (function(uid) {
                 return modifyScope((function(s) {
@@ -203,25 +170,15 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         addMutableBinding = (function(id, loc) {
             return seq(modifyScope((function(s) {
                 return Scope.addMutableBinding(s, id, loc);
-            })), modifyRealScope((function(s) {
-                return Scope.addMutableBinding(s, id, loc);
-            })), addUid(id), addMapping(id, id));
+            })), addUid(id));
         }),
         addImmutableBinding = (function(id, loc) {
             return seq(modifyScope((function(s) {
                 return Scope.addImmutableBinding(s, id, loc);
-            })), modifyRealScope((function(s) {
-                return Scope.addImmutableBinding(s, id, loc);
-            })), addUid(id), addMapping(id, id));
+            })), addUid(id));
         }),
         addUniqueMutableBinding = (function(id, loc) {
-            return seq(checkCanAddOwnBinding(id, loc), examineRealScope((function(s) {
-                return (s.hasOwnBinding(id) ? (function() {
-                    var new_id = s.getUnusedId(id);
-                    return seq(addMutableBinding(id, loc), addMutableBinding(new_id,
-                        loc), addMapping(id, new_id));
-                })() : addMutableBinding(id, loc));
-            })));
+            return seq(checkCanAddOwnBinding(id, loc), addMutableBinding(id, loc));
         }),
         addMutableBindingChecked = (function(id, loc) {
             return seq(checkCanAddOwnBinding(id, loc), addUniqueMutableBinding(id, loc));
@@ -230,23 +187,15 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             return seq(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
         }),
         addUnusedImmutableBinding = (function(id, loc) {
-            return examineRealScope((function(s) {
-                return (s.hasOwnBinding(id) ? (function() {
-                    var new_id = s.getUnusedId(id);
-                    return seq(addImmutableBinding(id, loc), addImmutableBinding(new_id,
-                        loc), addMapping(id, new_id));
-                })() : addImmutableBindingChecked(id, loc));
-            }));
+            return addImmutableBindingChecked(id, loc);
         }),
         addUniqueImmutableBinding = (function(id, loc) {
             return seq(checkCanAddOwnBinding(id, loc), addUnusedImmutableBinding(id, loc));
         }),
         addReservedBinding = (function(id, loc) {
-            return seq(modifyScope((function(s) {
+            return modifyScope((function(s) {
                 return Scope.addReservedBinding(s, id, loc);
-            })), modifyRealScope((function(s) {
-                return Scope.addReservedBinding(s, id, loc);
-            })), addMapping(id, id));
+            }));
         }),
         _check, child = (function(f, edge) {
             return seq(move(tree.child.bind(null, edge)), f, move(zipper.up));
@@ -337,14 +286,9 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("ObjectExpression", checkChild("properties"));
     addCheck("LetExpression", block(checkChild("bindings"), checkChild("body")));
     addCheck("CurryExpression", seq(checkChild("base"), checkChild("args")));
-    addCheck("SinkPattern", bind(getUnusedId("_"), (function(x) {
-        return seq(modifyNode((function(node) {
-            var n = setUserData(node, (node.ud || ({}))),
-                id = ast_value.Identifier.create(null, x);
-            (n.ud.id = id);
-            return n;
-        })), inspect((function(node) {
-            return addReservedBinding(x, node.loc);
+    addCheck("SinkPattern", bind(unique, (function(uid) {
+        return setNode(setUserData(ast_value.Identifier.create(null, "_"), ({
+            "uid": uid
         })));
     })));
     addCheck("IdentifierPattern", inspect((function(node) {
@@ -367,13 +311,14 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck(["ObjectPattern", "ArrayPattern"], inspect((function(node) {
         return examineScope((function(s) {
             if (((!node.ud) || (!node.ud.id))) {
-                var unused = s.getUnusedId("__o"),
-                    id = ast_pattern.IdentifierPattern.create(node.loc, ast_value.Identifier
-                        .create(null, unused));
-                (id.reserved = true);
-                var n = setUserData(node, (node.ud || ({})));
-                (n.ud.id = id);
-                return seq(setNode(ast_pattern.AsPattern.create(null, id, node)), checkTop);
+                return bind(unique, (function(uid) {
+                    var id = ast_pattern.IdentifierPattern.create(node.loc,
+                        setUserData(ast_value.Identifier.create(null, "__o"), ({
+                            "uid": uid
+                        })));
+                    return seq(setNode(ast_pattern.AsPattern.create(null, id, node)),
+                        checkTop);
+                }));
             }
             return checkChild("elements");
         }));
@@ -382,19 +327,11 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("ArgumentsPattern", seq(checkChild("id"), checkChild("elements"), checkChild("self")));
     addCheck("ObjectValue", checkChild("value"));
     addCheck("Identifier", inspect((function(node) {
-        var name = node.name;
-        return examineScope((function(s) {
-            return (s.hasMapping(name) ? (function() {
-                var mappedName = s.getMapping(name);
-                return seq(modifyNode((function(x) {
-                    return setUserData(ast_node.modify(x, ({}), ({
-                        "name": mappedName
-                    })), ({
-                        "uid": s.getUid(name)
-                    }));
-                })), hasFreeBinding(mappedName, node.loc));
-            })() : hasFreeBinding(name, node.loc));
-        }));
+        return seq(examineScope((function(s) {
+            return setNode(setUserData(node, ({
+                "uid": s.getUid(node.name)
+            })));
+        })), hasFreeBinding(node.name, node.loc));
     })));
     (_check = (function(node) {
         if (Array.isArray(node)) {
@@ -408,7 +345,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     }));
     var checkAst = (function(ast, globals) {
         var scope = reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
-            state = new(State)(khepriZipper(ast), scope, scope, ({}), 0);
+            state = new(State)(khepriZipper(ast), scope, ({}), 0);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));
         }), (function(err, s) {

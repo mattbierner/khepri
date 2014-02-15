@@ -38,6 +38,10 @@ var record = require("bes")["record"],
             return p.concat(c);
         }), []) : x);
     }),
+    _transform = (function() {
+        var args = arguments;
+        return _transform.apply(null, args);
+    }),
     isStrict = (function(elems) {
         if (((elems && elems.length) && (elems[0].type === "ExpressionStatement"))) {
             var first = elems[0].expression;
@@ -135,9 +139,15 @@ var ok = (function(x) {
         }));
     }),
     node = get(tree.node),
+    enterBlock = examineScope((function(s) {
+        return setScope(new(scope.Scope)(({}), s, ({}), ({})));
+    })),
+    exitBlock = examineScope((function(s) {
+        return setScope(s.outer);
+    })),
     addVar = (function(id, uid) {
         return examineScope((function(s) {
-            return (s.hasMapping(uid) ? id : (function() {
+            return (s.hasOwnMapping(uid) ? pass : (function() {
                 var name = s.getUnusedId(id);
                 return setScope(scope.Scope.addMapping(scope.Scope.addMutableBinding(s, name), uid,
                     name));
@@ -145,14 +155,9 @@ var ok = (function(x) {
         }));
     }),
     getMapping = (function(uid) {
-        return (function(ctx) {
-            return tree.node(ctx)
-                .scope.getMapping(uid);
-        });
-    }),
-    _transform = (function() {
-        var args = arguments;
-        return _transform.apply(null, args);
+        return examineScope((function(s) {
+            return ok(s.getMapping(uid));
+        }));
     }),
     identifier = (function(loc, name) {
         return ecma_value.Identifier.create(loc, name);
@@ -439,11 +444,11 @@ addTransform("BinaryOperatorExpression", next(modify((function(node) {
 addTransform("TernaryOperatorExpression", next(modify((function(node) {
     return ternaryOperatorExpression(node.loc);
 })), _transform));
-addTransform("FunctionExpression", modify((function(node) {
+addTransform("FunctionExpression", seq(enterBlock, modify((function(node) {
     return functionExpression(node.loc, node.id, node.params, node.body);
-})), modify((function(node) {
+}))), seq(exitBlock, modify((function(node) {
     return ecma_expression.FunctionExpression.create(null, node.id, node.params, node.body);
-})));
+}))));
 addTransform("ArrayExpression", null, modify((function(node) {
     return ecma_expression.ArrayExpression.create(node.loc, node.elements);
 })));
@@ -479,8 +484,12 @@ addTransform("Package", bind(packageManager, (function(packageManager) {
         return packageBlock(packageManager, node.loc, node.exports, node.body);
     }));
 })));
-addTransform("Identifier", modify((function(node) {
-    return identifier(null, node.name);
+addTransform("Identifier", bind(node, (function(node) {
+    return next(addVar(node.name, node.ud.uid), bind(getMapping(node.ud.uid), (function(name) {
+        return modify((function(node) {
+            return identifier(node.loc, name);
+        }));
+    })));
 })));
 var _trans = (function(node) {
     if ((node && (node instanceof khepri_node.Node))) {

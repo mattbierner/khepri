@@ -44,7 +44,6 @@ var trampoline = \f -> {
  ******************************************************************************/
 var State = record.declare(null, [
     'ctx',
-    'realScope',
     'scope',
     'vars',
     'unique']);
@@ -82,23 +81,13 @@ var move = \op ->
 
 var examineScope = \f -> bind(extract, \s -> f(s.scope));
 
-var examineRealScope = \f -> bind(extract, \s -> f(s.realScope));
-
 var modifyScope = \f ->
     \s, ok, err -> let
         scope = f(s.scope),
         newState = State.setScope(s, scope)
     in ok(scope, newState);
 
-var modifyRealScope = \f ->
-    \s, ok, err -> let
-        scope = f(s.realScope),
-        newState = State.setRealScope(s, scope)
-    in ok(scope, newState);
-
 var setScope = \s -> modifyScope(\() -> s);
-
-var setRealScope = \s -> modifyRealScope(\() -> s);
 
 var unique = \s, ok, err -> ok(s.unique, s.setUnique(s.unique + 1));
 
@@ -135,12 +124,7 @@ var emptyBlock = \body(...) ->
 /**
  * Create a new lexical block for body.
  */
-var realBlock = \body(...) ->
-    examineRealScope(\s ->
-        seq(
-            setRealScope(new Scope({}, s, {}, {})),
-            emptyBlock.apply(undefined, body),
-            setRealScope(s)));
+var realBlock = emptyBlock;
 
 /**
  * Test to see if the current scope already contains a binding for id.
@@ -192,33 +176,16 @@ var checkCanAssign = \id, loc ->
 /**
  * 
  */
-var getUnusedId = \id, loc -> 
-    examineRealScope <|\ s ->
-        ok(?s.hasOwnBinding(id)
-            :s.getUnusedId(id)
-            :id);
-
-/**
- * 
- */
-var addMapping = \id, newId ->
-    modifyScope(\s -> Scope.addMapping(s, id, newId));
-
-/**
- * 
- */
 var addUid  = \id ->
     bind(unique, \uid -> modifyScope(\s -> Scope.addUid(s, id, uid)));
-    
+
 /**
  * Adds a new mutable binding in the current scope. Does not perform any checks.
  */
 var addMutableBinding = \id, loc -> 
     seq(
          modifyScope(\s -> Scope.addMutableBinding(s, id, loc)),
-         modifyRealScope(\s -> Scope.addMutableBinding(s, id, loc)),
-         addUid(id),
-         addMapping(id, id));
+         addUid(id));
 
 /**
  * Adds a new immutable binding in the current scope. Does not perform any checks.
@@ -226,9 +193,7 @@ var addMutableBinding = \id, loc ->
 var addImmutableBinding = \id, loc -> 
     seq(
          modifyScope(\s -> Scope.addImmutableBinding(s, id, loc)),
-         modifyRealScope(\s -> Scope.addImmutableBinding(s, id, loc)),
-         addUid(id),
-         addMapping(id, id));
+         addUid(id));
 
 /**
  * Adds a new, and unique, mutable binding in the current scope. Does not perform any checks.
@@ -236,14 +201,7 @@ var addImmutableBinding = \id, loc ->
 var addUniqueMutableBinding = \id, loc ->
     seq(
         checkCanAddOwnBinding(id, loc),
-        examineRealScope <|\ s ->
-            ?s.hasOwnBinding(id)
-                :let new_id = s.getUnusedId(id) in
-                    seq(
-                         addMutableBinding(id, loc),
-                         addMutableBinding(new_id, loc),
-                         addMapping(id, new_id))
-                :addMutableBinding(id, loc));
+        addMutableBinding(id, loc));
 
 /**
  * 
@@ -259,14 +217,7 @@ var addImmutableBindingChecked = \id, loc ->
         addImmutableBinding(id, loc));
 
 var addUnusedImmutableBinding = \id, loc ->
-    examineRealScope <|\ s ->
-        ?s.hasOwnBinding(id)
-            :let new_id = s.getUnusedId(id) in
-                seq(
-                    addImmutableBinding(id, loc),
-                    addImmutableBinding(new_id, loc),
-                    addMapping(id, new_id))
-            :addImmutableBindingChecked(id, loc);
+    addImmutableBindingChecked(id, loc);
 
 var addUniqueImmutableBinding = \id, loc ->
     seq(
@@ -274,11 +225,8 @@ var addUniqueImmutableBinding = \id, loc ->
         addUnusedImmutableBinding(id, loc));
 
 var addReservedBinding = \id, loc -> 
-    seq(
-         modifyScope(\s -> Scope.addReservedBinding(s, id, loc)),
-         modifyRealScope(\s -> Scope.addReservedBinding(s, id, loc)),
-         addMapping(id, id));
-    
+    modifyScope(\s -> Scope.addReservedBinding(s, id, loc));
+
 /*
  ******************************************************************************/
 var _check;
@@ -511,16 +459,11 @@ addCheck@'CurryExpression' <|
 
 // Patterns
 addCheck@'SinkPattern'<|
-    bind(
-        getUnusedId('_'),
-        \x -> seq(
-            modifyNode <|\node -> {
-                var n = setUserData(node, node.ud || {});
-                var id = ast_value.Identifier.create(null, x);
-                n.ud.id = id;
-                return n;
-            },
-            inspect <|\ node -> addReservedBinding(x, node.loc)));
+    bind(unique, \uid ->
+        setNode <|
+            setUserData(
+                ast_value.Identifier.create(null, '_'),
+                {'uid': uid}));
 
 addCheck@'IdentifierPattern' <|
     inspect <|\ node -> {
@@ -557,16 +500,16 @@ addCheck@['ObjectPattern', 'ArrayPattern'] <|
     inspect <|\ node -> 
         examineScope(\s -> {
             if (!node.ud || !node.ud.id) {
-                var unused = s.getUnusedId('__o');
-                var id = ast_pattern.IdentifierPattern.create(node.loc,
-                    ast_value.Identifier.create(null, unused));
-                id.reserved = true;
-                
-                var n = setUserData(node, node.ud || {});
-                n.ud.id = id;
-                return seq(
-                    setNode(ast_pattern.AsPattern.create(null, id, node)),
-                    checkTop);
+                return bind(unique, \uid -> {
+                    var id = ast_pattern.IdentifierPattern.create(node.loc,
+                        setUserData(
+                            ast_value.Identifier.create(null, '__o'),
+                            {'uid': uid}));
+
+                    return seq(
+                        setNode(ast_pattern.AsPattern.create(null, id, node)),
+                        checkTop);
+                });
             }
             return checkChild 'elements';
         });
@@ -588,14 +531,10 @@ addCheck@'ObjectValue' <|
 
 addCheck@'Identifier' <|
     inspect <|\ node ->
-        let name = node.name in examineScope <|\ s ->
-            ?s.hasMapping(name)
-                :let mappedName = s.getMapping(name) in
-                    seq(
-                        modifyNode(\x -> 
-                            setUserData(ast_node.modify(x, {}, {'name': mappedName}), {'uid': s.getUid(name)})),
-                        hasFreeBinding(mappedName, node.loc))
-                :hasFreeBinding(name, node.loc);
+        seq(
+            examineScope <|\ s ->
+                 setNode <| setUserData(node, {'uid': s.getUid(node.name)}),
+            hasFreeBinding(node.name, node.loc));
 
 /*
  ******************************************************************************/
@@ -625,7 +564,7 @@ _check = \node -> {
  */
 var checkAst = \ast globals -> {
     var scope = reduce(globals || [], Scope.addImmutableBinding, new Scope({}, null, {}, {}));
-    var state = new State(khepriZipper(ast), scope, scope, {}, 0);
+    var state = new State(khepriZipper(ast), scope, {}, 0);
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };
 
