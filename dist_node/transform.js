@@ -130,6 +130,9 @@ var ok = (function(x) {
     modify = (function(f) {
         return move(tree.modifyNode.bind(null, f));
     }),
+    set = (function(f) {
+        return move(tree.setNode.bind(null, f));
+    }),
     ctx = examineState((function(s) {
         return ok(s.ctx);
     })),
@@ -203,14 +206,22 @@ var ok = (function(x) {
             return ecma_expression.AssignmentExpression.create(null, "=", x.pattern, x.value);
         }), flatten(innerPattern(value, pattern)));
     }),
-    withStatement = (function(packageManager, loc, bindings, body) {
+    withStatementNoImport = (function(loc, bindings, body) {
         var vars = flatten(map((function(imp) {
-            return unpack(imp.pattern, ((imp.type === "ImportPattern") ? packageManager.importPackage(
-                imp.from.value) : imp.value));
+            return unpack(imp.pattern, imp.value);
         }), bindings)),
             prefix = variableDeclaration(null, vars);
         return khepri_statement.BlockStatement.create(loc, concat(prefix, body.body));
     }),
+    withStatement = (function() {
+        var flattenImport = (function(imp) {
+            return ((imp.type === "ImportPattern") ? khepri_declaration.Binding.create(null, imp.pattern,
+                packageManager.importPackage(imp.from.value)) : imp);
+        });
+        return (function(packageManager, loc, bindings, body) {
+            return withStatementNoImport(loc, map(flattenImport.bindings), body);
+        });
+    })(),
     functionExpression = (function(loc, id, parameters, functionBody) {
         var params = filter((function(x) {
             return (x.type !== "EllipsisPattern");
@@ -244,7 +255,7 @@ var ok = (function(x) {
     letExpression = (function(loc, bindings, body) {
         return khepri_expression.CallExpression.create(loc, khepri_expression.FunctionExpression.create(null, null,
             khepri_pattern.ArgumentsPattern.create(null, null, []), khepri_statement.BlockStatement.create(null, [
-                withStatement(null, bindings, khepri_statement.BlockStatement.create(null, [
+                withStatementNoImport(packageManager, bindings, khepri_statement.BlockStatement.create(null, [
                     khepri_statement.ReturnStatement.create(null, body)
                 ]))
             ])), []);
@@ -487,12 +498,8 @@ addTransform("Package", bind(packageManager, (function(packageManager) {
 addTransform("Identifier", bind(node, (function(node) {
     return ((node.ud && node.ud.uid) ? next(addVar(node.name, node.ud.uid), bind(getMapping(node.ud.uid), (
         function(name) {
-            return modify((function(node) {
-                return identifier(node.loc, name);
-            }));
-        }))) : modify((function(node) {
-        return identifier(node.loc, node.name);
-    })));
+            return set(identifier(node.loc, name));
+        }))) : set(identifier(node.loc, node.name)));
 })));
 var _trans = (function(node) {
     if ((node && (node instanceof khepri_node.Node))) {

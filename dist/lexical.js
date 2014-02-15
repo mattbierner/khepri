@@ -340,7 +340,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     }));
     var checkAst = (function(ast, globals) {
         var scope = reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
-            state = new(State)(khepriZipper(ast), scope, ({}), 0);
+            state = new(State)(khepriZipper(ast), scope, ({}), 1);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));
         }), (function(err, s) {

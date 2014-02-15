@@ -120,6 +120,9 @@ var move = \op ->
 var modify = \f ->
     move tree.modifyNode@f;
 
+var set = \f ->
+    move tree.setNode@f;
+
 var ctx = examineState(\s ->
     ok(s.ctx));
 
@@ -226,14 +229,10 @@ var unpackAssign = \pattern, value ->
 /**
  * With statement translation.
  */
-var withStatement = \packageManager, loc, bindings, body -> let
+var withStatementNoImport = \loc, bindings, body -> let
     vars = bindings
         |> (map @ \imp ->
-            unpack(
-                imp.pattern,
-                ?imp.type === 'ImportPattern'
-                    :packageManager.importPackage(imp.from.value)
-                    :imp.value))
+            unpack(imp.pattern, imp.value))
         |> flatten,
     
     prefix = variableDeclaration(null, vars)
@@ -242,6 +241,22 @@ in
         concat(
             prefix,
             body.body));
+
+/**
+ * With statement translation.
+ */
+var withStatement = let
+    flattenImport = \imp ->
+        ?imp.type === 'ImportPattern'
+            :khepri_declaration.Binding.create(null,
+                imp.pattern,
+                packageManager.importPackage(imp.from.value))
+            :imp
+in
+    \packageManager, loc, bindings, body ->
+        withStatementNoImport(loc,
+            map(flattenImport. bindings),
+            body);
 
 /* Expressions
  ******************************************************************************/
@@ -307,21 +322,20 @@ in
  * Let expression normalization.
  */
 var letExpression = \loc, bindings, body ->
-/* ecma_expression.SequenceExpression.create(null,
+    /*ecma_expression.SequenceExpression.create(null,
         concat(
             map(\x -> unpackAssign(x.pattern, x.value), bindings),
-            _transform(body)));
- */
+            body));*/
     khepri_expression.CallExpression.create(loc,
         khepri_expression.FunctionExpression.create(null,
             null,
             khepri_pattern.ArgumentsPattern.create(null, null, []),
             khepri_statement.BlockStatement.create(null, [
-                withStatement(null,
+                withStatementNoImport(packageManager,
                     bindings,
                     khepri_statement.BlockStatement.create(null, [
                         khepri_statement.ReturnStatement.create(null, body)]))])),
-     []);
+        []);
 
 /**
  * 
@@ -800,8 +814,8 @@ addTransform('Identifier',
             :next(
                 addVar(node.name, node.ud.uid),
                 bind(getMapping(node.ud.uid), \name ->
-                    modify \node -> identifier(node.loc, name)))
-            :modify \node -> identifier(node.loc, node.name)));
+                    set <| identifier(node.loc, name)))
+            :set <| identifier(node.loc, node.name)));
 
 /*
  *****************************************************************************/
