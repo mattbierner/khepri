@@ -292,13 +292,8 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         })));
     })));
     addCheck("IdentifierPattern", inspect((function(node) {
-        if (node.reserved) return addReservedBinding(node.id.name, node.loc);
-        return seq(addUniqueImmutableBinding(node.id.name, node.loc), checkChild("id"), modifyNode(
-            (function(node) {
-                var n = setUserData(node, (node.ud || ({})));
-                (n.ud.id = ast_value.Identifier.create(null, node.id.name));
-                return n;
-            })));
+        return (node.reserved ? addReservedBinding(node.id.name, node.loc) : seq(
+            addUniqueImmutableBinding(node.id.name, node.loc), checkChild("id")));
     })));
     addCheck("ImportPattern", checkChild("pattern"));
     addCheck("AsPattern", seq(checkChild("id"), inspect((function(node) {

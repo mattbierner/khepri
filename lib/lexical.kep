@@ -466,19 +466,12 @@ addCheck@'SinkPattern'<|
                 {'uid': uid}));
 
 addCheck@'IdentifierPattern' <|
-    inspect <|\ node -> {
-        if (node.reserved)
-            return addReservedBinding(node.id.name, node.loc);
-        
-        return seq(
-            addUniqueImmutableBinding(node.id.name, node.loc),
-            checkChild 'id',
-            modifyNode(\node ->{
-                var n = setUserData(node, node.ud || {});
-                n.ud.id = ast_value.Identifier.create(null, node.id.name);
-                return n;
-            }));
-    };
+    inspect <|\ node ->
+        ?node.reserved
+            :addReservedBinding(node.id.name, node.loc)
+            :seq(
+                addUniqueImmutableBinding(node.id.name, node.loc),
+                checkChild 'id');
     
 addCheck@'ImportPattern' <|
     checkChild 'pattern';
@@ -505,7 +498,7 @@ addCheck@['ObjectPattern', 'ArrayPattern'] <|
                         setUserData(
                             ast_value.Identifier.create(null, '__o'),
                             {'uid': uid}));
-
+                    
                     return seq(
                         setNode(ast_pattern.AsPattern.create(null, id, node)),
                         checkTop);
