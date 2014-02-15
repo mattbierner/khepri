@@ -16,30 +16,14 @@ with
     
     import 'bes::record' record,
     
-    import './scope' scope#{Scope}
+    import './scope' scope#{Scope},
+    import './tail' {Tail trampoline},
+    import './fun' fun
 in {
-
-var reduce = Function.prototype.call.bind(Array.prototype.reduce);
 
 /* Forward declarations
  ******************************************************************************/
 var _check;
-
-/* Continuation
- ******************************************************************************/
-var Tail = function \f s ok err =self-> {
-    self.f = f;
-    self.s = s;
-    self.ok = ok;
-    self.err = err;
-};
-
-var trampoline = \f -> {
-    var value = f;
-    while (value instanceof Tail)
-        value = value.f(value.s, value.ok, value.err);
-    return value;
-};
 
 /* State
  ******************************************************************************/
@@ -60,7 +44,7 @@ var bind = \p f ->
 
 var next = \p n -> bind(p, \_ -> n);
 
-var seqa = \arr -> reduce(arr, next);
+var seqa = \arr -> fun.reduce(arr, next);
 
 var seq = \args(...) -> seqa(args);
 

@@ -3,23 +3,15 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-ast-zipper", "ecma-ast/node",
-    "ecma-ast/value", "ecma-ast/declaration", "ecma-ast/statement", "ecma-ast/expression"
+    "ecma-ast/value", "ecma-ast/declaration", "ecma-ast/statement", "ecma-ast/expression", "./fun"
 ], (function(require, exports, tree, __o, zipper, __o0, __o1, ast_value, ast_declaration, ast_statement,
-    ast_expression) {
+    ast_expression, fun) {
     "use strict";
     var walk = __o["walk"],
         ecmaZipper = __o0["ecmaZipper"],
         modify = __o1["modify"],
         Node = __o1["Node"],
-        optimize, concat = Array.prototype.concat.bind([]),
-        map = (function(f, x) {
-            return [].map.call(x, f);
-        }),
-        reduce = Function.prototype.call.bind(Array.prototype.reduce),
-        flatten = (function(x) {
-            return (Array.isArray(x) ? Array.prototype.concat.apply([], x.map(flatten)) : x);
-        }),
-        peepholes = ({}),
+        optimize, peepholes = ({}),
         addPeephole = (function(types, up, condition, f) {
             var entry = ({
                 "condition": condition,
@@ -49,7 +41,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-
         return true;
     }), (function(node) {
         return modify(node, ({
-            "body": flatten(node.body.map((function(x) {
+            "body": fun.flatten(node.body.map((function(x) {
                 return ((x && (x.type === "BlockStatement")) ? x.body : x);
             })))
         }), ({}));
@@ -60,9 +52,10 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-
         return modify(node, ({
             "body": node.body.reduceRight((function(p, c) {
                 return (((((c && (c.type === "VariableDeclaration")) && p.length) && p[
-                    0]) && (p[0].type === "VariableDeclaration")) ? concat(modify(c, ({
-                    "declarations": concat(c.declarations, p[0].declarations)
-                }), ({})), p.slice(1)) : concat(c, p));
+                    0]) && (p[0].type === "VariableDeclaration")) ? fun.concat(
+                    modify(c, ({
+                        "declarations": fun.concat(c.declarations, p[0].declarations)
+                    }), ({})), p.slice(1)) : fun.concat(c, p));
             }), [])
         }), ({}));
     }));
@@ -70,7 +63,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-
         return true;
     }), (function(node) {
         return modify(node, ({
-            "body": flatten(node.body.map((function(x) {
+            "body": fun.flatten(node.body.map((function(x) {
                 return (((!x) || (x.type === "EmptyStatement")) ? [] : x);
             })))
         }), ({}));

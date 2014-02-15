@@ -5,8 +5,6 @@
 * Improved lex and transform code.
 ** Identifiers are assigned uids during lexical check instead of changing names.
 ** Transform maps uids to unique real identifiers.
-** This allows safely moving around chunks of code after the lexical check has
-  run and having the correct identifiers still be assigned.
 
 ## 0.13.5 - Feb 4, 2014
 * Fixed let expression in lambda body not converting to with statement.

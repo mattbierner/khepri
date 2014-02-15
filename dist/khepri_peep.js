@@ -3,25 +3,16 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepri-ast-zipper", "khepri-ast/node",
-    "khepri-ast/statement", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value"
-], (function(require, exports, tree, __o, zipper, __o0, __o1, ast_statement, ast_expression, ast_pattern, ast_value) {
+    "khepri-ast/statement", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value", "./fun"
+], (function(require, exports, tree, __o, zipper, __o0, __o1, ast_statement, ast_expression, ast_pattern, ast_value,
+    fun) {
     "use strict";
     var walk = __o["walk"],
         khepriZipper = __o0["khepriZipper"],
         modify = __o1["modify"],
         Node = __o1["Node"],
         setUserData = __o1["setUserData"],
-        optimize, concat = Array.prototype.concat.bind([]),
-        map = (function(f, x) {
-            return [].map.call(x, f);
-        }),
-        reduce = Function.prototype.call.bind(Array.prototype.reduce),
-        flatten = (function(x) {
-            return (Array.isArray(x) ? reduce(x, (function(p, c) {
-                return p.concat(c);
-            }), []) : x);
-        }),
-        peepholes = ({}),
+        optimize, peepholes = ({}),
         addPeephole = (function(types, up, condition, f) {
             var entry = ({
                 "condition": condition,
@@ -29,7 +20,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
                 "up": up
             });
             types.forEach((function(type) {
-                (peepholes[type] = (peepholes[type] ? peepholes[type].concat(entry) : [entry]));
+                (peepholes[type] = (peepholes[type] ? fun.concat(peepholes[type], entry) : [entry]));
             }));
         });
     addPeephole(["ReturnStatement"], false, (function(node) {
@@ -67,7 +58,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
         var loc = __o2["loc"],
             elements = __o2["elements"],
             ud = __o2["ud"];
-        return setUserData(ast_pattern.ObjectPattern.create(loc, map((function(x, i) {
+        return setUserData(ast_pattern.ObjectPattern.create(loc, fun.map((function(x, i) {
             return ast_pattern.ObjectPatternElement.create(null, ast_value.Literal.create(
                 null, "number", i), x);
         }), elements)), ud);
@@ -91,7 +82,8 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
     addPeephole(["CurryExpression"], true, (function(node) {
         return (node.base.type === "CurryExpression");
     }), (function(node) {
-        return ast_expression.CurryExpression.create(null, node.base.base, concat(node.base.args, node.args));
+        return ast_expression.CurryExpression.create(null, node.base.base, fun.concat(node.base.args,
+            node.args));
     }));
     addPeephole(["BinaryExpression"], true, (function(node) {
         return ((node.operator === "|>") && ((((node.right.type === "CurryExpression") || (node.right.type ===
@@ -99,7 +91,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
             (node.right.type === "TernaryOperatorExpression")));
     }), (function(node) {
         return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ?
-            node.right.base : node.right), concat((node.right.args || []), node.left));
+            node.right.base : node.right), fun.concat((node.right.args || []), node.left));
     }));
     addPeephole(["BinaryExpression"], true, (function(__o2) {
         var operator = __o2["operator"],
@@ -109,7 +101,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
             .type === "TernaryOperatorExpression")));
     }), (function(node) {
         return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ?
-            node.left.base : node.left), concat((node.left.args || []), node.right));
+            node.left.base : node.left), fun.concat((node.left.args || []), node.right));
     }));
     var transformDown = (function(node) {
         var transforms = (peepholes[node.type] || [])

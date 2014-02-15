@@ -14,18 +14,10 @@ with
     import 'khepri-ast::statement' ast_statement,
     import 'khepri-ast::expression' ast_expression,
     import 'khepri-ast::pattern' ast_pattern,
-    import 'khepri-ast::value' ast_value
+    import 'khepri-ast::value' ast_value,
+    
+    import './fun' fun
 in {
-
-var concat = Array.prototype.concat.bind([]);
-
-var map = \f, x -> [].map.call(x, f);
-var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-
-var flatten = \x ->
-    ?Array.isArray(x)
-        :reduce(x, \p, c -> p.concat(c), [])
-        :x;
 
 /*
  ******************************************************************************/
@@ -40,7 +32,7 @@ var addPeephole = \types, up, condition, f -> {
     
     types.forEach <|\ type -> {
         peepholes.(type) = ?peepholes.(type)
-            :peepholes.(type).concat(entry)
+            :fun.concat(peepholes.(type), entry)
             :[entry];
     };
 };
@@ -112,7 +104,7 @@ addPeephole(['ArrayPattern'], false,
     \{loc elements ud} ->
         setUserData(
             ast_pattern.ObjectPattern.create(loc,
-                map(\x, i ->
+                fun.map(\x, i ->
                     ast_pattern.ObjectPatternElement.create(null,
                         ast_value.Literal.create(null, 'number', i),
                         x),
@@ -130,12 +122,12 @@ addPeephole(['ObjectPatternElement'], false,
             return ast_pattern.ObjectPatternElement.create(null,
                 ast_value.Literal.create(null, 'string', key.id.name),
                 key);
-            
+        
         case 'AsPattern':
             return ast_pattern.ObjectPatternElement.create(null,
                 ast_value.Literal.create(null, 'string', key.id.id.name),
                 key);
-            
+        
         default:
             return node;
         }
@@ -150,7 +142,7 @@ addPeephole(['CurryExpression'], true,
     \node ->
         ast_expression.CurryExpression.create(null,
             node.base.base,
-            concat(
+            fun.concat(
                 node.base.args,
                 node.args)));
 
@@ -169,7 +161,7 @@ addPeephole(['BinaryExpression'], true,
             ?node.right.type === 'CurryExpression'
                 :node.right.base
                 :node.right,
-            concat(
+            fun.concat(
                 node.right.args || [],
                 node.left)));
 
@@ -189,21 +181,21 @@ addPeephole(['BinaryExpression'], true,
             ?node.left.type === 'CurryExpression'
                 :node.left.base
                 :node.left,
-            concat(
+            fun.concat(
                 node.left.args || [],
                 node.right)));
 
 /* Interface
  ******************************************************************************/
-var transformDown = \node -> {
-    var transforms = (peepholes.(node.type) || []).filter(\x -> !x.up && x.condition(node));
-    return transforms.reduce(\p c -> c.map(p), node);
-};
+var transformDown = \node -> let
+    transforms = (peepholes.(node.type) || []).filter(\x -> !x.up && x.condition(node))
+in
+    transforms.reduce(\p c -> c.map(p), node);
 
-var transformUp = \node -> {
-    var transforms = (peepholes.(node.type) || []).filter(\x -> x.up && x.condition(node));
-    return transforms.reduce(\p c -> c.map(p), node);
-};
+var transformUp = \node -> let
+    transforms = (peepholes.(node.type) || []).filter(\x -> x.up && x.condition(node))
+in
+    transforms.reduce(\p c -> c.map(p), node);
 
 var opt = walk
     @(tree.modifyNode @ \node -> (node && transformDown(node)))

@@ -14,18 +14,10 @@ with
     import 'ecma-ast::value' ast_value,
     import 'ecma-ast::declaration' ast_declaration,
     import 'ecma-ast::statement' ast_statement,
-    import 'ecma-ast::expression' ast_expression
+    import 'ecma-ast::expression' ast_expression,
+    
+    import './fun' fun
 in {
-
-var concat = Array.prototype.concat.bind([]);
-
-var map = \f, x -> [].map.call(x, f);
-var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-
-var flatten = \x ->
-    ?Array.isArray(x) 
-        :Array.prototype.concat.apply([], x.map(flatten))
-        :x;
 
 /*
  ******************************************************************************/
@@ -73,7 +65,7 @@ addPeephole(['Program', 'BlockStatement'], true,
     \_ -> true,
     \node ->
         modify(node, {
-            'body': flatten(node.body.map(\x ->
+            'body': fun.flatten(node.body.map(\x ->
                 ?x && x.type === 'BlockStatement' :x.body :x))
         }, {}));
 
@@ -86,10 +78,10 @@ addPeephole(['Program', 'BlockStatement'], true,
         modify(node, {
             'body': node.body.reduceRight(\p c ->
                 ?(c && c.type === 'VariableDeclaration' && p.length && p.(0) && p.(0).type === 'VariableDeclaration')
-                    :concat(modify(c, {
-                        'declarations': concat(c.declarations, p.(0).declarations)
+                    :fun.concat(modify(c, {
+                        'declarations': fun.concat(c.declarations, p.(0).declarations)
                     }, {}), p.slice(1))
-                    :concat(c, p),
+                    :fun.concat(c, p),
                 [])
             }, {}));
 
@@ -100,12 +92,13 @@ addPeephole(['Program', 'BlockStatement'], true,
     \_ -> true,
     \node ->
         modify(node, {
-            'body': flatten(node.body.map(\x ->
+            'body': fun.flatten(node.body.map(\x ->
                 ?!x || x.type === 'EmptyStatement' :[] :x))
             }, {}));
 
 /**
- * Combine binary arithmetic operations on primitive literals */
+ * Combine binary arithmetic operations on primitive literals
+ */
 let
     arithmetic = {
         '+': (+),
@@ -142,7 +135,8 @@ in
             ast_value.Literal.create(null, typeof value, value));
 
 /**
- * Combine simple unary operations on primitive literals */
+ * Combine simple unary operations on primitive literals
+ */
 let
     arithmetic = {
         '!': (!),
@@ -170,15 +164,16 @@ in
 
 /* Interface
  ******************************************************************************/
-var transformDown = \node -> {
-    var transforms = (peepholes.(node.type) || []).filter(\x -> !x.up && x.condition(node));
-    return transforms.reduce(\p c -> c.map(p, transformDown), node);
-};
+var transformDown = \node -> let
+    transforms = (peepholes.(node.type) || []).filter(\x -> !x.up && x.condition(node))
+in
+    transforms.reduce(\p c -> c.map(p, transformDown), node);
 
-var transformUp = \node -> {
-    var transforms = (peepholes.(node.type) || []).filter(\x -> x.up && x.condition(node));
-    return transforms.reduce(\p c -> c.map(p, transformUp), node);
-};
+
+var transformUp = \node -> let
+    transforms = (peepholes.(node.type) || []).filter(\x -> x.up && x.condition(node))
+in
+    transforms.reduce(\p c -> c.map(p, transformUp), node);
 
 var opt = walk@(
     tree.modifyNode @ \node -> (node && transformDown(node)),

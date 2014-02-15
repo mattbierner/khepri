@@ -3,26 +3,17 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value",
-    "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "./scope"
-], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, scope) {
+    "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "./scope", "./tail"
+], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, scope,
+    __o0) {
     "use strict";
     var setUserData = ast_node["setUserData"],
         khepriZipper = __o["khepriZipper"],
         Scope = scope["Scope"],
+        Tail = __o0["Tail"],
+        trampoline = __o0["trampoline"],
         check, reduce = Function.prototype.call.bind(Array.prototype.reduce),
-        _check, Tail = (function(f, s, ok, err) {
-            var self = this;
-            (self.f = f);
-            (self.s = s);
-            (self.ok = ok);
-            (self.err = err);
-        }),
-        trampoline = (function(f) {
-            var value = f;
-            while ((value instanceof Tail))(value = value.f(value.s, value.ok, value.err));
-            return value;
-        }),
-        State = record.declare(null, ["ctx", "scope", "unique"]),
+        _check, State = record.declare(null, ["ctx", "scope", "unique"]),
         ok = (function(x) {
             return (function(s, ok, _) {
                 return ok(x, s);

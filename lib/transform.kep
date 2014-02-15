@@ -31,23 +31,13 @@ with
     import 'neith::zipper' zipper,
 
     import './scope' scope,
+    import './tail' {Tail trampoline},
+    import './fun' fun,
+
     
     import './package_manager::amd' _,
     import './package_manager::node' _
 in {
-
-var concat = Function.prototype.call.bind(Array.prototype.concat);
-var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
-
-var filter = \f, a -> Array.prototype.filter.call(a, f);
-var map = \f, a ->  Array.prototype.map.call(a, f);
-
-var flatten = \x ->
-    ?Array.isArray(x)
-        :reduce(x, \p, c -> p.concat(c), [])
-        :x;
-
 
 /* Forward
  ******************************************************************************/
@@ -75,22 +65,6 @@ var State = record.declare(null, [
 
 State.empty = State.create(null, scope.Scope.empty, null);
 
-/* Continuation
- ******************************************************************************/
-var Tail = function \f s ok err =self-> {
-    self.f = f;
-    self.s = s;
-    self.ok = ok;
-    self.err = err;
-};
-
-var trampoline = \f -> {
-    var value = f;
-    while (value instanceof Tail)
-        value = value.f(value.s, value.ok, value.err);
-    return value;
-};
-
 /*
  ******************************************************************************/
 var ok = \x -> \s, ok -> ok(x, s);
@@ -103,7 +77,7 @@ var pass = ok();
 
 var next = \p n -> bind(p, \_ -> n);
 
-var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p));
+var seqa = \arr -> fun.reduce(arr, next);
 
 var seq = \args(...) -> seqa(args);
 
@@ -198,26 +172,26 @@ var innerPattern = let
         innerBase = khepri_expression.MemberExpression.create(null, base, key, true)
     in
         ?pattern
-            :flatten <| innerPattern(innerBase, pattern)
+            :fun.flatten <| innerPattern(innerBase, pattern)
             :khepri_declaration.Binding.create(null, identifier(null, key.value), innerBase)
 in
     \base, pattern -> {
         switch (pattern.type) {
         case 'IdentifierPattern':
-            return concat(
+            return [
                 khepri_declaration.Binding.create(null,
                     pattern.id,
-                    base));
+                    base)];
         
         case 'AsPattern':
-            return concat(
+            return fun.concat(
                 innerPattern(base, pattern.id),
-                flatten <| innerPattern(pattern.id, pattern.target));
+                fun.flatten <| innerPattern(pattern.id, pattern.target));
         
         case 'ObjectPattern':
             return pattern.elements
-                |> (map @ \{target key} -> objectElementUnpack(pattern.ud.id, target, key))
-                |> flatten;
+                |> (fun.map @ \{target key} -> objectElementUnpack(pattern.ud.id, target, key))
+                |> fun.flatten;
         
         default:
             return [];
@@ -229,16 +203,51 @@ in
  */
 var unpack = \pattern, value ->
     innerPattern(value, pattern)
-        |> flatten
-        |> (map @ \x -> variableDeclarator(null, x.pattern, x.value));
+        |> fun.flatten
+        |> (fun.map @ \x -> variableDeclarator(null, x.pattern, x.value));
 
 /**
  * 
  */
 var unpackAssign = \pattern, value ->
     innerPattern(value, pattern)
-        |> flatten
-        |> (map @ \x -> ecma_expression.AssignmentExpression.create(null,'=', x.pattern, x.value));
+        |> fun.flatten
+        |> (fun.map @ \x -> ecma_expression.AssignmentExpression.create(null,'=', x.pattern, x.value));
+
+/**
+ * 
+ */
+var unpackParameters = \parameters -> let
+    elementsPrefix = parameters.elements
+        |> (fun.map@\x -> {
+            // Avoid generating redundant unpacks for parameters names.
+            switch (x.type) {
+            case 'IdentifierPattern':
+                return [];
+            case 'AsPattern':
+                return fun.flatten <| innerPattern(x.id, x.target);
+            default:
+                return innerPattern(x, x);
+            }
+        }),
+    
+    selfPrefix = ?parameters.self
+        :innerPattern(
+            ecma_expression.ThisExpression.create(null),
+            parameters.self)
+        :[],
+    
+    argumentsPrefix = ?parameters.id
+        :innerPattern(
+            identifier(null, 'arguments'),
+            parameters.id)
+        :[]
+in
+    fun.concat(
+        elementsPrefix,
+        selfPrefix,
+        argumentsPrefix)
+        |> fun.flatten;
 
 /* Statements
  ******************************************************************************/
@@ -247,14 +256,14 @@ var unpackAssign = \pattern, value ->
  */
 var withStatementNoImport = \loc, bindings, body -> let
     vars = bindings
-        |> (map @ \imp ->
+        |> (fun.map @ \imp ->
             unpack(imp.pattern, imp.value))
-        |> flatten,
+        |> fun.flatten,
     
     prefix = variableDeclaration(null, vars)
 in
     khepri_statement.BlockStatement.create(loc,
-        concat(
+        fun.concat(
             prefix,
             body.body));
 
@@ -270,7 +279,7 @@ var withStatement = \packageManager, loc, bindings, body -> let
             :imp
 in
     withStatementNoImport(loc,
-        map(flattenImport, bindings),
+        fun.map(flattenImport, bindings),
         body);
 
 /* Expressions
@@ -280,56 +289,28 @@ in
  */
 var functionExpression = \loc, id, parameters, functionBody -> let
     params = parameters.elements
-        |> (filter@\x -> x.type !== 'EllipsisPattern'),
-    
-    elementsPrefix = parameters.elements
-        |> map@\x -> {
-            // Avoid generating redundant unpacks for parameters names.
-            switch (x.type) {
-            case 'IdentifierPattern':
-                return [];
-            case 'AsPattern':
-                return flatten <| innerPattern(x.id, x.target);
-            default:
-                return innerPattern(x, x);
-            }
-        }
-        |> flatten
-        |> (map @ \x -> variableDeclarator(null, x.pattern, x.value)),
-    
-    argumentsPrefix = concat(
-        ?parameters.self
-            :variableDeclarator(null,
-                parameters.self,
-                ecma_expression.ThisExpression.create(null))
-            :[],
-        ?parameters.id
-            :variableDeclarator(null,
-                parameters.id,
-                identifier(null, 'arguments'))
-            :[]),
+        |> (fun.filter@\x -> x.type !== 'EllipsisPattern'),
+        
+    bindings = unpackParameters(parameters)
+        |> (fun.map @ \x -> variableDeclarator(null, x.pattern, x.value)),
     
     body = ?functionBody.type === "BlockStatement"
         :functionBody
         :khepri_statement.BlockStatement.create(null,
             khepri_statement.ReturnStatement.create(null, functionBody)),
     
-    strict = isStrict(body.body),
-    
-    prefix = concat(
-        elementsPrefix,
-        argumentsPrefix)
+    strict = isStrict(body.body)
 in
     khepri_expression.FunctionExpression.create(loc,
         id,
         params,
         khepri_statement.BlockStatement.create(body.loc,
-            concat(
+            fun.concat(
                 ?strict
                     :khepri_statement.ExpressionStatement.create(null,
                         khepri_value.Literal.create(null, 'string', "use strict"))
                      :[],
-                variableDeclaration(null, prefix),
+                variableDeclaration(null, bindings),
                 let block = body.body in
                     ?strict :block.slice(1) :block)));
 
@@ -408,7 +389,7 @@ var curryExpression = \loc, base, args ->
         khepri_expression.MemberExpression.create(null,
             base,
             identifier(null, 'bind')),
-        concat(
+        fun.concat(
             nullLiteral(null),
             args));
 
@@ -469,19 +450,19 @@ var multiCompose = \loc, f, g ->
  ******************************************************************************/
 var packageBlock = \packageManager, loc, exports, body -> let
     imports = ?body.type === 'WithStatement'
-        :filter(\x -> x.type === 'ImportPattern', body.bindings)
+        :fun.filter(\x -> x.type === 'ImportPattern', body.bindings)
         :[],
     
-    exportedNames = map(\x -> x.id.name, exports.exports),
+    exportedNames = fun.map(\x -> x.id.name, exports.exports),
     
-    targets = reduce(imports, \p c -> {
+    targets = fun.reduce(imports, \p c -> {
         p.(c.from.value) = c.pattern;
         return p;
     }, {}),
     
     fBody = ?body.type === 'WithStatement'
         :khepri_statement.WithStatement.create(null,
-            filter(\x -> x.type !== 'ImportPattern', body.bindings),
+            fun.filter(\x -> x.type !== 'ImportPattern', body.bindings),
             body.body)
         :body
 in
