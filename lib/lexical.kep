@@ -106,9 +106,18 @@ var block = \body(...) ->
             setScope(s));
 
 /**
- * Test to see if the current scope already contains a binding for id.
+ * Check to ensure the current scope contains a binding for `id`.
  */
-var checkCanAddOwnBinding = \id, loc -> 
+var checkHasBinding = \id, loc ->
+    examineScope <|\ s ->
+        ?s.hasBinding(id)
+            :pass
+            :error("Undeclared identifier:'" + id + "' at:" + loc);
+
+/**
+ * Check to ensure the current scope does not have has a binding for `id`.
+ */
+var checkCanAddOwnBinding = \id loc -> 
     examineScope <|\ s ->
         ?!s.hasOwnBinding(id)
             :pass
@@ -120,16 +129,7 @@ var checkCanAddOwnBinding = \id, loc ->
                 error("'" + id + "' at:" + start + " already bound for scope from:" + end);
 
 /**
- * 
- */
-var hasBinding = \id, loc ->
-    examineScope <|\ s ->
-        ?s.hasBinding(id)
-            :pass
-            :error("Undeclared identifier:'" + id + "' at:" + loc);
-
-/**
- * 
+ * Check if `id` is a mutable binding.
  */
 var checkCanAssign = \id, loc -> 
     examineScope <|\ s ->
@@ -141,10 +141,11 @@ var checkCanAssign = \id, loc ->
             :pass;
 
 /**
- * 
+ * Define a new identifier and create a uid entry for it.
  */
 var addUid  = \id ->
-    bind(unique, \uid -> modifyScope(\s -> Scope.addUid(s, id, uid)));
+    bind(unique, \uid ->
+        modifyScope(\s -> Scope.addUid(s, id, uid)));
 
 /**
  * Add a new mutable binding in the current scope.
@@ -490,7 +491,7 @@ addCheck@'Identifier' <|
         seq(
             examineScope <|\ s ->
                  setNode <| setUserData(node, {'uid': s.getUid(node.name)}),
-            hasBinding(node.name, node.loc));
+            checkHasBinding(node.name, node.loc));
 
 /*
  ******************************************************************************/

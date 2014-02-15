@@ -116,6 +116,11 @@ var ok = (function(x) {
             return seq(setScope(new(Scope)(({}), s, ({}), s.definitions)), seqa(body), setScope(s));
         }));
     }),
+    checkHasBinding = (function(id, loc) {
+        return examineScope((function(s) {
+            return (s.hasBinding(id) ? pass : error(((("Undeclared identifier:'" + id) + "' at:") + loc)));
+        }));
+    }),
     checkCanAddOwnBinding = (function(id, loc) {
         return examineScope((function(s) {
             return ((!s.hasOwnBinding(id)) ? pass : (function() {
@@ -125,11 +130,6 @@ var ok = (function(x) {
                 return error(((((("'" + id) + "' at:") + start) + " already bound for scope from:") +
                     end));
             })());
-        }));
-    }),
-    hasBinding = (function(id, loc) {
-        return examineScope((function(s) {
-            return (s.hasBinding(id) ? pass : error(((("Undeclared identifier:'" + id) + "' at:") + loc)));
         }));
     }),
     checkCanAssign = (function(id, loc) {
@@ -288,7 +288,7 @@ addCheck("Identifier", inspect((function(node) {
         return setNode(setUserData(node, ({
             "uid": s.getUid(node.name)
         })));
-    })), hasBinding(node.name, node.loc));
+    })), checkHasBinding(node.name, node.loc));
 })));
 (_check = (function(node) {
     if (Array.isArray(node)) {

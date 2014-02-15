@@ -40,14 +40,26 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         }),
         State = record.declare(null, ["ctx", "scope", "packageManager"]);
     (State.empty = State.create(null, scope.Scope.empty, null));
-    var ok = (function(x) {
-        return (function(s, ok) {
-            return ok(x, s);
-        });
+    var Tail = (function(f, s, ok, err) {
+        var self = this;
+        (self.f = f);
+        (self.s = s);
+        (self.ok = ok);
+        (self.err = err);
     }),
+        trampoline = (function(f) {
+            var value = f;
+            while ((value instanceof Tail))(value = value.f(value.s, value.ok, value.err));
+            return value;
+        }),
+        ok = (function(x) {
+            return (function(s, ok) {
+                return ok(x, s);
+            });
+        }),
         bind = (function(p, f) {
             return (function(s, ok) {
-                return p(s, (function(x, s) {
+                return new(Tail)(p, s, (function(x, s) {
                     return f(x)(s, ok);
                 }));
             });
@@ -202,15 +214,13 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
                 prefix = variableDeclaration(null, vars);
             return khepri_statement.BlockStatement.create(loc, concat(prefix, body.body));
         }),
-        withStatement = (function() {
+        withStatement = (function(packageManager, loc, bindings, body) {
             var flattenImport = (function(imp) {
                 return ((imp.type === "ImportPattern") ? khepri_declaration.Binding.create(null, imp.pattern,
                     packageManager.importPackage(imp.from.value)) : imp);
             });
-            return (function(packageManager, loc, bindings, body) {
-                return withStatementNoImport(loc, map(flattenImport, bindings), body);
-            });
-        })(),
+            return withStatementNoImport(loc, map(flattenImport, bindings), body);
+        }),
         functionExpression = (function(loc, id, parameters, functionBody) {
             var params = filter((function(x) {
                 return (x.type !== "EllipsisPattern");
@@ -533,10 +543,10 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             node_manager = require("./package_manager/node"),
             packageManager = amd_manager;
         if ((manager === "node"))(packageManager = node_manager);
-        return next(walk(_transform, _transformPost), node)(State.create(khepriZipper(ast), scope.Scope
-            .empty, packageManager), (function(x) {
+        return trampoline(next(walk(_transform, _transformPost), node)(State.create(khepriZipper(ast),
+            scope.Scope.empty, packageManager), (function(x) {
             return x;
-        }));
+        })));
     }));
     (exports.transform = transform);
 }));

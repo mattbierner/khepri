@@ -75,13 +75,29 @@ var State = record.declare(null, [
 
 State.empty = State.create(null, scope.Scope.empty, null);
 
+/* Continuation
+ ******************************************************************************/
+var Tail = function \f s ok err =self-> {
+    self.f = f;
+    self.s = s;
+    self.ok = ok;
+    self.err = err;
+};
+
+var trampoline = \f -> {
+    var value = f;
+    while (value instanceof Tail)
+        value = value.f(value.s, value.ok, value.err);
+    return value;
+};
+
 /*
  ******************************************************************************/
 var ok = \x -> \s, ok -> ok(x, s);
 
 var bind = \p f ->
     \s ok ->
-        p(s, \x, s -> f(x)(s, ok));
+        new Tail(p, s, \x, s -> f(x)(s, ok));
 
 var pass = ok();
 
@@ -245,7 +261,7 @@ in
 /**
  * With statement translation.
  */
-var withStatement = let
+var withStatement = \packageManager, loc, bindings, body -> let
     flattenImport = \imp ->
         ?imp.type === 'ImportPattern'
             :khepri_declaration.Binding.create(null,
@@ -253,10 +269,9 @@ var withStatement = let
                 packageManager.importPackage(imp.from.value))
             :imp
 in
-    \packageManager, loc, bindings, body ->
-        withStatementNoImport(loc,
-            map(flattenImport, bindings),
-            body);
+    withStatementNoImport(loc,
+        map(flattenImport, bindings),
+        body);
 
 /* Expressions
  ******************************************************************************/
@@ -878,7 +893,7 @@ transform = \ast manager -> {
         if (manager === 'node')
             packageManager = node_manager;
 
-        return next(
+        return trampoline <| next(
             walk(_transform, _transformPost),
             node)(State.create(khepriZipper(ast), scope.Scope.empty, packageManager), \x -> x);
 

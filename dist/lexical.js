@@ -111,6 +111,12 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                     s));
             }));
         }),
+        checkHasBinding = (function(id, loc) {
+            return examineScope((function(s) {
+                return (s.hasBinding(id) ? pass : error(((("Undeclared identifier:'" + id) +
+                    "' at:") + loc)));
+            }));
+        }),
         checkCanAddOwnBinding = (function(id, loc) {
             return examineScope((function(s) {
                 return ((!s.hasOwnBinding(id)) ? pass : (function() {
@@ -120,12 +126,6 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                     return error(((((("'" + id) + "' at:") + start) +
                         " already bound for scope from:") + end));
                 })());
-            }));
-        }),
-        hasBinding = (function(id, loc) {
-            return examineScope((function(s) {
-                return (s.hasBinding(id) ? pass : error(((("Undeclared identifier:'" + id) +
-                    "' at:") + loc)));
             }));
         }),
         checkCanAssign = (function(id, loc) {
@@ -290,7 +290,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             return setNode(setUserData(node, ({
                 "uid": s.getUid(node.name)
             })));
-        })), hasBinding(node.name, node.loc));
+        })), checkHasBinding(node.name, node.loc));
     })));
     (_check = (function(node) {
         if (Array.isArray(node)) {
