@@ -481,7 +481,6 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
     var _trans = (function(node) {
         if ((node && (node instanceof khepri_node.Node))) {
             var t = transformers[node.type];
-            console.log(node.type);
             if ((t && t[0].pre)) return t[0].pre;
         }
         return ok();
@@ -489,7 +488,6 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         _transp = (function(node) {
             if ((node && (node instanceof khepri_node.Node))) {
                 var t = transformers[node.type];
-                console.log(("p" + node.type));
                 if ((t && t[0].post)) return t[0].post;
             }
             return ok();
