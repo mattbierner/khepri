@@ -255,7 +255,7 @@ var withStatement = let
 in
     \packageManager, loc, bindings, body ->
         withStatementNoImport(loc,
-            map(flattenImport. bindings),
+            map(flattenImport, bindings),
             body);
 
 /* Expressions

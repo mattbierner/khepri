@@ -219,7 +219,7 @@ var ok = (function(x) {
                 packageManager.importPackage(imp.from.value)) : imp);
         });
         return (function(packageManager, loc, bindings, body) {
-            return withStatementNoImport(loc, map(flattenImport.bindings), body);
+            return withStatementNoImport(loc, map(flattenImport, bindings), body);
         });
     })(),
     functionExpression = (function(loc, id, parameters, functionBody) {

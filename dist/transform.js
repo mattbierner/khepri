@@ -208,7 +208,7 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
                     packageManager.importPackage(imp.from.value)) : imp);
             });
             return (function(packageManager, loc, bindings, body) {
-                return withStatementNoImport(loc, map(flattenImport.bindings), body);
+                return withStatementNoImport(loc, map(flattenImport, bindings), body);
             });
         })(),
         functionExpression = (function(loc, id, parameters, functionBody) {
