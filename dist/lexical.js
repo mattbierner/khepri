@@ -3,17 +3,14 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value",
-    "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "bes/object", "./scope"
-], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, object,
-    __o0) {
+    "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "./scope"
+], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, __o0) {
     "use strict";
     var setUserData = ast_node["setUserData"],
         khepriZipper = __o["khepriZipper"],
         Scope = __o0["Scope"],
-        check, map = Function.prototype.call.bind(Array.prototype.map),
-        reduce = Function.prototype.call.bind(Array.prototype.reduce),
-        reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
-        Tail = (function(f, s, ok, err) {
+        check, reduce = Function.prototype.call.bind(Array.prototype.reduce),
+        _check, Tail = (function(f, s, ok, err) {
             var self = this;
             (self.f = f);
             (self.s = s);
@@ -25,15 +22,12 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             while ((value instanceof Tail))(value = value.f(value.s, value.ok, value.err));
             return value;
         }),
-        State = record.declare(null, ["ctx", "scope", "vars", "unique"]);
-    (State.addVar = (function(s, id, v) {
-        return s.setVars(object.setProperty(s.vars, id, v, true));
-    }));
-    var ok = (function(x) {
-        return (function(s, ok, _) {
-            return ok(x, s);
-        });
-    }),
+        State = record.declare(null, ["ctx", "scope", "unique"]),
+        ok = (function(x) {
+            return (function(s, ok, _) {
+                return ok(x, s);
+            });
+        }),
         error = (function(x) {
             return (function(s, _, err) {
                 return err(x, s);
@@ -52,9 +46,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             }));
         }),
         seqa = (function(arr) {
-            return reduceRight(arr, (function(p, c) {
-                return next(c, p);
-            }));
+            return reduce(arr, next);
         }),
         seq = (function() {
             var args = arguments;
@@ -78,11 +70,6 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
                 return f(s);
             }));
         }),
-        move = (function(op) {
-            return modifyState((function(s) {
-                return State.setCtx(s, op(s.ctx));
-            }));
-        }),
         examineScope = (function(f) {
             return bind(extract, (function(s) {
                 return f(s.scope);
@@ -103,6 +90,40 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         unique = (function(s, ok, err) {
             return ok(s.unique, s.setUnique((s.unique + 1)));
         }),
+        move = (function(op) {
+            return modifyState((function(s) {
+                return State.setCtx(s, op(s.ctx));
+            }));
+        }),
+        up = move(zipper.up),
+        down = move(zipper.down),
+        left = move(zipper.left),
+        right = move(zipper.right),
+        child = (function(f, edge) {
+            return seq(move(tree.child.bind(null, edge)), f, up);
+        }),
+        checkCtx = (function(node) {
+            return _check((node && tree.node(node)));
+        }),
+        checkTop = (function(s, ok, err) {
+            return checkCtx(s.ctx)(s, ok, err);
+        }),
+        checkChild = child.bind(null, checkTop),
+        inspect = (function(f) {
+            return examineState((function(s) {
+                return f(tree.node(s.ctx));
+            }));
+        }),
+        modifyNode = (function(f, g) {
+            return (function(x) {
+                return f(g(x));
+            });
+        })(move, tree.modifyNode),
+        setNode = (function(f, g) {
+            return (function(x) {
+                return f(g(x));
+            });
+        })(move, tree.setNode),
         pass = ok(),
         block = (function() {
             var body = arguments;
@@ -160,31 +181,6 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         addImmutableBindingChecked = (function(id, loc) {
             return seq(checkCanAddOwnBinding(id, loc), addImmutableBinding(id, loc));
         }),
-        _check, child = (function(f, edge) {
-            return seq(move(tree.child.bind(null, edge)), f, move(zipper.up));
-        }),
-        checkCtx = (function(node) {
-            return _check((node && tree.node(node)));
-        }),
-        checkTop = (function(s, ok, err) {
-            return checkCtx(s.ctx)(s, ok, err);
-        }),
-        inspect = (function(f) {
-            return examineState((function(s) {
-                return f(tree.node(s.ctx));
-            }));
-        }),
-        checkChild = child.bind(null, checkTop),
-        modifyNode = (function(f) {
-            return move(tree.modifyNode.bind(null, f));
-        }),
-        setNode = (function(x) {
-            return move(tree.setNode.bind(null, x));
-        }),
-        up = move(zipper.up),
-        down = move(zipper.down),
-        left = move(zipper.left),
-        right = move(zipper.right),
         checks = ({}),
         addCheck = (function(type, check) {
             if (Array.isArray(type)) type.forEach((function(x) {
@@ -255,8 +251,8 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         })));
     })));
     addCheck("IdentifierPattern", inspect((function(node) {
-        return (node.reserved ? seq(addImmutableBinding(node.id.name, node.loc), checkChild("id")) :
-            seq(addImmutableBindingChecked(node.id.name, node.loc), checkChild("id")));
+        return seq((node.reserved ? addImmutableBinding(node.id.name, node.loc) :
+            addImmutableBindingChecked(node.id.name, node.loc)), checkChild("id"));
     })));
     addCheck("ImportPattern", checkChild("pattern"));
     addCheck("AsPattern", seq(checkChild("id"), inspect((function(node) {
@@ -267,20 +263,17 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         })), checkTop), "target");
     }))));
     addCheck(["ObjectPattern", "ArrayPattern"], inspect((function(node) {
-        return examineScope((function(s) {
-            if (((!node.ud) || (!node.ud.id))) {
-                return bind(unique, (function(uid) {
-                    var id = ast_pattern.IdentifierPattern.create(node.loc,
-                        setUserData(ast_value.Identifier.create(null, "__o"), ({
-                            "uid": uid
-                        })));
-                    (id.reserved = true);
-                    return seq(setNode(ast_pattern.AsPattern.create(null, id, node)),
-                        checkTop);
-                }));
-            }
-            return checkChild("elements");
-        }));
+        if (((!node.ud) || (!node.ud.id))) {
+            return seq(bind(unique, (function(uid) {
+                var id = ast_pattern.IdentifierPattern.create(node.loc, setUserData(
+                    ast_value.Identifier.create(null, "__o"), ({
+                        "uid": uid
+                    })));
+                (id.reserved = true);
+                return setNode(ast_pattern.AsPattern.create(null, id, node));
+            })), checkTop);
+        }
+        return checkChild("elements");
     })));
     addCheck("ObjectPatternElement", seq(checkChild("target"), checkChild("key")));
     addCheck("ArgumentsPattern", seq(checkChild("id"), checkChild("elements"), checkChild("self")));
@@ -295,7 +288,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     (_check = (function(node) {
         if (Array.isArray(node)) {
             if ((!node.length)) return pass;
-            return seq(down, seqa(map(node, (function(_, i) {
+            return seq(down, seqa(node.map((function(_, i) {
                 return ((i === (node.length - 1)) ? checkTop : next(checkTop, right));
             }))), up);
         }
@@ -304,7 +297,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     }));
     var checkAst = (function(ast, globals) {
         var scope = reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
-            state = new(State)(khepriZipper(ast), scope, ({}), 1);
+            state = new(State)(khepriZipper(ast), scope, 1);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));
         }), (function(err, s) {

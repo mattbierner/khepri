@@ -15,14 +15,15 @@ with
     import 'khepri-ast-zipper' {khepriZipper},
     
     import 'bes::record' record,
-    import 'bes::object' object,
     
     import './scope' {Scope}
 in {
 
-var map = Function.prototype.call.bind(Array.prototype.map);
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
-var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
+
+/* Forward declarations
+ ******************************************************************************/
+var _check;
 
 /* Continuation
  ******************************************************************************/
@@ -45,11 +46,7 @@ var trampoline = \f -> {
 var State = record.declare(null, [
     'ctx',
     'scope',
-    'vars',
     'unique']);
-
-State.addVar = \s id v ->
-    s.setVars(object.setProperty(s.vars, id, v, true));
 
 /*
  ******************************************************************************/
@@ -63,7 +60,7 @@ var bind = \p f ->
 
 var next = \p n -> bind(p, \_ -> n);
 
-var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p));
+var seqa = \arr -> reduce(arr, next);
 
 var seq = \args(...) -> seqa(args);
 
@@ -74,10 +71,6 @@ var setState = \s -> \_ ok _ -> ok(s, s);
 var modifyState = \f -> bind(extract, \s -> setState(f(s)));
 
 var examineState = \f -> bind(extract, \s -> f(s));
-
-var move = \op ->
-    modifyState(\s ->
-        State.setCtx(s, op(s.ctx)));
 
 var examineScope = \f -> bind(extract, \s -> f(s.scope));
 
@@ -90,6 +83,38 @@ var modifyScope = \f ->
 var setScope = \s -> modifyScope(\() -> s);
 
 var unique = \s, ok, err -> ok(s.unique, s.setUnique(s.unique + 1));
+
+/* Movement
+ ******************************************************************************/
+var move = \op ->
+    modifyState(\s ->
+        State.setCtx(s, op(s.ctx)));
+
+var up = move zipper.up;
+var down = move zipper.down;
+var left = move zipper.left;
+var right = move zipper.right;
+
+var child = \f edge ->
+    seq(
+        move tree.child@edge,
+        f,
+        up);
+
+var checkCtx = \node ->
+    _check <| (node && tree.node(node));
+
+var checkTop = \s ok err ->
+    checkCtx(s.ctx)(s, ok, err);
+
+var checkChild = child@checkTop;
+
+var inspect = \f ->
+    examineState(\s -> f(tree.node s.ctx));
+
+var modifyNode = move <\ tree.modifyNode;
+
+var setNode = move <\ tree.setNode;
 
 /* Operations
  ******************************************************************************/
@@ -184,43 +209,6 @@ var addImmutableBindingChecked = \id, loc ->
         checkCanAddOwnBinding(id, loc),
         addImmutableBinding(id, loc));
 
-/*
- ******************************************************************************/
-var _check;
-
-/*
- ******************************************************************************/
-var child = \f edge ->
-    seq(
-        move tree.child@edge,
-        f,
-        move zipper.up);
-
-var checkCtx = \node ->
-    _check <| (node && tree.node(node));
-
-var checkTop = \s ok err ->
-    checkCtx(s.ctx)(s, ok, err);
-
-var inspect = \f ->
-    examineState(\s -> f(tree.node s.ctx));
-    
-var checkChild = child@checkTop;
-
-var modifyNode = \f ->
-    move tree.modifyNode@f;
-
-var setNode = \x ->
-    move tree.setNode@x;
-
-var up = move zipper.up;
-
-var down = move zipper.down;
-
-var left = move zipper.left;
-
-var right = move zipper.right;
-    
 /*
  ******************************************************************************/
 var checks = {};
@@ -395,7 +383,7 @@ addCheck@'MemberExpression' <|
     seq(
         checkChild 'object',
         inspect <|\ node ->
-            ?node.computed 
+            ?node.computed
                 :checkChild 'property'
                 :pass);
     
@@ -425,14 +413,12 @@ addCheck@'SinkPattern'<|
 
 addCheck@'IdentifierPattern' <|
     inspect <|\ node ->
-        ?node.reserved
-            :seq(
-                addImmutableBinding(node.id.name, node.loc),
-                checkChild 'id')
-            :seq(
-                addImmutableBindingChecked(node.id.name, node.loc),
-                checkChild 'id');
-    
+        seq(
+            ?node.reserved
+                :addImmutableBinding(node.id.name, node.loc)
+                :addImmutableBindingChecked(node.id.name, node.loc),
+            checkChild 'id');
+
 addCheck@'ImportPattern' <|
     checkChild 'pattern';
 
@@ -450,26 +436,25 @@ addCheck@'AsPattern' <|
             'target'));
 
 addCheck@['ObjectPattern', 'ArrayPattern'] <|
-    inspect <|\ node -> 
-        examineScope(\s -> {
-            if (!node.ud || !node.ud.id) {
-                return bind(unique, \uid -> {
+    inspect <|\ node -> {
+        if (!node.ud || !node.ud.id) {
+            return seq(
+                bind(unique, \uid -> {
                     var id = ast_pattern.IdentifierPattern.create(node.loc,
                         setUserData(
                             ast_value.Identifier.create(null, '__o'),
                             {'uid': uid}));
                     
-                    //TODO: Hack. Tells later check not to complain if '__0' is not unique
-                    // but this doesn't matter since the uid is unique.
+                    //TODO: Hack. Tells later check not to complain if '__o' is not unique
+                    // because this doesn't matter since the uid is unique.
                     id.reserved = true;
                     
-                    return seq(
-                        setNode(ast_pattern.AsPattern.create(null, id, node)),
-                        checkTop);
-                });
-            }
-            return checkChild 'elements';
-        });
+                    return setNode(ast_pattern.AsPattern.create(null, id, node));
+                }),
+                checkTop);
+        }
+        return checkChild 'elements';
+    };
 
 addCheck@'ObjectPatternElement' <|
     seq(
@@ -502,7 +487,7 @@ _check = \node -> {
         
         return seq(
             down,
-            seqa(map(node, \_ i -> 
+            seqa(node.map(\_ i -> 
                 ?i === node.length - 1
                     :checkTop
                     :next(checkTop, right))),
@@ -521,7 +506,7 @@ _check = \node -> {
  */
 var checkAst = \ast globals -> {
     var scope = reduce(globals || [], Scope.addImmutableBinding, new Scope({}, null, {}, {}));
-    var state = new State(khepriZipper(ast), scope, {}, 1);
+    var state = new State(khepriZipper(ast), scope, 1);
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };
 
