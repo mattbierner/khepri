@@ -27,7 +27,7 @@ with
     
     import 'khepri-ast-zipper' {khepriZipper},
 
-    import 'neith::tree' tree#,
+    import 'neith::tree' tree,
     import 'neith::zipper' zipper,
 
     import './scope' scope,
@@ -149,9 +149,9 @@ var getMapping = \uid ->
         tree.node(ctx).scope.getMapping(uid);
 
         
-/* State
+/* Forward
  ******************************************************************************/
-var _transform;
+var _transform = \args(...) -> _transform.apply(null, args);
 
 /* State
  ******************************************************************************/
@@ -538,10 +538,10 @@ addTransform('IfStatement',
 
 addTransform('WithStatement',
     next(
-        modifyNode(\node ->
+        modify \node ->
             withStatement(node.loc,
                 node.bindings,
-                node.body)),
+                node.body),
         _transform));
 
 addTransform('SwitchStatement',
@@ -703,25 +703,22 @@ addTransform('CurryExpression',
             node.args));
 
 addTransform('UnaryOperatorExpression',
-    \ctx ->
-        _transform <|
-            modifyNode(\node ->
-                unaryOperatorExpression(node.loc, node.op),
-                ctx));
+    next(
+        modify \node ->
+            unaryOperatorExpression(node.loc, node.op),
+        _transform));
 
 addTransform('BinaryOperatorExpression',
-    \ctx ->
-        _transform <|
-            modifyNode(\node ->
-                binaryOperatorExpression(node.loc, node.op),
-                ctx));
+    next(
+        modify \node ->
+            binaryOperatorExpression(node.loc, node.op),
+        _transform));
 
 addTransform('TernaryOperatorExpression',
-    \ctx ->
-        _transform <|
-            modifyNode(\node ->
-                ternaryOperatorExpression(node.loc),
-                ctx));
+    next(
+        modify \node ->
+            ternaryOperatorExpression(node.loc),
+        _transform));
 
 addTransform('FunctionExpression',
     modify \node ->

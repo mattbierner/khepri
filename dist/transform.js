@@ -5,20 +5,13 @@
 define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression",
     "ecma-ast/node", "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause",
     "khepri-ast/declaration", "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern",
-    "khepri-ast/program", "khepri-ast/statement", "khepri-ast/value", "nu-stream/stream", "khepri-ast-zipper",
-    "neith/tree", "neith/zipper", "./scope", "./package_manager/amd", "./package_manager/node"
+    "khepri-ast/program", "khepri-ast/statement", "khepri-ast/value", "khepri-ast-zipper", "neith/tree",
+    "neith/zipper", "./scope", "./package_manager/amd", "./package_manager/node"
 ], (function(require, exports, record, ecma_clause, ecma_declaration, ecma_expression, ecma_node, ecma_program,
     ecma_statement, ecma_value, khepri_clause, khepri_declaration, khepri_expression, khepri_node,
-    khepri_pattern, khepri_program, khepri_statement, khepri_value, stream, __o, tree, zipper, scope, _, _0) {
+    khepri_pattern, khepri_program, khepri_statement, khepri_value, __o, tree, zipper, scope, _, _0) {
     "use strict";
-    var setUserData = khepri_node["setUserData"],
-        Node = khepri_node["Node"],
-        modify = khepri_node["modify"],
-        foldl = stream["foldl"],
-        from = stream["from"],
-        NIL = stream["NIL"],
-        khepriZipper = __o["khepriZipper"],
-        treeZipper = tree["treeZipper"],
+    var khepriZipper = __o["khepriZipper"],
         transform, concat = Function.prototype.call.bind(Array.prototype.concat),
         reduce = Function.prototype.call.bind(Array.prototype.reduce),
         reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight),
@@ -123,7 +116,7 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
                 return s.setCtx(op(s.ctx));
             }));
         }),
-        modifyNode = (function(f) {
+        modify = (function(f) {
             return move(tree.modifyNode.bind(null, f));
         }),
         ctx = examineState((function(s) {
@@ -150,7 +143,11 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
                     .scope.getMapping(uid);
             });
         }),
-        _transform, packageManager, identifier = (function(loc, name) {
+        _transform = (function() {
+            var args = arguments;
+            return _transform.apply(null, args);
+        }),
+        packageManager, identifier = (function(loc, name) {
             return ecma_value.Identifier.create(loc, name);
         }),
         stringLiteral = (function(loc, value) {
@@ -318,66 +315,66 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             });
             (transformers[type] = (transformers[type] ? transformers[type].concat(entry) : [entry]));
         });
-    addTransform("VariableDeclaration", null, modifyNode((function(node) {
+    addTransform("VariableDeclaration", null, modify((function(node) {
         return ecma_declaration.VariableDeclaration.create(node.loc, node.declarations);
     })));
-    addTransform("VariableDeclarator", null, modifyNode((function(node) {
+    addTransform("VariableDeclarator", null, modify((function(node) {
         return ecma_declaration.VariableDeclarator.create(node.loc, node.id, node.init);
     })));
-    addTransform("StaticDeclaration", modifyNode((function(node) {
+    addTransform("StaticDeclaration", modify((function(node) {
         return ecma_statement.EmptyStatement.create(node.loc);
     })));
-    addTransform("CatchClause", null, modifyNode((function(node) {
+    addTransform("CatchClause", null, modify((function(node) {
         return ecma_clause.CatchClause.create(node.loc, node.param, node.body);
     })));
-    addTransform("SwitchCase", null, modifyNode((function(node) {
+    addTransform("SwitchCase", null, modify((function(node) {
         return ecma_clause.SwitchCase.create(node.loc, node.test, node.consequent);
     })));
-    addTransform("BlockStatement", null, modifyNode((function(node) {
+    addTransform("BlockStatement", null, modify((function(node) {
         return ecma_statement.BlockStatement.create(node.loc, node.body);
     })));
-    addTransform("ExpressionStatement", null, modifyNode((function(node) {
+    addTransform("ExpressionStatement", null, modify((function(node) {
         return ecma_statement.ExpressionStatement.create(node.loc, node.expression);
     })));
-    addTransform("IfStatement", null, modifyNode((function(node) {
+    addTransform("IfStatement", null, modify((function(node) {
         return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
     })));
-    addTransform("WithStatement", next(modifyNode((function(node) {
+    addTransform("WithStatement", next(modify((function(node) {
         return withStatement(node.loc, node.bindings, node.body);
     })), _transform));
-    addTransform("SwitchStatement", null, modifyNode((function(node) {
+    addTransform("SwitchStatement", null, modify((function(node) {
         return ecma_statement.SwitchStatement.create(node.loc, node.discriminant, node.cases);
     })));
-    addTransform("ReturnStatement", null, modifyNode((function(node) {
+    addTransform("ReturnStatement", null, modify((function(node) {
         return ecma_statement.ReturnStatement.create(node.loc, node.argument);
     })));
-    addTransform("ThrowStatement", null, modifyNode((function(node) {
+    addTransform("ThrowStatement", null, modify((function(node) {
         return ecma_statement.ThrowStatement.create(node.loc, node.argument);
     })));
-    addTransform("BreakStatement", modifyNode((function(node) {
+    addTransform("BreakStatement", modify((function(node) {
         return ecma_statement.BreakStatement.create(node.loc, null);
     })));
-    addTransform("ContinueStatement", modifyNode((function(node) {
+    addTransform("ContinueStatement", modify((function(node) {
         return ecma_statement.ContinueStatement.create(node.loc, null);
     })));
-    addTransform("TryStatement", null, modifyNode((function(node) {
+    addTransform("TryStatement", null, modify((function(node) {
         return ecma_statement.TryStatement.create(node.loc, node.block, node.handler, node.finalizer);
     })));
-    addTransform("WhileStatement", null, modifyNode((function(node) {
+    addTransform("WhileStatement", null, modify((function(node) {
         return ecma_statement.WhileStatement.create(node.loc, node.test, node.body);
     })));
-    addTransform("DoWhileStatement", null, modifyNode((function(node) {
+    addTransform("DoWhileStatement", null, modify((function(node) {
         return ecma_statement.DoWhileStatement.create(node.loc, node.body, node.test);
     })));
-    addTransform("ForStatement", null, modifyNode((function(node) {
+    addTransform("ForStatement", null, modify((function(node) {
         return ecma_statement.ForStatement.create(node.loc, node.init, node.test, node.update, node
             .body);
     })));
-    addTransform("AssignmentExpression", null, modifyNode((function(node) {
+    addTransform("AssignmentExpression", null, modify((function(node) {
         return ecma_expression.AssignmentExpression.create(node.loc, node.operator, node.left, node
             .right);
     })));
-    addTransform("UnaryExpression", null, modifyNode((function(node) {
+    addTransform("UnaryExpression", null, modify((function(node) {
         var op = node.operator;
         switch (op) {
             case "++":
@@ -389,7 +386,7 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         }
         return ecma_expression.UnaryExpression.create(node.loc, op, node.argument);
     })));
-    addTransform("BinaryExpression", modifyNode((function(node) {
+    addTransform("BinaryExpression", modify((function(node) {
         switch (node.operator) {
             case "\\>":
                 return singleCompose(node.loc, node.right, node.left);
@@ -406,85 +403,79 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             default:
                 return node;
         }
-    })), modifyNode((function(node) {
+    })), modify((function(node) {
         return ecma_expression.BinaryExpression.create(node.loc, node.operator, node.left, node.right);
     })));
-    addTransform("LogicalExpression", null, modifyNode((function(node) {
+    addTransform("LogicalExpression", null, modify((function(node) {
         return ecma_expression.LogicalExpression.create(node.loc, node.operator, node.left, node.right);
     })));
-    addTransform("ConditionalExpression", null, modifyNode((function(node) {
+    addTransform("ConditionalExpression", null, modify((function(node) {
         return ecma_expression.ConditionalExpression.create(node.loc, node.test, node.consequent,
             node.alternate);
     })));
-    addTransform("NewExpression", null, modifyNode((function(node) {
+    addTransform("NewExpression", null, modify((function(node) {
         return ecma_expression.NewExpression.create(node.loc, node.callee, node.args);
     })));
-    addTransform("CallExpression", null, modifyNode((function(node) {
+    addTransform("CallExpression", null, modify((function(node) {
         return ecma_expression.CallExpression.create(node.loc, node.callee, node.args);
     })));
-    addTransform("MemberExpression", null, modifyNode((function(node) {
+    addTransform("MemberExpression", null, modify((function(node) {
         return ecma_expression.MemberExpression.create(node.loc, node.object, node.property, node.computed);
     })));
-    addTransform("LetExpression", modifyNode((function(node) {
+    addTransform("LetExpression", modify((function(node) {
         return letExpression(node.loc, node.bindings, node.body);
     })));
-    addTransform("CurryExpression", modifyNode((function(node) {
+    addTransform("CurryExpression", modify((function(node) {
         return curryExpression(node.loc, node.base, node.args);
     })));
-    addTransform("UnaryOperatorExpression", (function(ctx) {
-        return _transform(modifyNode((function(node) {
-            return unaryOperatorExpression(node.loc, node.op);
-        }), ctx));
-    }));
-    addTransform("BinaryOperatorExpression", (function(ctx) {
-        return _transform(modifyNode((function(node) {
-            return binaryOperatorExpression(node.loc, node.op);
-        }), ctx));
-    }));
-    addTransform("TernaryOperatorExpression", (function(ctx) {
-        return _transform(modifyNode((function(node) {
-            return ternaryOperatorExpression(node.loc);
-        }), ctx));
-    }));
-    addTransform("FunctionExpression", modifyNode((function(node) {
+    addTransform("UnaryOperatorExpression", next(modify((function(node) {
+        return unaryOperatorExpression(node.loc, node.op);
+    })), _transform));
+    addTransform("BinaryOperatorExpression", next(modify((function(node) {
+        return binaryOperatorExpression(node.loc, node.op);
+    })), _transform));
+    addTransform("TernaryOperatorExpression", next(modify((function(node) {
+        return ternaryOperatorExpression(node.loc);
+    })), _transform));
+    addTransform("FunctionExpression", modify((function(node) {
         return functionExpression(node.loc, node.id, node.params, node.body);
-    })), modifyNode((function(node) {
+    })), modify((function(node) {
         return ecma_expression.FunctionExpression.create(null, node.id, node.params, node.body);
     })));
-    addTransform("ArrayExpression", null, modifyNode((function(node) {
+    addTransform("ArrayExpression", null, modify((function(node) {
         return ecma_expression.ArrayExpression.create(node.loc, node.elements);
     })));
-    addTransform("ObjectExpression", null, modifyNode((function(node) {
+    addTransform("ObjectExpression", null, modify((function(node) {
         return ecma_expression.ObjectExpression.create(node.loc, node.properties);
     })));
-    addTransform("ObjectValue", null, modifyNode((function(node) {
+    addTransform("ObjectValue", null, modify((function(node) {
         return ecma_value.ObjectValue.create(node.loc, node.key, node.value);
     })));
-    addTransform("ArgumentsPattern", null, modifyNode((function(node) {
+    addTransform("ArgumentsPattern", null, modify((function(node) {
         return node.id;
     })));
-    addTransform("IdentifierPattern", null, modifyNode((function(node) {
+    addTransform("IdentifierPattern", null, modify((function(node) {
         return node.id;
     })));
-    addTransform("AsPattern", null, modifyNode((function(node) {
+    addTransform("AsPattern", null, modify((function(node) {
         return node.id;
     })));
-    addTransform("ObjectPattern", null, modifyNode((function(node) {
+    addTransform("ObjectPattern", null, modify((function(node) {
         return node.ud.id;
     })));
-    addTransform("EllipsisPattern", null, modifyNode((function(node) {
+    addTransform("EllipsisPattern", null, modify((function(node) {
         return (node.ud && node.ud.id);
     })));
-    addTransform("SinkPattern", null, modifyNode((function(node) {
+    addTransform("SinkPattern", null, modify((function(node) {
         return (node.ud && node.ud.id);
     })));
-    addTransform("Program", null, modifyNode((function(node) {
+    addTransform("Program", null, modify((function(node) {
         return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? node.body : [node.body]));
     })));
-    addTransform("Package", modifyNode((function(node) {
+    addTransform("Package", modify((function(node) {
         return packageBlock(node.loc, node.exports, node.body);
     })));
-    addTransform("Identifier", modifyNode((function(node) {
+    addTransform("Identifier", modify((function(node) {
         return identifier(null, node.name);
     })));
     var _trans = (function(node) {
