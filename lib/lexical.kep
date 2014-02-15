@@ -203,29 +203,15 @@ var addUniqueMutableBinding = \id, loc ->
         checkCanAddOwnBinding(id, loc),
         addMutableBinding(id, loc));
 
-/**
- * 
- */
 var addMutableBindingChecked = \id, loc ->
     seq(
         checkCanAddOwnBinding(id, loc),
         addUniqueMutableBinding(id, loc));
 
-var addImmutableBindingChecked = \id, loc ->
+var addUnusedImmutableBinding = \id, loc ->
     seq(
         checkCanAddOwnBinding(id, loc),
         addImmutableBinding(id, loc));
-
-var addUnusedImmutableBinding = \id, loc ->
-    addImmutableBindingChecked(id, loc);
-
-var addUniqueImmutableBinding = \id, loc ->
-    seq(
-        checkCanAddOwnBinding(id, loc),
-        addUnusedImmutableBinding(id, loc));
-
-var addReservedBinding = \id, loc -> 
-    modifyScope(\s -> Scope.addReservedBinding(s, id, loc));
 
 /*
  ******************************************************************************/
@@ -288,9 +274,9 @@ addCheck@'PackageExport' <|
 
 addCheck@'Package' <|
     seq(
-        addImmutableBindingChecked('require', null),
-        addImmutableBindingChecked('exports', null),
-        addImmutableBindingChecked('module', null),
+        addUnusedImmutableBinding('require', null),
+        addUnusedImmutableBinding('exports', null),
+        addUnusedImmutableBinding('module', null),
         checkChild 'exports',
         inspect <|\ node ->
             ?node.body.type === 'WithStatement'
@@ -310,7 +296,7 @@ addCheck@'SwitchCase' <|
 addCheck@'CatchClause' <|
     block(
         inspect <|\ node ->
-            addImmutableBindingChecked(node.param.name, node.param.loc),
+            addUnusedImmutableBinding(node.param.name, node.param.loc),
         checkChild 'param',
         child(
             checkChild 'body',
@@ -322,7 +308,7 @@ addCheck@['StaticDeclaration', 'VariableDeclaration'] <|
 
 addCheck@'StaticDeclarator' <|
     inspect <|\ node ->
-        addImmutableBindingChecked(node.id.name, node.loc);
+        addUnusedImmutableBinding(node.id.name, node.loc);
     
 addCheck@'VariableDeclarator' <|
     seq(
@@ -469,9 +455,11 @@ addCheck@'SinkPattern'<|
 addCheck@'IdentifierPattern' <|
     inspect <|\ node ->
         ?node.reserved
-            :addReservedBinding(node.id.name, node.loc)
             :seq(
-                addUniqueImmutableBinding(node.id.name, node.loc),
+                addImmutableBinding(node.id.name, node.loc),
+                checkChild 'id')
+            :seq(
+                addUnusedImmutableBinding(node.id.name, node.loc),
                 checkChild 'id');
     
 addCheck@'ImportPattern' <|
@@ -499,7 +487,7 @@ addCheck@['ObjectPattern', 'ArrayPattern'] <|
                         setUserData(
                             ast_value.Identifier.create(null, '__o'),
                             {'uid': uid}));
-                    
+                    id.reserved = true;//TODO: hack
                     return seq(
                         setNode(ast_pattern.AsPattern.create(null, id, node)),
                         checkTop);
