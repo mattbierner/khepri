@@ -311,6 +311,7 @@ addCheck@'CatchClause' <|
     block(
         inspect <|\ node ->
             addImmutableBindingChecked(node.param.name, node.param.loc),
+        checkChild 'param',
         child(
             checkChild 'body',
             'body'));

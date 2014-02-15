@@ -243,7 +243,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("SwitchCase", seq(checkChild("test"), checkChild("consequent")));
     addCheck("CatchClause", block(inspect((function(node) {
         return addImmutableBindingChecked(node.param.name, node.param.loc);
-    })), child(checkChild("body"), "body")));
+    })), checkChild("param"), child(checkChild("body"), "body")));
     addCheck(["StaticDeclaration", "VariableDeclaration"], checkChild("declarations"));
     addCheck("StaticDeclarator", inspect((function(node) {
         return addImmutableBindingChecked(node.id.name, node.loc);
