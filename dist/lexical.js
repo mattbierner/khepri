@@ -3,17 +3,16 @@
  * DO NOT EDIT
 */
 define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value",
-    "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "./scope", "./tail"
+    "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "./scope", "./tail", "./fun"
 ], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, scope,
-    __o0) {
+    __o0, fun) {
     "use strict";
     var setUserData = ast_node["setUserData"],
         khepriZipper = __o["khepriZipper"],
         Scope = scope["Scope"],
         Tail = __o0["Tail"],
         trampoline = __o0["trampoline"],
-        check, reduce = Function.prototype.call.bind(Array.prototype.reduce),
-        _check, State = record.declare(null, ["ctx", "scope", "unique"]),
+        check, _check, State = record.declare(null, ["ctx", "scope", "unique"]),
         ok = (function(x) {
             return (function(s, ok, _) {
                 return ok(x, s);
@@ -37,7 +36,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             }));
         }),
         seqa = (function(arr) {
-            return reduce(arr, next);
+            return fun.reduce(arr, next);
         }),
         seq = (function() {
             var args = arguments;
@@ -282,7 +281,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         return pass;
     }));
     var checkAst = (function(ast, globals) {
-        var scope = reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
+        var scope = fun.reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
             state = new(State)(khepriZipper(ast), scope, 1);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));

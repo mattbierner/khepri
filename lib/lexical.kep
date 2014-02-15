@@ -488,7 +488,7 @@ _check = \node -> {
  * 
  */
 var checkAst = \ast globals -> {
-    var scope = reduce(globals || [], Scope.addImmutableBinding, new Scope({}, null, {}, {}));
+    var scope = fun.reduce(globals || [], Scope.addImmutableBinding, new Scope({}, null, {}, {}));
     var state = new State(khepriZipper(ast), scope, 1);
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };

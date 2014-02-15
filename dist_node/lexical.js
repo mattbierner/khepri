@@ -15,20 +15,11 @@ var ast_node = require("khepri-ast")["node"],
     record = require("bes")["record"],
     scope = require("./scope"),
     Scope = scope["Scope"],
-    check, reduce = Function.prototype.call.bind(Array.prototype.reduce),
-    _check, Tail = (function(f, s, ok, err) {
-        var self = this;
-        (self.f = f);
-        (self.s = s);
-        (self.ok = ok);
-        (self.err = err);
-    }),
-    trampoline = (function(f) {
-        var value = f;
-        while ((value instanceof Tail))(value = value.f(value.s, value.ok, value.err));
-        return value;
-    }),
-    State = record.declare(null, ["ctx", "scope", "unique"]),
+    __o0 = require("./tail"),
+    Tail = __o0["Tail"],
+    trampoline = __o0["trampoline"],
+    fun = require("./fun"),
+    check, _check, State = record.declare(null, ["ctx", "scope", "unique"]),
     ok = (function(x) {
         return (function(s, ok, _) {
             return ok(x, s);
@@ -52,7 +43,7 @@ var ast_node = require("khepri-ast")["node"],
         }));
     }),
     seqa = (function(arr) {
-        return reduce(arr, next);
+        return fun.reduce(arr, next);
     }),
     seq = (function() {
         var args = arguments;
@@ -291,7 +282,7 @@ addCheck("Identifier", inspect((function(node) {
     return pass;
 }));
 var checkAst = (function(ast, globals) {
-    var scope = reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
+    var scope = fun.reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
         state = new(State)(khepriZipper(ast), scope, 1);
     return trampoline(checkTop(state, (function(x, s) {
         return tree.node(zipper.root(s.ctx));
