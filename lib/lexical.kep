@@ -589,13 +589,16 @@ addCheck@'ObjectValue' <|
 addCheck@'Identifier' <|
     inspect <|\ node ->
         let name = node.name in examineScope <|\ s ->
-            ?s.hasMapping(name)
-                :let mappedName = s.getMapping(name) in
-                    seq(
-                        modifyNode(\x -> 
-                            setUserData(ast_node.modify(x, {}, {'name': mappedName}), {'uid': s.getUid(name)})),
-                        hasFreeBinding(mappedName, node.loc))
-                :hasFreeBinding(name, node.loc);
+            seq(
+                 modifyNode(\x -> 
+                    setUserData(x, {'uid': s.getUid(name)})),
+            //?s.hasMapping(name)
+             //   :let mappedName = s.getMapping(name) in
+               //     seq(
+                //        modifyNode(\x -> 
+                 //           setUserData(ast_node.modify(x, {}, {'name': mappedName}), {'uid': s.getUid(name)})),
+                 //       hasFreeBinding(mappedName, node.loc))
+                hasFreeBinding(name, node.loc));
 
 /*
  ******************************************************************************/

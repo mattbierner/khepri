@@ -22,17 +22,16 @@ var record = require("bes")["record"],
     khepri_program = require("khepri-ast")["program"],
     khepri_statement = require("khepri-ast")["statement"],
     khepri_value = require("khepri-ast")["value"],
-    khepri_zipper = require("khepri-ast-zipper"),
     stream = require("nu-stream")["stream"],
     foldl = stream["foldl"],
     from = stream["from"],
     NIL = stream["NIL"],
+    khepri_zipper = require("khepri-ast-zipper"),
     tree = require("neith")["tree"],
     treeZipper = tree["treeZipper"],
     zipper_walk = require("neith")["walk"],
     preWalk = zipper_walk["preWalk"],
     postWalk = zipper_walk["postWalk"],
-    zipper = require("neith")["zipper"],
     scope = require("./scope"),
     transform, concat = Function.prototype.call.bind(Array.prototype.concat),
     reduce = Function.prototype.call.bind(Array.prototype.reduce),
@@ -61,31 +60,14 @@ var record = require("bes")["record"],
     }),
     State = record.declare(null, ["node", "scope", "packageManager"]);
 (State.empty = State.create(null, scope.Scope.empty, null));
-var khepriZipper = treeZipper.bind(null, (function(ctx) {
-    return khepri_zipper.getChildren(ctx.node);
-}), (function(ctx, key) {
-    return ctx.setNode(khepri_zipper.getChild(ctx.node, key));
-}), (function(ctx, pairs, value) {
-    return ctx.setNode(khepri_zipper.construct(ctx.node, stream.map((function(x) {
-        return tree.Pair(x.key, x.value.node);
-    }), pairs), (function() {
-        var v = value();
-        return reduce(Object.keys(v), (function(p, c) {
-            (p[c] = v[c].node);
-            return p;
-        }), ({}));
-    })));
-})),
-    next = (function(a, b) {
-        return (function(ctx) {
-            return b(a(ctx));
-        });
-    }),
+var next = (function(a, b) {
+    return (function(ctx) {
+        return b(a(ctx));
+    });
+}),
     seqa = (function(arr) {
         return reduceRight(arr, (function(p, c) {
             return next(c, p);
-        }), (function(x) {
-            return x;
         }));
     }),
     seq = (function() {
@@ -94,27 +76,57 @@ var khepriZipper = treeZipper.bind(null, (function(ctx) {
     }),
     examineScope = (function(f) {
         return (function(ctx) {
-            return f(zipper.extract(ctx)
+            return f(tree.node(ctx)
                 .scope)(ctx);
         });
     }),
     setScope = (function(s) {
-        return zipper.modify((function(state) {
+        return tree.modifyNode.bind(null, (function(state) {
             return state.setScope(s);
         }));
     }),
-    realBlock = (function() {
-        var body = arguments;
-        return examineScope((function(s) {
-            return seq(setScope(new(scope.Scope)(({}), s, ({}), ({}))), seqa(body), setScope(s));
-        }));
-    }),
+    enterBlock = examineScope((function(s) {
+        return setScope(new(scope.Scope)(({}), s, ({}), ({})));
+    })),
+    exitBlock = examineScope((function(s) {
+        return setScope(s.parent);
+    })),
     modifyNode = (function(f, ctx) {
         return tree.modifyNode((function(s) {
             return s.setNode(f(s.node));
         }), ctx);
     }),
-    packageManager, identifier = (function(loc, name) {
+    addVar = (function(id, uid) {
+        return examineScope((function(s) {
+            return (s.hasMapping(uid) ? id : (function() {
+                var name = s.getUnusedId(id);
+                return setScope(scope.Scope.addMapping(scope.Scope.addMutableBinding(s, name), uid,
+                    name));
+            })());
+        }));
+    }),
+    getMapping = (function(uid) {
+        return (function(ctx) {
+            return tree.node(ctx)
+                .scope.getMapping(uid);
+        });
+    }),
+    khepriZipper = treeZipper.bind(null, (function(ctx) {
+        return khepri_zipper.getChildren(ctx.node);
+    }), (function(ctx, key) {
+        return ctx.setNode(khepri_zipper.getChild(ctx.node, key));
+    }), (function(ctx, pairs, value) {
+        return ctx.setNode(khepri_zipper.construct(ctx.node, stream.map((function(x) {
+            return tree.Pair(x.key, x.value.node);
+        }), pairs), (function() {
+            var v = value();
+            return reduce(Object.keys(v), (function(p, c) {
+                (p[c] = v[c].node);
+                return p;
+            }), ({}));
+        })));
+    })),
+    _transform, packageManager, identifier = (function(loc, name) {
         return ecma_value.Identifier.create(loc, name);
     }),
     stringLiteral = (function(loc, value) {
@@ -271,7 +283,7 @@ var khepriZipper = treeZipper.bind(null, (function(ctx) {
         return packageManager.definePackage(loc, exportedNames, imports, targets, fBody);
     }),
     transformers = ({}),
-    _t, addTransform = (function(type, pre, post) {
+    addTransform = (function(type, pre, post) {
         var entry = ({
             "pre": pre,
             "post": post
@@ -303,7 +315,7 @@ addTransform("IfStatement", id, modifyNode.bind(null, (function(node) {
     return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
 })));
 addTransform("WithStatement", (function(ctx) {
-    return _t(modifyNode((function(node) {
+    return _transform(modifyNode((function(node) {
         return withStatement(node.loc, node.bindings, node.body);
     }), ctx));
 }));
@@ -391,23 +403,23 @@ addTransform("CurryExpression", modifyNode.bind(null, (function(node) {
     return curryExpression(node.loc, node.base, node.args);
 })));
 addTransform("UnaryOperatorExpression", (function(ctx) {
-    return _t(modifyNode((function(node) {
+    return _transform(modifyNode((function(node) {
         return unaryOperatorExpression(node.loc, node.op);
     }), ctx));
 }));
 addTransform("BinaryOperatorExpression", (function(ctx) {
-    return _t(modifyNode((function(node) {
+    return _transform(modifyNode((function(node) {
         return binaryOperatorExpression(node.loc, node.op);
     }), ctx));
 }));
 addTransform("TernaryOperatorExpression", (function(ctx) {
-    return _t(modifyNode((function(node) {
+    return _transform(modifyNode((function(node) {
         return ternaryOperatorExpression(node.loc);
     }), ctx));
 }));
-addTransform("FunctionExpression", modifyNode.bind(null, (function(node) {
+addTransform("FunctionExpression", seq(enterBlock, modifyNode.bind(null, (function(node) {
     return functionExpression(node.loc, node.id, node.params, node.body);
-})), modifyNode.bind(null, (function(node) {
+}))), modifyNode.bind(null, (function(node) {
     return ecma_expression.FunctionExpression.create(null, node.id, node.params, node.body);
 })));
 addTransform("ArrayExpression", id, modifyNode.bind(null, (function(node) {
@@ -443,13 +455,19 @@ addTransform("Program", id, modifyNode.bind(null, (function(node) {
 addTransform("Package", modifyNode.bind(null, (function(node) {
     return packageBlock(node.loc, node.exports, node.body);
 })));
-addTransform("Identifier", modifyNode.bind(null, (function(node) {
-    return identifier(node.loc, node.name);
-})));
+addTransform("Identifier", (function(ctx) {
+    var node = tree.node(ctx)
+        .node,
+        s = addVar(node.name, node.ud.uid)(ctx),
+        n = getMapping(node.ud.uid)(s);
+    return modifyNode.bind(null, (function(node) {
+        return identifier(node.loc, n);
+    }))(addVar(node.name, node.ud.uid)(ctx));
+}));
 var _trans = (function(node) {
     if (((!node) || (!(node instanceof khepri_node.Node)))) return id;
     var t = transformers[node.type];
-    if ((!t)) return id;
+    if (((!t) || (!t[0].pre))) return id;
     return t[0].pre;
 }),
     _transp = (function(node) {
@@ -458,15 +476,15 @@ var _trans = (function(node) {
         if (((!t) || (!t[0].post))) return id;
         return t[0].post;
     });
-(_t = (function(ctx) {
+(_transform = (function(ctx) {
     return _trans(tree.node(ctx)
         .node)(ctx);
 }));
-var _tp = (function(ctx) {
+var _transformPost = (function(ctx) {
     return _transp(tree.node(ctx)
         .node)(ctx);
 }),
-    walk = zipper_walk.walk.bind(null, _t, _tp);
+    walk = zipper_walk.walk.bind(null, _transform, _transformPost);
 (transform = (function(ast, manager) {
     var amd_manager = require("./package_manager/amd"),
         node_manager = require("./package_manager/node");

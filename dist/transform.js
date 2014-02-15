@@ -5,12 +5,12 @@
 define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declaration", "ecma-ast/expression",
     "ecma-ast/node", "ecma-ast/program", "ecma-ast/statement", "ecma-ast/value", "khepri-ast/clause",
     "khepri-ast/declaration", "khepri-ast/expression", "khepri-ast/node", "khepri-ast/pattern",
-    "khepri-ast/program", "khepri-ast/statement", "khepri-ast/value", "khepri-ast-zipper", "nu-stream/stream",
-    "neith/tree", "neith/walk", "neith/zipper", "./scope", "./package_manager/amd", "./package_manager/node"
+    "khepri-ast/program", "khepri-ast/statement", "khepri-ast/value", "nu-stream/stream", "khepri-ast-zipper",
+    "neith/tree", "neith/walk", "./scope", "./package_manager/amd", "./package_manager/node"
 ], (function(require, exports, record, ecma_clause, ecma_declaration, ecma_expression, ecma_node, ecma_program,
     ecma_statement, ecma_value, khepri_clause, khepri_declaration, khepri_expression, khepri_node,
-    khepri_pattern, khepri_program, khepri_statement, khepri_value, khepri_zipper, stream, tree, zipper_walk,
-    zipper, scope, _, _0) {
+    khepri_pattern, khepri_program, khepri_statement, khepri_value, stream, khepri_zipper, tree, zipper_walk,
+    scope, _, _0) {
     "use strict";
     var setUserData = khepri_node["setUserData"],
         Node = khepri_node["Node"],
@@ -48,31 +48,14 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         }),
         State = record.declare(null, ["node", "scope", "packageManager"]);
     (State.empty = State.create(null, scope.Scope.empty, null));
-    var khepriZipper = treeZipper.bind(null, (function(ctx) {
-        return khepri_zipper.getChildren(ctx.node);
-    }), (function(ctx, key) {
-        return ctx.setNode(khepri_zipper.getChild(ctx.node, key));
-    }), (function(ctx, pairs, value) {
-        return ctx.setNode(khepri_zipper.construct(ctx.node, stream.map((function(x) {
-            return tree.Pair(x.key, x.value.node);
-        }), pairs), (function() {
-            var v = value();
-            return reduce(Object.keys(v), (function(p, c) {
-                (p[c] = v[c].node);
-                return p;
-            }), ({}));
-        })));
-    })),
-        next = (function(a, b) {
-            return (function(ctx) {
-                return b(a(ctx));
-            });
-        }),
+    var next = (function(a, b) {
+        return (function(ctx) {
+            return b(a(ctx));
+        });
+    }),
         seqa = (function(arr) {
             return reduceRight(arr, (function(p, c) {
                 return next(c, p);
-            }), (function(x) {
-                return x;
             }));
         }),
         seq = (function() {
@@ -81,27 +64,57 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         }),
         examineScope = (function(f) {
             return (function(ctx) {
-                return f(zipper.extract(ctx)
+                return f(tree.node(ctx)
                     .scope)(ctx);
             });
         }),
         setScope = (function(s) {
-            return zipper.modify((function(state) {
+            return tree.modifyNode.bind(null, (function(state) {
                 return state.setScope(s);
             }));
         }),
-        realBlock = (function() {
-            var body = arguments;
-            return examineScope((function(s) {
-                return seq(setScope(new(scope.Scope)(({}), s, ({}), ({}))), seqa(body), setScope(s));
-            }));
-        }),
+        enterBlock = examineScope((function(s) {
+            return setScope(new(scope.Scope)(({}), s, ({}), ({})));
+        })),
+        exitBlock = examineScope((function(s) {
+            return setScope(s.parent);
+        })),
         modifyNode = (function(f, ctx) {
             return tree.modifyNode((function(s) {
                 return s.setNode(f(s.node));
             }), ctx);
         }),
-        packageManager, identifier = (function(loc, name) {
+        addVar = (function(id, uid) {
+            return examineScope((function(s) {
+                return (s.hasMapping(uid) ? id : (function() {
+                    var name = s.getUnusedId(id);
+                    return setScope(scope.Scope.addMapping(scope.Scope.addMutableBinding(s,
+                        name), uid, name));
+                })());
+            }));
+        }),
+        getMapping = (function(uid) {
+            return (function(ctx) {
+                return tree.node(ctx)
+                    .scope.getMapping(uid);
+            });
+        }),
+        khepriZipper = treeZipper.bind(null, (function(ctx) {
+            return khepri_zipper.getChildren(ctx.node);
+        }), (function(ctx, key) {
+            return ctx.setNode(khepri_zipper.getChild(ctx.node, key));
+        }), (function(ctx, pairs, value) {
+            return ctx.setNode(khepri_zipper.construct(ctx.node, stream.map((function(x) {
+                return tree.Pair(x.key, x.value.node);
+            }), pairs), (function() {
+                var v = value();
+                return reduce(Object.keys(v), (function(p, c) {
+                    (p[c] = v[c].node);
+                    return p;
+                }), ({}));
+            })));
+        })),
+        _transform, packageManager, identifier = (function(loc, name) {
             return ecma_value.Identifier.create(loc, name);
         }),
         stringLiteral = (function(loc, value) {
@@ -262,7 +275,7 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             return packageManager.definePackage(loc, exportedNames, imports, targets, fBody);
         }),
         transformers = ({}),
-        _t, addTransform = (function(type, pre, post) {
+        addTransform = (function(type, pre, post) {
             var entry = ({
                 "pre": pre,
                 "post": post
@@ -294,7 +307,7 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
     })));
     addTransform("WithStatement", (function(ctx) {
-        return _t(modifyNode((function(node) {
+        return _transform(modifyNode((function(node) {
             return withStatement(node.loc, node.bindings, node.body);
         }), ctx));
     }));
@@ -385,23 +398,23 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
         return curryExpression(node.loc, node.base, node.args);
     })));
     addTransform("UnaryOperatorExpression", (function(ctx) {
-        return _t(modifyNode((function(node) {
+        return _transform(modifyNode((function(node) {
             return unaryOperatorExpression(node.loc, node.op);
         }), ctx));
     }));
     addTransform("BinaryOperatorExpression", (function(ctx) {
-        return _t(modifyNode((function(node) {
+        return _transform(modifyNode((function(node) {
             return binaryOperatorExpression(node.loc, node.op);
         }), ctx));
     }));
     addTransform("TernaryOperatorExpression", (function(ctx) {
-        return _t(modifyNode((function(node) {
+        return _transform(modifyNode((function(node) {
             return ternaryOperatorExpression(node.loc);
         }), ctx));
     }));
-    addTransform("FunctionExpression", modifyNode.bind(null, (function(node) {
+    addTransform("FunctionExpression", seq(enterBlock, modifyNode.bind(null, (function(node) {
         return functionExpression(node.loc, node.id, node.params, node.body);
-    })), modifyNode.bind(null, (function(node) {
+    }))), modifyNode.bind(null, (function(node) {
         return ecma_expression.FunctionExpression.create(null, node.id, node.params, node.body);
     })));
     addTransform("ArrayExpression", id, modifyNode.bind(null, (function(node) {
@@ -437,13 +450,19 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
     addTransform("Package", modifyNode.bind(null, (function(node) {
         return packageBlock(node.loc, node.exports, node.body);
     })));
-    addTransform("Identifier", modifyNode.bind(null, (function(node) {
-        return identifier(node.loc, node.name);
-    })));
+    addTransform("Identifier", (function(ctx) {
+        var node = tree.node(ctx)
+            .node,
+            s = addVar(node.name, node.ud.uid)(ctx),
+            n = getMapping(node.ud.uid)(s);
+        return modifyNode.bind(null, (function(node) {
+            return identifier(node.loc, n);
+        }))(addVar(node.name, node.ud.uid)(ctx));
+    }));
     var _trans = (function(node) {
         if (((!node) || (!(node instanceof khepri_node.Node)))) return id;
         var t = transformers[node.type];
-        if ((!t)) return id;
+        if (((!t) || (!t[0].pre))) return id;
         return t[0].pre;
     }),
         _transp = (function(node) {
@@ -452,15 +471,15 @@ define(["require", "exports", "bes/record", "ecma-ast/clause", "ecma-ast/declara
             if (((!t) || (!t[0].post))) return id;
             return t[0].post;
         });
-    (_t = (function(ctx) {
+    (_transform = (function(ctx) {
         return _trans(tree.node(ctx)
             .node)(ctx);
     }));
-    var _tp = (function(ctx) {
+    var _transformPost = (function(ctx) {
         return _transp(tree.node(ctx)
             .node)(ctx);
     }),
-        walk = zipper_walk.walk.bind(null, _t, _tp);
+        walk = zipper_walk.walk.bind(null, _transform, _transformPost);
     (transform = (function(ast, manager) {
         var amd_manager = require("./package_manager/amd"),
             node_manager = require("./package_manager/node");

@@ -25,13 +25,11 @@ with
     import 'khepri-ast::statement' khepri_statement,
     import 'khepri-ast::value' khepri_value,
     
-    import 'khepri-ast-zipper' khepri_zipper,
-    
     import 'nu-stream::stream' stream#{foldl from NIL},
-    
+    import 'khepri-ast-zipper' khepri_zipper,
+
     import 'neith::tree' tree#{treeZipper},
     import 'neith::walk' zipper_walk#{preWalk postWalk},
-    import 'neith::zipper' zipper,
         
     import './scope' scope,
     import './package_manager::amd' _,
@@ -70,6 +68,44 @@ var State = record.declare(null, [
 
 State.empty = State.create(null, scope.Scope.empty, null);
 
+var next = \a b -> \ctx -> b(a(ctx));
+
+var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p));
+
+var seq = \args(...) -> seqa(args);
+
+var examineScope = \f ->
+    \ctx ->
+       f(tree.node(ctx).scope)(ctx);
+
+var setScope = \s -> tree.modifyNode @ (\state -> state.setScope(s));
+
+var enterBlock = examineScope(\s ->
+    setScope(new scope.Scope({}, s, {}, {})));
+
+var exitBlock = examineScope(\s ->
+    setScope(s.parent));
+
+var modifyNode = \f ctx ->
+    tree.modifyNode(
+         \s ->
+             s.setNode(f(s.node)),
+         ctx);
+
+var addVar = \id uid ->
+    examineScope(\s ->
+        ?s.hasMapping(uid)
+            :id
+            :let name = s.getUnusedId(id) in
+                setScope(scope.Scope.addMapping(
+                    scope.Scope.addMutableBinding(s, name),
+                    uid,
+                    name)));
+
+var getMapping = \uid ->
+    \ctx ->
+        tree.node(ctx).scope.getMapping(uid);
+
 var khepriZipper = treeZipper@(
     \ctx ->
         khepri_zipper.getChildren(ctx.node),
@@ -82,32 +118,10 @@ var khepriZipper = treeZipper@(
                 stream.map(\x -> tree.Pair(x.key, x.value.node), pairs),
                 \() -> let v = value() in reduce(Object.keys(v), \p c -> { p.(c) = v.(c).node; return p; }, {}))));
 
-var next = \a, b ->
-    \ctx ->
-        b(a(ctx));
-
-var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p), \x -> x);
-
-var seq = \args(...) -> seqa(args);
-
-var examineScope = \f ->
-    \ctx ->
-        f(zipper.extract(ctx).scope)(ctx);
-
-var setScope = \s -> zipper.modify(\state -> state.setScope(s));
-
-var realBlock = \body(...) ->
-    examineScope(\s ->
-        seq(
-            setScope(new scope.Scope({}, s, {}, {})),
-            seqa(body),
-            setScope(s)));
-
-var modifyNode = \f ctx ->
-    tree.modifyNode(
-        \s ->
-            s.setNode(f(s.node)),
-        ctx);
+        
+/* State
+ ******************************************************************************/
+var _transform;
 
 /* State
  ******************************************************************************/
@@ -426,7 +440,7 @@ in
 /* Transform
  ******************************************************************************/
 var transformers = {};
-var _t;
+
 var addTransform = \type pre post -> {
     var entry = {
         'pre': pre,
@@ -494,12 +508,12 @@ addTransform('IfStatement',
 
 addTransform('WithStatement',
     \ctx ->
-        _t(
+        _transform <|
             modifyNode(\node ->
                 withStatement(node.loc,
                     node.bindings,
                     node.body),
-                ctx)));
+                ctx));
 
 addTransform('SwitchStatement',
     id,
@@ -661,31 +675,33 @@ addTransform('CurryExpression',
 
 addTransform('UnaryOperatorExpression',
     \ctx ->
-        _t(
+        _transform <|
             modifyNode(\node ->
                 unaryOperatorExpression(node.loc, node.op),
-                ctx)));
+                ctx));
 
 addTransform('BinaryOperatorExpression',
     \ctx ->
-        _t(
+        _transform <|
             modifyNode(\node ->
                 binaryOperatorExpression(node.loc, node.op),
-                ctx)));
+                ctx));
 
 addTransform('TernaryOperatorExpression',
     \ctx ->
-        _t(
+        _transform <|
             modifyNode(\node ->
                 ternaryOperatorExpression(node.loc),
-                ctx)));
+                ctx));
 
 addTransform('FunctionExpression',
-    modifyNode @ \node ->
-        functionExpression(node.loc,
-            node.id,
-            node.params,
-            node.body),
+    seq(
+        enterBlock,
+        modifyNode @ \node ->
+            functionExpression(node.loc,
+                node.id,
+                node.params,
+                node.body)),
     modifyNode @ \node ->
         ecma_expression.FunctionExpression.create(null,
             node.id,
@@ -754,8 +770,14 @@ addTransform('Package',
 
 // Value
 addTransform('Identifier',
-    modifyNode @ \node ->
-        identifier(node.loc, node.name));
+    \ctx -> {
+        var node = tree.node(ctx).node;
+        var s = addVar(node.name, node.ud.uid)(ctx);
+        var n = getMapping(node.ud.uid)(s);
+
+        return modifyNode@(\node ->
+            identifier(node.loc, n))(addVar(node.name, node.ud.uid)(ctx));
+    });
 
 /*
  * 
@@ -766,7 +788,7 @@ var _trans = \node -> {
     
     var t = transformers.(node.type);
     
-    if (!t) return id;
+    if (!t || !t.(0).pre) return id;
     return t.(0).pre;
 };
 
@@ -780,14 +802,17 @@ var _transp = \node -> {
     return t.(0).post;
 };
 
-_t = \ctx ->
+_transform = \ctx ->
     _trans(tree.node(ctx).node)(ctx);
 
-var _tp = \ctx ->
+var _transformPost = \ctx ->
     _transp(tree.node(ctx).node)(ctx);
     
-var walk = zipper_walk.walk@(_t, _tp);
+var walk = zipper_walk.walk@(_transform, _transformPost);
 
+/*
+ * 
+ *****************************************************************************/
 /**
  * 
  */
@@ -805,6 +830,7 @@ transform = \ast manager -> {
             walk(
                 khepriZipper(
                     State.create(ast, packageManager)))).node;
+
     }
 };
 
