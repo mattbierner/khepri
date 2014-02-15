@@ -1,3 +1,7 @@
+/*
+ * THIS FILE IS AUTO GENERATED from 'lib/ecma_peep.kep'
+ * DO NOT EDIT
+*/
 "use strict";
 var tree = require("neith")["tree"],
     __o = require("neith")["walk"],
@@ -188,12 +192,7 @@ var transformDown = (function(node) {
     })), tree.modifyNode.bind(null, (function(node) {
         return (node && transformUp(node));
     })));
-(optimize = (function(__o2) {
-    var options = __o2["options"],
-        ast = __o2["ast"];
-    return ({
-        "options": options,
-        "ast": tree.node(zipper.root(opt(ecmaZipper(ast))))
-    });
+(optimize = (function(ast) {
+    return tree.node(zipper.root(opt(ecmaZipper(ast))));
 }));
 (exports.optimize = optimize);

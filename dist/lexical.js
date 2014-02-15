@@ -4,11 +4,11 @@
 */
 define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepri-ast/pattern", "khepri-ast/value",
     "neith/zipper", "neith/tree", "khepri-ast-zipper", "bes/record", "./scope"
-], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, __o0) {
+], (function(require, exports, ast_node, ast_expression, ast_pattern, ast_value, zipper, tree, __o, record, scope) {
     "use strict";
     var setUserData = ast_node["setUserData"],
         khepriZipper = __o["khepriZipper"],
-        Scope = __o0["Scope"],
+        Scope = scope["Scope"],
         check, reduce = Function.prototype.call.bind(Array.prototype.reduce),
         _check, Tail = (function(f, s, ok, err) {
             var self = this;
@@ -124,8 +124,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         block = (function() {
             var body = arguments;
             return examineScope((function(s) {
-                return seq(setScope(new(Scope)(({}), s, ({}), s.definitions)), seqa(body), setScope(
-                    s));
+                return seq(setScope(scope.push(s)), seqa(body), setScope(s));
             }));
         }),
         checkHasBinding = (function(id, loc) {

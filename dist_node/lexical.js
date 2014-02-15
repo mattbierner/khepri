@@ -13,8 +13,8 @@ var ast_node = require("khepri-ast")["node"],
     __o = require("khepri-ast-zipper"),
     khepriZipper = __o["khepriZipper"],
     record = require("bes")["record"],
-    __o0 = require("./scope"),
-    Scope = __o0["Scope"],
+    scope = require("./scope"),
+    Scope = scope["Scope"],
     check, reduce = Function.prototype.call.bind(Array.prototype.reduce),
     _check, Tail = (function(f, s, ok, err) {
         var self = this;
@@ -130,7 +130,7 @@ var ast_node = require("khepri-ast")["node"],
     block = (function() {
         var body = arguments;
         return examineScope((function(s) {
-            return seq(setScope(new(Scope)(({}), s, ({}), s.definitions)), seqa(body), setScope(s));
+            return seq(setScope(scope.push(s)), seqa(body), setScope(s));
         }));
     }),
     checkHasBinding = (function(id, loc) {

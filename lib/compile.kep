@@ -3,8 +3,8 @@ package (
 with
     import './stage/lexical' lexical,
     import './stage/transform' transform,
-    import './khepri_peep' khepri_peep,
-    import './ecma_peep' ecma_peep
+    import './stage/khepri_peep' khepri_peep,
+    import './stage/ecma_peep' ecma_peep
 in {
 
 compile =

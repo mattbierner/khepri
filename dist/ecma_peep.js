@@ -187,13 +187,8 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-
         })), tree.modifyNode.bind(null, (function(node) {
             return (node && transformUp(node));
         })));
-    (optimize = (function(__o2) {
-        var options = __o2["options"],
-            ast = __o2["ast"];
-        return ({
-            "options": options,
-            "ast": tree.node(zipper.root(opt(ecmaZipper(ast))))
-        });
+    (optimize = (function(ast) {
+        return tree.node(zipper.root(opt(ecmaZipper(ast))));
     }));
     (exports.optimize = optimize);
 }));

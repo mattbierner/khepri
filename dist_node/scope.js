@@ -6,7 +6,7 @@
 var __o = require("bes")["object"],
     setProperty = __o["setProperty"],
     record = require("bes")["record"],
-    Scope;
+    Scope, push, pop;
 (Scope = record.declare(null, ["record", "outer", "mapping", "definitions"]));
 (Scope.empty = Scope.create(({}), null, ({}), ({})));
 (Scope.prototype.hasOwnBinding = (function(id) {
@@ -72,4 +72,12 @@ var __o = require("bes")["object"],
 (Scope.addMapping = (function(s, from, to) {
     return new(Scope)(s.record, s.outer, setProperty(s.mapping, from, to, true), s.definitions);
 }));
+(push = (function(s) {
+    return new(Scope)(({}), s, ({}), s.definitions);
+}));
+(pop = (function(s) {
+    return s.outer;
+}));
 (exports.Scope = Scope);
+(exports.push = push);
+(exports.pop = pop);

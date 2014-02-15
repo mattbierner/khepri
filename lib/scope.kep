@@ -2,7 +2,9 @@
  * @fileOverview
  */
 package (
-    Scope)
+    Scope
+    push
+    pop)
 with
     import 'bes::object' {setProperty},
     import 'bes::record' record
@@ -164,5 +166,11 @@ Scope.addMapping = \s, from, to ->
         s.outer,
         setProperty(s.mapping, from, to, true),
         s.definitions);
+
+/* Operations
+ ******************************************************************************/
+push = \s -> new Scope({}, s, {}, s.definitions);
+
+pop = \s -> s.outer;
 
 }

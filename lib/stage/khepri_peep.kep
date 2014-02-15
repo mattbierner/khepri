@@ -1,0 +1,19 @@
+/**
+ * @fileOverview
+ */
+package (
+    optimize)
+with
+    import '../khepri_peep' khepri_peep
+in {
+
+
+/**
+ * 
+ */
+optimize = \{options ast} ->({
+    'options': options,
+    'ast': khepri_peep.optimize(ast)
+});
+
+}

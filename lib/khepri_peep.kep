@@ -209,11 +209,9 @@ var opt = walk
     @(tree.modifyNode @ \node -> (node && transformDown(node)))
     @(tree.modifyNode @ \node -> (node && transformUp(node)));
 
-optimize = \{options ast} ->
-    ({
-        'options': options,
-        'ast': (opt(khepriZipper(ast))
-            |> zipper.root
-            |> tree.node) });
+optimize = \ast->
+    (opt(khepriZipper(ast))
+        |> zipper.root
+        |> tree.node);
 
 }

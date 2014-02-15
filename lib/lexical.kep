@@ -16,7 +16,7 @@ with
     
     import 'bes::record' record,
     
-    import './scope' {Scope}
+    import './scope' scope#{Scope}
 in {
 
 var reduce = Function.prototype.call.bind(Array.prototype.reduce);
@@ -126,7 +126,7 @@ var pass = ok();
 var block = \body(...) ->
     examineScope <|\ s ->
         seq(
-            setScope(new Scope({}, s, {}, s.definitions)),
+            setScope(scope.push(s)),
             seqa(body),
             setScope(s));
 
@@ -199,7 +199,6 @@ var addMutableBindingChecked = \id, loc ->
         checkCanAddOwnBinding(id, loc),
         addMutableBinding(id, loc));
 
-
 /**
  * Add a new immutable binding in the current scope.
  * Checks to make sure the new binding is valid.
@@ -209,7 +208,7 @@ var addImmutableBindingChecked = \id, loc ->
         checkCanAddOwnBinding(id, loc),
         addImmutableBinding(id, loc));
 
-/*
+/* Checks
  ******************************************************************************/
 var checks = {};
 
