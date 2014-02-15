@@ -19,19 +19,19 @@ with
     import 'khepri-ast::clause' khepri_clause,
     import 'khepri-ast::declaration' khepri_declaration,
     import 'khepri-ast::expression' khepri_expression,
-    import 'khepri-ast::node' khepri_node#{setUserData Node modify},
+    import 'khepri-ast::node' khepri_node,
     import 'khepri-ast::pattern' khepri_pattern,
     import 'khepri-ast::program' khepri_program,
     import 'khepri-ast::statement' khepri_statement,
     import 'khepri-ast::value' khepri_value,
     
-    import 'nu-stream::stream' stream#{foldl from NIL},
-    import 'khepri-ast-zipper' khepri_zipper,
+    import 'khepri-ast-zipper' {khepriZipper},
 
-    import 'neith::tree' tree#{treeZipper},
-    import 'neith::walk' zipper_walk#{preWalk postWalk},
-        
+    import 'neith::tree' tree#,
+    import 'neith::zipper' zipper,
+
     import './scope' scope,
+    
     import './package_manager::amd' _,
     import './package_manager::node' _
 in {
@@ -43,7 +43,7 @@ var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
 var filter = \f, a -> Array.prototype.filter.call(a, f);
 var map = \f, a ->  Array.prototype.map.call(a, f);
 
-var id = \x -> x;
+var identity = \x -> x;
 
 var flatten = \x ->
     ?Array.isArray(x)
@@ -61,36 +61,78 @@ var isStrict = \elems -> {
     return false;
 };
 
+/* State
+ ******************************************************************************/
 var State = record.declare(null, [
-    'node',
+    'ctx',
     'scope',
     'packageManager']);
 
 State.empty = State.create(null, scope.Scope.empty, null);
 
-var next = \a b -> \ctx -> b(a(ctx));
+/*
+ ******************************************************************************/
+var ok = \x -> \s, ok, _ -> ok(x, s);
 
-var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p));
+var pass = ok();
+
+var error = \x -> \s, _, err -> err(x, s);
+
+var bind = \p f ->
+    \s ok ->
+        p(s, \x, s -> f(x)(s, ok));
+
+var next = \p n -> bind(p, \_ -> n);
+
+var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
 
 var seq = \args(...) -> seqa(args);
 
-var examineScope = \f ->
-    \ctx ->
-       f(tree.node(ctx).scope)(ctx);
+var extract = \s ok, _ -> ok(s, s);
 
-var setScope = \s -> tree.modifyNode @ (\state -> state.setScope(s));
+var setState = \s -> \_ ok _ -> ok(s, s);
 
+var modifyState = \f -> bind(extract, \s -> setState(f(s)));
+
+var examineState = \f -> bind(extract, \s -> f(s));
+
+var examineScope = \f -> bind(extract, \s -> f(s.scope));
+
+var examineRealScope = \f -> bind(extract, \s -> f(s.realScope));
+
+var modifyScope = \f ->
+    \s, ok, err -> let
+        scope = f(s.scope),
+        newState = State.setScope(s, scope)
+    in ok(scope, newState);
+
+var setScope = \s -> modifyScope(\() -> s);
+
+var move = \op ->
+    modifyState(\s ->
+        s.setCtx(op(s.ctx)));
+
+var modify = \f ->
+    move(tree.modifyNode @ f);
+
+var ctx = examineState(\s ->
+    ok(s.ctx));
+
+var get = \op ->
+    examineState(\s ->
+        ok(op(s.ctx)));
+    
+var node = get tree.node;
+
+/*
 var enterBlock = examineScope(\s ->
     setScope(new scope.Scope({}, s, {}, {})));
 
 var exitBlock = examineScope(\s ->
     setScope(s.parent));
+*/
 
-var modifyNode = \f ctx ->
-    tree.modifyNode(
-         \s ->
-             s.setNode(f(s.node)),
-         ctx);
+
 
 var addVar = \id uid ->
     examineScope(\s ->
@@ -105,18 +147,6 @@ var addVar = \id uid ->
 var getMapping = \uid ->
     \ctx ->
         tree.node(ctx).scope.getMapping(uid);
-
-var khepriZipper = treeZipper@(
-    \ctx ->
-        khepri_zipper.getChildren(ctx.node),
-    \ctx, key ->
-        ctx.setNode(khepri_zipper.getChild(ctx.node, key)),
-    \ctx, pairs, value ->
-        ctx.setNode(
-            khepri_zipper.construct(
-                ctx.node,
-                stream.map(\x -> tree.Pair(x.key, x.value.node), pairs),
-                \() -> let v = value() in reduce(Object.keys(v), \p c -> { p.(c) = v.(c).node; return p; }, {}))));
 
         
 /* State
@@ -454,121 +484,120 @@ var addTransform = \type pre post -> {
 
 // Declarations
 addTransform('VariableDeclaration',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_declaration.VariableDeclaration.create(node.loc,
             node.declarations));
 
 addTransform('VariableDeclarator',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_declaration.VariableDeclarator.create(node.loc,
             node.id,
             node.init));
 
 addTransform('StaticDeclaration',
-    modifyNode @ \node ->
+    modify \node ->
         ecma_statement.EmptyStatement.create(node.loc));
 
 // Clauses
 addTransform('CatchClause',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_clause.CatchClause.create(node.loc,
             node.param,
             node.body));
 
 addTransform('SwitchCase',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_clause.SwitchCase.create(node.loc,
             node.test,
             node.consequent));
 
 // Statement
 addTransform('BlockStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.BlockStatement.create(node.loc,
             node.body));
 
 addTransform('ExpressionStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.ExpressionStatement.create(node.loc,
             node.expression));
 
 addTransform('IfStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.IfStatement.create(node.loc,
             node.test,
             node.consequent,
             node.alternate));
 
 addTransform('WithStatement',
-    \ctx ->
-        _transform <|
-            modifyNode(\node ->
-                withStatement(node.loc,
-                    node.bindings,
-                    node.body),
-                ctx));
+    next(
+        modifyNode(\node ->
+            withStatement(node.loc,
+                node.bindings,
+                node.body)),
+        _transform));
 
 addTransform('SwitchStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.SwitchStatement.create(node.loc,
             node.discriminant,
             node.cases));
 
 addTransform('ReturnStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.ReturnStatement.create(node.loc,
             node.argument));
 
 addTransform('ThrowStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.ThrowStatement.create(node.loc,
             node.argument));
 
 addTransform('BreakStatement',
-    modifyNode @ \node ->
+    modify \node ->
         ecma_statement.BreakStatement.create(node.loc,
             null));
 
 addTransform('ContinueStatement',
-    modifyNode @ \node ->
+    modify \node ->
         ecma_statement.ContinueStatement.create(node.loc,
             null));
 
 addTransform('TryStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.TryStatement.create(node.loc,
             node.block,
             node.handler,
             node.finalizer));
 
 addTransform('WhileStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.WhileStatement.create(node.loc,
             node.test,
             node.body));
 
 addTransform('DoWhileStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.DoWhileStatement.create(node.loc,
             node.body,
             node.test));
 
 addTransform('ForStatement',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_statement.ForStatement.create(node.loc,
             node.init,
             node.test,
@@ -577,16 +606,16 @@ addTransform('ForStatement',
 
 // Expression
 addTransform('AssignmentExpression',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_expression.AssignmentExpression.create(node.loc,
             node.operator,
             node.left,
             node.right));
 
 addTransform('UnaryExpression',
-    id,
-    modifyNode @ \node -> {
+    null,
+    modify \node -> {
         var op = node.operator;
         switch (op) {
         case '++': op = '+'; break;
@@ -599,7 +628,7 @@ addTransform('UnaryExpression',
     });
 
 addTransform('BinaryExpression',
-    modifyNode @ \node -> {
+    modify \node -> {
         switch (node.operator) {
         case '\\>':
             return singleCompose(node.loc, node.right, node.left);
@@ -617,58 +646,58 @@ addTransform('BinaryExpression',
             return node;
         }
     },
-    modifyNode @ \node ->
+    modify \node ->
         ecma_expression.BinaryExpression.create(node.loc,
             node.operator,
             node.left,
             node.right));
 
 addTransform('LogicalExpression',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_expression.LogicalExpression.create(node.loc,
             node.operator,
             node.left,
             node.right));
 
 addTransform('ConditionalExpression',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_expression.ConditionalExpression.create(node.loc,
             node.test,
             node.consequent,
             node.alternate));
 
 addTransform('NewExpression',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_expression.NewExpression.create(node.loc,
             node.callee,
             node.args));
 
 addTransform('CallExpression',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_expression.CallExpression.create(node.loc,
             node.callee,
             node.args));
 
 addTransform('MemberExpression',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_expression.MemberExpression.create(node.loc,
             node.object,
             node.property,
             node.computed));
 
 addTransform('LetExpression',
-    modifyNode @ \node ->
+    modify \node ->
         letExpression(node.loc,
             node.bindings,
             node.body));
 
 addTransform('CurryExpression',
-    modifyNode @ \node ->
+    modify \node ->
         curryExpression(node.loc,
             node.base,
             node.args));
@@ -695,67 +724,65 @@ addTransform('TernaryOperatorExpression',
                 ctx));
 
 addTransform('FunctionExpression',
-    seq(
-        enterBlock,
-        modifyNode @ \node ->
-            functionExpression(node.loc,
-                node.id,
-                node.params,
-                node.body)),
-    modifyNode @ \node ->
+    modify \node ->
+        functionExpression(node.loc,
+            node.id,
+            node.params,
+            node.body),
+    modify \node ->
         ecma_expression.FunctionExpression.create(null,
             node.id,
             node.params,
             node.body));
 
 addTransform('ArrayExpression',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_expression.ArrayExpression.create(node.loc,
             node.elements));
 
 addTransform('ObjectExpression',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_expression.ObjectExpression.create(node.loc,
             node.properties));
 
 addTransform('ObjectValue',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_value.ObjectValue.create(node.loc,
             node.key,
             node.value));
 
 // Patterns
 addTransform('ArgumentsPattern',
-    id,
-    modifyNode @ \node -> node.id);
+    null,
+    modify \node -> node.id);
 
 addTransform('IdentifierPattern',
-    id,
-    modifyNode @ \node -> node.id);
+    null,
+    modify \node -> node.id);
 
 addTransform('AsPattern',
-    id,
-    modifyNode @ \node -> node.id);
+    null,
+    modify \node -> node.id);
 
 addTransform('ObjectPattern',
-    id,
-    modifyNode @ \node -> node.ud.id);
+    null,
+    modify \node -> node.ud.id);
 
 addTransform('EllipsisPattern',
-    id,
-    modifyNode @ \node -> (node.ud && node.ud.id));
+    null,
+    modify \node -> (node.ud && node.ud.id));
 
 addTransform('SinkPattern',
-    id,
-    modifyNode @ \node -> (node.ud && node.ud.id));
+    null,
+    modify \node -> (node.ud && node.ud.id));
 
 // Program
 addTransform('Program',
-    id,
-    modifyNode @ \node ->
+    null,
+    modify \node ->
         ecma_program.Program.create(node.loc,
             ?Array.isArray(node.body)
                 :node.body
@@ -763,14 +790,15 @@ addTransform('Program',
 
 // Package
 addTransform('Package',
-    modifyNode @ \node ->
+    modify \node ->
         packageBlock(node.loc,
             node.exports,
             node.body));
 
 // Value
 addTransform('Identifier',
-    \ctx -> {
+    modify \node -> identifier(null, node.name));
+/*    \ctx -> {
         var node = tree.node(ctx).node;
         var s = addVar(node.name, node.ud.uid)(ctx);
         var n = getMapping(node.ud.uid)(s);
@@ -778,38 +806,63 @@ addTransform('Identifier',
         return modifyNode@(\node ->
             identifier(node.loc, n))(addVar(node.name, node.ud.uid)(ctx));
     });
+*/
 
 /*
  * 
  *****************************************************************************/
 var _trans = \node -> {
-    if (!node || !(node instanceof khepri_node.Node))
-        return id;
-    
-    var t = transformers.(node.type);
-    
-    if (!t || !t.(0).pre) return id;
-    return t.(0).pre;
+    if (node && node instanceof khepri_node.Node) {
+        var t = transformers.(node.type);
+        static console;
+        console.log(node.type);
+
+        if (t && t.(0).pre)
+            return t.(0).pre;
+    }
+    return ok();
 };
 
 var _transp = \node -> {
-    if (!node || !(node instanceof khepri_node.Node))
-        return id;
-    
-    var t = transformers.(node.type);
-    
-    if (!t || !t.(0).post) return id;
-    return t.(0).post;
+    if (node && node instanceof khepri_node.Node) {
+        var t = transformers.(node.type);
+        static console;
+        console.log('p'+ node.type);
+        if (t && t.(0).post)
+            return t.(0).post;
+    }
+    return ok();
 };
 
-_transform = \ctx ->
-    _trans(tree.node(ctx).node)(ctx);
+_transform = bind(node, _trans);
 
-var _transformPost = \ctx ->
-    _transp(tree.node(ctx).node)(ctx);
+var _transformPost = bind(node, _transp);
     
-var walk = zipper_walk.walk@(_transform, _transformPost);
+//var walk = zipper_walk.walk@(_transform, _transformPost);
 
+var walk = \pre post ->
+    next(
+        pre,
+        bind(ctx, \t -> {
+        if (zipper.isLeaf t) {
+            var loop = next(
+                post,
+                bind(ctx, \t -> {
+                    if (zipper.isLast t) {
+                        if (zipper.isRoot t)
+                            return ok();
+                        return next(
+                            move zipper.up,
+                           loop);
+                    } else {
+                        return next(move zipper.right, walk(pre, post));
+                    }
+                }));
+            return loop;
+        }
+        return next(move zipper.down, walk(pre, post));
+    }));
+    
 /*
  * 
  *****************************************************************************/
@@ -826,10 +879,10 @@ transform = \ast manager -> {
         if (manager === 'node')
             packageManager = node_manager;
 
-        return tree.node(
-            walk(
-                khepriZipper(
-                    State.create(ast, packageManager)))).node;
+        return next(
+            walk(_transform, _transformPost),
+            node
+            )(State.create(khepriZipper(ast), packageManager), \x -> x);
 
     }
 };
