@@ -33,9 +33,6 @@ var record = require("bes")["record"],
     map = (function(f, a) {
         return Array.prototype.map.call(a, f);
     }),
-    identity = (function(x) {
-        return x;
-    }),
     flatten = (function(x) {
         return (Array.isArray(x) ? reduce(x, (function(p, c) {
             return p.concat(c);
@@ -52,16 +49,10 @@ var record = require("bes")["record"],
     State = record.declare(null, ["ctx", "scope", "packageManager"]);
 (State.empty = State.create(null, scope.Scope.empty, null));
 var ok = (function(x) {
-    return (function(s, ok, _) {
+    return (function(s, ok) {
         return ok(x, s);
     });
 }),
-    pass = ok(),
-    error = (function(x) {
-        return (function(s, _, err) {
-            return err(x, s);
-        });
-    }),
     bind = (function(p, f) {
         return (function(s, ok) {
             return p(s, (function(x, s) {
@@ -69,6 +60,7 @@ var ok = (function(x) {
             }));
         });
     }),
+    pass = ok(),
     next = (function(p, n) {
         return bind(p, (function(_) {
             return n;
@@ -77,17 +69,17 @@ var ok = (function(x) {
     seqa = (function(arr) {
         return reduceRight(arr, (function(p, c) {
             return next(c, p);
-        }), ok());
+        }));
     }),
     seq = (function() {
         var args = arguments;
         return seqa(args);
     }),
-    extract = (function(s, ok, _) {
+    extract = (function(s, ok) {
         return ok(s, s);
     }),
     setState = (function(s) {
-        return (function(_, ok, _1) {
+        return (function(_, ok) {
             return ok(s, s);
         });
     }),
@@ -111,6 +103,9 @@ var ok = (function(x) {
             return f(s.realScope);
         }));
     }),
+    packageManager = examineState((function(s) {
+        return ok(s.packageManager);
+    })),
     modifyScope = (function(f) {
         return (function(s, ok, err) {
             var scope = f(s.scope),
@@ -159,7 +154,7 @@ var ok = (function(x) {
         var args = arguments;
         return _transform.apply(null, args);
     }),
-    packageManager, identifier = (function(loc, name) {
+    identifier = (function(loc, name) {
         return ecma_value.Identifier.create(loc, name);
     }),
     stringLiteral = (function(loc, value) {
@@ -203,7 +198,7 @@ var ok = (function(x) {
             return ecma_expression.AssignmentExpression.create(null, "=", x.pattern, x.value);
         }), flatten(innerPattern(value, pattern)));
     }),
-    withStatement = (function(loc, bindings, body) {
+    withStatement = (function(packageManager, loc, bindings, body) {
         var vars = flatten(map((function(imp) {
             return unpack(imp.pattern, ((imp.type === "ImportPattern") ? packageManager.importPackage(
                 imp.from.value) : imp.value));
@@ -298,7 +293,7 @@ var ok = (function(x) {
                     ])
                 ]))), [f, g]);
     }),
-    packageBlock = (function(loc, exports, body) {
+    packageBlock = (function(packageManager, loc, exports, body) {
         var imports = ((body.type === "WithStatement") ? filter((function(x) {
             return (x.type === "ImportPattern");
         }), body.bindings) : []),
@@ -347,8 +342,10 @@ addTransform("ExpressionStatement", null, modify((function(node) {
 addTransform("IfStatement", null, modify((function(node) {
     return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
 })));
-addTransform("WithStatement", next(modify((function(node) {
-    return withStatement(node.loc, node.bindings, node.body);
+addTransform("WithStatement", next(bind(packageManager, (function(packageManager) {
+    return modify((function(node) {
+        return withStatement(packageManager, node.loc, node.bindings, node.body);
+    }));
 })), _transform));
 addTransform("SwitchStatement", null, modify((function(node) {
     return ecma_statement.SwitchStatement.create(node.loc, node.discriminant, node.cases);
@@ -477,8 +474,10 @@ addTransform("SinkPattern", null, modify((function(node) {
 addTransform("Program", null, modify((function(node) {
     return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? node.body : [node.body]));
 })));
-addTransform("Package", modify((function(node) {
-    return packageBlock(node.loc, node.exports, node.body);
+addTransform("Package", bind(packageManager, (function(packageManager) {
+    return modify((function(node) {
+        return packageBlock(packageManager, node.loc, node.exports, node.body);
+    }));
 })));
 addTransform("Identifier", modify((function(node) {
     return identifier(null, node.name);
@@ -488,14 +487,14 @@ var _trans = (function(node) {
         var t = transformers[node.type];
         if ((t && t[0].pre)) return t[0].pre;
     }
-    return ok();
+    return pass;
 }),
     _transp = (function(node) {
         if ((node && (node instanceof khepri_node.Node))) {
             var t = transformers[node.type];
             if ((t && t[0].post)) return t[0].post;
         }
-        return ok();
+        return pass;
     });
 (_transform = bind(node, _trans));
 var _transformPost = bind(node, _transp),
@@ -517,12 +516,12 @@ var _transformPost = bind(node, _transp),
     });
 (transform = (function(ast, manager) {
     var amd_manager = require("./package_manager/amd"),
-        node_manager = require("./package_manager/node");
-    (packageManager = amd_manager);
+        node_manager = require("./package_manager/node"),
+        packageManager = amd_manager;
     if ((manager === "node"))(packageManager = node_manager);
-    return next(walk(_transform, _transformPost), node)(State.create(khepriZipper(ast), packageManager), (
-        function(x) {
-            return x;
-        }));
+    return next(walk(_transform, _transformPost), node)(State.create(khepriZipper(ast), scope.Scope.empty,
+        packageManager), (function(x) {
+        return x;
+    }));
 }));
 (exports.transform = transform);

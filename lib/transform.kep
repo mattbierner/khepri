@@ -43,8 +43,6 @@ var reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
 var filter = \f, a -> Array.prototype.filter.call(a, f);
 var map = \f, a ->  Array.prototype.map.call(a, f);
 
-var identity = \x -> x;
-
 var flatten = \x ->
     ?Array.isArray(x)
         :reduce(x, \p, c -> p.concat(c), [])
@@ -72,25 +70,23 @@ State.empty = State.create(null, scope.Scope.empty, null);
 
 /*
  ******************************************************************************/
-var ok = \x -> \s, ok, _ -> ok(x, s);
-
-var pass = ok();
-
-var error = \x -> \s, _, err -> err(x, s);
+var ok = \x -> \s, ok -> ok(x, s);
 
 var bind = \p f ->
     \s ok ->
         p(s, \x, s -> f(x)(s, ok));
 
+var pass = ok();
+
 var next = \p n -> bind(p, \_ -> n);
 
-var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p), ok());
+var seqa = \arr -> reduceRight(arr, \p, c -> next(c, p));
 
 var seq = \args(...) -> seqa(args);
 
-var extract = \s ok, _ -> ok(s, s);
+var extract = \s ok -> ok(s, s);
 
-var setState = \s -> \_ ok _ -> ok(s, s);
+var setState = \s -> \_ ok -> ok(s, s);
 
 var modifyState = \f -> bind(extract, \s -> setState(f(s)));
 
@@ -99,6 +95,8 @@ var examineState = \f -> bind(extract, \s -> f(s));
 var examineScope = \f -> bind(extract, \s -> f(s.scope));
 
 var examineRealScope = \f -> bind(extract, \s -> f(s.realScope));
+
+var packageManager = examineState(\s -> ok(s.packageManager));
 
 var modifyScope = \f ->
     \s, ok, err -> let
@@ -152,11 +150,6 @@ var getMapping = \uid ->
 /* Forward
  ******************************************************************************/
 var _transform = \args(...) -> _transform.apply(null, args);
-
-/* State
- ******************************************************************************/
-// @TODO: evil
-var packageManager;
 
 /* Values
  ******************************************************************************/
@@ -235,7 +228,7 @@ var unpackAssign = \pattern, value ->
 /**
  * With statement translation.
  */
-var withStatement = \loc, bindings, body -> let
+var withStatement = \packageManager, loc, bindings, body -> let
     vars = bindings
         |> (map @ \imp ->
             unpack(
@@ -447,7 +440,7 @@ var multiCompose = \loc, f, g ->
 
 /* Package
  ******************************************************************************/
-var packageBlock = \loc, exports, body -> let
+var packageBlock = \packageManager, loc, exports, body -> let
     imports = ?body.type === 'WithStatement'
         :filter(\x -> x.type === 'ImportPattern', body.bindings)
         :[],
@@ -538,10 +531,13 @@ addTransform('IfStatement',
 
 addTransform('WithStatement',
     next(
-        modify \node ->
-            withStatement(node.loc,
-                node.bindings,
-                node.body),
+        bind(packageManager, \packageManager -> 
+            modify \node ->
+                withStatement(
+                    packageManager,
+                    node.loc,
+                    node.bindings,
+                    node.body)),
         _transform));
 
 addTransform('SwitchStatement',
@@ -787,23 +783,18 @@ addTransform('Program',
 
 // Package
 addTransform('Package',
-    modify \node ->
-        packageBlock(node.loc,
-            node.exports,
-            node.body));
+    bind(packageManager, \packageManager ->
+        modify \node ->
+            packageBlock(
+                packageManager,
+                node.loc,
+                node.exports,
+                node.body)));
 
 // Value
 addTransform('Identifier',
-    modify \node -> identifier(null, node.name));
-/*    \ctx -> {
-        var node = tree.node(ctx).node;
-        var s = addVar(node.name, node.ud.uid)(ctx);
-        var n = getMapping(node.ud.uid)(s);
-
-        return modifyNode@(\node ->
-            identifier(node.loc, n))(addVar(node.name, node.ud.uid)(ctx));
-    });
-*/
+    modify \node ->
+        identifier(null, node.name));
 
 /*
  * 
@@ -814,7 +805,7 @@ var _trans = \node -> {
         if (t && t.(0).pre)
             return t.(0).pre;
     }
-    return ok();
+    return pass;
 };
 
 var _transp = \node -> {
@@ -823,14 +814,12 @@ var _transp = \node -> {
         if (t && t.(0).post)
             return t.(0).post;
     }
-    return ok();
+    return pass;
 };
 
 _transform = bind(node, _trans);
 
 var _transformPost = bind(node, _transp);
-    
-//var walk = zipper_walk.walk@(_transform, _transformPost);
 
 var walk = \pre post ->
     next(
@@ -854,7 +843,7 @@ var walk = \pre post ->
         }
         return next(move zipper.down, walk(pre, post));
     }));
-    
+
 /*
  * 
  *****************************************************************************/
@@ -862,19 +851,17 @@ var walk = \pre post ->
  * 
  */
 transform = \ast manager -> {
-    // @TODO: Much evil
     with 
         import './package_manager/amd' amd_manager,
         import './package_manager/node' node_manager
     in {
-        packageManager = amd_manager;
+        var packageManager = amd_manager;
         if (manager === 'node')
             packageManager = node_manager;
 
         return next(
             walk(_transform, _transformPost),
-            node
-            )(State.create(khepriZipper(ast), packageManager), \x -> x);
+            node)(State.create(khepriZipper(ast), scope.Scope.empty, packageManager), \x -> x);
 
     }
 };
