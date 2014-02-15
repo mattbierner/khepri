@@ -796,10 +796,12 @@ addTransform('Package',
 // Value
 addTransform('Identifier',
     bind(node, \node ->
-        next(
-            addVar(node.name, node.ud.uid),
-            bind(getMapping(node.ud.uid), \name ->
-                modify \node -> identifier(node.loc, name)))));
+        ?node.ud && node.ud.uid
+            :next(
+                addVar(node.name, node.ud.uid),
+                bind(getMapping(node.ud.uid), \name ->
+                    modify \node -> identifier(node.loc, name)))
+            :modify \node -> identifier(node.loc, node.name)));
 
 /*
  *****************************************************************************/

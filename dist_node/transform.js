@@ -485,10 +485,13 @@ addTransform("Package", bind(packageManager, (function(packageManager) {
     }));
 })));
 addTransform("Identifier", bind(node, (function(node) {
-    return next(addVar(node.name, node.ud.uid), bind(getMapping(node.ud.uid), (function(name) {
-        return modify((function(node) {
-            return identifier(node.loc, name);
-        }));
+    return ((node.ud && node.ud.uid) ? next(addVar(node.name, node.ud.uid), bind(getMapping(node.ud.uid), (
+        function(name) {
+            return modify((function(node) {
+                return identifier(node.loc, name);
+            }));
+        }))) : modify((function(node) {
+        return identifier(node.loc, node.name);
     })));
 })));
 var _trans = (function(node) {
