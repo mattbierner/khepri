@@ -59,6 +59,8 @@ exports.duplicateDeclarationsInOneScope = function(test) {
     test.done();
 };
 
+//@TODO: renaming now takes place in translate not lexical
+/*
 exports.renaming = function(test) {
     var result = lexical.check(testParser(lexer.lex("var a; { var a; }")));
     test.ok(result.body[0].declarations[0].id.name !== result.body[1].body[0].declarations[0].id.name);
@@ -67,7 +69,7 @@ exports.renaming = function(test) {
     test.ok(result.body[0].body[0].declarations[0].id.name !== result.body[1].declarations[0].id.name);
     test.done();
 };
-
+*/
 exports.switchBodyIntroducesNewScopeButNotCases = function(test) {
     test.throws(function() {
         lexical.check(testParser(lexer.lex("var a; switch(a) {case 0: var a; default: var a; }")));
@@ -76,7 +78,7 @@ exports.switchBodyIntroducesNewScopeButNotCases = function(test) {
         lexical.check(testParser(lexer.lex("var a; switch(a) { default: var a; }"))));
     
     var result = lexical.check(testParser(lexer.lex("var a; switch(a) { default: var a; }")));
-    test.ok(result.body[0].declarations[0].id.name != result.body[1].cases[0].consequent[0].declarations[0].id.name);
+    //test.ok(result.body[0].declarations[0].id.name != result.body[1].cases[0].consequent[0].declarations[0].id.name);
     test.done();
 };
 
