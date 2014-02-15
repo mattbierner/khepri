@@ -120,16 +120,12 @@ var ast_node = require("khepri-ast")["node"],
             return f(tree.node(s.ctx));
         }));
     }),
-    modifyNode = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(move, tree.modifyNode),
-    setNode = (function(f, g) {
-        return (function(x) {
-            return f(g(x));
-        });
-    })(move, tree.setNode),
+    modifyNode = (function(f) {
+        return move(tree.modifyNode.bind(null, f));
+    }),
+    setNode = (function(x) {
+        return move(tree.setNode.bind(null, x));
+    }),
     pass = ok(),
     block = (function() {
         var body = arguments;

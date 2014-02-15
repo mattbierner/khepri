@@ -112,9 +112,9 @@ var checkChild = child@checkTop;
 var inspect = \f ->
     examineState(\s -> f(tree.node s.ctx));
 
-var modifyNode = move <\ tree.modifyNode;
+var modifyNode = \f -> move tree.modifyNode@f;
 
-var setNode = move <\ tree.setNode;
+var setNode = \x -> move tree.setNode@x;
 
 /* Operations
  ******************************************************************************/
