@@ -1,7 +1,5 @@
 /**
  * @fileOverview
- * 
- * @TODO Better data structure (Zipper?) and eliminate mutation.
  */
 package (
     transform)

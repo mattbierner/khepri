@@ -119,15 +119,15 @@ var arithmetic = ({
         return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) || (node.kind ===
             "boolean")) || (node.kind === "null")));
     });
-addPeephole(["BinaryExpression", "LogicalExpression"], true, (function(__o2) {
-    var operator = __o2["operator"],
-        left = __o2["left"],
-        right = __o2["right"];
+addPeephole(["BinaryExpression", "LogicalExpression"], true, (function(__o) {
+    var operator = __o["operator"],
+        left = __o["left"],
+        right = __o["right"];
     return ((arithmetic[operator] && isPrimitive(left)) && isPrimitive(right));
-}), (function(__o2) {
-    var operator = __o2["operator"],
-        left = __o2["left"],
-        right = __o2["right"],
+}), (function(__o) {
+    var operator = __o["operator"],
+        left = __o["left"],
+        right = __o["right"],
         value = arithmetic[operator](left.value, right.value);
     return ast_value.Literal.create(null, (typeof value), value);
 }));
@@ -152,39 +152,42 @@ var arithmetic0 = ({
         return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) || (node.kind ===
             "boolean")) || (node.kind === "null")));
     });
-addPeephole(["UnaryExpression"], true, (function(__o2) {
-    var operator = __o2["operator"],
-        argument = __o2["argument"];
-    return (arithmetic0[operator] && isPrimitive0(argument));
-}), (function(__o2) {
-    var operator = __o2["operator"],
-        argument = __o2["argument"],
-        value = arithmetic0[operator](argument.value);
+addPeephole(["UnaryExpression"], true, (function(__o) {
+    var operator = __o["operator"],
+        argument = __o["argument"];
+    return (arithmetic[operator] && isPrimitive(argument));
+}), (function(__o) {
+    var operator = __o["operator"],
+        argument = __o["argument"],
+        value = arithmetic[operator](argument.value);
     return ast_value.Literal.create(null, (typeof value), value);
 }));
-var transformDown = (function(node) {
-    var transforms = (peepholes[node.type] || [])
+var upTransforms = (function(node) {
+    return ((node && peepholes[node.type]) || [])
         .filter((function(x) {
-            return ((!x.up) && x.condition(node));
+            return (x.up && x.condition(node));
         }));
-    return transforms.reduce((function(p, c) {
-        return c.map(p, transformDown);
-    }), node);
 }),
-    transformUp = (function(node) {
-        var transforms = (peepholes[node.type] || [])
+    downTransforms = (function(node) {
+        return ((node && peepholes[node.type]) || [])
             .filter((function(x) {
-                return (x.up && x.condition(node));
+                return ((!x.up) && x.condition(node));
             }));
-        return transforms.reduce((function(p, c) {
-            return c.map(p, transformUp);
-        }), node);
     }),
-    opt = walk.bind(null, tree.modifyNode.bind(null, (function(node) {
-        return (node && transformDown(node));
-    })), tree.modifyNode.bind(null, (function(node) {
-        return (node && transformUp(node));
-    })));
+    transform = (function(ctx, transforms) {
+        return (transforms.length ? tree.modifyNode((function(node) {
+            return transforms.reduce((function(p, c) {
+                return c.map(p);
+            }), node);
+        }), ctx) : ctx);
+    }),
+    opt = walk.bind(null, (function(ctx) {
+        var node = tree.node(ctx);
+        return transform(ctx, downTransforms(node));
+    }), (function(ctx) {
+        var node = tree.node(ctx);
+        return transform(ctx, upTransforms(node));
+    }));
 (optimize = (function(ast) {
     return tree.node(zipper.root(opt(ecmaZipper(ast))));
 }));

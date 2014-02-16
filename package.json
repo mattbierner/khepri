@@ -48,7 +48,7 @@
         
         "khepri-ast": "3.4.x",
         
-        "neith": "1.4.x",
+        "neith": "1.5.x",
         "ecma-ast-zipper": "1.0.x",
         "khepri-ast-zipper": "1.1.x",
         

@@ -175,9 +175,9 @@ var ok = (function(x) {
                     return fun.concat(innerPattern(base, pattern.id), fun.flatten(innerPattern(pattern.id,
                         pattern.target)));
                 case "ObjectPattern":
-                    return fun.flatten(fun.map((function(__o1) {
-                        var target = __o1["target"],
-                            key = __o1["key"];
+                    return fun.flatten(fun.map((function(__o) {
+                        var target = __o["target"],
+                            key = __o["key"];
                         return objectElementUnpack(pattern.ud.id, target, key);
                     }), pattern.elements));
                 default:

@@ -59,10 +59,10 @@ addPeephole(["ExpressionStatement"], true, (function(node) {
 }));
 addPeephole(["ArrayPattern"], false, (function(_) {
     return true;
-}), (function(__o2) {
-    var loc = __o2["loc"],
-        elements = __o2["elements"],
-        ud = __o2["ud"];
+}), (function(__o) {
+    var loc = __o["loc"],
+        elements = __o["elements"],
+        ud = __o["ud"];
     return setUserData(ast_pattern.ObjectPattern.create(loc, fun.map((function(x, i) {
         return ast_pattern.ObjectPatternElement.create(null, ast_value.Literal.create(null,
             "number", i), x);
@@ -97,9 +97,9 @@ addPeephole(["BinaryExpression"], true, (function(node) {
     return ast_expression.CallExpression.create(null, ((node.right.type === "CurryExpression") ? node.right.base :
         node.right), fun.concat((node.right.args || []), node.left));
 }));
-addPeephole(["BinaryExpression"], true, (function(__o2) {
-    var operator = __o2["operator"],
-        left = __o2["left"];
+addPeephole(["BinaryExpression"], true, (function(__o) {
+    var operator = __o["operator"],
+        left = __o["left"];
     return ((operator === "<|") && ((((left.type === "CurryExpression") || (left.type ===
         "BinaryOperatorExpression")) || (left.type === "UnaryOperatorExpression")) || (left.type ===
         "TernaryOperatorExpression")));
@@ -107,29 +107,32 @@ addPeephole(["BinaryExpression"], true, (function(__o2) {
     return ast_expression.CallExpression.create(null, ((node.left.type === "CurryExpression") ? node.left.base :
         node.left), fun.concat((node.left.args || []), node.right));
 }));
-var transformDown = (function(node) {
-    var transforms = (peepholes[node.type] || [])
+var upTransforms = (function(node) {
+    return ((node && peepholes[node.type]) || [])
         .filter((function(x) {
-            return ((!x.up) && x.condition(node));
+            return (x.up && x.condition(node));
         }));
-    return transforms.reduce((function(p, c) {
-        return c.map(p);
-    }), node);
 }),
-    transformUp = (function(node) {
-        var transforms = (peepholes[node.type] || [])
+    downTransforms = (function(node) {
+        return ((node && peepholes[node.type]) || [])
             .filter((function(x) {
-                return (x.up && x.condition(node));
+                return ((!x.up) && x.condition(node));
             }));
-        return transforms.reduce((function(p, c) {
-            return c.map(p);
-        }), node);
     }),
-    opt = walk.bind(null, tree.modifyNode.bind(null, (function(node) {
-        return (node && transformDown(node));
-    })), tree.modifyNode.bind(null, (function(node) {
-        return (node && transformUp(node));
-    })));
+    transform = (function(ctx, transforms) {
+        return (transforms.length ? tree.modifyNode((function(node) {
+            return transforms.reduce((function(p, c) {
+                return c.map(p);
+            }), node);
+        }), ctx) : ctx);
+    }),
+    opt = walk.bind(null, (function(ctx) {
+        var node = tree.node(ctx);
+        return transform(ctx, downTransforms(node));
+    }), (function(ctx) {
+        var node = tree.node(ctx);
+        return transform(ctx, upTransforms(node));
+    }));
 (optimize = (function(ast) {
     return tree.node(zipper.root(opt(khepriZipper(ast))));
 }));

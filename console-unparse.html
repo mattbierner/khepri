@@ -107,14 +107,15 @@
                         
                         var lex = lexer.lex(input);
                         var ast = parser.parseStream(lex);
-                        
+                         console.profile();
                         var ecam_ast = compile.compile(ast, options);
                         var unparsed = unparse.unparse(ecam_ast);
+                        console.profileEnd();
+                        
                         var s = unparse_print.print(unparsed);
                         
                         var end = new Date().getTime();
                         var diff = end - start;
-                        //console.profileEnd();
                         console.log(diff);
                         $('#time').text(diff);
                         

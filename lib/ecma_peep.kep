@@ -164,20 +164,24 @@ in
 
 /* Interface
  ******************************************************************************/
-var transformDown = \node -> let
-    transforms = (peepholes.(node.type) || []).filter(\x -> !x.up && x.condition(node))
-in
-    transforms.reduce(\p c -> c.map(p, transformDown), node);
+var upTransforms = \node -> 
+    ((node && peepholes.(node.type)) || [])
+        .filter(\x -> x.up && x.condition(node));
 
+var downTransforms = \node -> 
+    ((node && peepholes.(node.type)) || [])
+        .filter(\x -> !x.up && x.condition(node));
 
-var transformUp = \node -> let
-    transforms = (peepholes.(node.type) || []).filter(\x -> x.up && x.condition(node))
-in
-    transforms.reduce(\p c -> c.map(p, transformUp), node);
+var transform = \ctx transforms ->
+    ?transforms.length
+        :tree.modifyNode(\node -> transforms.reduce(\p c -> c.map(p), node), ctx)
+        :ctx;
 
 var opt = walk@(
-    tree.modifyNode @ \node -> (node && transformDown(node)),
-    tree.modifyNode @ \node -> (node && transformUp(node)));
+    \ctx -> let node = tree.node ctx in
+        transform(ctx, downTransforms node),
+    \ctx -> let node = tree.node ctx in
+        transform(ctx, upTransforms node));
 
 optimize = \ast ->
     (opt(ecmaZipper(ast))
