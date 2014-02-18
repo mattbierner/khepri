@@ -32,7 +32,9 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
             return false;
         }),
         State = record.declare(null, ["ctx", "scope", "packageManager", "bindings"]);
-    (State.empty = State.create(null, scope.Scope.empty, null, []));
+    (State.empty = State.create(null, scope.Scope.empty, null, [
+        [], null
+    ]));
     var ok = (function(x) {
         return (function(s, ok) {
             return ok(x, s);
@@ -119,9 +121,17 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
                 return s.setBindings(bindings);
             }));
         }),
+        pushBindings = modifyState((function(s) {
+            return s.setBindings([
+                [], s.bindings
+            ]);
+        })),
+        popBindings = modifyState((function(s) {
+            return s.setBindings(s.bindings[1]);
+        })),
         addBindings = (function(bindings) {
             return modifyState((function(s) {
-                return s.setBindings(s.bindings.concat(bindings));
+                return s.setBindings([s.bindings[0].concat(bindings), s.bindings[1]]);
             }));
         }),
         move = (function(op) {
@@ -173,7 +183,7 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
                     var name = __o[0],
                         uid = __o[1];
                     return getName(name, uid);
-                }), s.bindings));
+                }), s.bindings[0]));
             })), f);
         }),
         identifier = (function(loc, name) {
@@ -368,19 +378,19 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
     addTransform("SwitchCase", null, modify((function(node) {
         return ecma_clause.SwitchCase.create(node.loc, node.test, node.consequent);
     })));
-    addTransform("BlockStatement", null, modify((function(node) {
-        return ecma_statement.BlockStatement.create(node.loc, fun.flatten(node.body));
-    })));
-    addTransform("ExpressionStatement", null, seq(getBindings((function(bindings) {
+    addTransform("BlockStatement", pushBindings, seq(getBindings((function(bindings) {
         return modify((function(node) {
-            return (bindings.length ? [ecma_declaration.VariableDeclaration.create(null,
-                    bindings.map((function(x) {
+            return ecma_statement.BlockStatement.create(node.loc, fun.concat(
+                ecma_declaration.VariableDeclaration.create(null, bindings.map((
+                    function(x) {
                         return ecma_declaration.VariableDeclarator.create(
                             null, identifier(null, x));
-                    }))), ecma_statement.ExpressionStatement.create(node.loc, node.expression)] :
-                ecma_statement.ExpressionStatement.create(node.loc, node.expression));
+                    }))), node.body));
         }));
-    })), setBindings([])));
+    })), popBindings));
+    addTransform("ExpressionStatement", null, modify((function(node) {
+        return ecma_statement.ExpressionStatement.create(node.loc, node.expression);
+    })));
     addTransform("IfStatement", null, modify((function(node) {
         return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
     })));
@@ -524,8 +534,14 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
     addTransform("SinkPattern", null, modify((function(node) {
         return (node.ud && node.ud.id);
     })));
-    addTransform("Program", null, modify((function(node) {
-        return ecma_program.Program.create(node.loc, (Array.isArray(node.body) ? node.body : [node.body]));
+    addTransform("Program", null, getBindings((function(bindings) {
+        return modify((function(node) {
+            return ecma_program.Program.create(node.loc, fun.concat(ecma_declaration.VariableDeclaration
+                .create(null, bindings.map((function(x) {
+                    return ecma_declaration.VariableDeclarator.create(null,
+                        identifier(null, x));
+                }))), node.body));
+        }));
     })));
     addTransform("Package", bind(packageManager, (function(packageManager) {
         return modify((function(node) {
@@ -575,8 +591,10 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
             node_manager = require("./package_manager/node"),
             packageManager = amd_manager;
         if ((manager === "node"))(packageManager = node_manager);
-        return trampoline(next(walk(_transform, _transformPost), node)(State.create(khepriZipper(ast),
-            scope.Scope.empty, packageManager, []), (function(x) {
+        var s = State.empty.setCtx(khepriZipper(ast))
+            .setScope(scope.Scope.empty)
+            .setPackageManager(packageManager);
+        return trampoline(next(walk(_transform, _transformPost), node)(s, (function(x) {
             return x;
         })));
     }));

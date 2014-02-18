@@ -64,7 +64,7 @@ var State = record.declare(null, [
     'packageManager',
     'bindings']);
 
-State.empty = State.create(null, scope.Scope.empty, null, []);
+State.empty = State.create(null, scope.Scope.empty, null, [[], null]);
 
 /*
  ******************************************************************************/
@@ -120,8 +120,12 @@ var setScope = \s -> modifyScope(\() -> s);
 var setBindings = \bindings ->
     modifyState(\s -> s.setBindings(bindings));
 
+var pushBindings = modifyState(\s -> s.setBindings([[], s.bindings]));
+
+var popBindings = modifyState(\s -> s.setBindings(s.bindings.(1)));
+
 var addBindings = \bindings ->
-    modifyState(\s -> s.setBindings(s.bindings.concat(bindings)));
+    modifyState(\s -> s.setBindings([s.bindings.(0).concat(bindings), s.bindings.(1)]));
 
 var move = \op ->
     modifyState(\s ->
@@ -170,7 +174,7 @@ var getName = \name uid ->
 var getBindings = \f ->
     bind(
         examineState <|\ s -> 
-            enumeration(fun.map(\[name uid] -> getName(name, uid), s.bindings)),
+            enumeration(fun.map(\[name uid] -> getName(name, uid), s.bindings.(0))),
         f);
 
     
@@ -354,16 +358,6 @@ var letExpression = \loc, bindings, body ->
         fun.flatten <| fun.concat(
             fun.map(\x -> unpackAssign(x.pattern, x.value), bindings),
             body));
-    /*khepri_expression.CallExpression.create(loc,
-        khepri_expression.FunctionExpression.create(null,
-            null,
-            khepri_pattern.ArgumentsPattern.create(null, null, []),
-            khepri_statement.BlockStatement.create(null, [
-                withStatementNoImport(packageManager,
-                    bindings,
-                    khepri_statement.BlockStatement.create(null, [
-                        khepri_statement.ReturnStatement.create(null, body)]))])),
-        []);*/
 
 /**
  * 
@@ -550,26 +544,24 @@ addTransform('SwitchCase',
 
 // Statement
 addTransform('BlockStatement',
-    null,
-    modify \node ->
-        ecma_statement.BlockStatement.create(node.loc,
-            fun.flatten <| node.body));
+    pushBindings,
+    seq(
+        getBindings <|\ bindings ->
+            modify \node ->
+                ecma_statement.BlockStatement.create(node.loc,
+                    fun.concat(
+                        ecma_declaration.VariableDeclaration.create(null,
+                            bindings.map(\x ->
+                                ecma_declaration.VariableDeclarator.create(null,
+                                    identifier(null, x)))),
+                        node.body)),
+        popBindings));
 
 addTransform('ExpressionStatement',
     null,
-    seq(
-        getBindings <| \bindings ->
-            modify \node ->
-                ?bindings.length
-                    :[
-                        ecma_declaration.VariableDeclaration.create(null,
-                            bindings.map(\x ->
-                                ecma_declaration.VariableDeclarator.create(null, identifier(null, x)))),
-                        ecma_statement.ExpressionStatement.create(node.loc,
-                            node.expression)]
-                    :ecma_statement.ExpressionStatement.create(node.loc,
-                        node.expression),
-        setBindings([])));
+    modify \node ->
+        ecma_statement.ExpressionStatement.create(node.loc,
+            node.expression));
 
 addTransform('IfStatement',
     null,
@@ -835,11 +827,14 @@ addTransform('SinkPattern',
 // Program
 addTransform('Program',
     null,
-    modify \node ->
-        ecma_program.Program.create(node.loc,
-            ?Array.isArray(node.body)
-                :node.body
-                :[node.body]));
+    getBindings(\bindings ->
+        modify \node ->
+            ecma_program.Program.create(node.loc,
+                fun.concat(
+                    ecma_declaration.VariableDeclaration.create(null,
+                        bindings.map(\x ->
+                            ecma_declaration.VariableDeclarator.create(null, identifier(null, x)))),
+                    node.body))));
 
 // Package
 addTransform('Package',
@@ -922,10 +917,14 @@ transform = \ast manager -> {
         if (manager === 'node')
             packageManager = node_manager;
 
+        var s = State.empty
+            .setCtx(khepriZipper(ast))
+            .setScope(scope.Scope.empty)
+            .setPackageManager(packageManager);
+        
         return trampoline <| next(
             walk(_transform, _transformPost),
-            node)(State.create(khepriZipper(ast), scope.Scope.empty, packageManager, []), \x -> x);
-
+            node)(s, \x -> x);
     }
 };
 

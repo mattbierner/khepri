@@ -39,64 +39,6 @@ var addPeephole = \types, up, condition, f -> {
 /* Peepholes
  ******************************************************************************/
 /**
- * Rewrite `return let` to a with statement.
- */
-addPeephole(['ReturnStatement'], false,
-    \node ->
-        (node.argument && node.argument.type === 'LetExpression'),
-    \node ->
-        ast_statement.WithStatement.create(null,
-            node.argument.bindings,
-            ast_statement.BlockStatement.create(null, 
-                [ast_statement.ReturnStatement.create(node.loc, node.argument.body)])));
-
-/**
- * Rewrite `\...-> let` to a with statement.
- */
-addPeephole(['FunctionExpression'], false,
-    \node ->
-        (node.body.type === 'LetExpression'),
-    \node ->
-        ast_expression.FunctionExpression.create(null,
-            node.id,
-            node.params,
-            ast_statement.BlockStatement.create(null, [
-                ast_statement.WithStatement.create(null,
-                    node.body.bindings,
-                    ast_statement.BlockStatement.create(null, 
-                        [ast_statement.ReturnStatement.create(node.loc, node.body.body)]))])));
-
-/**
- * Rewrite top level let expressions to with statements.
- */
-addPeephole(['ExpressionStatement'], true,
-    \node ->
-        (node.expression && node.expression.type === 'LetExpression'),
-    \node ->
-        ast_statement.WithStatement.create(null,
-            node.expression.bindings,
-            ast_statement.BlockStatement.create(null, 
-                [ast_statement.ExpressionStatement.create(node.loc, node.expression.body)])));
-
-/**
- * Rewrite top level let expressions to with statements.
- */
-addPeephole(['ExpressionStatement'], true,
-    \node ->
-        (  node.expression
-        && node.expression.type === 'AssignmentExpression'
-        && node.expression.right.type === 'LetExpression'),
-    \node ->
-        ast_statement.WithStatement.create(null,
-            node.expression.right.bindings,
-            ast_statement.BlockStatement.create(null, 
-                [ast_statement.ExpressionStatement.create(node.loc,
-                    ast_expression.AssignmentExpression.create(node.expression.loc, node.expression.operator,
-                        node.expression.left,
-                        node.expression.right.body))])));
-
-
-/**
  * Convert array patterns to object patterns
  */
 addPeephole(['ArrayPattern'], false,
@@ -132,7 +74,6 @@ addPeephole(['ObjectPatternElement'], false,
             return node;
         }
     });
-
 
 /**
  * Flatten currying of curry.
