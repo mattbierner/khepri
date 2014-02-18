@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.13.7 - Feb 18, 2014
+* Improved performance of generated code for lets.
+
 ## 0.13.6 - Feb 4, 2014
 * Fixed potential leaking of internal identifier names.
 * Improved lex and transform code.

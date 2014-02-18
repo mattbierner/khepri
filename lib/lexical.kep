@@ -79,10 +79,10 @@ var down = move zipper.down;
 var left = move zipper.left;
 var right = move zipper.right;
 
-var child = \f edge ->
+var child = \args(edge ...) ->
     seq(
         move tree.child@edge,
-        f,
+        seq.apply(undefined, [].slice.call(args, 1)),
         up);
 
 var checkCtx = \node ->
@@ -91,7 +91,7 @@ var checkCtx = \node ->
 var checkTop = \s ok err ->
     checkCtx(s.ctx)(s, ok, err);
 
-var checkChild = child@checkTop;
+var checkChild = \edge -> child(edge, checkTop);
 
 var inspect = \f ->
     examineState(\s -> f(tree.node s.ctx));
@@ -222,12 +222,12 @@ addCheck@'Package' <|
         checkChild 'exports',
         inspect <|\ node ->
             ?node.body.type === 'WithStatement'
-                :child(
-                    seq(
-                        checkChild 'bindings',
-                        child(checkChild 'body', 'body')),
-                    'body')
-                :child(checkChild 'body', 'body'));
+                :child('body'
+                    checkChild 'bindings',
+                    child('body',
+                        checkChild 'body'))
+                :child('body',
+                    checkChild 'body'));
 
 // Clause
 addCheck@'SwitchCase' <|
@@ -240,9 +240,8 @@ addCheck@'CatchClause' <|
         inspect <|\ node ->
             addImmutableBindingChecked(node.param.name, node.param.loc),
         checkChild 'param',
-        child(
-            checkChild 'body',
-            'body'));
+        child('body',
+            checkChild 'body'));
 
 // Declarations
 addCheck@['StaticDeclaration', 'VariableDeclaration'] <|
@@ -283,7 +282,8 @@ addCheck@'IfStatement' <|
 addCheck@'WithStatement' <|
      block(
         checkChild 'bindings',
-        child(checkChild 'body', 'body'));
+        child('body',
+            checkChild 'body'));
 
 addCheck@'SwitchStatement' <|
     block(
@@ -331,7 +331,8 @@ addCheck@'FunctionExpression' <|
          checkChild 'params',
          inspect <|\ node ->
              ?node.body.type === "BlockStatement"
-                 :child(checkChild 'body', 'body')
+                 :child('body',
+                     checkChild 'body')
                  :checkChild 'body');
 
 addCheck@'UnaryExpression' <|
@@ -339,11 +340,12 @@ addCheck@'UnaryExpression' <|
 
 addCheck@'AssignmentExpression' <|
     seq(
-        checkChild 'left',
-        inspect <|\ node ->
-            ?node.left.type === 'Identifier'
-                :checkCanAssign(node.left.name, node.left.loc)
-                :pass,
+        child('left',
+            checkTop,
+            inspect <|\ left ->
+                ?left.type === 'Identifier'
+                    :checkCanAssign(left.name, left.loc)
+                    :pass),
         checkChild 'right');
 
 addCheck@['LogicalExpression','BinaryExpression'] <|
@@ -395,12 +397,12 @@ addCheck@'SinkPattern'<|
                 {'uid': uid}));
 
 addCheck@'IdentifierPattern' <|
-    inspect <|\ node ->
-        seq(
+    seq(
+        inspect <|\ node ->
             ?node.reserved
                 :addImmutableBinding(node.id.name, node.loc)
                 :addImmutableBindingChecked(node.id.name, node.loc),
-            checkChild 'id');
+        checkChild 'id');
 
 addCheck@'ImportPattern' <|
     checkChild 'pattern';
@@ -408,15 +410,14 @@ addCheck@'ImportPattern' <|
 addCheck@'AsPattern' <|
     seq(
         checkChild 'id',
-        inspect <|\ node -> child(
-            seq(
-               modifyNode(\target -> {
+        inspect <|\ node ->
+            child('target',
+                modifyNode \target -> {
                     var n = setUserData(target, target.ud || {});
                     n.ud.id = node.id;
                     return n;
-                }),
-                checkTop),
-            'target'));
+                },
+                checkTop));
 
 addCheck@['ObjectPattern', 'ArrayPattern'] <|
     inspect <|\ node -> {

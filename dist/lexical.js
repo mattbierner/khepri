@@ -89,8 +89,9 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         down = move(zipper.down),
         left = move(zipper.left),
         right = move(zipper.right),
-        child = (function(f, edge) {
-            return seq(move(tree.child.bind(null, edge)), f, up);
+        child = (function(edge) {
+            var args = arguments;
+            return seq(move(tree.child.bind(null, edge)), seq.apply(undefined, [].slice.call(args, 1)), up);
         }),
         checkCtx = (function(node) {
             return _check((node && tree.node(node)));
@@ -98,7 +99,9 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         checkTop = (function(s, ok, err) {
             return checkCtx(s.ctx)(s, ok, err);
         }),
-        checkChild = child.bind(null, checkTop),
+        checkChild = (function(edge) {
+            return child(edge, checkTop);
+        }),
         inspect = (function(f) {
             return examineState((function(s) {
                 return f(tree.node(s.ctx));
@@ -181,13 +184,13 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("Package", seq(addImmutableBindingChecked("require", null), addImmutableBindingChecked("exports",
         null), addImmutableBindingChecked("module", null), checkChild("exports"), inspect((function(
         node) {
-        return ((node.body.type === "WithStatement") ? child(seq(checkChild("bindings"), child(
-            checkChild("body"), "body")), "body") : child(checkChild("body"), "body"));
+        return ((node.body.type === "WithStatement") ? child("body" (checkChild)("bindings"),
+            child("body", checkChild("body"))) : child("body", checkChild("body")));
     }))));
     addCheck("SwitchCase", seq(checkChild("test"), checkChild("consequent")));
     addCheck("CatchClause", block(inspect((function(node) {
         return addImmutableBindingChecked(node.param.name, node.param.loc);
-    })), checkChild("param"), child(checkChild("body"), "body")));
+    })), checkChild("param"), child("body", checkChild("body"))));
     addCheck(["StaticDeclaration", "VariableDeclaration"], checkChild("declarations"));
     addCheck("StaticDeclarator", inspect((function(node) {
         return addImmutableBindingChecked(node.id.name, node.loc);
@@ -200,7 +203,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("ExpressionStatement", checkChild("expression"));
     addCheck("IfStatement", seq(checkChild("test"), block(checkChild("consequent")), block(checkChild(
         "alternate"))));
-    addCheck("WithStatement", block(checkChild("bindings"), child(checkChild("body"), "body")));
+    addCheck("WithStatement", block(checkChild("bindings"), child("body", checkChild("body"))));
     addCheck("SwitchStatement", block(checkChild("discriminant"), checkChild("cases")));
     addCheck(["ReturnStatement", "ThrowStatement"], checkChild("argument"));
     addCheck("TryStatement", seq(checkChild("block"), block(checkChild("handler")), block(checkChild(
@@ -212,14 +215,13 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("FunctionExpression", block(inspect((function(node) {
         return (node.id ? addImmutableBinding(node.id.name, node.loc) : pass);
     })), checkChild("params"), inspect((function(node) {
-        return ((node.body.type === "BlockStatement") ? child(checkChild("body"), "body") :
+        return ((node.body.type === "BlockStatement") ? child("body", checkChild("body")) :
             checkChild("body"));
     }))));
     addCheck("UnaryExpression", checkChild("argument"));
-    addCheck("AssignmentExpression", seq(checkChild("left"), inspect((function(node) {
-        return ((node.left.type === "Identifier") ? checkCanAssign(node.left.name, node.left.loc) :
-            pass);
-    })), checkChild("right")));
+    addCheck("AssignmentExpression", seq(child("left", checkTop, inspect((function(left) {
+        return ((left.type === "Identifier") ? checkCanAssign(left.name, left.loc) : pass);
+    }))), checkChild("right")));
     addCheck(["LogicalExpression", "BinaryExpression"], seq(checkChild("left"), checkChild("right")));
     addCheck("ConditionalExpression", seq(checkChild("test"), checkChild("consequent"), checkChild("alternate")));
     addCheck(["CallExpression", "NewExpression"], seq(checkChild("callee"), checkChild("args")));
@@ -235,17 +237,17 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             "uid": uid
         })));
     })));
-    addCheck("IdentifierPattern", inspect((function(node) {
-        return seq((node.reserved ? addImmutableBinding(node.id.name, node.loc) :
-            addImmutableBindingChecked(node.id.name, node.loc)), checkChild("id"));
-    })));
+    addCheck("IdentifierPattern", seq(inspect((function(node) {
+        return (node.reserved ? addImmutableBinding(node.id.name, node.loc) :
+            addImmutableBindingChecked(node.id.name, node.loc));
+    })), checkChild("id")));
     addCheck("ImportPattern", checkChild("pattern"));
     addCheck("AsPattern", seq(checkChild("id"), inspect((function(node) {
-        return child(seq(modifyNode((function(target) {
+        return child("target", modifyNode((function(target) {
             var n = setUserData(target, (target.ud || ({})));
             (n.ud.id = node.id);
             return n;
-        })), checkTop), "target");
+        })), checkTop);
     }))));
     addCheck(["ObjectPattern", "ArrayPattern"], inspect((function(node) {
         if (((!node.ud) || (!node.ud.id))) {

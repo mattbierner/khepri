@@ -5,7 +5,8 @@ package (
     transform)
 with 
     import 'bes::record' record,
-    
+    import 'bes::array' array,
+
     import 'ecma-ast::clause' ecma_clause,
     import 'ecma-ast::declaration' ecma_declaration,
     import 'ecma-ast::expression' ecma_expression,
@@ -32,10 +33,11 @@ with
     import './tail' {Tail trampoline},
     import './fun' fun,
 
-    
     import './package_manager::amd' _,
     import './package_manager::node' _
 in {
+
+var flip = \f -> \x y -> f(y, x);
 
 /* Forward
  ******************************************************************************/
@@ -59,9 +61,10 @@ var isStrict = \elems -> {
 var State = record.declare(null, [
     'ctx',
     'scope',
-    'packageManager']);
+    'packageManager',
+    'bindings']);
 
-State.empty = State.create(null, scope.Scope.empty, null);
+State.empty = State.create(null, scope.Scope.empty, null, []);
 
 /*
  ******************************************************************************/
@@ -78,6 +81,19 @@ var next = \p n -> bind(p, \_ -> n);
 var seqa = \arr -> fun.reduce(arr, next);
 
 var seq = \args(...) -> seqa(args);
+
+var binds = \p f ->
+    bind(p, \x ->
+        f.apply(undefined, x));
+
+var cons = \a b ->
+    bind(a, \x ->
+        bind(b, \y ->
+            ok([x].concat(y))));
+
+var enumeration = fun.foldr@(
+    flip(cons),
+    ok []);
 
 var extract = \s ok -> ok(s, s);
 
@@ -100,6 +116,12 @@ var modifyScope = \f ->
     in ok(scope, newState);
 
 var setScope = \s -> modifyScope(\() -> s);
+
+var setBindings = \bindings ->
+    modifyState(\s -> s.setBindings(bindings));
+
+var addBindings = \bindings ->
+    modifyState(\s -> s.setBindings(s.bindings.concat(bindings)));
 
 var move = \op ->
     modifyState(\s ->
@@ -140,6 +162,18 @@ var getMapping = \uid ->
     examineScope \ s ->
         ok(s.getMapping(uid));
 
+var getName = \name uid ->
+    next(
+        addVar(name, uid),
+        getMapping(uid));
+
+var getBindings = \f ->
+    bind(
+        examineState <|\ s -> 
+            enumeration(fun.map(\[name uid] -> getName(name, uid), s.bindings)),
+        f);
+
+    
 /* Values
  ******************************************************************************/
 var identifier = \loc, name ->
@@ -316,11 +350,11 @@ in
  * Let expression normalization.
  */
 var letExpression = \loc, bindings, body ->
-    /*ecma_expression.SequenceExpression.create(null,
-        concat(
-            map(\x -> unpackAssign(x.pattern, x.value), bindings),
-            body));*/
-    khepri_expression.CallExpression.create(loc,
+    ecma_expression.SequenceExpression.create(null,
+        fun.flatten <| fun.concat(
+            fun.map(\x -> unpackAssign(x.pattern, x.value), bindings),
+            body));
+    /*khepri_expression.CallExpression.create(loc,
         khepri_expression.FunctionExpression.create(null,
             null,
             khepri_pattern.ArgumentsPattern.create(null, null, []),
@@ -329,7 +363,7 @@ var letExpression = \loc, bindings, body ->
                     bindings,
                     khepri_statement.BlockStatement.create(null, [
                         khepri_statement.ReturnStatement.create(null, body)]))])),
-        []);
+        []);*/
 
 /**
  * 
@@ -519,13 +553,23 @@ addTransform('BlockStatement',
     null,
     modify \node ->
         ecma_statement.BlockStatement.create(node.loc,
-            node.body));
+            fun.flatten <| node.body));
 
 addTransform('ExpressionStatement',
     null,
-    modify \node ->
-        ecma_statement.ExpressionStatement.create(node.loc,
-            node.expression));
+    seq(
+        getBindings <| \bindings ->
+            modify \node ->
+                ?bindings.length
+                    :[
+                        ecma_declaration.VariableDeclaration.create(null,
+                            bindings.map(\x ->
+                                ecma_declaration.VariableDeclarator.create(null, identifier(null, x)))),
+                        ecma_statement.ExpressionStatement.create(node.loc,
+                            node.expression)]
+                    :ecma_statement.ExpressionStatement.create(node.loc,
+                        node.expression),
+        setBindings([])));
 
 addTransform('IfStatement',
     null,
@@ -693,10 +737,16 @@ addTransform('MemberExpression',
             node.computed));
 
 addTransform('LetExpression',
-    modify \node ->
-        letExpression(node.loc,
-            node.bindings,
-            node.body));
+    seq(
+        bind(node, \node -> let
+            bindings = fun.flatten <| fun.map(\x -> innerPattern(null, x.pattern), node.bindings),
+            identifiers = fun.map(\x -> [x.pattern.name, x.pattern.ud.uid], bindings)
+        in
+            addBindings(identifiers)),
+        modify \node ->
+            letExpression(node.loc,
+                node.bindings,
+                node.body)));
 
 addTransform('CurryExpression',
     modify \node ->
@@ -874,7 +924,7 @@ transform = \ast manager -> {
 
         return trampoline <| next(
             walk(_transform, _transformPost),
-            node)(State.create(khepriZipper(ast), scope.Scope.empty, packageManager), \x -> x);
+            node)(State.create(khepriZipper(ast), scope.Scope.empty, packageManager, []), \x -> x);
 
     }
 };

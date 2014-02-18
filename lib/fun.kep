@@ -5,6 +5,9 @@ package (
     reduce
     reduceRight
     
+    foldl
+    foldr
+    
     concat
     filter
     map
@@ -14,6 +17,9 @@ package (
 
 reduce = Function.prototype.call.bind(Array.prototype.reduce);
 reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
+
+foldl = \f z a -> reduce(a, f, z);
+foldr = \f z a -> reduceRight(a, f, z);
 
 concat =  Array.prototype.concat.bind([]);
 

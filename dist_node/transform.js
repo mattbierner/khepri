@@ -4,6 +4,7 @@
 */
 "use strict";
 var record = require("bes")["record"],
+    array = require("bes")["array"],
     ecma_clause = require("ecma-ast")["clause"],
     ecma_declaration = require("ecma-ast")["declaration"],
     ecma_expression = require("ecma-ast")["expression"],
@@ -28,7 +29,12 @@ var record = require("bes")["record"],
     Tail = __o0["Tail"],
     trampoline = __o0["trampoline"],
     fun = require("./fun"),
-    transform, _transform = (function() {
+    transform, flip = (function(f) {
+        return (function(x, y) {
+            return f(y, x);
+        });
+    }),
+    _transform = (function() {
         var args = arguments;
         return _transform.apply(null, args);
     }),
@@ -40,8 +46,8 @@ var record = require("bes")["record"],
         }
         return false;
     }),
-    State = record.declare(null, ["ctx", "scope", "packageManager"]);
-(State.empty = State.create(null, scope.Scope.empty, null));
+    State = record.declare(null, ["ctx", "scope", "packageManager", "bindings"]);
+(State.empty = State.create(null, scope.Scope.empty, null, []));
 var ok = (function(x) {
     return (function(s, ok) {
         return ok(x, s);
@@ -67,6 +73,19 @@ var ok = (function(x) {
         var args = arguments;
         return seqa(args);
     }),
+    binds = (function(p, f) {
+        return bind(p, (function(x) {
+            return f.apply(undefined, x);
+        }));
+    }),
+    cons = (function(a, b) {
+        return bind(a, (function(x) {
+            return bind(b, (function(y) {
+                return ok([x].concat(y));
+            }));
+        }));
+    }),
+    enumeration = fun.foldr.bind(null, flip(cons), ok([])),
     extract = (function(s, ok) {
         return ok(s, s);
     }),
@@ -110,6 +129,16 @@ var ok = (function(x) {
             return s;
         }));
     }),
+    setBindings = (function(bindings) {
+        return modifyState((function(s) {
+            return s.setBindings(bindings);
+        }));
+    }),
+    addBindings = (function(bindings) {
+        return modifyState((function(s) {
+            return s.setBindings(s.bindings.concat(bindings));
+        }));
+    }),
     move = (function(op) {
         return modifyState((function(s) {
             return s.setCtx(op(s.ctx));
@@ -149,6 +178,18 @@ var ok = (function(x) {
         return examineScope((function(s) {
             return ok(s.getMapping(uid));
         }));
+    }),
+    getName = (function(name, uid) {
+        return next(addVar(name, uid), getMapping(uid));
+    }),
+    getBindings = (function(f) {
+        return bind(examineState((function(s) {
+            return enumeration(fun.map((function(__o) {
+                var name = __o[0],
+                    uid = __o[1];
+                return getName(name, uid);
+            }), s.bindings));
+        })), f);
     }),
     identifier = (function(loc, name) {
         return ecma_value.Identifier.create(loc, name);
@@ -243,12 +284,9 @@ var ok = (function(x) {
                 })())));
     }),
     letExpression = (function(loc, bindings, body) {
-        return khepri_expression.CallExpression.create(loc, khepri_expression.FunctionExpression.create(null, null,
-            khepri_pattern.ArgumentsPattern.create(null, null, []), khepri_statement.BlockStatement.create(null, [
-                withStatementNoImport(packageManager, bindings, khepri_statement.BlockStatement.create(null, [
-                    khepri_statement.ReturnStatement.create(null, body)
-                ]))
-            ])), []);
+        return ecma_expression.SequenceExpression.create(null, fun.flatten(fun.concat(fun.map((function(x) {
+            return unpackAssign(x.pattern, x.value);
+        }), bindings), body)));
     }),
     unaryOperatorExpression = (function(loc, op) {
         return khepri_expression.FunctionExpression.create(loc, null, khepri_pattern.ArgumentsPattern.create(null,
@@ -340,11 +378,18 @@ addTransform("SwitchCase", null, modify((function(node) {
     return ecma_clause.SwitchCase.create(node.loc, node.test, node.consequent);
 })));
 addTransform("BlockStatement", null, modify((function(node) {
-    return ecma_statement.BlockStatement.create(node.loc, node.body);
+    return ecma_statement.BlockStatement.create(node.loc, fun.flatten(node.body));
 })));
-addTransform("ExpressionStatement", null, modify((function(node) {
-    return ecma_statement.ExpressionStatement.create(node.loc, node.expression);
-})));
+addTransform("ExpressionStatement", null, seq(getBindings((function(bindings) {
+    return modify((function(node) {
+        return (bindings.length ? [ecma_declaration.VariableDeclaration.create(null, bindings.map(
+                (function(x) {
+                    return ecma_declaration.VariableDeclarator.create(null,
+                        identifier(null, x));
+                }))), ecma_statement.ExpressionStatement.create(node.loc, node.expression)] :
+            ecma_statement.ExpressionStatement.create(node.loc, node.expression));
+    }));
+})), setBindings([])));
 addTransform("IfStatement", null, modify((function(node) {
     return ecma_statement.IfStatement.create(node.loc, node.test, node.consequent, node.alternate);
 })));
@@ -430,9 +475,17 @@ addTransform("CallExpression", null, modify((function(node) {
 addTransform("MemberExpression", null, modify((function(node) {
     return ecma_expression.MemberExpression.create(node.loc, node.object, node.property, node.computed);
 })));
-addTransform("LetExpression", modify((function(node) {
+addTransform("LetExpression", seq(bind(node, (function(node) {
+    var bindings = fun.flatten(fun.map((function(x) {
+        return innerPattern(null, x.pattern);
+    }), node.bindings)),
+        identifiers = fun.map((function(x) {
+            return [x.pattern.name, x.pattern.ud.uid];
+        }), bindings);
+    return addBindings(identifiers);
+})), modify((function(node) {
     return letExpression(node.loc, node.bindings, node.body);
-})));
+}))));
 addTransform("CurryExpression", modify((function(node) {
     return curryExpression(node.loc, node.base, node.args);
 })));
@@ -529,7 +582,7 @@ var _transformPost = bind(node, _transp),
         packageManager = amd_manager;
     if ((manager === "node"))(packageManager = node_manager);
     return trampoline(next(walk(_transform, _transformPost), node)(State.create(khepriZipper(ast), scope.Scope.empty,
-        packageManager), (function(x) {
+        packageManager, []), (function(x) {
         return x;
     })));
 }));
