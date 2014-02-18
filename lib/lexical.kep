@@ -222,7 +222,7 @@ addCheck@'Package' <|
         checkChild 'exports',
         inspect <|\ node ->
             ?node.body.type === 'WithStatement'
-                :child('body'
+                :child('body',
                     checkChild 'bindings',
                     child('body',
                         checkChild 'body'))

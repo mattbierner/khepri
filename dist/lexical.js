@@ -184,7 +184,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("Package", seq(addImmutableBindingChecked("require", null), addImmutableBindingChecked("exports",
         null), addImmutableBindingChecked("module", null), checkChild("exports"), inspect((function(
         node) {
-        return ((node.body.type === "WithStatement") ? child("body" (checkChild)("bindings"),
+        return ((node.body.type === "WithStatement") ? child("body", checkChild("bindings"),
             child("body", checkChild("body"))) : child("body", checkChild("body")));
     }))));
     addCheck("SwitchCase", seq(checkChild("test"), checkChild("consequent")));
