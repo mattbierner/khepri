@@ -534,7 +534,7 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
     addTransform("SinkPattern", null, modify((function(node) {
         return (node.ud && node.ud.id);
     })));
-    addTransform("Program", null, getBindings((function(bindings) {
+    addTransform("Program", pushBindings, getBindings((function(bindings) {
         return modify((function(node) {
             return ecma_program.Program.create(node.loc, fun.concat(ecma_declaration.VariableDeclaration
                 .create(null, bindings.map((function(x) {

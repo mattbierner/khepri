@@ -23,6 +23,35 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
                 (peepholes[type] = (peepholes[type] ? fun.concat(peepholes[type], entry) : [entry]));
             }));
         });
+    addPeephole(["ReturnStatement"], false, (function(node) {
+        return (node.argument && (node.argument.type === "LetExpression"));
+    }), (function(node) {
+        return ast_statement.WithStatement.create(null, node.argument.bindings, ast_statement.BlockStatement
+            .create(null, [ast_statement.ReturnStatement.create(node.loc, node.argument.body)]));
+    }));
+    addPeephole(["FunctionExpression"], false, (function(node) {
+        return (node.body.type === "LetExpression");
+    }), (function(node) {
+        return ast_expression.FunctionExpression.create(null, node.id, node.params, ast_statement.BlockStatement
+            .create(null, [ast_statement.WithStatement.create(null, node.body.bindings, ast_statement.BlockStatement
+                .create(null, [ast_statement.ReturnStatement.create(node.loc, node.body.body)])
+            )]));
+    }));
+    addPeephole(["ExpressionStatement"], true, (function(node) {
+        return (node.expression && (node.expression.type === "LetExpression"));
+    }), (function(node) {
+        return ast_statement.WithStatement.create(null, node.expression.bindings, ast_statement.BlockStatement
+            .create(null, [ast_statement.ExpressionStatement.create(node.loc, node.expression.body)]));
+    }));
+    addPeephole(["ExpressionStatement"], true, (function(node) {
+        return ((node.expression && (node.expression.type === "AssignmentExpression")) && (node.expression
+            .right.type === "LetExpression"));
+    }), (function(node) {
+        return ast_statement.WithStatement.create(null, node.expression.right.bindings, ast_statement.BlockStatement
+            .create(null, [ast_statement.ExpressionStatement.create(node.loc, ast_expression.AssignmentExpression
+                .create(node.expression.loc, node.expression.operator, node.expression.left,
+                    node.expression.right.body))]));
+    }));
     addPeephole(["ArrayPattern"], false, (function(_) {
         return true;
     }), (function(__o) {

@@ -826,15 +826,15 @@ addTransform('SinkPattern',
 
 // Program
 addTransform('Program',
-    null,
-    getBindings(\bindings ->
+    pushBindings,
+    getBindings <|\ bindings ->
         modify \node ->
             ecma_program.Program.create(node.loc,
                 fun.concat(
                     ecma_declaration.VariableDeclaration.create(null,
                         bindings.map(\x ->
                             ecma_declaration.VariableDeclarator.create(null, identifier(null, x)))),
-                    node.body))));
+                    node.body)));
 
 // Package
 addTransform('Package',
