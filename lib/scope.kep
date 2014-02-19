@@ -7,7 +7,9 @@ package (
     pop)
 with
     import 'bes::object' {setProperty},
-    import 'bes::record' record
+    import 'bes::record' record,
+    
+    import 'hashtrie' hashtrie
 in {
 
 /* Scope
@@ -17,7 +19,7 @@ in {
  * 
  * @param record Maps identifiers to binding information for this scope.
  * @param outer Parent scope.
- * @param mappin Maps identifiers to their actual names in this scope.
+ * @param mapping Maps identifiers to their actual names in this scope.
  */
 Scope = record.declare(null, [
     'record',
@@ -25,13 +27,13 @@ Scope = record.declare(null, [
     'mapping',
     'definitions']);
 
-Scope.empty = Scope.create({}, null, {}, {});
+Scope.empty = Scope.create(hashtrie.empty, null, hashtrie.empty, hashtrie.empty);
 
 /**
  * Does this scope have a given binding?
  */
 Scope.prototype.hasOwnBinding = \id =self->
-    Object.prototype.hasOwnProperty.call(self.record, id);
+    hashtrie.get(id, self.record);
 
 /**
  * Does this scope or its parents have a given binding?
@@ -43,17 +45,16 @@ Scope.prototype.hasBinding = \id =self->
  * Get information for a given binding. Returns null if binding does not exist.
  */
 Scope.prototype.getBinding = \id =self->
-    ?self.hasOwnBinding(id)
-        :self.record.(id)
-        :?self.outer
-            :self.outer.getBinding(id)
-            :null;
+    (  hashtrie.get(id, self.record)
+    || ?self.outer
+        :self.outer.getBinding(id)
+        :null);
 
 /**
  */
 Scope.prototype.getUid = \id =self->
     ?self.hasOwnBinding(id)
-        :self.definitions.(id)
+        :hashtrie.get(id, self.definitions)
         :?self.outer
             :self.outer.getUid(id)
             :null;
@@ -62,7 +63,7 @@ Scope.prototype.getUid = \id =self->
  * Does this scope have its own a mapping for a given identifier.
  */
 Scope.prototype.hasOwnMapping = \id =self->
-    Object.prototype.hasOwnProperty.call(self.mapping, id);
+    hashtrie.get(id, self.mapping);
 
 /**
  * Does this scope have any mapping for a given identifier.
@@ -75,7 +76,7 @@ Scope.prototype.hasMapping = \id =self->
  */
 Scope.prototype.getMapping = \id =self->
     ?self.hasOwnMapping(id)
-        :self.mapping.(id)
+        :hashtrie.get(id, self.mapping)
         :self.outer && self.outer.getMapping(id);
 
 /**
@@ -84,6 +85,7 @@ Scope.prototype.getMapping = \id =self->
 Scope.prototype.getUnusedId = \id =self-> {
     if (!self.hasOwnBinding(id))
         return id;
+    
     for (var i = 0; ; i = i + 1)
         if (!self.hasBinding(id + i))
             return id + i;
@@ -96,8 +98,7 @@ Scope.addUid = \s, id, uid->
         s.record,
         s.outer,
         s.mapping,
-        setProperty(s.definitions, id, uid, true));
-
+        hashtrie.set(id, uid, s.definitions));
 
 /**
  * Create a new modified scope with a given binding.
@@ -106,9 +107,9 @@ Scope.addUid = \s, id, uid->
  * @param id Identifier for new binding.
  * @param info Binding information.
  */
-Scope.addBinding = \s, id, info ->
+Scope.addBinding = \s, id, info -> 
     new Scope(
-        setProperty(s.record, id, info, true),
+        hashtrie.set(id, info, s.record),
         s.outer,
         s.mapping,
         s.definitions);
@@ -164,12 +165,12 @@ Scope.addMapping = \s, from, to ->
     new Scope(
         s.record,
         s.outer,
-        setProperty(s.mapping, from, to, true),
+        hashtrie.set(from, to, s.mapping),
         s.definitions);
 
 /* Operations
  ******************************************************************************/
-push = \s -> new Scope({}, s, {}, s.definitions);
+push = \s -> new Scope(hashtrie.empty, s, {}, s.definitions);
 
 pop = \s -> s.outer;
 

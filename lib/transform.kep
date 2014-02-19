@@ -147,7 +147,7 @@ var get = \op ->
 var node = get tree.node;
 
 var enterBlock = examineScope \s ->
-    setScope(new scope.Scope({}, s, {}, {}));
+    setScope(scope.Scope.empty.setOuter(s));
 
 var exitBlock = examineScope \s ->
     setScope(s.outer);
@@ -343,7 +343,9 @@ in
                     :khepri_statement.ExpressionStatement.create(null,
                         khepri_value.Literal.create(null, 'string', "use strict"))
                      :[],
-                variableDeclaration(null, bindings),
+                ?bindings.length
+                    :variableDeclaration(null, bindings)
+                    :[],
                 let block = body.body in
                     ?strict :block.slice(1) :block)));
 
@@ -925,7 +927,7 @@ transform = \ast manager -> {
             packageManager = node_manager;
 
         var s = State.empty
-            .setCtx(khepriZipper(ast))
+            .setCtx(khepriZipper ast)
             .setScope(scope.Scope.empty)
             .setPackageManager(packageManager);
         

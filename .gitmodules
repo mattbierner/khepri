@@ -31,3 +31,6 @@
 [submodule "dependencies/khepri-parse"]
 	path = dependencies/khepri-parse
 	url = https://github.com/mattbierner/khepri-parse.git
+[submodule "dependencies/hashtrie"]
+	path = dependencies/hashtrie
+	url = https://github.com/mattbierner/hashtrie.git

@@ -2,15 +2,14 @@
  * THIS FILE IS AUTO GENERATED from 'lib/scope.kep'
  * DO NOT EDIT
 */
-define(["require", "exports", "bes/object", "bes/record"], (function(require, exports, __o, record) {
+define(["require", "exports", "bes/record", "hashtrie"], (function(require, exports, record, hashtrie) {
     "use strict";
-    var setProperty = __o["setProperty"],
-        Scope, push, pop;
+    var Scope, push, pop;
     (Scope = record.declare(null, ["record", "outer", "mapping", "definitions"]));
-    (Scope.empty = Scope.create(({}), null, ({}), ({})));
+    (Scope.empty = Scope.create(hashtrie.empty, null, hashtrie.empty, hashtrie.empty));
     (Scope.prototype.hasOwnBinding = (function(id) {
         var self = this;
-        return Object.prototype.hasOwnProperty.call(self.record, id);
+        return hashtrie.get(id, self.record);
     }));
     (Scope.prototype.hasBinding = (function(id) {
         var self = this;
@@ -18,17 +17,16 @@ define(["require", "exports", "bes/object", "bes/record"], (function(require, ex
     }));
     (Scope.prototype.getBinding = (function(id) {
         var self = this;
-        return (self.hasOwnBinding(id) ? self.record[id] : (self.outer ? self.outer.getBinding(id) :
-            null));
+        return (hashtrie.get(id, self.record) || (self.outer ? self.outer.getBinding(id) : null));
     }));
     (Scope.prototype.getUid = (function(id) {
         var self = this;
-        return (self.hasOwnBinding(id) ? self.definitions[id] : (self.outer ? self.outer.getUid(id) :
-            null));
+        return (self.hasOwnBinding(id) ? hashtrie.get(id, self.definitions) : (self.outer ? self.outer.getUid(
+            id) : null));
     }));
     (Scope.prototype.hasOwnMapping = (function(id) {
         var self = this;
-        return Object.prototype.hasOwnProperty.call(self.mapping, id);
+        return hashtrie.get(id, self.mapping);
     }));
     (Scope.prototype.hasMapping = (function(id) {
         var self = this;
@@ -36,7 +34,8 @@ define(["require", "exports", "bes/object", "bes/record"], (function(require, ex
     }));
     (Scope.prototype.getMapping = (function(id) {
         var self = this;
-        return (self.hasOwnMapping(id) ? self.mapping[id] : (self.outer && self.outer.getMapping(id)));
+        return (self.hasOwnMapping(id) ? hashtrie.get(id, self.mapping) : (self.outer && self.outer.getMapping(
+            id)));
     }));
     (Scope.prototype.getUnusedId = (function(id) {
         var self = this;
@@ -46,10 +45,10 @@ define(["require", "exports", "bes/object", "bes/record"], (function(require, ex
             if ((!self.hasBinding((id + i)))) return (id + i);
     }));
     (Scope.addUid = (function(s, id, uid) {
-        return new(Scope)(s.record, s.outer, s.mapping, setProperty(s.definitions, id, uid, true));
+        return new(Scope)(s.record, s.outer, s.mapping, hashtrie.set(id, uid, s.definitions));
     }));
     (Scope.addBinding = (function(s, id, info) {
-        return new(Scope)(setProperty(s.record, id, info, true), s.outer, s.mapping, s.definitions);
+        return new(Scope)(hashtrie.set(id, info, s.record), s.outer, s.mapping, s.definitions);
     }));
     (Scope.addMutableBinding = (function(s, id, loc) {
         return Scope.addBinding(s, id, ({
@@ -71,10 +70,10 @@ define(["require", "exports", "bes/object", "bes/record"], (function(require, ex
         }));
     }));
     (Scope.addMapping = (function(s, from, to) {
-        return new(Scope)(s.record, s.outer, setProperty(s.mapping, from, to, true), s.definitions);
+        return new(Scope)(s.record, s.outer, hashtrie.set(from, to, s.mapping), s.definitions);
     }));
     (push = (function(s) {
-        return new(Scope)(({}), s, ({}), s.definitions);
+        return new(Scope)(hashtrie.empty, s, ({}), s.definitions);
     }));
     (pop = (function(s) {
         return s.outer;

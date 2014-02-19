@@ -68,6 +68,8 @@
                 'seshet': 'dependencies/seshet/dist/seshet',
                 'bes': 'dependencies/bes/dist',
                 
+                'hashtrie': 'dependencies/hashtrie/dist/hashtrie',
+                
                 'ecma-unparse': 'dependencies/ecma-unparse/dist',
                 'ecma-ast': 'dependencies/ecma-ast/dist',
                 'khepri-ast': 'dependencies/khepri-ast/dist',
@@ -107,11 +109,12 @@
                         
                         var lex = lexer.lex(input);
                         var ast = parser.parseStream(lex);
-                         console.profile();
+                        
+                        console.profile();
                         var ecam_ast = compile.compile(ast, options);
-                        var unparsed = unparse.unparse(ecam_ast);
                         console.profileEnd();
                         
+                        var unparsed = unparse.unparse(ecam_ast);
                         var s = unparse_print.print(unparsed);
                         
                         var end = new Date().getTime();

@@ -93,8 +93,8 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             var args = arguments;
             return seq(move(tree.child.bind(null, edge)), seq.apply(undefined, [].slice.call(args, 1)), up);
         }),
-        checkCtx = (function(node) {
-            return _check((node && tree.node(node)));
+        checkCtx = (function(ctx) {
+            return _check((ctx && tree.node(ctx)));
         }),
         checkTop = (function(s, ok, err) {
             return checkCtx(s.ctx)(s, ok, err);
@@ -128,22 +128,17 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         }),
         checkCanAddOwnBinding = (function(id, loc) {
             return examineScope((function(s) {
-                return ((!s.hasOwnBinding(id)) ? pass : (function() {
-                    var start = (loc && loc.start),
-                        binding = s.getBinding(id),
-                        end = (binding.loc && binding.loc.start);
-                    return error(((((("'" + id) + "' at:") + start) +
-                        " already bound for scope from:") + end));
-                })());
+                var start, binding, end;
+                return (s.hasOwnBinding(id) ? ((start = (loc && loc.start)), (binding = s.getBinding(
+                    id)), (end = (binding.loc && binding.loc.start)), error(((((("'" + id) +
+                    "' at:") + start) + " already bound for scope from:") + end))) : pass);
             }));
         }),
         checkCanAssign = (function(id, loc) {
             return examineScope((function(s) {
-                return (s.hasBinding(id) ? (function() {
-                    var b = s.getBinding(id);
-                    return (b.mutable ? pass : error(((("Assign to immutable variable:'" +
-                        id) + "' at:") + loc)));
-                })() : pass);
+                var b;
+                return (s.hasBinding(id) ? ((b = s.getBinding(id)), (b.mutable ? pass : error((((
+                    "Assign to immutable variable:'" + id) + "' at:") + loc)))) : pass);
             }));
         }),
         addUid = (function(id) {
@@ -283,7 +278,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
         return pass;
     }));
     var checkAst = (function(ast, globals) {
-        var scope = fun.reduce((globals || []), Scope.addImmutableBinding, new(Scope)(({}), null, ({}), ({}))),
+        var scope = fun.reduce((globals || []), Scope.addImmutableBinding, Scope.empty),
             state = new(State)(khepriZipper(ast), scope, 1);
         return trampoline(checkTop(state, (function(x, s) {
             return tree.node(zipper.root(s.ctx));

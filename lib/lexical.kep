@@ -1,5 +1,6 @@
 /**
- * @fileOverview
+ * @fileOverview Lexical checking of an AST and tagging of identifiers with unique
+ * ids.
  */
 package (
     check)
@@ -27,12 +28,13 @@ var _check;
 
 /* State
  ******************************************************************************/
+
 var State = record.declare(null, [
     'ctx',
     'scope',
     'unique']);
 
-/*
+/* Monad
  ******************************************************************************/
 var ok = \x -> \s, ok, _ -> ok(x, s);
 
@@ -85,13 +87,15 @@ var child = \args(edge ...) ->
         seq.apply(undefined, [].slice.call(args, 1)),
         up);
 
-var checkCtx = \node ->
-    _check <| (node && tree.node(node));
+var checkCtx = \ctx ->
+    _check <| (ctx && tree.node(ctx));
 
 var checkTop = \s ok err ->
     checkCtx(s.ctx)(s, ok, err);
 
-var checkChild = \edge -> child(edge, checkTop);
+var checkChild = \edge ->
+    child(edge,
+        checkTop);
 
 var inspect = \f ->
     examineState(\s -> f(tree.node s.ctx));
@@ -102,6 +106,9 @@ var setNode = \x -> move tree.setNode@x;
 
 /* Operations
  ******************************************************************************/
+/**
+ * Noop
+ */
 var pass = ok();
 
 /**
@@ -128,14 +135,14 @@ var checkHasBinding = \id, loc ->
  */
 var checkCanAddOwnBinding = \id loc -> 
     examineScope <|\ s ->
-        ?!s.hasOwnBinding(id)
-            :pass
+        ?s.hasOwnBinding(id)
             :let
                 start = loc && loc.start,
                 binding = s.getBinding(id),
                 end = binding.loc && binding.loc.start
             in
-                error("'" + id + "' at:" + start + " already bound for scope from:" + end);
+                error("'" + id + "' at:" + start + " already bound for scope from:" + end)
+            :pass;
 
 /**
  * Check if `id` is a mutable binding.
@@ -348,7 +355,7 @@ addCheck@'AssignmentExpression' <|
                     :pass),
         checkChild 'right');
 
-addCheck@['LogicalExpression','BinaryExpression'] <|
+addCheck@['LogicalExpression', 'BinaryExpression'] <|
     seq(
         checkChild 'left',
         checkChild 'right');
@@ -414,6 +421,9 @@ addCheck@'AsPattern' <|
             child('target',
                 modifyNode \target -> {
                     var n = setUserData(target, target.ud || {});
+                    
+                    // Hack: For generating argument lists, we want to used the 
+                    // as pattern name if possible.
                     n.ud.id = node.id;
                     return n;
                 },
@@ -429,7 +439,7 @@ addCheck@['ObjectPattern', 'ArrayPattern'] <|
                             ast_value.Identifier.create(null, '__o'),
                             {'uid': uid}));
                     
-                    //TODO: Hack. Tells later check not to complain if '__o' is not unique
+                    // TODO: Hack. Tells later check not to complain if '__o' is not unique
                     // because this doesn't matter since the uid is unique.
                     id.reserved = true;
                     
@@ -489,7 +499,7 @@ _check = \node -> {
  * 
  */
 var checkAst = \ast globals -> {
-    var scope = fun.reduce(globals || [], Scope.addImmutableBinding, new Scope({}, null, {}, {}));
+    var scope = fun.reduce(globals || [], Scope.addImmutableBinding, Scope.empty);
     var state = new State(khepriZipper(ast), scope, 1);
     return trampoline(checkTop(state, \x s -> (s.ctx |> zipper.root |> tree.node), \err, s -> { throw err; }));
 };

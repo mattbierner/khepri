@@ -52,6 +52,8 @@
         "ecma-ast-zipper": "1.0.x",
         "khepri-ast-zipper": "1.1.x",
         
+        "hashtrie": "0.1.x",
+        
         "optimist": "0.6.x",
         "mkdirp": "0.3.x",
         "require-directory": "1.2.x"

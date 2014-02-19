@@ -29,7 +29,7 @@ var record = require("bes")["record"],
     Tail = __o0["Tail"],
     trampoline = __o0["trampoline"],
     fun = require("./fun"),
-    transform, flip = (function(f) {
+    transform, objectElementUnpack, flip = (function(f) {
         return (function(x, y) {
             return f(y, x);
         });
@@ -170,18 +170,16 @@ var ok = (function(x) {
     }),
     node = get(tree.node),
     enterBlock = examineScope((function(s) {
-        return setScope(new(scope.Scope)(({}), s, ({}), ({})));
+        return setScope(scope.Scope.empty.setOuter(s));
     })),
     exitBlock = examineScope((function(s) {
         return setScope(s.outer);
     })),
     addVar = (function(id, uid) {
         return examineScope((function(s) {
-            return (s.hasMapping(uid) ? pass : (function() {
-                var name = s.getUnusedId(id);
-                return setScope(scope.Scope.addMapping(scope.Scope.addMutableBinding(s, name), uid,
-                    name));
-            })());
+            var name;
+            return (s.hasMapping(uid) ? pass : ((name = s.getUnusedId(id)), setScope(scope.Scope.addMapping(
+                scope.Scope.addMutableBinding(s, name), uid, name))));
         }));
     }),
     getMapping = (function(uid, f) {
@@ -212,30 +210,26 @@ var ok = (function(x) {
     }),
     variableDeclaration = khepri_declaration.VariableDeclaration.create,
     variableDeclarator = ecma_declaration.VariableDeclarator.create,
-    innerPattern = (function() {
-        var objectElementUnpack = (function(base, pattern, key) {
-            var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
-            return (pattern ? fun.flatten(innerPattern(innerBase, pattern)) : khepri_declaration.Binding.create(
-                null, identifier(null, key.value), innerBase));
-        });
-        return (function(base, pattern) {
-            switch (pattern.type) {
-                case "IdentifierPattern":
-                    return [khepri_declaration.Binding.create(null, pattern.id, base)];
-                case "AsPattern":
-                    return fun.concat(innerPattern(base, pattern.id), fun.flatten(innerPattern(pattern.id,
-                        pattern.target)));
-                case "ObjectPattern":
-                    return fun.flatten(fun.map((function(__o) {
-                        var target = __o["target"],
-                            key = __o["key"];
-                        return objectElementUnpack(pattern.ud.id, target, key);
-                    }), pattern.elements));
-                default:
-                    return [];
-            }
-        });
-    })(),
+    innerPattern = ((objectElementUnpack = (function(base, pattern, key) {
+        var innerBase = khepri_expression.MemberExpression.create(null, base, key, true);
+        return (pattern ? fun.flatten(innerPattern(innerBase, pattern)) : khepri_declaration.Binding.create(
+            null, identifier(null, key.value), innerBase));
+    })), (function(base, pattern) {
+        switch (pattern.type) {
+            case "IdentifierPattern":
+                return [khepri_declaration.Binding.create(null, pattern.id, base)];
+            case "AsPattern":
+                return fun.concat(innerPattern(base, pattern.id), fun.flatten(innerPattern(pattern.id, pattern.target)));
+            case "ObjectPattern":
+                return fun.flatten(fun.map((function(__o) {
+                    var target = __o["target"],
+                        key = __o["key"];
+                    return objectElementUnpack(pattern.ud.id, target, key);
+                }), pattern.elements));
+            default:
+                return [];
+        }
+    })),
     unpack = (function(pattern, value) {
         return fun.map((function(x) {
             return variableDeclarator(null, x.pattern, x.value);
@@ -276,9 +270,9 @@ var ok = (function(x) {
         return withStatementNoImport(loc, fun.map(flattenImport, bindings), body);
     }),
     functionExpression = (function(loc, id, parameters, functionBody) {
-        var params = fun.filter((function(x) {
-            return (x.type !== "EllipsisPattern");
-        }), parameters.elements),
+        var block, params = fun.filter((function(x) {
+                return (x.type !== "EllipsisPattern");
+            }), parameters.elements),
             bindings = fun.map((function(x) {
                 return variableDeclarator(null, x.pattern, x.value);
             }), unpackParameters(parameters)),
@@ -287,11 +281,8 @@ var ok = (function(x) {
             strict = isStrict(body.body);
         return khepri_expression.FunctionExpression.create(loc, id, params, khepri_statement.BlockStatement.create(
             body.loc, fun.concat((strict ? khepri_statement.ExpressionStatement.create(null, khepri_value.Literal
-                .create(null, "string", "use strict")) : []), variableDeclaration(null, bindings), (
-                function() {
-                    var block = body.body;
-                    return (strict ? block.slice(1) : block);
-                })())));
+                .create(null, "string", "use strict")) : []), (bindings.length ? variableDeclaration(null,
+                bindings) : []), ((block = body.body), (strict ? block.slice(1) : block)))));
     }),
     letExpression = (function(loc, bindings, body) {
         return ecma_expression.SequenceExpression.create(null, fun.flatten(fun.concat(fun.map((function(x) {
