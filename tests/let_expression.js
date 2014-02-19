@@ -44,6 +44,16 @@ exports.introduces_new_scope = function(test) {
     test.done();
 };
 
+exports.top_level_no_conflict = function(test) {
+    test.equal(
+        testParser("var x = let y = 3 in \\ -> y;" +
+                   "var g = let y = 10 in \\ -> y;"+
+                   "g();"),
+        10);
+    
+    test.done();
+};
+
 exports.unpack = function(test) {
     test.equal(
         testParser("let [x y] = [1, 2, 3] in x + y;"),

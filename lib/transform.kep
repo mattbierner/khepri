@@ -154,7 +154,7 @@ var exitBlock = examineScope \s ->
 
 var addVar = \id uid ->
     examineScope(\s ->
-        ?s.hasOwnMapping(uid)
+        ?s.hasMapping(uid)
             :pass
             :let name = s.getUnusedId(id) in
                 setScope(scope.Scope.addMapping(
@@ -162,14 +162,12 @@ var addVar = \id uid ->
                     uid,
                     name)));
 
-var getMapping = \uid ->
+var getMapping = \uid f ->
     examineScope \ s ->
-        ok(s.getMapping(uid));
+        f(s.getMapping(uid));
 
 var getName = \name uid ->
-    next(
-        addVar(name, uid),
-        getMapping(uid));
+    getMapping(uid, ok);
 
 var getBindings = \f ->
     bind(
@@ -177,7 +175,6 @@ var getBindings = \f ->
             enumeration(fun.map(\[name uid] -> getName(name, uid), s.bindings.(0))),
         f);
 
-    
 /* Values
  ******************************************************************************/
 var identifier = \loc, name ->
@@ -802,27 +799,36 @@ addTransform('ObjectValue',
 // Patterns
 addTransform('ArgumentsPattern',
     null,
-    modify \node -> node.id);
+    modify \node ->
+        node.id);
 
 addTransform('IdentifierPattern',
-    null,
-    modify \node -> node.id);
+    bind(node, \node ->
+        ?node.ud && node.ud.uid
+            :addVar(node.name, node.ud.uid)
+            :pass),
+    modify \node ->
+        node.id);
 
 addTransform('AsPattern',
     null,
-    modify \node -> node.id);
+    modify \node ->
+        node.id);
 
 addTransform('ObjectPattern',
     null,
-    modify \node -> node.ud.id);
+    modify \node ->
+        node.ud.id);
 
 addTransform('EllipsisPattern',
     null,
-    modify \node -> (node.ud && node.ud.id));
+    modify \node ->
+        (node.ud && node.ud.id));
 
 addTransform('SinkPattern',
     null,
-    modify \node -> (node.ud && node.ud.id));
+    modify \node ->
+        (node.ud && node.ud.id));
 
 // Program
 addTransform('Program',
@@ -833,7 +839,8 @@ addTransform('Program',
                 fun.concat(
                     ecma_declaration.VariableDeclaration.create(null,
                         bindings.map(\x ->
-                            ecma_declaration.VariableDeclarator.create(null, identifier(null, x)))),
+                            ecma_declaration.VariableDeclarator.create(null,
+                                identifier(null, x)))),
                     node.body)));
 
 // Package
@@ -852,7 +859,7 @@ addTransform('Identifier',
         ?node.ud && node.ud.uid
             :next(
                 addVar(node.name, node.ud.uid),
-                bind(getMapping(node.ud.uid), \name ->
+                getMapping(node.ud.uid, \name ->
                     set <| identifier(node.loc, name)))
             :set <| identifier(node.loc, node.name)));
 

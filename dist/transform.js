@@ -162,20 +162,20 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
         })),
         addVar = (function(id, uid) {
             return examineScope((function(s) {
-                return (s.hasOwnMapping(uid) ? pass : (function() {
+                return (s.hasMapping(uid) ? pass : (function() {
                     var name = s.getUnusedId(id);
                     return setScope(scope.Scope.addMapping(scope.Scope.addMutableBinding(s,
                         name), uid, name));
                 })());
             }));
         }),
-        getMapping = (function(uid) {
+        getMapping = (function(uid, f) {
             return examineScope((function(s) {
-                return ok(s.getMapping(uid));
+                return f(s.getMapping(uid));
             }));
         }),
         getName = (function(name, uid) {
-            return next(addVar(name, uid), getMapping(uid));
+            return getMapping(uid, ok);
         }),
         getBindings = (function(f) {
             return bind(examineState((function(s) {
@@ -519,7 +519,9 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
     addTransform("ArgumentsPattern", null, modify((function(node) {
         return node.id;
     })));
-    addTransform("IdentifierPattern", null, modify((function(node) {
+    addTransform("IdentifierPattern", bind(node, (function(node) {
+        return ((node.ud && node.ud.uid) ? addVar(node.name, node.ud.uid) : pass);
+    })), modify((function(node) {
         return node.id;
     })));
     addTransform("AsPattern", null, modify((function(node) {
@@ -549,10 +551,10 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
         }));
     })));
     addTransform("Identifier", bind(node, (function(node) {
-        return ((node.ud && node.ud.uid) ? next(addVar(node.name, node.ud.uid), bind(getMapping(
-            node.ud.uid), (function(name) {
-            return set(identifier(node.loc, name));
-        }))) : set(identifier(node.loc, node.name)));
+        return ((node.ud && node.ud.uid) ? next(addVar(node.name, node.ud.uid), getMapping(node.ud.uid, (
+            function(name) {
+                return set(identifier(node.loc, name));
+            }))) : set(identifier(node.loc, node.name)));
     })));
     var _trans = (function(node) {
         if ((node && (node instanceof khepri_node.Node))) {
