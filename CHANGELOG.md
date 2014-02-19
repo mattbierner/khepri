@@ -1,8 +1,12 @@
 # ChangeLog #
 
+## 0.14.0 - Feb 18, 2014
+* Allow self unpacks to contain subpatterns.
+
 ## 0.13.9 - Feb 18, 2014
 * Fixed an issue with top level let to function bindings using wrong names
   in function body.
+  
 ## 0.13.8 - Feb 18, 2014
 * Improved performance of generated code for lets.
 

@@ -12,7 +12,7 @@ var testParser = function(input) {
 };
   
 
-exports.bind = function(test) {
+exports.bind_identifier = function(test) {
     test.equal(
         testParser("var f = \\() =self-> self.x; f.call({'x': 3});"),
         3);
@@ -35,3 +35,29 @@ exports.uses_lexical_scope = function(test) {
     
     test.done();
 };
+
+
+exports.array_unpack = function(test) {
+    test.equal(
+        testParser("var f = \\=[x _ y]-> x + y; f.call([1,2, 3]);"),
+        4);
+    
+    test.done();
+};
+
+exports.object_unpack = function(test) {
+    test.equal(
+        testParser("var f = \\={x y}-> x + y; f.call({'x': 4, 'z': 3, 'y': 10});"),
+        14);
+    
+    test.done();
+};
+
+exports.as_unpack = function(test) {
+    test.equal(
+        testParser("var f = \\=self#{x y}-> x + y + self.z; f.call({'x': 4, 'z': 3, 'y': 10});"),
+        17);
+    
+    test.done();
+};
+
