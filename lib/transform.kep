@@ -429,22 +429,25 @@ var pipe = \loc, value, target ->
 /**
  * 
  */
-var singleCompose = \loc, f, g ->
+var singleCompose = \loc, f, g -> let
+    fo = identifier(null, 'f'),
+    go = identifier(null, 'g')
+in
     khepri_expression.CallExpression.create(loc,
         khepri_expression.FunctionExpression.create(null, null,
             khepri_pattern.ArgumentsPattern.create(null, null, [
                 khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'f')),
+                    fo),
                 khepri_pattern.IdentifierPattern.create(null,
-                    identifier(null, 'g'))]),
+                    go)]),
             khepri_expression.FunctionExpression.create(null, null,
                 khepri_pattern.ArgumentsPattern.create(null, null, [
                     khepri_pattern.IdentifierPattern.create(null,
                         identifier(null, 'x'))]),
                 khepri_expression.CallExpression.create(null,
-                    identifier(null, 'f'), [
+                    fo, [
                         khepri_expression.CallExpression.create(null,
-                            identifier(null, 'g'),
+                            go,
                             [identifier(null, 'x')])]))),
         [f, g]);
 

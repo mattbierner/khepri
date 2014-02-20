@@ -307,16 +307,15 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
             return khepri_expression.CallExpression.create(loc, target, [value]);
         }),
         singleCompose = (function(loc, f, g) {
+            var fo = identifier(null, "f"),
+                go = identifier(null, "g");
             return khepri_expression.CallExpression.create(loc, khepri_expression.FunctionExpression.create(
                 null, null, khepri_pattern.ArgumentsPattern.create(null, null, [khepri_pattern.IdentifierPattern
-                    .create(null, identifier(null, "f")), khepri_pattern.IdentifierPattern.create(
-                        null, identifier(null, "g"))
+                    .create(null, fo), khepri_pattern.IdentifierPattern.create(null, go)
                 ]), khepri_expression.FunctionExpression.create(null, null, khepri_pattern.ArgumentsPattern
                     .create(null, null, [khepri_pattern.IdentifierPattern.create(null, identifier(null,
-                        "x"))]), khepri_expression.CallExpression.create(null, identifier(null, "f"), [
-                        khepri_expression.CallExpression.create(null, identifier(null, "g"), [
-                            identifier(null, "x")
-                        ])
+                        "x"))]), khepri_expression.CallExpression.create(null, fo, [khepri_expression.CallExpression
+                        .create(null, go, [identifier(null, "x")])
                     ]))), [f, g]);
         }),
         multiCompose = (function(loc, f, g) {
