@@ -1,6 +1,10 @@
 # ChangeLog #
 
-## 0.14.0 - Feb 18, 2014
+## 0.14.1 - Feb 19, 2014
+* Fixed constant folding of unary `++` and `--`.
+* Moved scope datastructures to use hashtrie.
+
+## 0.14.0 - Feb 19, 2014
 * Allow self unpacks to contain subpatterns.
 
 ## 0.13.9 - Feb 18, 2014

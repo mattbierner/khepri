@@ -150,11 +150,11 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-
     addPeephole(["UnaryExpression"], true, (function(__o) {
         var operator = __o["operator"],
             argument = __o["argument"];
-        return (arithmetic[operator] && isPrimitive(argument));
+        return (arithmetic0[operator] && isPrimitive0(argument));
     }), (function(__o) {
         var operator = __o["operator"],
             argument = __o["argument"],
-            value = arithmetic[operator](argument.value);
+            value = arithmetic0[operator](argument.value);
         return ast_value.Literal.create(null, (typeof value), value);
     }));
     var upTransforms = (function(node) {
