@@ -10,7 +10,7 @@ var record = require("bes")["record"],
 (Scope.empty = Scope.create(hashtrie.empty, null, hashtrie.empty, hashtrie.empty));
 (Scope.prototype.hasOwnBinding = (function(id) {
     var self = this;
-    return hashtrie.get(id, self.record);
+    return hashtrie.has(id, self.record);
 }));
 (Scope.prototype.hasBinding = (function(id) {
     var self = this;
@@ -27,7 +27,7 @@ var record = require("bes")["record"],
 }));
 (Scope.prototype.hasOwnMapping = (function(id) {
     var self = this;
-    return hashtrie.get(id, self.mapping);
+    return hashtrie.has(id, self.mapping);
 }));
 (Scope.prototype.hasMapping = (function(id) {
     var self = this;

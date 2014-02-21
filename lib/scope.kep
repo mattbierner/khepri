@@ -32,13 +32,14 @@ Scope.empty = Scope.create(hashtrie.empty, null, hashtrie.empty, hashtrie.empty)
  * Does this scope have a given binding?
  */
 Scope.prototype.hasOwnBinding = \id =self->
-    hashtrie.get(id, self.record);
+    hashtrie.has(id, self.record);
 
 /**
  * Does this scope or its parents have a given binding?
  */
 Scope.prototype.hasBinding = \id =self->
-    self.hasOwnBinding(id) || (self.outer && self.outer.hasBinding(id));
+    (  self.hasOwnBinding(id)
+    || (self.outer && self.outer.hasBinding(id)));
 
 /**
  * Get information for a given binding. Returns null if binding does not exist.
@@ -62,13 +63,14 @@ Scope.prototype.getUid = \id =self->
  * Does this scope have its own a mapping for a given identifier.
  */
 Scope.prototype.hasOwnMapping = \id =self->
-    hashtrie.get(id, self.mapping);
+    hashtrie.has(id, self.mapping);
 
 /**
  * Does this scope have any mapping for a given identifier.
  */
 Scope.prototype.hasMapping = \id =self->
-    self.hasOwnMapping(id) || (self.outer && self.outer.hasMapping(id));
+    (  self.hasOwnMapping(id)
+    || (self.outer && self.outer.hasMapping(id)));
 
 /**
  * Get the mapped value for a given identifier.
