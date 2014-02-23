@@ -26,7 +26,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
         var loc = __o["loc"],
             bindings = __o["bindings"],
             body = __o["body"];
-        return fun.foldl((function(p, c) {
+        return fun.foldr((function(p, c) {
             return ast_expression.LetExpression.create(loc, [c], p);
         }), body, bindings);
     }));

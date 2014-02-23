@@ -46,7 +46,7 @@ addPeephole(['LetExpression'], true,
     \node ->
         node.bindings.length > 1,
     \{loc bindings body} ->
-        fun.foldl(\p c ->
+        fun.foldr(\p c ->
             ast_expression.LetExpression.create(loc,
                 [c],
                 p),
