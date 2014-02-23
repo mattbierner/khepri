@@ -5,6 +5,7 @@
 "use strict";
 var ast_node = require("khepri-ast")["node"],
     setData = ast_node["setData"],
+    setUserData = ast_node["setUserData"],
     ast_expression = require("khepri-ast")["expression"],
     ast_pattern = require("khepri-ast")["pattern"],
     ast_value = require("khepri-ast")["value"],
@@ -40,6 +41,13 @@ var ast_node = require("khepri-ast")["node"],
     next = (function(p, n) {
         return bind(p, (function(_) {
             return n;
+        }));
+    }),
+    binary = (function(a, b, f) {
+        return bind(a, (function(x) {
+            return bind(b, (function(y) {
+                return f(x, y);
+            }));
         }));
     }),
     seqa = (function(arr) {
@@ -232,6 +240,19 @@ addCheck("ArrayExpression", checkChild("elements"));
 addCheck("ObjectExpression", checkChild("properties"));
 addCheck("LetExpression", block(checkChild("bindings"), checkChild("body")));
 addCheck("CurryExpression", seq(checkChild("base"), checkChild("args")));
+addCheck("UnaryOperatorExpression", bind(unique, (function(uid) {
+    return modifyNode((function(node) {
+        return setData(node, "x_uid", uid);
+    }));
+})));
+addCheck("BinaryOperatorExpression", binary(unique, unique, (function(xuid, yuid) {
+    return modifyNode((function(node) {
+        return setUserData(node, ({
+            "x_uid": xuid,
+            "y_uid": yuid
+        }));
+    }));
+})));
 addCheck("SinkPattern", bind(unique, (function(uid) {
     return setNode(setData(ast_value.Identifier.create(null, "_"), "uid", uid));
 })));

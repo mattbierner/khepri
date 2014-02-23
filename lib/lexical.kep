@@ -5,7 +5,7 @@
 package (
     check)
 with
-    import 'khepri-ast::node' ast_node#{setData},
+    import 'khepri-ast::node' ast_node#{setData setUserData},
     import 'khepri-ast::expression' ast_expression,
     import 'khepri-ast::pattern' ast_pattern,
     import 'khepri-ast::value' ast_value,
@@ -44,6 +44,11 @@ var bind = \p f ->
         new Tail(p, s, \x s -> f(x)(s, ok, err), err);
 
 var next = \p n -> bind(p, \_ -> n);
+
+var binary = \a b f ->
+    bind(a, \x ->
+        bind(b, \y ->
+            f(x, y)));
 
 var seqa = \arr -> fun.reduce(arr, next);
 
@@ -398,6 +403,23 @@ addCheck@'CurryExpression' <|
     seq(
         checkChild 'base',
         checkChild 'args');
+
+// @TODO: Hack, create an internal identifier that is used in translation
+addCheck@'UnaryOperatorExpression' <|
+    bind(unique, \uid ->
+        modifyNode <|\ node ->
+           setData(node,
+               'x_uid',
+               uid));
+
+// @TODO: Hack, create an internal identifier that is used in translation
+addCheck@'BinaryOperatorExpression' <|
+    binary(unique, unique, \xuid yuid ->
+        modifyNode <|\ node ->
+           setUserData(node, {
+               'x_uid': xuid,
+               'y_uid': yuid
+           }));
 
 // Patterns
 addCheck@'SinkPattern'<|

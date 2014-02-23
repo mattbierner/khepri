@@ -119,9 +119,10 @@ addPeephole(['CurryExpression'], true,
     \node ->
         node.base.type === 'UnaryOperatorExpression',
     \node -> let
-        arg = setUserData(
+        arg = setData(
             ast_value.Identifier.create(null, 'x'),
-            {'uid': 'x'}) // should be real uid.
+            'uid',
+            node.base.ud.x_uid)
     in
         ast_expression.LetExpression.create(null,
             [ast_declaration.Binding.create(null,
@@ -205,12 +206,12 @@ addPeephole(['CurryExpression'], true,
         bound = setData(
             ast_value.Identifier.create(null, 'x'),
             'uid',
-            'x'), // should be real uid
+            node.base.ud.x_uid),
         
         arg = setData(
             ast_value.Identifier.create(null, 'y'),
             'uid',
-            'y') // should be real uid
+            node.base.ud.y_uid)
     in
         ast_expression.LetExpression.create(null,
             [ast_declaration.Binding.create(null,

@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.16.3 - Feb 23, 2014
+* Fixed potential conflicting argument use with curried operator expression 
+  transformation.
+
 ## 0.16.1 - Feb 23, 2014
 * Fixed let normalization with many args.
 

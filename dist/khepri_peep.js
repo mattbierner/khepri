@@ -63,9 +63,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
     addPeephole(["CurryExpression"], true, (function(node) {
         return (node.base.type === "UnaryOperatorExpression");
     }), (function(node) {
-        var arg = setUserData(ast_value.Identifier.create(null, "x"), ({
-            "uid": "x"
-        }));
+        var arg = setData(ast_value.Identifier.create(null, "x"), "uid", node.base.ud.x_uid);
         return ast_expression.LetExpression.create(null, [ast_declaration.Binding.create(null,
                 ast_pattern.IdentifierPattern.create(null, arg), node.args[0])], ast_expression.FunctionExpression
             .create(null, null, ast_pattern.ArgumentsPattern.create(null, null, []), ast_expression.UnaryExpression
@@ -99,8 +97,8 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
     addPeephole(["CurryExpression"], true, (function(node) {
         return ((node.base.type === "BinaryOperatorExpression") && (node.args.length === 1));
     }), (function(node) {
-        var bound = setData(ast_value.Identifier.create(null, "x"), "uid", "x"),
-            arg = setData(ast_value.Identifier.create(null, "y"), "uid", "y");
+        var bound = setData(ast_value.Identifier.create(null, "x"), "uid", node.base.ud.x_uid),
+            arg = setData(ast_value.Identifier.create(null, "y"), "uid", node.base.ud.y_uid);
         return ast_expression.LetExpression.create(null, [ast_declaration.Binding.create(null,
                 ast_pattern.IdentifierPattern.create(null, bound), node.args[0])], ast_expression.FunctionExpression
             .create(null, null, ast_pattern.ArgumentsPattern.create(null, null, [ast_pattern.IdentifierPattern
