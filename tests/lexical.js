@@ -142,30 +142,4 @@ exports.multipleParameterSameName = function(test) {
      test.done();
 };
 
-exports.letBindingsWithSameName = function(test) {
-    test.throws(function() {
-        lexical.check(testParser(lexer.lex("let x = 3, x = 5 in x;")));
-    });
-    
-    test.throws(function() {
-        lexical.check(testParser(lexer.lex("let x=1,y=3,x=4 in x;")));
-    });
-    
-    var result = lexical.check(testParser(lexer.lex("let x=3 in let x=5 in x;")));
-    test.ok(true);
-    var result = lexical.check(testParser(lexer.lex("\\x -> (let x=3 in x) + (let x=5 in x);")));
-    test.ok(true);
-    test.done();
-};
 
-
-exports.letPatternsWithSameName = function(test) {
-    test.throws(function() {
-        lexical.check(testParser(lexer.lex("let {x} = 3, {x} = 5 in x;")));
-    });
-    
-    test.throws(function() {
-        lexical.check(testParser(lexer.lex("let x=1,y=3,{'x':[x]}=4 in x;")));
-    });
-    test.done();
-};
