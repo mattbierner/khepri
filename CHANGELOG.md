@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.16.1 - Feb 23, 2014
+* Fixed let normalization with many args.
+
 ## 0.16.0 - Feb 23, 2014
 * Added support for recursive binding using `:=` in lets and withs.
 
