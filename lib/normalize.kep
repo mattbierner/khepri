@@ -45,15 +45,13 @@ var addPeephole = \types, up, condition, f -> {
 addPeephole(['LetExpression'], true,
     \node ->
         node.bindings.length > 1,
-    \{loc bindings body} -> let
-        first = bindings.(0),
-        rest = bindings.slice(1)
-    in
-        ast_expression.LetExpression.create(loc,
-            [first],
-            ast_expression.LetExpression.create(null,
-                rest,
-                body)));
+    \{loc bindings body} ->
+        fun.foldl(\p c ->
+            ast_expression.LetExpression.create(loc,
+                [c],
+                p),
+            body,
+            bindings));
 
 /**
  * Convert array patterns to object patterns

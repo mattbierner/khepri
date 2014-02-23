@@ -31,11 +31,10 @@ addPeephole(["LetExpression"], true, (function(node) {
 }), (function(__o) {
     var loc = __o["loc"],
         bindings = __o["bindings"],
-        body = __o["body"],
-        first = bindings[0],
-        rest = bindings.slice(1);
-    return ast_expression.LetExpression.create(loc, [first], ast_expression.LetExpression.create(null, rest,
-        body));
+        body = __o["body"];
+    return fun.foldl((function(p, c) {
+        return ast_expression.LetExpression.create(loc, [c], p);
+    }), body, bindings);
 }));
 addPeephole(["ArrayPattern"], false, (function(_) {
     return true;
