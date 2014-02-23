@@ -225,6 +225,19 @@ addPeephole(['CurryExpression'], true,
                     arg))));
 
 /**
+ * Flatten curry of curry.
+ */
+addPeephole(['CurryExpression'], true,
+    \node ->
+        node.base.type === 'CurryExpression',
+    \node ->
+        ast_expression.CurryExpression.create(null,
+            node.base.base,
+            fun.concat(
+                node.args,
+                node.base.args)));
+
+/**
  * Rewrite left pipe of curried expression to a call.
  */
 addPeephole(['BinaryExpression'], true,

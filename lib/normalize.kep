@@ -42,7 +42,7 @@ var addPeephole = \types, up, condition, f -> {
 /**
  * Convert multiple binding let expression to nested single binding let expressions
  */
-addPeephole(['LetExpression'], false,
+addPeephole(['LetExpression'], true,
     \node ->
         node.bindings.length > 1,
     \{loc bindings body} -> let
@@ -95,8 +95,7 @@ addPeephole(['ObjectPatternElement'], false,
  */
 addPeephole(['CurryExpression'], true,
     \node ->
-        node.base.type === 'CurryExpression'
-        && node.args.length > 1,
+        node.args.length > 1,
     \node -> let
         first = node.args.(0),
         rest = node.args.slice(1)

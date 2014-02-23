@@ -20,7 +20,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
                 (peepholes[type] = (peepholes[type] ? fun.concat(peepholes[type], entry) : [entry]));
             }));
         });
-    addPeephole(["LetExpression"], false, (function(node) {
+    addPeephole(["LetExpression"], true, (function(node) {
         return (node.bindings.length > 1);
     }), (function(__o) {
         var loc = __o["loc"],
@@ -58,7 +58,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
         }
     }));
     addPeephole(["CurryExpression"], true, (function(node) {
-        return ((node.base.type === "CurryExpression") && (node.args.length > 1));
+        return (node.args.length > 1);
     }), (function(node) {
         var first = node.args[0],
             rest = node.args.slice(1);

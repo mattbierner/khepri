@@ -61,3 +61,12 @@ exports.unpack = function(test) {
     
     test.done();
 };
+
+
+exports.binding_do_not_see_themselves = function(test) {
+    test.equal(
+        testParser("var x = 6; let x = x * 4, x = x / 2 in x;"),
+        12);
+    
+    test.done();
+};
