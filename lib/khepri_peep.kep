@@ -10,7 +10,8 @@ with
 
     import 'khepri-ast-zipper' {khepriZipper},
     
-    import 'khepri-ast::node' {modify Node setUserData},
+    import 'khepri-ast::node' {modify Node setUserData setData},
+    import 'khepri-ast::declaration' ast_declaration,
     import 'khepri-ast::statement' ast_statement,
     import 'khepri-ast::expression' ast_expression,
     import 'khepri-ast::pattern' ast_pattern,
@@ -36,6 +37,7 @@ var addPeephole = \types, up, condition, f -> {
             :[entry];
     };
 };
+
 /* Peepholes
  ******************************************************************************/
 /**
@@ -95,67 +97,139 @@ addPeephole(['ExpressionStatement'], true,
                         node.expression.left,
                         node.expression.right.body))])));
 
-
 /**
- * Convert array patterns to object patterns
+ * Flatten let with let body.
  */
-addPeephole(['ArrayPattern'], false,
-    \_ -> true,
-    \{loc elements ud} ->
-        setUserData(
-            ast_pattern.ObjectPattern.create(loc,
-                fun.map(\x, i ->
-                    ast_pattern.ObjectPatternElement.create(null,
-                        ast_value.Literal.create(null, 'number', i),
-                        x),
-                    elements)),
-            ud));
+addPeephole(['LetExpression'], true,
+    \node ->
+        node.body.type === 'LetExpression',
+    \node ->
+        ast_expression.LetExpression.create(null,
+            fun.concat(
+                node.bindings,
+                node.body.bindings),
+            node.body.body));
 
 /**
- * Normalize object patterns to ('key': pattern) form.
- */
-addPeephole(['ObjectPatternElement'], false,
-    \node -> !node.target,
-    \node#{loc key} -> {
-        switch(key.type) {
-        case 'IdentifierPattern':
-            return ast_pattern.ObjectPatternElement.create(null,
-                ast_value.Literal.create(null, 'string', key.id.name),
-                key);
-        
-        case 'AsPattern':
-            return ast_pattern.ObjectPatternElement.create(null,
-                ast_value.Literal.create(null, 'string', key.id.id.name),
-                key);
-        
-        default:
-            return node;
-        }
-    });
-
-
-/**
- * Flatten currying of curry.
+ * Convert unary curry to direct function.
+ * 
+ * This discards all curried arguments except the first.
  */
 addPeephole(['CurryExpression'], true,
-    \node -> node.base.type === 'CurryExpression',
     \node ->
-        ast_expression.CurryExpression.create(null,
-            node.base.base,
-            fun.concat(
-                node.base.args,
-                node.args)));
+        node.base.type === 'UnaryOperatorExpression',
+    \node -> let
+        arg = setUserData(
+            ast_value.Identifier.create(null, 'x'),
+            {'uid': 'x'}) // should be real uid.
+    in
+        ast_expression.LetExpression.create(null,
+            [ast_declaration.Binding.create(null,
+                ast_pattern.IdentifierPattern.create(null, arg),
+                node.args.(0))],
+            ast_expression.FunctionExpression.create(null, null,
+                ast_pattern.ArgumentsPattern.create(null, null, []),
+                ast_expression.UnaryExpression.create(null,
+                    node.base.op,
+                    arg))));
+
+/**
+ * Convert curry on function expression to function.
+ * 
+ * Note that this discards arguments that are not used.
+ */
+addPeephole(['CurryExpression'], true,
+    \node ->
+        node.base.type === 'FunctionExpression'
+        && !node.base.params.id, // make sure no one is using arguments object
+    
+    \node -> let
+        first = node.base.params.elements.(0),
+        rest = node.base.params.elements.slice(1),
+        
+        body = ast_expression.FunctionExpression.create(null, null,
+            ast_pattern.ArgumentsPattern.create(null, null,
+                rest,
+                node.base.params.self),
+            node.base.body)
+    in
+        ?first && (first.type === 'IdentifierPattern' || first.type === 'AsPattern' || first.type === 'ObjectPattern')
+            :ast_expression.LetExpression.create(null,
+                [ast_declaration.Binding.create(null,
+                    first,
+                    node.args.(0))],
+                body)
+            :body);
+
+/**
+ * Try Convert curry on let with function body to function.
+ * 
+ * Note that this may discard arguments that are not used.
+ */
+addPeephole(['CurryExpression'], true,
+    \node ->
+        node.base.type === 'LetExpression'
+        && node.base.body.type === 'FunctionExpression'
+        && !node.base.body.params.id, // make sure no one is using arguments object
+   
+    \node -> let
+        first = node.base.body.params.elements.(0),
+        rest = node.base.body.params.elements.slice(1),
+        
+        body = ast_expression.FunctionExpression.create(null, null,
+            ast_pattern.ArgumentsPattern.create(null, null,
+                rest,
+                node.base.body.params.self),
+            node.base.body.body)
+    in
+        ?first && (first.type === 'IdentifierPattern' || first.type === 'AsPattern' || first.type === 'ObjectPattern')
+            :ast_expression.LetExpression.create(null,
+                fun.concat(
+                    node.base.bindings,
+                    ast_declaration.Binding.create(null,
+                        first,
+                        node.args.(0))),
+                body)
+            :ast_expression.LetExpression.create(null,
+                node.base.bindings,
+                body));
+
+/**
+ * Convert binary curry to function.
+ */
+addPeephole(['CurryExpression'], true,
+    \node ->
+        node.base.type === 'BinaryOperatorExpression'
+        && node.args.length === 1,
+    \node -> let
+        bound = setData(
+            ast_value.Identifier.create(null, 'x'),
+            'uid',
+            'x'), // should be real uid
+        
+        arg = setData(
+            ast_value.Identifier.create(null, 'y'),
+            'uid',
+            'y') // should be real uid
+    in
+        ast_expression.LetExpression.create(null,
+            [ast_declaration.Binding.create(null,
+                ast_pattern.IdentifierPattern.create(null, bound),
+                node.args.(0))],
+            ast_expression.FunctionExpression.create(null, null,
+                ast_pattern.ArgumentsPattern.create(null, null, [
+                    ast_pattern.IdentifierPattern.create(null, arg)]),
+                ast_expression.BinaryExpression.create(null,
+                    node.base.op,
+                    bound,
+                    arg))));
 
 /**
  * Rewrite left pipe of curried expression to a call.
  */
 addPeephole(['BinaryExpression'], true,
     \node ->
-        (node.operator === '|>'
-        &&  (  node.right.type === 'CurryExpression' 
-            || node.right.type === 'BinaryOperatorExpression'
-            || node.right.type === 'UnaryOperatorExpression'
-            || node.right.type === 'TernaryOperatorExpression')),
+        (node.operator === '|>' && node.right.type === 'CurryExpression'),
     \node ->
         ast_expression.CallExpression.create(null,
             ?node.right.type === 'CurryExpression'
@@ -170,11 +244,7 @@ addPeephole(['BinaryExpression'], true,
  */
 addPeephole(['BinaryExpression'], true,
     \{operator left} ->
-        (operator === '<|'
-        &&  (  left.type === 'CurryExpression'
-            || left.type === 'BinaryOperatorExpression'
-            || left.type === 'UnaryOperatorExpression'
-            || left.type === 'TernaryOperatorExpression')),
+        (operator === '<|' && left.type === 'CurryExpression'),
     
     \node ->
         ast_expression.CallExpression.create(null,

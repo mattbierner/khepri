@@ -5,7 +5,7 @@
 package (
     check)
 with
-    import 'khepri-ast::node' ast_node#{setUserData},
+    import 'khepri-ast::node' ast_node#{setData},
     import 'khepri-ast::expression' ast_expression,
     import 'khepri-ast::pattern' ast_pattern,
     import 'khepri-ast::value' ast_value,
@@ -28,7 +28,6 @@ var _check;
 
 /* State
  ******************************************************************************/
-
 var State = record.declare(null, [
     'ctx',
     'scope',
@@ -264,11 +263,11 @@ addCheck@'VariableDeclarator' <|
             addMutableBindingChecked(node.id.name, node.loc),
         checkChild 'id',
         checkChild 'init');
-    
+
 addCheck@'Binding' <|
     seq(
-        checkChild 'pattern',
-        checkChild 'value');
+        checkChild 'value',
+        checkChild 'pattern');
 
 // Statement
 addCheck@'BlockStatement' <|
@@ -399,9 +398,10 @@ addCheck@'CurryExpression' <|
 addCheck@'SinkPattern'<|
     bind(unique, \uid ->
         setNode <|
-            setUserData(
+            setData(
                 ast_value.Identifier.create(null, '_'),
-                {'uid': uid}));
+                'uid',
+                uid));
 
 addCheck@'IdentifierPattern' <|
     seq(
@@ -419,25 +419,22 @@ addCheck@'AsPattern' <|
         checkChild 'id',
         inspect <|\ node ->
             child('target',
-                modifyNode \target -> {
-                    var n = setUserData(target, target.ud || {});
-                    
+                modifyNode \target ->
                     // Hack: For generating argument lists, we want to used the 
                     // as pattern name if possible.
-                    n.ud.id = node.id;
-                    return n;
-                },
+                    setData(target, 'id', node.id),
                 checkTop));
 
-addCheck@['ObjectPattern', 'ArrayPattern'] <|
+addCheck@['ObjectPattern'] <|
     inspect <|\ node -> {
         if (!node.ud || !node.ud.id) {
             return seq(
                 bind(unique, \uid -> {
                     var id = ast_pattern.IdentifierPattern.create(node.loc,
-                        setUserData(
+                        setData(
                             ast_value.Identifier.create(null, '__o'),
-                            {'uid': uid}));
+                            'uid',
+                            uid));
                     
                     // TODO: Hack. Tells later check not to complain if '__o' is not unique
                     // because this doesn't matter since the uid is unique.
@@ -469,7 +466,7 @@ addCheck@'Identifier' <|
     inspect <|\ node ->
         seq(
             examineScope <|\ s ->
-                 setNode <| setUserData(node, {'uid': s.getUid(node.name)}),
+                 setNode <| setData(node, 'uid', s.getUid(node.name)),
             checkHasBinding(node.name, node.loc));
 
 /*

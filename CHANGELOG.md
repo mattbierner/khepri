@@ -1,5 +1,14 @@
 # ChangeLog #
 
+## 0.15.0 - Feb 23, 2014
+* Let binding do not see their own bindings.
+* A multiple binding let expression may rebind earlier bindings.
+* Better generated code for forms: `(UNARY_OP)@ARG` and `(BIN_OP)@arg`.
+** Expression like `(+)@1` generate `var x = 1; function(y) { return x + y; }`
+* Better generated code for forms: (\ARGS -> BODY) @ CURRY_ARGS
+** Note that unused args are silently discarded. `(\_ -> 1) @ f();` never evaluates
+   `f()`.
+
 ## 0.14.1 - Feb 19, 2014
 * Fixed constant folding of unary `++` and `--`.
 * Moved scope datastructures to use hashtrie.

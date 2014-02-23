@@ -1,0 +1,19 @@
+/**
+ * @fileOverview
+ */
+package (
+    normalize)
+with
+    import '../normalize' norm
+in {
+
+
+/**
+ * 
+ */
+normalize = \{options ast} ->({
+    'options': options,
+    'ast': norm.normalize(ast)
+});
+
+}

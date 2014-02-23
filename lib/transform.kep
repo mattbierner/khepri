@@ -18,7 +18,7 @@ with
     import 'khepri-ast::clause' khepri_clause,
     import 'khepri-ast::declaration' khepri_declaration,
     import 'khepri-ast::expression' khepri_expression,
-    import 'khepri-ast::node' khepri_node,
+    import 'khepri-ast::node' khepri_node#{setData},
     import 'khepri-ast::pattern' khepri_pattern,
     import 'khepri-ast::program' khepri_program,
     import 'khepri-ast::statement' khepri_statement,
@@ -809,7 +809,7 @@ addTransform('ArgumentsPattern',
 
 addTransform('IdentifierPattern',
     bind(node, \node ->
-        ?node.ud && node.ud.uid
+        ?node.ud && node.ud.uid !== undefined
             :addVar(node.name, node.ud.uid)
             :pass),
     modify \node ->

@@ -4,6 +4,7 @@
 */
 "use strict";
 var lexical = require("./stage/lexical"),
+    normalize = require("./stage/normalize"),
     transform = require("./stage/transform"),
     khepri_peep = require("./stage/khepri_peep"),
     ecma_peep = require("./stage/ecma_peep"),
@@ -31,10 +32,14 @@ var lexical = require("./stage/lexical"),
     return (function() {
         return f(g.apply(null, arguments));
     });
-})(lexical.check, (function(root, options) {
+})(lexical.check, (function(f, g) {
+    return (function() {
+        return f(g.apply(null, arguments));
+    });
+})(normalize.normalize, (function(root, options) {
     return ({
         "ast": root,
         "options": (options || ({}))
     });
-})))))));
+}))))))));
 (exports.compile = compile);

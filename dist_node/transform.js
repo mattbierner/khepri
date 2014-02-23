@@ -16,6 +16,7 @@ var record = require("bes")["record"],
     khepri_declaration = require("khepri-ast")["declaration"],
     khepri_expression = require("khepri-ast")["expression"],
     khepri_node = require("khepri-ast")["node"],
+    setData = khepri_node["setData"],
     khepri_pattern = require("khepri-ast")["pattern"],
     khepri_program = require("khepri-ast")["program"],
     khepri_statement = require("khepri-ast")["statement"],
@@ -517,7 +518,7 @@ addTransform("ArgumentsPattern", null, modify((function(node) {
     return node.id;
 })));
 addTransform("IdentifierPattern", bind(node, (function(node) {
-    return ((node.ud && node.ud.uid) ? addVar(node.name, node.ud.uid) : pass);
+    return ((node.ud && (node.ud.uid !== undefined)) ? addVar(node.name, node.ud.uid) : pass);
 })), modify((function(node) {
     return node.id;
 })));

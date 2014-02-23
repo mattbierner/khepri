@@ -11,7 +11,11 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-
         ecmaZipper = __o0["ecmaZipper"],
         modify = __o1["modify"],
         Node = __o1["Node"],
-        optimize, peepholes = ({}),
+        optimize, isPrimitive = (function(node) {
+            return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) ||
+                (node.kind === "boolean")) || (node.kind === "null")));
+        }),
+        peepholes = ({}),
         addPeephole = (function(types, up, condition, f) {
             var entry = ({
                 "condition": condition,
@@ -109,11 +113,7 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-
         "&&": (function(x, y) {
             return (x && y);
         })
-    }),
-        isPrimitive = (function(node) {
-            return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) ||
-                (node.kind === "boolean")) || (node.kind === "null")));
-        });
+    });
     addPeephole(["BinaryExpression", "LogicalExpression"], true, (function(__o) {
         var operator = __o["operator"],
             left = __o["left"],
@@ -142,15 +142,11 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "ecma-
         "-": (function(x) {
             return (-x);
         })
-    }),
-        isPrimitive0 = (function(node) {
-            return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) ||
-                (node.kind === "boolean")) || (node.kind === "null")));
-        });
+    });
     addPeephole(["UnaryExpression"], true, (function(__o) {
         var operator = __o["operator"],
             argument = __o["argument"];
-        return (arithmetic0[operator] && isPrimitive0(argument));
+        return (arithmetic0[operator] && isPrimitive(argument));
     }), (function(__o) {
         var operator = __o["operator"],
             argument = __o["argument"],

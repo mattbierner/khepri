@@ -17,7 +17,11 @@ var tree = require("neith")["tree"],
     ast_statement = require("ecma-ast")["statement"],
     ast_expression = require("ecma-ast")["expression"],
     fun = require("./fun"),
-    optimize, peepholes = ({}),
+    optimize, isPrimitive = (function(node) {
+        return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) || (node.kind ===
+            "boolean")) || (node.kind === "null")));
+    }),
+    peepholes = ({}),
     addPeephole = (function(types, up, condition, f) {
         var entry = ({
             "condition": condition,
@@ -114,11 +118,7 @@ var arithmetic = ({
     "&&": (function(x, y) {
         return (x && y);
     })
-}),
-    isPrimitive = (function(node) {
-        return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) || (node.kind ===
-            "boolean")) || (node.kind === "null")));
-    });
+});
 addPeephole(["BinaryExpression", "LogicalExpression"], true, (function(__o) {
     var operator = __o["operator"],
         left = __o["left"],
@@ -147,19 +147,15 @@ var arithmetic0 = ({
     "-": (function(x) {
         return (-x);
     })
-}),
-    isPrimitive0 = (function(node) {
-        return ((node.type === "Literal") && ((((node.kind === "string") || (node.kind === "number")) || (node.kind ===
-            "boolean")) || (node.kind === "null")));
-    });
+});
 addPeephole(["UnaryExpression"], true, (function(__o) {
     var operator = __o["operator"],
         argument = __o["argument"];
-    return (arithmetic[operator] && isPrimitive(argument));
+    return (arithmetic0[operator] && isPrimitive(argument));
 }), (function(__o) {
     var operator = __o["operator"],
         argument = __o["argument"],
-        value = arithmetic[operator](argument.value);
+        value = arithmetic0[operator](argument.value);
     return ast_value.Literal.create(null, (typeof value), value);
 }));
 var upTransforms = (function(node) {

@@ -4,7 +4,7 @@
 */
 "use strict";
 var ast_node = require("khepri-ast")["node"],
-    setUserData = ast_node["setUserData"],
+    setData = ast_node["setData"],
     ast_expression = require("khepri-ast")["expression"],
     ast_pattern = require("khepri-ast")["pattern"],
     ast_value = require("khepri-ast")["value"],
@@ -198,7 +198,7 @@ addCheck("StaticDeclarator", inspect((function(node) {
 addCheck("VariableDeclarator", seq(inspect((function(node) {
     return addMutableBindingChecked(node.id.name, node.loc);
 })), checkChild("id"), checkChild("init")));
-addCheck("Binding", seq(checkChild("pattern"), checkChild("value")));
+addCheck("Binding", seq(checkChild("value"), checkChild("pattern")));
 addCheck("BlockStatement", block(checkChild("body")));
 addCheck("ExpressionStatement", checkChild("expression"));
 addCheck("IfStatement", seq(checkChild("test"), block(checkChild("consequent")), block(checkChild("alternate"))));
@@ -230,9 +230,7 @@ addCheck("ObjectExpression", checkChild("properties"));
 addCheck("LetExpression", block(checkChild("bindings"), checkChild("body")));
 addCheck("CurryExpression", seq(checkChild("base"), checkChild("args")));
 addCheck("SinkPattern", bind(unique, (function(uid) {
-    return setNode(setUserData(ast_value.Identifier.create(null, "_"), ({
-        "uid": uid
-    })));
+    return setNode(setData(ast_value.Identifier.create(null, "_"), "uid", uid));
 })));
 addCheck("IdentifierPattern", seq(inspect((function(node) {
     return (node.reserved ? addImmutableBinding(node.id.name, node.loc) : addImmutableBindingChecked(
@@ -241,18 +239,14 @@ addCheck("IdentifierPattern", seq(inspect((function(node) {
 addCheck("ImportPattern", checkChild("pattern"));
 addCheck("AsPattern", seq(checkChild("id"), inspect((function(node) {
     return child("target", modifyNode((function(target) {
-        var n = setUserData(target, (target.ud || ({})));
-        (n.ud.id = node.id);
-        return n;
+        return setData(target, "id", node.id);
     })), checkTop);
 }))));
-addCheck(["ObjectPattern", "ArrayPattern"], inspect((function(node) {
+addCheck(["ObjectPattern"], inspect((function(node) {
     if (((!node.ud) || (!node.ud.id))) {
         return seq(bind(unique, (function(uid) {
-            var id = ast_pattern.IdentifierPattern.create(node.loc, setUserData(ast_value.Identifier
-                .create(null, "__o"), ({
-                    "uid": uid
-                })));
+            var id = ast_pattern.IdentifierPattern.create(node.loc, setData(ast_value.Identifier
+                .create(null, "__o"), "uid", uid));
             (id.reserved = true);
             return setNode(ast_pattern.AsPattern.create(null, id, node));
         })), checkTop);
@@ -264,9 +258,7 @@ addCheck("ArgumentsPattern", seq(checkChild("id"), checkChild("elements"), check
 addCheck("ObjectValue", checkChild("value"));
 addCheck("Identifier", inspect((function(node) {
     return seq(examineScope((function(s) {
-        return setNode(setUserData(node, ({
-            "uid": s.getUid(node.name)
-        })));
+        return setNode(setData(node, "uid", s.getUid(node.name)));
     })), checkHasBinding(node.name, node.loc));
 })));
 (_check = (function(node) {

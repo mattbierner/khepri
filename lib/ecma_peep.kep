@@ -19,6 +19,14 @@ with
     import './fun' fun
 in {
 
+
+var isPrimitive = \node ->
+    node.type === 'Literal' && (
+        node.kind === 'string'
+        || node.kind === 'number'
+        || node.kind === 'boolean'
+        || node.kind === 'null');
+
 /*
  ******************************************************************************/
 var peepholes = {};
@@ -114,14 +122,7 @@ let
         '<=': (<=),
         '>=': (>=),
         '||': (||),
-        '&&': (&&)},
-    
-    isPrimitive = \node ->
-        node.type === 'Literal' && (
-            node.kind === 'string'
-            || node.kind === 'number'
-            || node.kind === 'boolean'
-            || node.kind === 'null')
+        '&&': (&&)}
 in
     addPeephole(['BinaryExpression', 'LogicalExpression'], true,
         \{operator left right} ->
@@ -143,14 +144,7 @@ let
         '~': (~),
         'typeof': (typeof),
         '+': (++),
-        '-': (--)},
-    
-    isPrimitive = \node ->
-        node.type === 'Literal' && (
-            node.kind === 'string'
-            || node.kind === 'number'
-            || node.kind === 'boolean'
-            || node.kind === 'null')
+        '-': (--)}
 in
     addPeephole(['UnaryExpression'], true,
         \{operator argument} ->
@@ -183,7 +177,7 @@ var opt = walk@(
     \ctx -> let node = tree.node ctx in
         transform(ctx, upTransforms node));
 
-optimize = \ast ->
+optimize = \ast -> 
     (opt(ecmaZipper(ast))
         |> zipper.root
         |> tree.node);

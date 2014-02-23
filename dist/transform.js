@@ -11,7 +11,8 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
     ecma_program, ecma_statement, ecma_value, khepri_clause, khepri_declaration, khepri_expression, khepri_node,
     khepri_pattern, khepri_program, khepri_statement, khepri_value, __o, tree, zipper, scope, __o0, fun, _, _0) {
     "use strict";
-    var khepriZipper = __o["khepriZipper"],
+    var setData = khepri_node["setData"],
+        khepriZipper = __o["khepriZipper"],
         Tail = __o0["Tail"],
         trampoline = __o0["trampoline"],
         transform, objectElementUnpack, flip = (function(f) {
@@ -512,7 +513,7 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
         return node.id;
     })));
     addTransform("IdentifierPattern", bind(node, (function(node) {
-        return ((node.ud && node.ud.uid) ? addVar(node.name, node.ud.uid) : pass);
+        return ((node.ud && (node.ud.uid !== undefined)) ? addVar(node.name, node.ud.uid) : pass);
     })), modify((function(node) {
         return node.id;
     })));
