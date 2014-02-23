@@ -265,9 +265,14 @@ addCheck@'VariableDeclarator' <|
         checkChild 'init');
 
 addCheck@'Binding' <|
-    seq(
-        checkChild 'value',
-        checkChild 'pattern');
+    inspect <|\ node ->
+        ?node.recursive
+            :seq(
+                checkChild 'pattern',
+                checkChild 'value')
+            :seq(
+                checkChild 'value',
+                checkChild 'pattern');
 
 // Statement
 addCheck@'BlockStatement' <|

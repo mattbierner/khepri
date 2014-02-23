@@ -193,7 +193,10 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
     addCheck("VariableDeclarator", seq(inspect((function(node) {
         return addMutableBindingChecked(node.id.name, node.loc);
     })), checkChild("id"), checkChild("init")));
-    addCheck("Binding", seq(checkChild("value"), checkChild("pattern")));
+    addCheck("Binding", inspect((function(node) {
+        return (node.recursive ? seq(checkChild("pattern"), checkChild("value")) : seq(checkChild(
+            "value"), checkChild("pattern")));
+    })));
     addCheck("BlockStatement", block(checkChild("body")));
     addCheck("ExpressionStatement", checkChild("expression"));
     addCheck("IfStatement", seq(checkChild("test"), block(checkChild("consequent")), block(checkChild(
