@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.16.0 - Feb 23, 2014
+* Added support for recursive binding using `:=` in lets and withs.
+
 ## 0.15.0 - Feb 23, 2014
 * Let binding do not see their own bindings.
 * A multiple binding let expression may rebind earlier bindings.
