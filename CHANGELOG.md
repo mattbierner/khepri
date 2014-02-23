@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.16.4 - Feb 23, 2014
+* Fixed multi arg curry order.
+
 ## 0.16.3 - Feb 23, 2014
 * Fixed potential conflicting argument use with curried operator expression 
   transformation.

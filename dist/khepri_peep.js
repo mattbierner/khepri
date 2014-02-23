@@ -108,8 +108,8 @@ define(["require", "exports", "neith/tree", "neith/walk", "neith/zipper", "khepr
     addPeephole(["CurryExpression"], true, (function(node) {
         return (node.base.type === "CurryExpression");
     }), (function(node) {
-        return ast_expression.CurryExpression.create(null, node.base.base, fun.concat(node.args, node.base
-            .args));
+        return ast_expression.CurryExpression.create(null, node.base.base, fun.concat(node.base.args,
+            node.args));
     }));
     addPeephole(["BinaryExpression"], true, (function(node) {
         return ((node.operator === "|>") && (node.right.type === "CurryExpression"));

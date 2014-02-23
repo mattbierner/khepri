@@ -235,8 +235,8 @@ addPeephole(['CurryExpression'], true,
         ast_expression.CurryExpression.create(null,
             node.base.base,
             fun.concat(
-                node.args,
-                node.base.args)));
+                node.base.args,
+                node.args)));
 
 /**
  * Rewrite left pipe of curried expression to a call.

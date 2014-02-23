@@ -36,6 +36,23 @@ exports.multi_curry = function(test) {
     test.done();
 };
 
+exports.multi_arg_lambda_order = function(test) {
+    test.equal(
+        testParser("(\\x, y, z -> (x / y) + z)@(10,5) 2;"),
+        4);
+    
+    test.done();
+};
+
+exports.multi_arg_order = function(test) {
+    test.equal(
+        testParser("var f = \\x, y, z -> (x / y) + z;" +
+                   "f@(10,5) 2;"),
+        4);
+    
+    test.done();
+};
+
 exports.curried_args_evaled_once = function(test) {
     test.equal(
         testParser(
