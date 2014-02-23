@@ -70,3 +70,12 @@ exports.binding_do_not_see_themselves = function(test) {
     
     test.done();
 };
+
+exports.recursive_binding = function(test) {
+    test.equal(
+        testParser("let f := \\x -> ?x < 3 :f(x + 1) :x in f(0);"),
+        3);
+    
+    test.done();
+};
+
