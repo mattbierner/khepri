@@ -157,7 +157,7 @@ Scope.addReservedBinding = \s, id, loc ->
  * @param to Value to map to.
  */
 Scope.addMapping = \s, from, to ->
-    set.setMapping(
+    s.setMapping(
         hashtrie.set(from, to, s.mapping));
 
 /* Operations

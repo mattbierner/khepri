@@ -45,10 +45,10 @@ var record = require("bes")["record"],
         if ((!self.hasBinding((id + i)))) return (id + i);
 }));
 (Scope.addUid = (function(s, id, uid) {
-    return new(Scope)(s.record, s.outer, s.mapping, hashtrie.set(id, uid, s.definitions));
+    return s.setDefinitions(hashtrie.set(id, uid, s.definitions));
 }));
 (Scope.addBinding = (function(s, id, info) {
-    return new(Scope)(hashtrie.set(id, info, s.record), s.outer, s.mapping, s.definitions);
+    return s.setRecord(hashtrie.set(id, info, s.record));
 }));
 (Scope.addMutableBinding = (function(s, id, loc) {
     return Scope.addBinding(s, id, ({
@@ -70,7 +70,7 @@ var record = require("bes")["record"],
     }));
 }));
 (Scope.addMapping = (function(s, from, to) {
-    return new(Scope)(s.record, s.outer, hashtrie.set(from, to, s.mapping), s.definitions);
+    return s.setMapping(hashtrie.set(from, to, s.mapping));
 }));
 (push = (function(s) {
     return new(Scope)(hashtrie.empty, s, ({}), s.definitions);
