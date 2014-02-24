@@ -820,17 +820,16 @@ addTransform('Program',
     seq(
         pushBindings,
         modify \node ->
-            khepri_program.Program.create(node.loc,
-                ?node.body.type === 'Package'
-                    :node.body
-                    :fun.concat(
-                        khepri_statement.ExpressionStatement.create(null,
-                            khepri_value.Literal.create(null, 'string', "use strict")),
-                        node.body))),
+            ?node.body.type === 'Package'
+                :node
+                :setData(node, 'prefix',
+                    khepri_statement.ExpressionStatement.create(null,
+                        khepri_value.Literal.create(null, 'string', "use strict")))),
     getBindings <|\ bindings ->
         modify \node ->
             ecma_program.Program.create(node.loc,
                 fun.concat(
+                    ?node.ud && node.ud.prefix :node.ud.prefix :[],
                     ecma_declaration.VariableDeclaration.create(null,
                         bindings.map(\x ->
                             ecma_declaration.VariableDeclarator.create(null,

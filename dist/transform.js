@@ -519,13 +519,14 @@ define(["require", "exports", "bes/record", "bes/array", "ecma-ast/clause", "ecm
         return (node.ud && node.ud.id);
     })));
     addTransform("Program", seq(pushBindings, modify((function(node) {
-        return khepri_program.Program.create(node.loc, ((node.body.type === "Package") ? node.body :
-            fun.concat(khepri_statement.ExpressionStatement.create(null, khepri_value.Literal
-                .create(null, "string", "use strict")), node.body)));
+        return ((node.body.type === "Package") ? node : setData(node, "prefix",
+            khepri_statement.ExpressionStatement.create(null, khepri_value.Literal.create(
+                null, "string", "use strict"))));
     }))), getBindings((function(bindings) {
         return modify((function(node) {
-            return ecma_program.Program.create(node.loc, fun.concat(ecma_declaration.VariableDeclaration
-                .create(null, bindings.map((function(x) {
+            return ecma_program.Program.create(node.loc, fun.concat(((node.ud && node.ud.prefix) ?
+                node.ud.prefix : []), ecma_declaration.VariableDeclaration.create(
+                null, bindings.map((function(x) {
                     return ecma_declaration.VariableDeclarator.create(null,
                         identifier(null, x));
                 }))), node.body));

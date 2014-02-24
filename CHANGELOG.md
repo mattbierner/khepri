@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.16.6 - Feb 24, 2014
+* Non package programs generate 'use strict' code.
+
 ## 0.16.4 - Feb 23, 2014
 * Fixed multi arg curry order.
 
