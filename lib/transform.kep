@@ -43,19 +43,6 @@ var flip = \f -> \x y -> f(y, x);
  ******************************************************************************/
 var _transform = \args(...) -> _transform.apply(null, args);
 
-/* Ast
- ******************************************************************************/
-/**
- * Is an array of source elements strict code?
- */
-var isStrict = \elems -> {
-    if (elems && elems.length && elems.(0).type === 'ExpressionStatement') {
-        var first = elems.(0).expression;
-        return (first && first.type === 'Literal' && first.kind ==='string' && first.value === 'use strict');
-    }
-    return false;
-};
-
 /* State
  ******************************************************************************/
 var State = record.declare(null, [
@@ -330,24 +317,17 @@ var functionExpression = \loc, id, parameters, functionBody -> let
     body = ?functionBody.type === "BlockStatement"
         :functionBody
         :khepri_statement.BlockStatement.create(null,
-            khepri_statement.ReturnStatement.create(null, functionBody)),
-    
-    strict = isStrict(body.body)
+            khepri_statement.ReturnStatement.create(null, functionBody))
 in
     khepri_expression.FunctionExpression.create(loc,
         id,
         params,
         khepri_statement.BlockStatement.create(body.loc,
             fun.concat(
-                ?strict
-                    :khepri_statement.ExpressionStatement.create(null,
-                        khepri_value.Literal.create(null, 'string', "use strict"))
-                     :[],
                 ?bindings.length
                     :variableDeclaration(null, bindings)
                     :[],
-                let block = body.body in
-                    ?strict :block.slice(1) :block)));
+                body.body)));
 
 /**
  * Let expression normalization.
@@ -837,7 +817,16 @@ addTransform('SinkPattern',
 
 // Program
 addTransform('Program',
-    pushBindings,
+    seq(
+        pushBindings,
+        modify \node ->
+            khepri_program.Program.create(node.loc,
+                ?node.body.type === 'Package'
+                    :node.body
+                    :fun.concat(
+                        khepri_statement.ExpressionStatement.create(null,
+                            khepri_value.Literal.create(null, 'string', "use strict")),
+                        node.body))),
     getBindings <|\ bindings ->
         modify \node ->
             ecma_program.Program.create(node.loc,

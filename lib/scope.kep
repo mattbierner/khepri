@@ -95,10 +95,7 @@ Scope.prototype.getUnusedId = \id =self-> {
 /**
  */
 Scope.addUid = \s, id, uid->
-    new Scope(
-        s.record,
-        s.outer,
-        s.mapping,
+    s.setDefinitions(
         hashtrie.set(id, uid, s.definitions));
 
 /**
@@ -109,11 +106,8 @@ Scope.addUid = \s, id, uid->
  * @param info Binding information.
  */
 Scope.addBinding = \s, id, info -> 
-    new Scope(
-        hashtrie.set(id, info, s.record),
-        s.outer,
-        s.mapping,
-        s.definitions);
+    s.setRecord(
+        hashtrie.set(id, info, s.record));
 
 /**
  * Create a new modified scope with a new mutable binding.
@@ -163,11 +157,8 @@ Scope.addReservedBinding = \s, id, loc ->
  * @param to Value to map to.
  */
 Scope.addMapping = \s, from, to ->
-    new Scope(
-        s.record,
-        s.outer,
-        hashtrie.set(from, to, s.mapping),
-        s.definitions);
+    set.setMapping(
+        hashtrie.set(from, to, s.mapping));
 
 /* Operations
  ******************************************************************************/

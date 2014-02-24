@@ -264,7 +264,7 @@ define(["require", "exports", "khepri-ast/node", "khepri-ast/expression", "khepr
             return setData(target, "id", node.id);
         })), checkTop);
     }))));
-    addCheck(["ObjectPattern"], inspect((function(node) {
+    addCheck("ObjectPattern", inspect((function(node) {
         if (((!node.ud) || (!node.ud.id))) {
             return seq(bind(unique, (function(uid) {
                 var id = ast_pattern.IdentifierPattern.create(node.loc, setData(

@@ -452,7 +452,7 @@ addCheck@'AsPattern' <|
                     setData(target, 'id', node.id),
                 checkTop));
 
-addCheck@['ObjectPattern'] <|
+addCheck@'ObjectPattern' <|
     inspect <|\ node -> {
         if (!node.ud || !node.ud.id) {
             return seq(

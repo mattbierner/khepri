@@ -39,14 +39,6 @@ var record = require("bes")["record"],
         var args = arguments;
         return _transform.apply(null, args);
     }),
-    isStrict = (function(elems) {
-        if (((elems && elems.length) && (elems[0].type === "ExpressionStatement"))) {
-            var first = elems[0].expression;
-            return (((first && (first.type === "Literal")) && (first.kind === "string")) && (first.value ===
-                "use strict"));
-        }
-        return false;
-    }),
     State = record.declare(null, ["ctx", "scope", "packageManager", "bindings"]);
 (State.empty = State.create(null, scope.Scope.empty, null, [
     [], null
@@ -271,19 +263,16 @@ var ok = (function(x) {
         return withStatementNoImport(loc, fun.map(flattenImport, bindings), body);
     }),
     functionExpression = (function(loc, id, parameters, functionBody) {
-        var block, params = fun.filter((function(x) {
-                return (x.type !== "EllipsisPattern");
-            }), parameters.elements),
+        var params = fun.filter((function(x) {
+            return (x.type !== "EllipsisPattern");
+        }), parameters.elements),
             bindings = fun.map((function(x) {
                 return variableDeclarator(null, x.pattern, x.value);
             }), unpackParameters(parameters)),
             body = ((functionBody.type === "BlockStatement") ? functionBody : khepri_statement.BlockStatement.create(
-                null, khepri_statement.ReturnStatement.create(null, functionBody))),
-            strict = isStrict(body.body);
+                null, khepri_statement.ReturnStatement.create(null, functionBody)));
         return khepri_expression.FunctionExpression.create(loc, id, params, khepri_statement.BlockStatement.create(
-            body.loc, fun.concat((strict ? khepri_statement.ExpressionStatement.create(null, khepri_value.Literal
-                .create(null, "string", "use strict")) : []), (bindings.length ? variableDeclaration(null,
-                bindings) : []), ((block = body.body), (strict ? block.slice(1) : block)))));
+            body.loc, fun.concat((bindings.length ? variableDeclaration(null, bindings) : []), body.body)));
     }),
     letExpression = (function(loc, bindings, body) {
         return ecma_expression.SequenceExpression.create(null, fun.flatten(fun.concat(fun.map((function(x) {
@@ -534,7 +523,11 @@ addTransform("EllipsisPattern", null, modify((function(node) {
 addTransform("SinkPattern", null, modify((function(node) {
     return (node.ud && node.ud.id);
 })));
-addTransform("Program", pushBindings, getBindings((function(bindings) {
+addTransform("Program", seq(pushBindings, modify((function(node) {
+    return khepri_program.Program.create(node.loc, ((node.body.type === "Package") ? node.body : fun.concat(
+        khepri_statement.ExpressionStatement.create(null, khepri_value.Literal.create(null,
+            "string", "use strict")), node.body)));
+}))), getBindings((function(bindings) {
     return modify((function(node) {
         return ecma_program.Program.create(node.loc, fun.concat(ecma_declaration.VariableDeclaration
             .create(null, bindings.map((function(x) {

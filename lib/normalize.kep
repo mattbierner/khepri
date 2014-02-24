@@ -70,7 +70,8 @@ addPeephole(['ArrayPattern'], false,
  * Normalize object patterns to ('key': pattern) form.
  */
 addPeephole(['ObjectPatternElement'], false,
-    \node -> !node.target,
+    \node ->
+        !node.target,
     \node#{loc key} -> {
         switch(key.type) {
         case 'IdentifierPattern':
