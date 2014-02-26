@@ -262,7 +262,7 @@ var ok = (function(x) {
         });
         return withStatementNoImport(loc, fun.map(flattenImport, bindings), body);
     }),
-    functionExpression = (function(loc, id, parameters, functionBody) {
+    functionExpression = (function(loc, id, parameters, functionBody, prefix) {
         var params = fun.filter((function(x) {
             return (x.type !== "EllipsisPattern");
         }), parameters.elements),
@@ -272,7 +272,8 @@ var ok = (function(x) {
             body = ((functionBody.type === "BlockStatement") ? functionBody : khepri_statement.BlockStatement.create(
                 null, khepri_statement.ReturnStatement.create(null, functionBody)));
         return khepri_expression.FunctionExpression.create(loc, id, params, khepri_statement.BlockStatement.create(
-            body.loc, fun.concat((bindings.length ? variableDeclaration(null, bindings) : []), body.body)));
+            body.loc, fun.concat((prefix || []), (bindings.length ? variableDeclaration(null, bindings) : []),
+                body.body)));
     }),
     letExpression = (function(loc, bindings, body) {
         return ecma_expression.SequenceExpression.create(null, fun.flatten(fun.concat(fun.map((function(x) {
@@ -490,7 +491,7 @@ addTransform("TernaryOperatorExpression", next(modify((function(node) {
     return ternaryOperatorExpression(node.loc);
 })), _transform));
 addTransform("FunctionExpression", seq(enterBlock, modify((function(node) {
-    return functionExpression(node.loc, node.id, node.params, node.body);
+    return functionExpression(node.loc, node.id, node.params, node.body, (node.ud && node.ud.prefix));
 }))), seq(exitBlock, modify((function(node) {
     return ecma_expression.FunctionExpression.create(null, node.id, node.params, node.body);
 }))));

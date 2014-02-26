@@ -307,7 +307,7 @@ in
 /**
  * Function Expression Normalization.
  */
-var functionExpression = \loc, id, parameters, functionBody -> let
+var functionExpression = \loc, id, parameters, functionBody, prefix -> let
     params = parameters.elements
         |> (fun.filter@\x -> x.type !== 'EllipsisPattern'),
         
@@ -324,6 +324,7 @@ in
         params,
         khepri_statement.BlockStatement.create(body.loc,
             fun.concat(
+                (prefix || []),
                 ?bindings.length
                     :variableDeclaration(null, bindings)
                     :[],
@@ -753,7 +754,8 @@ addTransform('FunctionExpression',
             functionExpression(node.loc,
                 node.id,
                 node.params,
-                node.body)),
+                node.body,
+                node.ud && node.ud.prefix)),
     seq(
         exitBlock,
         modify \node ->

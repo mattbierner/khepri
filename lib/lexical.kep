@@ -121,9 +121,9 @@ var pass = ok();
 var block = \body(...) ->
     examineScope <|\ s ->
         seq(
-            setScope(scope.push(s)),
+            setScope(scope.push s),
             seqa(body),
-            setScope(s));
+            setScope(scope.pop s));
 
 /**
  * Check to ensure the current scope contains a binding for `id`.

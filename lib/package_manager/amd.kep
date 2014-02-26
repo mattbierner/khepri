@@ -7,6 +7,7 @@ package (
 with
     import 'khepri-ast::declaration' ast_declaration,
     import 'khepri-ast::expression' ast_expression,
+    import 'khepri-ast::node' {setData},
     import 'khepri-ast::pattern' ast_pattern,
     import 'khepri-ast::statement' ast_statement,
     import 'khepri-ast::value' ast_value
@@ -41,21 +42,23 @@ definePackage = \loc exports imports targets body -> let
                     ast_value.Identifier.create(null, x)),
                 ast_value.Identifier.create(null, x)))),
     
-    packageBody = ast_expression.FunctionExpression.create(null, null,
-        ast_pattern.ArgumentsPattern.create(null, null,
-            concat(
-                ast_pattern.IdentifierPattern.create(null,
-                    ast_value.Identifier.create(null, 'require')),
-                ast_pattern.IdentifierPattern.create(null,
-                    ast_value.Identifier.create(null, 'exports')),
-                map(imports, \x -> targets.(x.from.value)))),
-        ast_statement.BlockStatement.create(body.loc,
-            concat(
-                ast_statement.ExpressionStatement.create(null,
-                    ast_value.Literal.create(null, 'string', "use strict")),
-                exportHeader,
-                body,
-                exportBody)))
+    packageBody = setData(
+        ast_expression.FunctionExpression.create(null, null,
+            ast_pattern.ArgumentsPattern.create(null, null,
+                concat(
+                    ast_pattern.IdentifierPattern.create(null,
+                        ast_value.Identifier.create(null, 'require')),
+                    ast_pattern.IdentifierPattern.create(null,
+                        ast_value.Identifier.create(null, 'exports')),
+                    map(imports, \x -> targets.(x.from.value)))),
+            ast_statement.BlockStatement.create(body.loc,
+                concat(
+                    exportHeader,
+                    body,
+                    exportBody))),
+        'prefix',
+         ast_statement.ExpressionStatement.create(null,
+             ast_value.Literal.create(null, 'string', "use strict")))
 in
     ast_statement.ExpressionStatement.create(loc,
         ast_expression.CallExpression.create(loc,

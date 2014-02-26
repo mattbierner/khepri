@@ -132,7 +132,7 @@ var ast_node = require("khepri-ast")["node"],
     block = (function() {
         var body = arguments;
         return examineScope((function(s) {
-            return seq(setScope(scope.push(s)), seqa(body), setScope(s));
+            return seq(setScope(scope.push(s)), seqa(body), setScope(scope.pop(s)));
         }));
     }),
     checkHasBinding = (function(id, loc) {
