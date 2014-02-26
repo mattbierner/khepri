@@ -74,6 +74,12 @@ var setScope = \s -> modifyScope(\() -> s);
 
 var unique = \s, ok, err -> ok(s.unique, s.setUnique(s.unique + 1));
 
+var push = examineScope <|\ s ->
+    setScope(scope.push s);
+    
+var pop = examineScope <|\ s ->
+    setScope(scope.pop s);
+
 /* Movement
  ******************************************************************************/
 var move = \op ->
@@ -119,11 +125,10 @@ var pass = ok();
  * Create a new lexical block for body.
  */
 var block = \body(...) ->
-    examineScope <|\ s ->
-        seq(
-            setScope(scope.push s),
-            seqa(body),
-            setScope(scope.pop s));
+    seq(
+        push,
+        seqa(body),
+        pop);
 
 /**
  * Check to ensure the current scope contains a binding for `id`.

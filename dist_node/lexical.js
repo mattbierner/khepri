@@ -95,6 +95,12 @@ var ast_node = require("khepri-ast")["node"],
     unique = (function(s, ok, err) {
         return ok(s.unique, s.setUnique((s.unique + 1)));
     }),
+    push = examineScope((function(s) {
+        return setScope(scope.push(s));
+    })),
+    pop = examineScope((function(s) {
+        return setScope(scope.pop(s));
+    })),
     move = (function(op) {
         return modifyState((function(s) {
             return State.setCtx(s, op(s.ctx));
@@ -131,9 +137,7 @@ var ast_node = require("khepri-ast")["node"],
     pass = ok(),
     block = (function() {
         var body = arguments;
-        return examineScope((function(s) {
-            return seq(setScope(scope.push(s)), seqa(body), setScope(scope.pop(s)));
-        }));
+        return seq(push, seqa(body), pop);
     }),
     checkHasBinding = (function(id, loc) {
         return examineScope((function(s) {
