@@ -28,3 +28,6 @@
 [submodule "dependencies/khepri-ast"]
 	path = dependencies/khepri-ast
 	url = https://github.com/mattbierner/khepri-ast.git
+[submodule "dependencies/hashtrie"]
+	path = dependencies/hashtrie
+	url = https://github.com/mattbierner/hashtrie.git
