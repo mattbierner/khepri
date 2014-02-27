@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.17.0 - Feb 26, 2014
+* Added support for immutable, non-recursive variable declarations.
+* Added back syntax `(+, 1)` to curry args on operator.
+
 ## 0.16.6 - Feb 24, 2014
 * Non package programs generate 'use strict' code.
 * Fixed AMD modules potentially not setting 'use strict'.
