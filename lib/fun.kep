@@ -1,0 +1,34 @@
+/**
+ * @fileOverview
+ */
+package (
+    reduce
+    reduceRight
+    
+    foldl
+    foldr
+    
+    concat
+    filter
+    map
+    
+    flatten)
+{
+
+reduce = Function.prototype.call.bind(Array.prototype.reduce);
+reduceRight = Function.prototype.call.bind(Array.prototype.reduceRight);
+
+foldl = \f z a -> reduce(a, f, z);
+foldr = \f z a -> reduceRight(a, f, z);
+
+concat =  Array.prototype.concat.bind([]);
+
+filter = \f, a -> Array.prototype.filter.call(a, f);
+map = \f, a ->  Array.prototype.map.call(a, f);
+
+flatten = \x ->
+    ?Array.isArray(x)
+        :Array.prototype.concat.apply([], x)
+        :x;
+
+}

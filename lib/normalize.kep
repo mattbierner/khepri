@@ -1,0 +1,134 @@
+/**
+ * 
+ */
+package (
+    normalize)
+with
+    import 'neith::tree' tree,
+    import 'neith::walk' {walk},
+    import 'neith::zipper' zipper,
+
+    import 'khepri-ast-zipper' {khepriZipper},
+    
+    import 'khepri-ast::declaration' ast_declaration,
+    import 'khepri-ast::statement' ast_statement,
+    import 'khepri-ast::expression' ast_expression,
+    import 'khepri-ast::pattern' ast_pattern,
+    import 'khepri-ast::value' ast_value,
+    
+    import './fun' fun
+in {
+
+/*
+ ******************************************************************************/
+var peepholes = {};
+
+var addPeephole = \types, up, condition, f -> {
+    var entry = {
+        'condition': condition,
+        'map': f,
+        'up': up
+    };
+    
+    types.forEach <|\ type -> {
+        peepholes.(type) = ?peepholes.(type)
+            :fun.concat(peepholes.(type), entry)
+            :[entry];
+    };
+};
+
+/* Normalizations
+ ******************************************************************************/
+/**
+ * Convert multiple binding let expression to nested single binding let expressions
+ */
+addPeephole(['LetExpression'], true,
+    \node ->
+        node.bindings.length > 1,
+    \{loc bindings body} ->
+        fun.foldr(\p c ->
+            ast_expression.LetExpression.create(loc,
+                [c],
+                p),
+            body,
+            bindings));
+
+/**
+ * Convert array patterns to object patterns
+ */
+addPeephole(['ArrayPattern'], false,
+    \_ -> true,
+    \{loc elements} ->
+        ast_pattern.ObjectPattern.create(loc,
+            fun.map(\x i ->
+                ast_pattern.ObjectPatternElement.create(null,
+                    ast_value.Literal.create(null, 'number', i),
+                    x),
+                elements)));
+
+/**
+ * Normalize object patterns to ('key': pattern) form.
+ */
+addPeephole(['ObjectPatternElement'], false,
+    \node ->
+        !node.target,
+    \node#{loc key} -> {
+        switch(key.type) {
+        case 'IdentifierPattern':
+            return ast_pattern.ObjectPatternElement.create(null,
+                ast_value.Literal.create(null, 'string', key.id.name),
+                key);
+        
+        case 'AsPattern':
+            return ast_pattern.ObjectPatternElement.create(null,
+                ast_value.Literal.create(null, 'string', key.id.id.name),
+                key);
+        
+        default:
+            return node;
+        }
+    });
+
+/**
+ * Expand currying with multiple args.
+ */
+addPeephole(['CurryExpression'], true,
+    \node ->
+        node.args.length > 1,
+    \node -> let
+        first = node.args.(0),
+        rest = node.args.slice(1)
+    in
+        ast_expression.CurryExpression.create(null,
+            ast_expression.CurryExpression.create(null,
+                node.base,
+                [first]),
+            rest));
+
+/* Interface
+ ******************************************************************************/
+var upTransforms = \node -> 
+    ((node && peepholes.(node.type)) || [])
+        .filter(\x -> x.up && x.condition(node));
+
+var downTransforms = \node -> 
+    ((node && peepholes.(node.type)) || [])
+        .filter(\x -> !x.up && x.condition(node));
+
+var transform = \ctx transforms ->
+    ?transforms.length
+        :tree.modifyNode(\node -> transforms.reduce(\p c -> c.map(p), node), ctx)
+        :ctx;
+
+var opt = walk@(
+    \ctx -> let node = tree.node ctx in
+        transform(ctx, downTransforms node),
+    \ctx -> let node = tree.node ctx in
+        transform(ctx, upTransforms node));
+
+normalize = \ast->
+    (opt(khepriZipper(ast))
+        |> zipper.root
+        |> tree.node);
+
+}

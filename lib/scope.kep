@@ -1,0 +1,169 @@
+/**
+ * @fileOverview
+ */
+package (
+    Scope
+    push
+    pop)
+with
+    import 'bes::record' record,
+    
+    import 'hashtrie' hashtrie
+in {
+
+/* Scope
+ ******************************************************************************/
+/**
+ * Holds information about a lexical scope.
+ * 
+ * @param record Maps identifiers to binding information for this scope.
+ * @param outer Parent scope.
+ * @param mapping Maps identifiers to their actual names in this scope.
+ */
+Scope = record.declare(null, [
+    'record',
+    'outer',
+    'mapping',
+    'definitions']);
+
+Scope.empty = Scope.create(hashtrie.empty, null, hashtrie.empty, hashtrie.empty);
+
+/**
+ * Does this scope have a given binding?
+ */
+Scope.prototype.hasOwnBinding = \id =self->
+    hashtrie.has(id, self.record);
+
+/**
+ * Does this scope or its parents have a given binding?
+ */
+Scope.prototype.hasBinding = \id =self->
+    (  self.hasOwnBinding(id)
+    || (self.outer && self.outer.hasBinding(id)));
+
+/**
+ * Get information for a given binding. Returns null if binding does not exist.
+ */
+Scope.prototype.getBinding = \id =self->
+    (  hashtrie.get(id, self.record)
+    || ?self.outer
+        :self.outer.getBinding(id)
+        :null);
+
+/**
+ */
+Scope.prototype.getUid = \id =self->
+    ?self.hasOwnBinding(id)
+        :hashtrie.get(id, self.definitions)
+        :?self.outer
+            :self.outer.getUid(id)
+            :null;
+
+/**
+ * Does this scope have its own a mapping for a given identifier.
+ */
+Scope.prototype.hasOwnMapping = \id =self->
+    hashtrie.has(id, self.mapping);
+
+/**
+ * Does this scope have any mapping for a given identifier.
+ */
+Scope.prototype.hasMapping = \id =self->
+    (  self.hasOwnMapping(id)
+    || (self.outer && self.outer.hasMapping(id)));
+
+/**
+ * Get the mapped value for a given identifier.
+ */
+Scope.prototype.getMapping = \id =self->
+    ?self.hasOwnMapping(id)
+        :hashtrie.get(id, self.mapping)
+        :self.outer && self.outer.getMapping(id);
+
+/**
+ * Get an unused identifier in this scope.
+ */
+Scope.prototype.getUnusedId = \id =self-> {
+    if (!self.hasOwnBinding(id))
+        return id;
+    
+    for (var i = 0; ; i = i + 1)
+        if (!self.hasBinding(id + i))
+            return id + i;
+};
+
+/**
+ */
+Scope.addUid = \s, id, uid->
+    s.setDefinitions(
+        hashtrie.set(id, uid, s.definitions));
+
+/**
+ * Create a new modified scope with a given binding.
+ * 
+ * @param s Scope.
+ * @param id Identifier for new binding.
+ * @param info Binding information.
+ */
+Scope.addBinding = \s, id, info -> 
+    s.setRecord(
+        hashtrie.set(id, info, s.record));
+
+/**
+ * Create a new modified scope with a new mutable binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addMutableBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': true,
+        'loc': loc
+    });
+
+/**
+ * Create a new modified scope with a new immutable binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addImmutableBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': false,
+        'loc': loc
+    });
+
+/**
+ * Create a new modified scope with a new reserved binding.
+ * 
+ * @s Scope
+ * @param id Identifier for new binding
+ * @param loc Location of binding in source code.
+ */
+Scope.addReservedBinding = \s, id, loc ->
+    Scope.addBinding(s, id, {
+        'mutable': false,
+        'reserved': true,
+        'loc': loc
+    });
+
+/**
+ * Create a new modified scope with a new mapping
+ * 
+ * @s Scope
+ * @param from Key value.
+ * @param to Value to map to.
+ */
+Scope.addMapping = \s, from, to ->
+    s.setMapping(
+        hashtrie.set(from, to, s.mapping));
+
+/* Operations
+ ******************************************************************************/
+push = \s -> new Scope(hashtrie.empty, s, {}, s.definitions);
+
+pop = \s -> s.outer;
+
+}

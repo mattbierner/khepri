@@ -1,0 +1,60 @@
+/**
+ * @fileOverview
+ */
+package (
+    definePackage
+    importPackage)
+with
+    import 'khepri-ast::declaration' ast_declaration,
+    import 'khepri-ast::expression' ast_expression,
+    import 'khepri-ast::statement' ast_statement,
+    import 'khepri-ast::value' ast_value
+in {
+
+var concat = Array.prototype.concat.bind([]);
+var map = Function.prototype.call.bind(Array.prototype.map);
+
+/* Package Manager
+ ******************************************************************************/
+importPackage = \path -> let
+    segs = path.split('::')
+in
+    segs.slice(1).reduce(
+        \p c ->
+            ast_expression.MemberExpression.create(null,
+                p,
+                ast_value.Literal.create(null, 'string', c),
+                true),
+        ast_expression.CallExpression.create(null,
+            ast_value.Identifier.create(null, 'require'), [
+            ast_value.Literal.create(null, 'string', segs.(0))]));
+
+definePackage = \loc exports imports targets body -> let
+    exportHeader = ast_declaration.VariableDeclaration.create(null,
+        map(exports, \x ->
+            ast_declaration.VariableDeclarator.create(null,
+                ast_value.Identifier.create(null, x)))),
+    
+    exportBody = map(exports, \x ->
+        ast_statement.ExpressionStatement.create(null,
+            ast_expression.AssignmentExpression.create(null, '=',
+                ast_expression.MemberExpression.create(null,
+                    ast_value.Identifier.create(null, 'exports'),
+                    ast_value.Identifier.create(null, x)),
+                ast_value.Identifier.create(null, x))))
+in
+    ast_statement.BlockStatement.create(body.loc, [
+        ast_statement.ExpressionStatement.create(null,
+            ast_value.Literal.create(null, 'string', "use strict")),
+        ast_statement.WithStatement.create(null,
+            map(imports, \x ->
+                ast_declaration.Binding.create(null,
+                    x.pattern,
+                    importPackage(x.from.value))),
+            ast_statement.BlockStatement.create(null,
+                concat(
+                    exportHeader,
+                    body.body,
+                    exportBody)))]);
+
+}

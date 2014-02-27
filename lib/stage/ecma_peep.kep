@@ -1,0 +1,19 @@
+/**
+ * @fileOverview
+ */
+package (
+    optimize)
+with
+    import '../ecma_peep' ecma_peep
+in {
+
+
+/**
+ * 
+ */
+optimize = \{options ast} ->({
+    'options': options,
+    'ast': ecma_peep.optimize(ast)
+});
+
+}

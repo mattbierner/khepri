@@ -1,0 +1,21 @@
+package (
+    compile)
+with
+    import './stage/lexical' lexical,
+    import './stage/normalize' normalize,
+    import './stage/transform' transform,
+    import './stage/khepri_peep' khepri_peep,
+    import './stage/ecma_peep' ecma_peep
+in {
+
+compile =
+    (\root options ->
+        ({'ast': root, 'options': options || {}}))
+    \>> normalize.normalize
+    \>> lexical.check
+    \>> khepri_peep.optimize
+    \>> transform.transform
+    \>> ecma_peep.optimize
+    \>> \{ast} -> ast;
+
+}

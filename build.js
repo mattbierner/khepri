@@ -5,10 +5,14 @@
     paths: {
         'khepri': 'dist',
         
+        'khepri-parse': 'dependencies/khepri-parse/dist',
+        
         'bennu': 'dependencies/bennu/dist',
         'nu-stream': 'dependencies/nu/dist',
         'seshet': 'dependencies/seshet/dist/seshet',
         'bes': 'dependencies/bes/dist',
+        
+        'hashtrie': 'dependencies/hashtrie/dist/hashtrie',
         
         'ecma-unparse': '../ecma-unparse/dist',
         'ecma-ast': '../ecma-ast/dist',

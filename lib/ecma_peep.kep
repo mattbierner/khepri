@@ -1,0 +1,185 @@
+/**
+ * 
+ */
+package (
+    optimize)
+with
+    import 'neith::tree' tree,
+    import 'neith::walk' {walk},
+    import 'neith::zipper' zipper,
+
+    import 'ecma-ast-zipper' {ecmaZipper},
+    
+    import 'ecma-ast::node' {modify, Node},
+    import 'ecma-ast::value' ast_value,
+    import 'ecma-ast::declaration' ast_declaration,
+    import 'ecma-ast::statement' ast_statement,
+    import 'ecma-ast::expression' ast_expression,
+    
+    import './fun' fun
+in {
+
+
+var isPrimitive = \node ->
+    node.type === 'Literal' && (
+        node.kind === 'string'
+        || node.kind === 'number'
+        || node.kind === 'boolean'
+        || node.kind === 'null');
+
+/*
+ ******************************************************************************/
+var peepholes = {};
+
+var addPeephole = \types, up, condition, f -> {
+    var entry = {
+        'condition': condition,
+        'map': f,
+        'up': up
+    };
+    
+    types.forEach <|\ type -> {
+        peepholes.(type) = ?peepholes.(type)
+            :peepholes.(type).concat(entry)
+            :[entry];
+    };
+};
+
+/* Peepholes
+ ******************************************************************************/
+/**
+ * Filter out empty variable declarators.
+ */
+addPeephole(['VariableDeclaration'], false,
+    \_ -> true, 
+    \node -> let
+        declarations = node.declarations.filter(\x -> !!x)
+    in
+        modify(node, {
+            'declarations': declarations
+        }, {}));
+
+/**
+ * Remove empty Variable declarations.
+ */
+addPeephole(['VariableDeclaration'], true,
+    \node -> !node.declarations.length,
+    \_ -> null);
+
+/**
+ * Reduce block statements
+ */
+addPeephole(['Program', 'BlockStatement'], true,
+    \_ -> true,
+    \node ->
+        modify(node, {
+            'body': fun.flatten(node.body.map(\x ->
+                ?x && x.type === 'BlockStatement' :x.body :x))
+        }, {}));
+
+/**
+ * Merge var declarations
+ */
+addPeephole(['Program', 'BlockStatement'], true,
+    \_ -> true,
+    \node ->
+        modify(node, {
+            'body': node.body.reduceRight(\p c ->
+                ?(c && c.type === 'VariableDeclaration' && p.length && p.(0) && p.(0).type === 'VariableDeclaration')
+                    :fun.concat(modify(c, {
+                        'declarations': fun.concat(c.declarations, p.(0).declarations)
+                    }, {}), p.slice(1))
+                    :fun.concat(c, p),
+                [])
+            }, {}));
+
+/**
+ * Remove top level empty statements
+ */
+addPeephole(['Program', 'BlockStatement'], true,
+    \_ -> true,
+    \node ->
+        modify(node, {
+            'body': fun.flatten(node.body.map(\x ->
+                ?!x || x.type === 'EmptyStatement' :[] :x))
+            }, {}));
+
+/**
+ * Combine binary arithmetic operations on primitive literals
+ */
+let
+    arithmetic = {
+        '+': (+),
+        '-': (-),
+        '*': (*),
+        '/': (/),
+        '%': ('%'),
+        '<<': (<<),
+        '>>': (>>),
+        '>>>': (>>>),
+        '<': (<),
+        '>': (>),
+        '<=': (<=),
+        '>=': (>=),
+        '||': (||),
+        '&&': (&&)}
+in
+    addPeephole(['BinaryExpression', 'LogicalExpression'], true,
+        \{operator left right} ->
+            arithmetic.(operator)
+            && isPrimitive(left)
+            && isPrimitive(right),
+        
+        \{operator left right} -> let
+            value = arithmetic.(operator)(left.value, right.value)
+        in
+            ast_value.Literal.create(null, typeof value, value));
+
+/**
+ * Combine simple unary operations on primitive literals
+ */
+let
+    arithmetic = {
+        '!': (!),
+        '~': (~),
+        'typeof': (typeof),
+        '+': (++),
+        '-': (--)}
+in
+    addPeephole(['UnaryExpression'], true,
+        \{operator argument} ->
+            arithmetic.(operator)
+            && isPrimitive(argument),
+        
+        \{operator argument} -> let
+            value = arithmetic.(operator)(argument.value)
+        in
+            ast_value.Literal.create(null, typeof value, value));
+
+/* Interface
+ ******************************************************************************/
+var upTransforms = \node -> 
+    ((node && peepholes.(node.type)) || [])
+        .filter(\x -> x.up && x.condition(node));
+
+var downTransforms = \node -> 
+    ((node && peepholes.(node.type)) || [])
+        .filter(\x -> !x.up && x.condition(node));
+
+var transform = \ctx transforms ->
+    ?transforms.length
+        :tree.modifyNode(\node -> transforms.reduce(\p c -> c.map(p), node), ctx)
+        :ctx;
+
+var opt = walk@(
+    \ctx -> let node = tree.node ctx in
+        transform(ctx, downTransforms node),
+    \ctx -> let node = tree.node ctx in
+        transform(ctx, upTransforms node));
+
+optimize = \ast -> 
+    (opt(ecmaZipper(ast))
+        |> zipper.root
+        |> tree.node);
+
+}
