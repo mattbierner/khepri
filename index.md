@@ -56,7 +56,8 @@ toArray = let builder = \p, c -> { p.push c; return p; } in
     \s -> foldl(builder, [], s);
 
 from = let
-    fromImpl = \arr i len ->
+    // Recursive binding using `:=`
+    fromImpl := \arr i len ->
         // Conditional expression
         ? i >= len
             :NIL
