@@ -28,6 +28,3 @@
 [submodule "dependencies/khepri-ast"]
 	path = dependencies/khepri-ast
 	url = https://github.com/mattbierner/khepri-ast.git
-[submodule "dependencies/ecma-ast-zipp"]
-	path = dependencies/ecma-ast-zipp
-	url = https://github.com/mattbierner/ecma-ast-zipper.git
