@@ -42,9 +42,9 @@
         
         "ecma-unparse": "3.2.x",
         "ecma-ast": "2.4.x",
-        "khepri-parse": "0.3.x",
+        "khepri-parse": "0.4.x",
         
-        "khepri-ast": "3.5.x",
+        "khepri-ast": "3.6.x",
         
         "neith": "1.5.x",
         "ecma-ast-zipper": "1.0.x",

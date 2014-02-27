@@ -207,9 +207,12 @@ addCheck(["StaticDeclaration", "VariableDeclaration"], checkChild("declarations"
 addCheck("StaticDeclarator", inspect((function(node) {
     return addImmutableBindingChecked(node.id.name, node.loc);
 })));
-addCheck("VariableDeclarator", seq(inspect((function(node) {
-    return addMutableBindingChecked(node.id.name, node.loc);
-})), checkChild("id"), checkChild("init")));
+addCheck("VariableDeclarator", inspect((function(node) {
+    var bind = (node.immutable ? addImmutableBindingChecked(node.id.name, node.loc) :
+        addMutableBindingChecked(node.id.name, node.loc));
+    return (node.recursive ? seq(bind, checkChild("id"), checkChild("init")) : seq(checkChild("init"), bind,
+        checkChild("id")));
+})));
 addCheck("Binding", inspect((function(node) {
     return (node.recursive ? seq(checkChild("pattern"), checkChild("value")) : seq(checkChild("value"),
         checkChild("pattern")));

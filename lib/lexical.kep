@@ -268,11 +268,20 @@ addCheck@'StaticDeclarator' <|
         addImmutableBindingChecked(node.id.name, node.loc);
     
 addCheck@'VariableDeclarator' <|
-    seq(
-        inspect <|\ node ->
-            addMutableBindingChecked(node.id.name, node.loc),
-        checkChild 'id',
-        checkChild 'init');
+    inspect <|\ node -> let
+        bind =  ?node.immutable
+            :addImmutableBindingChecked(node.id.name, node.loc)
+            :addMutableBindingChecked(node.id.name, node.loc)
+    in
+        ?node.recursive
+            :seq(
+                bind,
+                checkChild 'id',
+                checkChild 'init')
+            :seq(
+                checkChild 'init',
+                bind,
+                checkChild 'id');
 
 addCheck@'Binding' <|
     inspect <|\ node ->
