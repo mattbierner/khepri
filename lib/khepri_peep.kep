@@ -291,8 +291,8 @@ var opt = walk@(
         transform(ctx, upTransforms node));
 
 optimize = \ast->
-    (opt(khepriZipper(ast))
+    opt(khepriZipper(ast))
         |> zipper.root
-        |> tree.node);
+        |> tree.node;
 
 }

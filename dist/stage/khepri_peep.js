@@ -1,8 +1,7 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/stage/khepri_peep.kep'
+ * THIS FILE IS AUTO GENERATED from lib/stage/khepri_peep.kep
  * DO NOT EDIT
-*/
-define(["require", "exports", "../khepri_peep"], (function(require, exports, khepri_peep) {
+*/define(["require", "exports", "../khepri_peep"], (function(require, exports, khepri_peep) {
     "use strict";
     var optimize;
     (optimize = (function(__o) {

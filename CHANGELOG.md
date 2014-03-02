@@ -1,5 +1,10 @@
 # ChangeLog #
 
+## 0.17.1 - March 2, 2014
+* Added node file watcher to compiler
+** Use `-w` or `--watch` flag.
+** All standard options/flags will work with the watcher.
+
 ## 0.17.0 - Feb 26, 2014
 * Added support for immutable, non-recursive variable declarations.
 * Added back syntax `(+, 1)` to curry args on operator.

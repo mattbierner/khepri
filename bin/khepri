@@ -89,6 +89,9 @@ var argParse = require('optimist')
         .describe('help', "Print usage info")
     .boolean('version')
         .describe('version', "Print version number")
+    .boolean('watch')
+        .describe('watch', "Watch for for changes")
+    .alias('w', 'watch')
     .options('o', {
         'describe': 'Output file or directory'
     })
@@ -97,7 +100,6 @@ var argParse = require('optimist')
         'describe': 'Package manager to target. (amd | node)'
     })
     .options('header', {
-        'default': '',
         'describe': 'Javascript header to prefix output.'
     });
 
@@ -114,16 +116,14 @@ if (argv.help) {
     return 0;
 }
 
+
 var inFile = argv._[0],
-    outFile = argv['o'],
-    header = (argv['header'] ? argv['header'] + '\n' : '');
+    outFile = argv['o'];
 
 var options = {};
 if ('package_manager' in argv) options.package_manager = argv.package_manager;
 
 var err = function(e) { console.error(e + ''); };
-
-
 var ok = (!outFile ?
     function(x) {
         process.stdout.setEncoding('utf8');
@@ -137,6 +137,53 @@ var ok = (!outFile ?
             });
         });
     });
+
+
+if (argv.watch) {
+    var watchr = require('watchr');
+    if (!inFile) {
+        process.stdout.write('No input directory specified, watching current directory\n');
+        inFile = process.cwd();
+    }
+    
+    if (!outFile) {
+        process.stdout.write('No output directory specified, outputting to input directory\n');
+        outFile = inFile;
+    }
+    
+    watchr.watch({
+        paths: [inFile],
+        listeners: {
+            'change': function(changeType, filePath, fileCurrentStat, filePreviousStat) {
+                if (path.extname(filePath).toLowerCase() !== '.kep') return;
+                
+                var rel = path.relative(inFile, filePath);
+                var base = path.basename(rel, '.kep');
+                var dir = path.dirname(rel);
+                
+                var out = path.join(outFile, dir, base + '.js');
+                
+                // Delete generated code when source is deleted
+                /*if (changeType === 'delete') {
+                    if (fs.lstatSync(out).isFile())
+                        fs.unlink(out);
+                    return;
+                }*/
+                
+                var header = 'header' in argv ?
+                    argv['header'] :
+                    "/*\n * THIS FILE IS AUTO GENERATED from " +
+                        path.join(inFile, rel) +
+                        "\n * DO NOT EDIT\n*/\n";
+                
+                compileFile(filePath, out, header, options, ok, err);
+            }
+        }
+    });
+    return 0;
+}
+
+var header = (argv['header'] ? argv['header'] + '\n' : '');
 
 if (!inFile) {
     process.stdin.resume();
