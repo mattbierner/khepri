@@ -1,0 +1,61 @@
+/**
+ * @fileOverview Compile a Khepri file/directory to an ECMAScript file/directory.
+ */
+package (
+    compileFile)
+with
+    import 'path' path,
+    import 'fs' fs,
+    
+    import './compile' {compile}
+in {
+
+static process;
+
+var KHEPRI_EXT := `^\.kep$`i;
+
+
+compileFile = \inFile, outFile, header, options, ok, error ->
+    fs.realpath(inFile, \err resolvedPath -> {
+        if (err) throw err;
+        
+        // Walk sub directories and compile all `*.kep` files.
+        if (fs.lstatSync(resolvedPath).isDirectory())
+            return fs.readdir(resolvedPath, \err files -> {
+                files.forEach \ file -> {
+                    var subPath = path.join(inFile, file);
+                    
+                    if (fs.lstatSync(subPath).isDirectory()){
+                        return compileFile(
+                            subPath,
+                            outFile && path.join(outFile, file),
+                            header,
+                            options,
+                            ok,
+                            error);
+                    }
+                    
+                    if (path.extname(file).match(KHEPRI_EXT))
+                        return compileFile(
+                            subPath,
+                            outFile && path.join(outFile, path.basename(file, '.kep') + '.js'),
+                            header,
+                            options,
+                            ok,
+                            error);
+                };
+            });
+        
+        fs.readFile(resolvedPath, 'utf8', \err, data -> {
+            if (err) throw err;
+            
+            if (outFile)
+                process.stdout.write("Khepri'" + inFile + "' to:'" + outFile + "'");
+
+            compile(data, header, options,
+                \data -> ok(data, inFile, outFile),
+                \data -> error(data, inFile, outFile));
+        });
+    });
+
+}

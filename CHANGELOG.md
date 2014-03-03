@@ -1,6 +1,8 @@
 # ChangeLog #
 
 ## 0.17.2 - March 2, 2014
+
+## 0.17.2 - March 2, 2014
 * Split compiler code into own library `khepri-compile`.
 
 ## 0.17.1 - March 2, 2014

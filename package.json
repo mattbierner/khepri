@@ -24,8 +24,14 @@
        "khepri": "./bin/khepri"
     },
 
+    "main": "index.js",
+    "directories": {
+        "lib": "dist_node/"
+    },
     "files": [
-        "bin/"
+        "bin/",
+        "dist_node",
+        "index.js"
     ],
     "dependencies": {
         "khepri-ast": "3.6.x",
@@ -34,6 +40,7 @@
 
         "ecma-unparse": "3.2.x",
         
+        "require-directory": "1.2.x",
         "optimist": "0.6.x",
         "mkdirp": "0.3.x",
         "watchr": "2.4.x"

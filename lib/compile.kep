@@ -1,0 +1,42 @@
+/**
+ * @fileOverview Compile Khepri source.
+ */
+package (
+    compile)
+with
+    import 'ecma-unparse::unparse' {unparse},
+    import 'ecma-unparse::print' {print},
+   
+    import 'khepri-parse::lex::lexer' {lex},
+    import 'khepri-parse::parse::parser' {parseStream},
+    
+    import 'khepri-compile::compile' {'compile': khepriCompile}
+in {
+
+var compiler = \input, options ->
+   lex input
+       |> parseStream
+       |> (\x -> khepriCompile(x, options))
+       |> unparse
+       |> print;
+    
+/**
+ * Compile Khepri souce to ECMAScript.
+ * 
+ * @TODO: hookup to non throwing versions of stages.
+ * 
+ * @param input {string} Khepri source input.
+ * @param [header] Optional header to prefix output with.
+ * @param [options] Compiler options.
+ * @param ok Success callback.
+ * @param err Error callback.
+ */
+compile = \input, header, options, ok, err -> {
+    try {
+        return ok((header || '') + compiler(input, options));
+    } catch (e) {
+        return err(e);
+    }
+};
+
+}

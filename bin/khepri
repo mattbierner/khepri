@@ -5,70 +5,14 @@ var fs = require('fs');
 
 var mkdirp = require('mkdirp');
 
-var unparse = require('ecma-unparse').unparse;
-var unparse_print = require('ecma-unparse').print;
-
-var lexer = require('khepri-parse').lex.lexer;
-var parser = require('khepri-parse').parse.parser;
-var khepri_compile = require('khepri-compile').compile;
-console.log(khepri_compile);
-var KHEPRI_EXT = /^\.kep$/i;
+var compile = require('../index').compile;
+var compile_file = require('../index').compile_file;
+var watch = require('../index').watch;
 
 
-var compile = function(input, header, options, ok, err) {
-    try {
-        var lex = lexer.lex(input);
-        var ast = parser.parseStream(lex);
-        var unparsed = unparse.unparse(khepri_compile.compile(ast, options));
-        return ok(header + unparse_print.print(unparsed));
-    } catch (e) {
-        return err(e.stack + '');
-    }
-};
+var root = path.join(__dirname, '..');
 
-var compileFile = function(inFile, outFile, header, options, ok, error) {
-    fs.realpath(inFile, function(err, resolvedPath) {
-        if (err) throw err;
-        
-        // Walk sub directories and compile all `*.kep` files.
-        if (fs.lstatSync(resolvedPath).isDirectory())
-            return fs.readdir(resolvedPath, function(err, files) {
-                files.forEach(function(file) {
-                    var subPath = path.join(inFile, file);
-                    
-                    if (fs.lstatSync(subPath).isDirectory()){
-                        return compileFile(
-                            subPath,
-                            outFile && path.join(outFile, file),
-                            header,
-                            options,
-                            ok,
-                            error);
-                    }
-                    
-                    if (path.extname(file).match(KHEPRI_EXT))
-                        return compileFile(
-                            subPath,
-                            outFile && path.join(outFile, path.basename(file, '.kep') + '.js'),
-                            header,
-                            options,
-                            ok, error);
-                });
-            });
-        
-        fs.readFile(resolvedPath, 'utf8', function(err, data) {
-            if (err) throw err;
-            
-            if (outFile)
-                console.log("Khepri'" + inFile + "' to:'" + outFile + "'");
-
-            compile(data, header, options,
-                function(data) { ok(data, inFile, outFile); },
-                function(data) { error(data, inFile, outFile); });
-        });
-    });
-};
-
+var log = process.stdout.write.bind(process.stdout);
 
 // Arguments
 var argParse = require('optimist')
@@ -102,20 +46,23 @@ var argParse = require('optimist')
 
 var argv = argParse.argv;
 
+// --version
 if (argv.version) {
     var pack = require(path.join(root, 'package.json'));
-    process.stdout.write(pack.version + '\n');
+    log(pack.version + '\n');
     return 0;
 }
 
+// --help
 if (argv.help) {
-    argParse.showHelp(process.stdout.write.bind(process.stdout));
+    argParse.showHelp(log);
     return 0;
 }
 
 
 var inFile = argv._[0],
-    outFile = argv['o'];
+    outFile = argv['o'],
+    header = argv['header'];
 
 var options = {};
 if ('package_manager' in argv) options.package_manager = argv.package_manager;
@@ -124,7 +71,7 @@ var err = function(e) { console.error(e + ''); };
 var ok = (!outFile ?
     function(x) {
         process.stdout.setEncoding('utf8');
-        process.stdout.write(x);
+       log(x);
     } :
     function(out, inFile, outFile) {
         mkdirp(path.dirname(outFile), function(err) {
@@ -136,58 +83,31 @@ var ok = (!outFile ?
     });
 
 
+// --watch
 if (argv.watch) {
     var watchr = require('watchr');
     if (!inFile) {
-        process.stdout.write('No input directory specified, watching current directory\n');
+        log('No watch input directory, watching current directory\n');
         inFile = process.cwd();
     }
     
     if (!outFile) {
-        process.stdout.write('No output directory specified, outputting to input directory\n');
+        process.stdout.write('No watch output directory, outputting to input directory\n');
         outFile = inFile;
     }
     
-    watchr.watch({
-        paths: [inFile],
-        listeners: {
-            'change': function(changeType, filePath, fileCurrentStat, filePreviousStat) {
-                if (path.extname(filePath).toLowerCase() !== '.kep') return;
-                
-                var rel = path.relative(inFile, filePath);
-                var base = path.basename(rel, '.kep');
-                var dir = path.dirname(rel);
-                
-                var out = path.join(outFile, dir, base + '.js');
-                
-                // Delete generated code when source is deleted
-                /*if (changeType === 'delete') {
-                    if (fs.lstatSync(out).isFile())
-                        fs.unlink(out);
-                    return;
-                }*/
-                
-                var header = 'header' in argv ?
-                    argv['header'] :
-                    "/*\n * THIS FILE IS AUTO GENERATED from " +
-                        path.join(inFile, rel) +
-                        "\n * DO NOT EDIT\n*/\n";
-                
-                compileFile(filePath, out, header, options, ok, err);
-            }
-        }
-    });
+    watch.watch(inFile, outFile, header, options, ok, err);
+    
     return 0;
 }
 
-var header = (argv['header'] ? argv['header'] + '\n' : '');
-
+// Compiler
 if (!inFile) {
     process.stdin.resume();
     process.stdin.setEncoding('utf8');
     process.stdin.on('data', function(data) {
-        compile(data, header, options, ok, err);
+        compile.compile(data, header, options, ok, err);
     });
 } else {
-    compileFile(inFile, outFile, header, options, ok, err);
+    compile_file.compileFile(inFile, outFile, header, options, ok, err);
 }

@@ -1,0 +1,61 @@
+/**
+ * @fileOverview Watch a file/directory for changes and auto compile changed
+ * khepri files.
+ */
+package (
+    watch)
+with
+    import 'path' path,
+    import 'fs' fs,
+
+    import 'watchr' watchr,
+    
+    import './compile_file' {compileFile}
+in {
+
+var KEP := '.kep';
+
+/**
+ * Watch a file/directory for khepri file changes and auto compile changed files
+ * to an output file/directory.
+ * 
+ * @param inFile Path to watch. Directories watch for '*.kep' file changes.
+ * @param outFile Output directory to write files to. Written paths in `outFile`
+ *     are relative to the `inFile`.
+ * @param [header] Optional header to prefix output with.
+ * @param options Compiler options.
+ * @param ok Success callback.
+ * @param err Error callback.
+ */
+watch = \inFile, outFile, header, options, ok, err ->
+    watchr.watch({
+        'paths': [inFile],
+        'listeners': {
+            'change': \changeType, filePath, fileCurrentStat, filePreviousStat -> {
+                if (path.extname(filePath).toLowerCase() !== KEP) return;
+                
+                var rel = path.relative(inFile, filePath);
+                var base = path.basename(rel, KEP);
+                var dir = path.dirname(rel);
+                
+                var out = path.join(outFile, dir, base + '.js');
+                
+                // Delete generated code when source is deleted
+                /*if (changeType === 'delete') {
+                    if (fs.lstatSync(out).isFile())
+                        fs.unlink(out);
+                    return;
+                }*/
+                
+                var h = ?header === undefined
+                    :"/*\n * THIS FILE IS AUTO GENERATED from " +
+                        path.join(inFile, rel) +
+                        "\n * DO NOT EDIT\n*/\n"
+                    :header;
+                
+                compileFile(filePath, out, h, options, ok, err);
+            }
+        }
+    });
+
+}
