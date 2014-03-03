@@ -1,6 +1,7 @@
 # ChangeLog #
 
-## 0.17.2 - March 2, 2014
+## 0.17.4 - March 2, 2014
+* Split command line tool logic out of `bin/khepri` to own library.
 
 ## 0.17.2 - March 2, 2014
 * Split compiler code into own library `khepri-compile`.

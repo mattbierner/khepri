@@ -174,20 +174,14 @@ $ khepri -w lib/ -o dist/
 ```
 
 
-### Clone From Git and use AMD
-    git clone https://github.com/mattbierner/khepri khepri
-    cd khepri
-    git submodule update --init
-
-
 ## Code
-Khepri is written in Javascript / Khepri.
-Node files are generated into `dist_node`. Amd files in `dist`
+Khepri is written in Javascript / Khepri. Node files are generated into `dist_node`.
+
+Khepri is implemented in two libraries: [khepri-parse][khepri-parse] for lexing and parsing, and 
+[khepri-compile][khepri-compile] for compiling Khepri to ECMAScript.
+
 
 [documentation]: https://github.com/mattbierner/khepri/wiki
-[parsejs]: https://github.com/mattbierner/parse.js
-[ecma51]: http://www.ecma-international.org/publications/standards/Ecma-262.htm
-[nu]: http://mattbierner.github.io/nu/
-[ecmaunparse]: https://github.com/mattbierner/ecma-unparse
-[ecmaast]: https://github.com/mattbierner/ecma-ast
-[khepriast]: https://github.com/mattbierner/khepri-ast
+
+[khepri-compile]: https://github.com/mattbierner/khepri-compile
+[khepri-parse]: https://github.com/mattbierner/khepri-parse
