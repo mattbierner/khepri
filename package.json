@@ -1,7 +1,7 @@
 {
     "name": "khepri",
     "preferGlobal": true,
-    "version": "0.17.1",
+    "version": "0.17.3",
     "description": "Khepri Programming Language",
     "author": "Matt Bierner",
     "license": "MIT",
@@ -24,13 +24,8 @@
        "khepri": "./bin/khepri"
     },
 
-    "main": "index.js",
-    "directories": {
-        "lib": "dist_node/"
-    },
     "files": [
-        "bin/",
-        "index.js"
+        "bin/"
     ],
     "dependencies": {
         "khepri-ast": "3.6.x",
