@@ -10,11 +10,8 @@ var unparse_print = require('ecma-unparse').print;
 
 var lexer = require('khepri-parse').lex.lexer;
 var parser = require('khepri-parse').parse.parser;
-
-var root = path.join(__dirname, '..');
-var index = path.join(root, 'index');
-var khepri_compile = require(index).compile;
-
+var khepri_compile = require('khepri-compile').compile;
+console.log(khepri_compile);
 var KHEPRI_EXT = /^\.kep$/i;
 
 
@@ -22,10 +19,10 @@ var compile = function(input, header, options, ok, err) {
     try {
         var lex = lexer.lex(input);
         var ast = parser.parseStream(lex);
-        var unparsed = unparse.unparse(khepri_compile.compile(ast, options));        
+        var unparsed = unparse.unparse(khepri_compile.compile(ast, options));
         return ok(header + unparse_print.print(unparsed));
     } catch (e) {
-        return err(e + '');
+        return err(e.stack + '');
     }
 };
 

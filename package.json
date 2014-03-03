@@ -21,7 +21,7 @@
     },
     
     "bin": {
-    	   "khepri": "./bin/khepri"
+       "khepri": "./bin/khepri"
     },
 
     "main": "index.js",
@@ -29,39 +29,18 @@
         "lib": "dist_node/"
     },
     "files": [
-        "dist_node/",
-        "dependencies/",
         "bin/",
-        "lib/",
-        "tests/",
-        "index.js",
-        "test.js"
+        "index.js"
     ],
     "dependencies": {
-        "bes": "3.1.x",
-        
-        "ecma-unparse": "3.2.x",
-        "ecma-ast": "2.4.x",
-        "khepri-parse": "0.4.x",
-        
         "khepri-ast": "3.6.x",
-        
-        "neith": "1.5.x",
-        "ecma-ast-zipper": "1.0.x",
-        "khepri-ast-zipper": "1.1.x",
-        
-        "hashtrie": "0.2.x",
+        "khepri-compile": "0.0.x",
+        "khepri-parse": "0.4.x",
+
+        "ecma-unparse": "3.2.x",
         
         "optimist": "0.6.x",
         "mkdirp": "0.3.x",
-        "require-directory": "1.2.x",
         "watchr": "2.4.x"
-    },
-    "devDependencies": {
-        "nodeunit": "0.8.x"
-    },
-    
-    "scripts": {
-        "test": "node test.js"
     }
 }

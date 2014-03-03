@@ -34,3 +34,6 @@
 [submodule "dependencies/hashtrie"]
 	path = dependencies/hashtrie
 	url = https://github.com/mattbierner/hashtrie.git
+[submodule "dependencies/khepri-compile"]
+	path = dependencies/khepri-compile
+	url = https://github.com/mattbierner/khepri-compile.git
