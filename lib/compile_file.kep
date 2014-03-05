@@ -50,7 +50,7 @@ compileFile = \inFile, outFile, header, options, ok, error ->
             if (err) throw err;
             
             if (outFile)
-                process.stdout.write("Khepri'" + inFile + "' to:'" + outFile + "'");
+                console.log("Khepri'" + inFile + "' to:'" + outFile + "'");
 
             compile(data, header, options,
                 \data -> ok(data, inFile, outFile),
