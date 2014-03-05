@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.18.0 - March 2, 2014
+* Added package export aliases. `package ('alias': id ...)`.
+* Added package module export: `package api { api = ... }`.
+
 ## 0.17.4 - March 2, 2014
 * Split command line tool logic out of `bin/khepri` to own library.
 

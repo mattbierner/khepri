@@ -12,7 +12,8 @@ var watch = require('../index').watch;
 
 var root = path.join(__dirname, '..');
 
-var log = process.stdout.write.bind(process.stdout);
+var stdout = process.stdout.write.bind(process.stdout)
+
 
 // Arguments
 var argParse = require('optimist')
@@ -49,13 +50,13 @@ var argv = argParse.argv;
 // --version
 if (argv.version) {
     var pack = require(path.join(root, 'package.json'));
-    log(pack.version + '\n');
+    stdout(pack.version + '\n');
     return 0;
 }
 
 // --help
 if (argv.help) {
-    argParse.showHelp(log);
+    argParse.showHelp(stdout);
     return 0;
 }
 
@@ -71,7 +72,7 @@ var err = function(e) { console.error(e + ''); };
 var ok = (!outFile ?
     function(x) {
         process.stdout.setEncoding('utf8');
-       log(x);
+        process.stdout.write(x);
     } :
     function(out, inFile, outFile) {
         mkdirp(path.dirname(outFile), function(err) {
@@ -82,17 +83,16 @@ var ok = (!outFile ?
         });
     });
 
-
 // --watch
 if (argv.watch) {
     var watchr = require('watchr');
     if (!inFile) {
-        log('No watch input directory, watching current directory\n');
+        console.log('No input directory specified, watching current directory');
         inFile = process.cwd();
     }
     
     if (!outFile) {
-        process.stdout.write('No watch output directory, outputting to input directory\n');
+        console.log('No output directory specified, outputting to input directory\n');
         outFile = inFile;
     }
     
@@ -101,7 +101,7 @@ if (argv.watch) {
     return 0;
 }
 
-// Compiler
+// Normal
 if (!inFile) {
     process.stdin.resume();
     process.stdin.setEncoding('utf8');

@@ -19,9 +19,9 @@ var compiler = \input, options ->
        |> (\x -> khepriCompile(x, options))
        |> unparse
        |> print;
-    
+
 /**
- * Compile Khepri souce to ECMAScript.
+ * Compile Khepri source to ECMAScript.
  * 
  * @TODO: hookup to non throwing versions of stages.
  * 

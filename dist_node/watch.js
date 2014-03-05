@@ -1,5 +1,5 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/watch.kep'
+ * THIS FILE IS AUTO GENERATED from lib/watch.kep
  * DO NOT EDIT
 */
 "use strict";
