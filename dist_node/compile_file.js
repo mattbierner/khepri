@@ -1,8 +1,7 @@
 /*
  * THIS FILE IS AUTO GENERATED from 'lib/compile_file.kep'
  * DO NOT EDIT
-*/
-"use strict";
+*/"use strict";
 var path = require("path"),
     fs = require("fs"),
     __o = require("./compile"),
@@ -28,8 +27,7 @@ var path = require("path"),
         }));
         fs.readFile(resolvedPath, "utf8", (function(err, data) {
             if (err) throw err;
-            if (outFile) process.stdout.write((((("Khepri'" + inFile) + "' to:'") + outFile) +
-                "'"));
+            if (outFile) console.log((((("Khepri'" + inFile) + "' to:'") + outFile) + "'"));
             compile(data, header, options, (function(data) {
                 return ok(data, inFile, outFile);
             }), (function(data) {
@@ -38,4 +36,4 @@ var path = require("path"),
         }));
     }));
 }));
-(exports.compileFile = compileFile);
+(exports["compileFile"] = compileFile);

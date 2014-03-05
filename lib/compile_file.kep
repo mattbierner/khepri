@@ -10,7 +10,7 @@ with
     import './compile' {compile}
 in {
 
-static process;
+static console;
 
 var KHEPRI_EXT := `^\.kep$`i;
 
