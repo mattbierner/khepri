@@ -1,39 +1,33 @@
-[submodule "dependencies/ecma-unparse"]
-        path = dependencies/ecma-unparse
-        url = https://github.com/mattbierner/ecma-unparse.git
-[submodule "dependencies/nu"]
-        path = dependencies/nu
-        url = https://github.com/mattbierner/nu.git
-[submodule "dependencies/khepri-ast"]
-        path = dependencies/khepri-ast
-        url = https://github.com/mattbierner/khepri-ast.git
-[submodule "dependencies/ecma-ast"]
-        path = dependencies/ecma-ast
-        url = https://github.com/mattbierner/ecma-ast.git
-[submodule "dependencies/neith"]
-        path = dependencies/neith
-        url = https://github.com/mattbierner/neith.git
-[submodule "dependencies/ecma-ast-zipper"]
-        path = dependencies/ecma-ast-zipper
-        url = https://github.com/mattbierner/ecma-ast-zipper.git
-[submodule "dependencies/khepri-ast-zipper"]
-        path = dependencies/khepri-ast-zipper
-        url = https://github.com/mattbierner/khepri-ast-zipper.git
-[submodule "dependencies/seshet"]
-        path = dependencies/seshet
-        url = https://github.com/mattbiernerseshet.git
 [submodule "dependencies/bennu"]
-        path = dependencies/bennu
-        url = https://github.com/mattbierner/bennu.git
+	   path = dependencies/bennu
+	   url = https://github.com/mattbierner/bennu.git
+[submodule "dependencies/nu"]
+	   path = dependencies/nu
+	   url = https://github.com/mattbierner/nu.git
 [submodule "dependencies/bes"]
-        path = dependencies/bes
-        url = https://github.com/mattbierner/bes.git
-[submodule "dependencies/khepri-parse"]
-	path = dependencies/khepri-parse
-	url = https://github.com/mattbierner/khepri-parse.git
+	   path = dependencies/bes
+	   url = https://github.com/mattbierner/bes.git
+[submodule "dependencies/ecma-ast"]
+	   path = dependencies/ecma-ast
+	   url = https://github.com/mattbierner/ecma-ast.git
+[submodule "dependencies/ecma-ast-zipper"]
+	   path = dependencies/ecma-ast-zipper
+	   url = https://github.com/mattbierner/ecma-ast-zipper.git
+[submodule "dependencies/khepri-ast-zipper"]
+	   path = dependencies/khepri-ast-zipper
+	   url = https://github.com/mattbierner/khepri-ast-zipper.git
+[submodule "dependencies/seshet"]
+	   path = dependencies/seshet
+	   url = https://github.com/mattbierner/seshet.git
+[submodule "dependencies/neith"]
+	   path = dependencies/neith
+	   url = https://github.com/mattbierner/neith.git
+[submodule "dependencies/ecma-unparse"]
+	   path = dependencies/ecma-unparse
+	   url = https://github.com/mattbierner/ecma-unparse.git
+[submodule "dependencies/khepri-ast"]
+	   path = dependencies/khepri-ast
+	   url = https://github.com/mattbierner/khepri-ast.git
 [submodule "dependencies/hashtrie"]
-	path = dependencies/hashtrie
-	url = https://github.com/mattbierner/hashtrie.git
-[submodule "dependencies/khepri-compile"]
-	path = dependencies/khepri-compile
-	url = https://github.com/mattbierner/khepri-compile.git
+	   path = dependencies/hashtrie
+	   url = https://github.com/mattbierner/hashtrie.git
