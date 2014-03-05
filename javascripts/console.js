@@ -1,7 +1,7 @@
 require(['nu-stream/stream',
          'khepri-parse/lex/lexer',
          'khepri-parse/parse/parser',
-         'khepri/compile',
+         'khepri-compile/compile',
          'ecma-unparse/unparse',
          'ecma-unparse/print'],
 function(stream,

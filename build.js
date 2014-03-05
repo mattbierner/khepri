@@ -6,7 +6,8 @@
         'khepri': 'dist',
         
         'khepri-parse': 'dependencies/khepri-parse/dist',
-        
+        'khepri-compile': 'dependencies/khepri-compile/dist',
+
         'bennu': 'dependencies/bennu/dist',
         'nu-stream': 'dependencies/nu/dist',
         'seshet': 'dependencies/seshet/dist/seshet',
