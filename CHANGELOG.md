@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.19.1 - March 19, 2014
+* Fixed call stack for large programs
+* Locked khepri_parse and khepri_compile to specific versions.
+
 ## 0.19.0 - March 19, 2014
 * All pipes and compose operators can be converted to functions `(<|), (\>>), ...`.
 * Dot operator `(.)` can be converted to function for computed member access.
