@@ -1,6 +1,17 @@
 # ChangeLog #
 
-## 0.18.0 - March 2, 2014
+## 0.19.0 - March 19, 2014
+* All pipes and compose operators can be converted to functions `(<|), (\>>), ...`.
+* Dot operator `(.)` can be converted to function for computed member access.
+* new expressions can be used without parens: `new Parser\...->...`.
+* Left hand side of assignment expression to be chained: `x = y = 3` as
+  long as the lhs or each expressions is a reference expression.
+* Improved error messaging and performance.
+
+## 0.18.1 - March 5, 2014
+* Fixed new lines not being printed in log info.
+
+## 0.18.0 - March 4, 2014
 * Added package export aliases. `package ('alias': id ...)`.
 * Added package module export: `package api { api = ... }`.
 
