@@ -65,10 +65,15 @@ var inFile = argv._[0],
     outFile = argv['o'],
     header = argv['header'];
 
-var options = {};
-if ('package_manager' in argv) options.package_manager = argv.package_manager;
+var options = {
+    package_manager: argv.package_manager
+};
 
-var err = function(e) { console.error(e + ''); };
+var defaultHeader = function(input) {
+    return "/*\n * THIS FILE IS AUTO GENERATED FROM '" + input + "'\n * DO NOT EDIT\n*/\n";
+};
+
+var err = function(e) { console.error(e + ''); return 1; };
 var ok = (!outFile ?
     function(x) {
         process.stdout.setEncoding('utf8');
@@ -92,13 +97,19 @@ if (argv.watch) {
     }
     
     if (!outFile) {
-        console.log('No output directory specified, outputting to input directory\n');
+        console.log('No output directory specified, outputting to input directory');
         outFile = inFile;
     }
     
-    watch.watch(inFile, outFile, header, options, ok, err);
-    
-    return 0;
+    return watch.watch(
+        inFile,
+        outFile,
+        header === undefined
+            ? defaultHeader
+            : header,
+        options,
+        ok,
+        err);
 }
 
 // Normal
@@ -109,5 +120,13 @@ if (!inFile) {
         compile.compile(data, header, options, ok, err);
     });
 } else {
-    compile_file.compileFile(inFile, outFile, header, options, ok, err);
+    return compile_file.compileFile(
+        inFile,
+        outFile,
+        header === undefined
+            ? defaultHeader
+            : header,
+        options,
+        ok,
+        err);
 }

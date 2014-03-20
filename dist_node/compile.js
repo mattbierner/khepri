@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from 'lib/compile.kep'
- * DO NOT EDIT
-*/
 "use strict";
 var __o = require("ecma-unparse")["unparse"],
     unparse = __o["unparse"],
@@ -25,4 +21,4 @@ var __o = require("ecma-unparse")["unparse"],
         return err(e);
     }
 }));
-(exports.compile = compile);
+(exports["compile"] = compile);

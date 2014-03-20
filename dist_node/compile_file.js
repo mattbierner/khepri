@@ -28,9 +28,10 @@ var path = require("path"),
         fs.readFile(resolvedPath, "utf8", (function(err, data) {
             if (err) throw err;
             if (outFile) console.log((((("Khepri'" + inFile) + "' to:'") + outFile) + "'"));
-            compile(data, header, options, (function(data) {
-                return ok(data, inFile, outFile);
-            }), (function(data) {
+            compile(data, (((typeof header) === "function") ? header(inFile) : header), options, (
+                function(data) {
+                    return ok(data, inFile, outFile);
+                }), (function(data) {
                 return error(data, inFile, outFile);
             }));
         }));

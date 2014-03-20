@@ -1,7 +1,3 @@
-/*
- * THIS FILE IS AUTO GENERATED from lib/watch.kep
- * DO NOT EDIT
-*/
 "use strict";
 var path = require("path"),
     fs = require("fs"),
@@ -27,4 +23,4 @@ var path = require("path"),
         })
     }));
 }));
-(exports.watch = watch);
+(exports["watch"] = watch);

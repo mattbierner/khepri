@@ -14,7 +14,15 @@ static console;
 
 var KHEPRI_EXT := `^\.kep$`i;
 
-
+/**
+ * @param inFile Path to input file or directory.
+ * @param [outFile] Path to output file or directory.
+ * @param [header] {String, Function} Prefix for output. If a function, passed
+ *   the inputFile name.
+ * @param options Compiler options.
+ * @param ok Success callback
+ * @param err Error callback.
+ */
 compileFile = \inFile, outFile, header, options, ok, error ->
     fs.realpath(inFile, \err resolvedPath -> {
         if (err) throw err;
@@ -51,8 +59,13 @@ compileFile = \inFile, outFile, header, options, ok, error ->
             
             if (outFile)
                 console.log("Khepri'" + inFile + "' to:'" + outFile + "'");
-
-            compile(data, header, options,
+            
+            compile(
+                data,
+                ?typeof header === 'function'
+                    :header(inFile)
+                    :header,
+                options,
                 \data -> ok(data, inFile, outFile),
                 \data -> error(data, inFile, outFile));
         });
