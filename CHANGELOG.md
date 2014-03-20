@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.19.2 - March 19, 2014
+* Compiling input files will prefix an auto gen header by default.
+
 ## 0.19.1 - March 19, 2014
 * Fixed call stack for large programs
 * Locked khepri_parse and khepri_compile to specific versions.
