@@ -1,13 +1,12 @@
 /**
  * @fileOverview Compile a Khepri file/directory to an ECMAScript file/directory.
  */
-package (
-    compileFile)
+package compileFile
 with
     import 'path' path,
     import 'fs' fs,
     
-    import './compile' {compile}
+    import './compile' compile
 in {
 
 static console;

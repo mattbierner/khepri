@@ -2,15 +2,14 @@
  * @fileOverview Watch a file/directory for changes and auto compile changed
  * khepri files.
  */
-package (
-    watch)
+package watch
 with
     import 'path' path,
     import 'fs' fs,
 
     import 'watchr' watchr,
     
-    import './compile_file' {compileFile}
+    import './compile_file' compileFile
 in {
 
 var KEP := '.kep';
@@ -34,26 +33,21 @@ watch = \inFile, outFile, header, options, ok, err ->
             'change': \changeType, filePath, fileCurrentStat, filePreviousStat -> {
                 if (path.extname(filePath).toLowerCase() !== KEP) return;
                 
-                var rel = path.relative(inFile, filePath);
-                var base = path.basename(rel, KEP);
-                var dir = path.dirname(rel);
-                
-                var out = path.join(outFile, dir, base + '.js');
-                
-                // Delete generated code when source is deleted
-                /*if (changeType === 'delete') {
-                    if (fs.lstatSync(out).isFile())
-                        fs.unlink(out);
-                    return;
-                }*/
-                
-                var h = ?header === undefined
-                    :"/*\n * THIS FILE IS AUTO GENERATED from " +
-                        path.join(inFile, rel) +
-                        "\n * DO NOT EDIT\n*/\n"
-                    :header;
-                
-                compileFile(filePath, out, h, options, ok, err);
+                with
+                    rel = path.relative(inFile, filePath),
+                    base = path.basename(rel, KEP),
+                    dir = path.dirname(rel),
+                    out = path.join(outFile, dir, base + '.js')
+                in {
+                    // Delete generated code when source is deleted
+                    /*if (changeType === 'delete') {
+                        if (fs.lstatSync(out).isFile())
+                            fs.unlink(out);
+                        return;
+                    }*/
+                    
+                    compileFile(filePath, out, header, options, ok, err);
+                }
             }
         }
     });

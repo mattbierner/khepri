@@ -50,7 +50,7 @@ var argv = argParse.argv;
 // --version
 if (argv.version) {
     var pack = require(path.join(root, 'package.json'));
-    stdout(pack.version + '\n');
+    console.log(pack.version);
     return 0;
 }
 
@@ -101,7 +101,7 @@ if (argv.watch) {
         outFile = inFile;
     }
     
-    return watch.watch(
+    return watch(
         inFile,
         outFile,
         header === undefined
@@ -117,10 +117,10 @@ if (!inFile) {
     process.stdin.resume();
     process.stdin.setEncoding('utf8');
     process.stdin.on('data', function(data) {
-        compile.compile(data, header, options, ok, err);
+        compile(data, header, options, ok, err);
     });
 } else {
-    return compile_file.compileFile(
+    return compile_file(
         inFile,
         outFile,
         header === undefined

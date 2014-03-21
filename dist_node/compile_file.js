@@ -4,8 +4,7 @@
 */"use strict";
 var path = require("path"),
     fs = require("fs"),
-    __o = require("./compile"),
-    compile = __o["compile"],
+    compile = require("./compile"),
     compileFile, KHEPRI_EXT = /^\.kep$/i;
 (compileFile = (function(inFile, outFile, header, options, ok, error) {
     return fs.realpath(inFile, (function(err, resolvedPath) {
@@ -37,4 +36,4 @@ var path = require("path"),
         }));
     }));
 }));
-(exports["compileFile"] = compileFile);
+(module.exports = compileFile);

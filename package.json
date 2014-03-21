@@ -36,7 +36,7 @@
     "dependencies": {
         "khepri-ast": "3.6.x",
         
-        "khepri-compile": "0.2.1",
+        "khepri-compile": "0.2.2",
         "khepri-parse": "0.8.0",
 
         "ecma-unparse": "3.2.x",
@@ -45,5 +45,9 @@
         "optimist": "0.6.x",
         "mkdirp": "0.3.x",
         "watchr": "2.4.x"
+    },
+    
+    "scripts": {
+        "build": "khepri lib -o dist_node --package_manager=node"
     }
 }

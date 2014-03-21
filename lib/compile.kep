@@ -1,8 +1,7 @@
 /**
  * @fileOverview Compile Khepri source.
  */
-package (
-    compile)
+package compile
 with
     import 'ecma-unparse::unparse' {unparse},
     import 'ecma-unparse::print' {print},
