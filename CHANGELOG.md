@@ -1,5 +1,10 @@
 # ChangeLog #
 
+## 0.20.1 - March 21, 2014
+* Fixed programs and packages not introducing a new scope, leading to potential
+  name conflicts with globals.
+* Fixed node packages silently discarding non import bindings.
+
 ## 0.20.0 - March 20, 2014
 * Changed composed associativity to match the order the functions are evaluated in.
 * Fixed forms `f (+)` and `f @ (+)`.

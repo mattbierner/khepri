@@ -32,6 +32,7 @@ var compiler = \input, options ->
  */
 compile = \input, header, options, ok, err -> {
     try {
+        static console; console.log(options);
         return ok((header || '') + compiler(input, options));
     } catch (e) {
         return err(e);

@@ -19,6 +19,7 @@ var __o = require("ecma-unparse")["unparse"],
     });
 (compile = (function(input, header, options, ok, err) {
     try {
+        console.log(options);
         return ok(((header || "") + compiler(input, options)));
     } catch (e) {
         return err(e);
