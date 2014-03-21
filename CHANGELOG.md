@@ -1,6 +1,10 @@
 # ChangeLog #
 
-## 0.19.2 - March 19, 2014
+## 0.20.0 - March 20, 2014
+* Changed composed associativity to match the order the functions are evaluated in.
+* Fixed forms `f (+)` and `f @ (+)`.
+
+## 0.19.2 - March 20, 2014
 * Compiling input files will prefix an auto gen header by default.
 
 ## 0.19.1 - March 19, 2014
