@@ -38,12 +38,9 @@ class KhepriMatchingEventHandler(PatternMatchingEventHandler):
                 if not os.path.isdir(out_dir):
                     raise
         
-        header = "/*\n * THIS FILE IS AUTO GENERATED from '%s'\n * DO NOT EDIT\n*/" % os.path.relpath(path)
-        
         call(
-            '%s --header "%s" -o %s %s %s' % (
+            '%s -o %s %s %s' % (
                 KHEPRI,
-                header,
                 out_path,
                 self.other_args,
                 os.path.relpath(path)),
