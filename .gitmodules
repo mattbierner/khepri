@@ -37,3 +37,6 @@
 [submodule "dependencies/khepri-compile"]
 	path = dependencies/khepri-compile
 	url = https://github.com/mattbierner/khepri-compile.git
+[submodule "dependencies/akh"]
+	path = dependencies/akh
+	url = https://github.com/mattbierner/akh.git

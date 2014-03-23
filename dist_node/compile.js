@@ -1,7 +1,8 @@
 /*
- * THIS FILE IS AUTO GENERATED from 'lib/compile.kep'
+ * THIS FILE IS AUTO GENERATED FROM 'lib/compile.kep'
  * DO NOT EDIT
-*/"use strict";
+*/
+"use strict";
 var __o = require("ecma-unparse")["unparse"],
     unparse = __o["unparse"],
     __o0 = require("ecma-unparse")["print"],
