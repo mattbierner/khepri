@@ -1,5 +1,10 @@
 # ChangeLog #
 
+## 0.20.2 - March 23, 2014
+* Fixed static declarations potentially being renamed.
+* Optimized call of curry `f @ 1 @ 2 3` to generate `f(1, 2, 3)`. This pattern is
+  useful if you want to omit parentheses when calling a multi argument function.
+
 ## 0.20.1 - March 21, 2014
 * Fixed programs and packages not introducing a new scope, leading to potential
   name conflicts with globals.
