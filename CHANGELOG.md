@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.21.1 - March 24, 2014
+* Fixed stack issue for large files.
+
 ## 0.21.0 - March 24, 2014
 * Allow operator binary `new` and `@` operators to be converted to functions.
 * Added flipped binary operator to function syntax. `(_/, 10)`.
