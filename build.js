@@ -13,6 +13,8 @@
         'seshet': 'dependencies/seshet/dist/seshet',
         'bes': 'dependencies/bes/dist',
         
+        'akh': 'dependencies/akh/dist',
+        
         'hashtrie': 'dependencies/hashtrie/dist/hashtrie',
         
         'ecma-unparse': '../ecma-unparse/dist',
