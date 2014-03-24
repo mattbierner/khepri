@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.21.0 - March 24, 2014
+* Allow operator binary `new` and `@` operators to be converted to functions.
+* Added flipped binary operator to function syntax. `(_/, 10)`.
+
 ## 0.20.2 - March 23, 2014
 * Fixed static declarations potentially being renamed.
 * Optimized call of curry `f @ 1 @ 2 3` to generate `f(1, 2, 3)`. This pattern is
