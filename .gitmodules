@@ -40,3 +40,6 @@
 [submodule "dependencies/akh"]
 	path = dependencies/akh
 	url = https://github.com/mattbierner/akh.git
+[submodule "dependencies/zipper-m"]
+	path = dependencies/zipper-m
+	url = https://github.com/mattbierner/zipper-m.git

@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.21.1 - March 25, 2014
+* Fix for using `require` as an variable potentially breaking imports.
+
 ## 0.21.1 - March 24, 2014
 * Fixed stack issue for large files.
 
