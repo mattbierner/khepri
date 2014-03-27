@@ -1,5 +1,10 @@
 # ChangeLog #
 
+## 0.21.3 - March 27, 2014
+* Fixed AMD packages using global `require` instead of string `'require'` for imports.
+* Improvements to constant folding.
+* Fixed curry of function expression inlining potentially discarding arguments.
+
 ## 0.21.2 - March 25, 2014
 * Fix for using `require` as an variable potentially breaking imports.
 

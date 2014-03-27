@@ -36,7 +36,7 @@
     "dependencies": {
         "khepri-ast": "3.7.x",
         
-        "khepri-compile": "0.3.2",
+        "khepri-compile": "0.3.3",
         "khepri-parse": "0.9.1",
 
         "ecma-unparse": "3.2.x",
