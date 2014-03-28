@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.21.8 - March 28, 2014
+* Inlining renaming fixes.
+
 ## 0.21.7 - March 28, 2014
 * Fix for inling with too few args crashing compiler.
 * Fixed logical ops not registering aliased names and generating invalid code.
