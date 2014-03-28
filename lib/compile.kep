@@ -9,7 +9,7 @@ with
     import 'khepri-parse::lex::lexer' {lex},
     import 'khepri-parse::parse::parser' {parseStream},
     
-    import 'khepri-compile::compile' {'compile': khepriCompile}
+    import 'khepri-compile::compile' khepriCompile
 in {
 
 var compiler = \input, options ->
