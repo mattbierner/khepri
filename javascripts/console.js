@@ -32,7 +32,7 @@ var translate = function(input) {
     try {
         var lex = lexer.lex(input);
         var ast = parser.parseStream(lex);
-        var ecam_ast = compile.compile(ast, options);
+        var ecam_ast = compile(ast, options);
         var unparsed = unparse.unparse(ecam_ast);
         var s = unparse_print.print(unparsed);
         

@@ -14,7 +14,8 @@
         'bes': 'dependencies/bes/dist',
         
         'akh': 'dependencies/akh/dist',
-        
+        'zipper-m': 'dependencies/zipper-m/dist',
+
         'hashtrie': 'dependencies/hashtrie/dist/hashtrie',
         
         'ecma-unparse': '../ecma-unparse/dist',
