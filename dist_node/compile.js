@@ -22,7 +22,7 @@ var __o = require("ecma-unparse")["unparse"],
     try {
         return ok(((header || "") + compiler(input, options)));
     } catch (e) {
-        return err(e);
+        return err(e.stack);
     }
 }));
 (module.exports = compile);
