@@ -1,6 +1,6 @@
 # ChangeLog #
 
-## 0.21.5 - March 28, 2014
+## 0.21.6 - March 28, 2014
 * Generated code creates only a single definition for each operator converted to
   a function instead of an new function where ever the op appears.
 ** Inlining may then expand these.
