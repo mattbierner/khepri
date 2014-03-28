@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 0.21.7 - March 28, 2014
+* Fix for inling with too few args crashing compiler.
+* Fixed logical ops not registering aliased names and generating invalid code.
+
 ## 0.21.6 - March 28, 2014
 * Generated code creates only a single definition for each operator converted to
   a function instead of an new function where ever the op appears.
