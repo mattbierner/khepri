@@ -1,5 +1,11 @@
 # ChangeLog #
 
+## 0.21.9 - March 31, 2014
+* Better generated bindings when inlinig constants.
+* Const string member access inlinining.
+* Allow recursive bindings to be inlined.
+** Recursive inline expansion fix (instead of just disallowing) to a fixed depth.
+
 ## 0.21.8 - March 28, 2014
 * Inlining renaming fixes.
 
