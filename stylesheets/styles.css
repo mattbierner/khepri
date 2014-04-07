@@ -576,6 +576,16 @@ header #blurb {
     padding: 0;
 }
 
+header #blurb span {
+    display: block;
+}
+
+
+header #title-text {
+    float: left;
+}
+
+
 header #version {
     position: absolute;
     top: -2em;
