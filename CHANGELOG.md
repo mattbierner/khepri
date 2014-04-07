@@ -1,5 +1,8 @@
 # ChangeLog #
 
+# 0.21.15 - April 7, 2014
+* Fixed reading from STDIN and writing to a file.
+
 # 0.21.14 - April 7, 2014
 * Fixed amd package generation for imports.
 

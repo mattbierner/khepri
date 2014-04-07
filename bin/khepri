@@ -117,7 +117,13 @@ if (!inFile) {
     process.stdin.resume();
     process.stdin.setEncoding('utf8');
     process.stdin.on('data', function(data) {
-        compile(data, header, options, ok, err);
+        compile(data, header, options,
+            function(x) {
+                return ok(x, 'STDIN', outFile);
+            },
+            function(x) {
+                return err(x, 'STDIN', outFile);
+            });
     });
 } else {
     return compile_file(
