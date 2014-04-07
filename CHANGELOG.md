@@ -1,5 +1,13 @@
 # ChangeLog #
 
+# 0.21.13 - April 7, 2014
+* Globals pruned if inlining makes them unreachable.
+** `(+, 1);` generates `\y -> y + 1` with no `_add`
+** While `(+)` generates `var __add = \x y -> x + y; __add;`
+* Fixed potentially incorrect normalization of let bindings with a let expression
+  value.
+* Unused declarators without inits can also be pruned.
+
 # 0.21.12 - April 6, 2014
 * Basic unreachable binding pruning.
 ** Compose now should have same overhead as a `compose` function in the worst case,
