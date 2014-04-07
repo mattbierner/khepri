@@ -1,5 +1,11 @@
 # ChangeLog #
 
+# 0.21.11 - April 6, 2014
+* Basic unreachable binding pruning.
+** Compose now should have same overhead as a `compose` function in the worst case,
+  but multi composes can be optimized to a single set of potentially inlined function calls.
+* Unused variable elimination.
+
 ## 0.21.10 - April 1, 2014
 * Fixed inlining of recursive curry with multiple args.
 
