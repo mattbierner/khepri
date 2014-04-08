@@ -1,5 +1,8 @@
 # ChangeLog #
 
+# 0.22.1 - April 8, 2014
+* Restored support for ellipsis pattern without id.
+
 # 0.22.0 - April 8, 2014
 * Added slice unpack support
 ** Can be used in array unpacks and arguments unpacks.

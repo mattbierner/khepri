@@ -1,23 +1,26 @@
 # Khepri
-ECMAScript derived programming language
+Functional ECMAScript
 
 ### About
-Khepri is an ECMAScript derived programming language that tweaks
-ECMAScript and introduces new features to make the language more concise 
-and consistent. Khepri compiles to plain old Javascript and does not require
-any runtime libraries and Khepri and Javascript can also be freely mixed in a
-project.
+Khepri is a programming language that reworks ECMAScript to be better for untyped
+functional-style programming. Khepri's syntax eliminates some of ECMAScript's clutter,
+and makes operations like function composition, currying, and using operators as
+functions easy and fast.
 
-Unlike most other *script languages, Khepri's goal is not to replace Javascript
-by introducing new heavy weight language features, but to make writing Javascript
-more fun, with a focus on functional style programming. 
+Unlike many other *script languages, Khepri's goal is not to replace Javascript by
+introducing new heavy weight language features, but rather to rework ECMAScript's syntax
+to be more flexible and expressive, while also helping programmers write safer code that
+can be better optimized.
+
+Khepri compiles to plain old Javascript and does not require any runtime libraries.
+Khepri and Javascript can also be freely mixed in a project.
 
 ### Links
 * [Documentation][documentation]
-
+* [Try Khepri Online][demo]
 
 ## Overview
-See documentation for details:
+See [documentation][documentation] for details:
 
 ```
 /* Functions
@@ -50,7 +53,7 @@ f 10; f(10);     // single arg
 f(10, 20);       // multiple args
 f 1 2 3;         // f(1)(2)(3) 
 
-// Binding
+// Function Binding
 f@10; f@(10);   // single argument bind
 f@(10, 20);     // multiple argument bind
 
@@ -71,6 +74,10 @@ dot2 [[1, 2], [3, 4]];   // 11
 // As unpacks
 var dup = \arr#[x ...] -> [x, arr];
 dup [1, [2]];    // [1, [1, [2]]]; 
+
+// Slice Unpack
+var rest = \x ...xs -> xs;
+rest(1, 2, 3, 4); // [2, 3, 4]
 
 /* Lexical Scope
   ----------------------*/
@@ -182,6 +189,7 @@ Khepri is implemented in two libraries: [khepri-parse][khepri-parse] for lexing 
 
 
 [documentation]: https://github.com/mattbierner/khepri/wiki
+[demo]: http://khepri-lang.com/console.html
 
 [khepri-compile]: https://github.com/mattbierner/khepri-compile
 [khepri-parse]: https://github.com/mattbierner/khepri-parse
