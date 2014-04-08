@@ -34,12 +34,12 @@
         "index.js"
     ],
     "dependencies": {
-        "khepri-ast": "3.8.x",
+        "khepri-ast": "3.9.x",
         
         "khepri-compile": "0.4.0",
-        "khepri-parse": "0.11.0",
+        "khepri-parse": "0.11.1",
 
-        "ecma-unparse": "3.2.x",
+        "ecma-unparse": "3.3.x",
         
         "require-directory": "1.2.x",
         "optimist": "0.6.x",

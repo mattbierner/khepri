@@ -1,5 +1,11 @@
 # ChangeLog #
 
+# 0.22.0 - April 8, 2014
+* Added slice unpack support
+** Can be used in array unpacks and arguments unpacks.
+** `var rest := \x ...xs -> xs`;
+* Allow lambda to be ended by `¤` to denote end of body.
+
 # 0.21.15 - April 7, 2014
 * Fixed reading from STDIN and writing to a file.
 
