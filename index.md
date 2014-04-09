@@ -3,11 +3,30 @@ layout: base
 ---
 
 # About
-Khepri is an ECMAScript derived programming language that compiles to plain old Javascript.
-Focusing on functional-style programming, Khepri makes Javascript more concise, more consistent, and more fun.
+Khepri is a programming language that reworks ECMAScript to be better for untyped
+functional-style programming. Khepri's syntax eliminates some of ECMAScript's
+clutter, and makes operations like function composition, currying, and using
+operators as functions easy and fast.
 
-Unlike many other \*script languages, Khepri does not aim to replace Javascript with heavy weight language features.
-Instead it adds, removes, and reworks Javascript's syntax to make the language more flexible and expressive.
+```javascript
+// Khepri function that sums elements of an input array and divides result by 2
+var sum := foldl@((+), 0) \> (_/, 2);
+sum [1, 2, 3, 4];
+
+// VS ECMAScript to do the same
+var sum = function(x) {
+    return foldl(function(a, b) { return a + b; }, 0, x) / 2;
+};
+sum([1, 2, 3, 4]);
+```
+
+Unlike many other *script languages, Khepri's goal is not to replace Javascript
+by introducing new heavy weight language features, but rather to rework ECMAScript's
+syntax to be more flexible and expressive, while also helping programmers write
+safer code that can be better optimized.
+
+Khepri compiles to plain old Javascript and does not require any runtime
+libraries. Khepri and Javascript can also be freely mixed in a project.
 
 # Overview
 Tiny lazy annotated stream library in Khepri.
@@ -16,23 +35,27 @@ Tiny lazy annotated stream library in Khepri.
  // Declare a package and some exports
 package (stream cons first rest forEach foldl reverse toArray from)
 {
-// Mutable internal binding.
-var NIL = null;
+// Declare some immutable bindings.
+// These are only visible in the package.
+var NIL := null;
 
-// Lambda function syntax
-var isEmpty = \s -> s === NIL;
+// Using Khepri's lambda syntax
+var flip := \f -> \x y -> f(y, x);
 
-var constant = \x -> \() -> x;
-var flip = \f -> \x y -> f(y, x);
+var constant := \x -> \ -> x;
 
-// Export a symbol
-// Lambda returning object literal
+// Export a symbol.
+// Uses Khepri lambda syntax for a
+// lambda returning object literal.
 stream = \val f -> ({'first': val, 'rest': f});
 
 // Function application without parens
 cons = \val s -> stream(val, constant s);
 
-// Unpacks in lambda
+// Convert an operator to a function and curry it
+var isEmpty := (===, NIL);
+
+// Unpacks parameters in lambda
 first = \{first} -> first;
 rest = \{rest} -> rest();
 
@@ -48,13 +71,12 @@ foldl = \f z s -> {
     return r;
 };
 
-// Curry Operator
+// Currying a function
 reverse = foldl@(flip cons, NIL);
 
-// Let Expression
-toArray = let builder = \p, c -> { p.push c; return p; } in
-    \s -> foldl(builder, [], s);
+toArray = foldl@([].concat.bind([]), []);
 
+// Let Expression to bind a value in an expression
 from = let
     // Recursive binding using `:=`
     fromImpl := \arr i len ->
@@ -76,7 +98,7 @@ Using the stream library in another file
 ```javascript
 package ()
 with
-    // Import the stream library and unpack
+    // Import the stream library and unpack some symbols
     import 'stream' stream#{cons foldl reverse}
 in {
     // Declare global.
@@ -102,6 +124,8 @@ $ npm install -g khepri
 ```
 
 ### Compile
+See [the wiki](https://github.com/mattbierner/khepri/wiki/compiler) for more complete
+compiler documentation.
 
 ```
 # Compile file to stdout
