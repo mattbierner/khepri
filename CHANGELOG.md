@@ -1,5 +1,15 @@
 # ChangeLog #
 
+# 0.23.0 - April 10, 2014
+* Non Computed member Access operator to function `var f := (.abc); f {'abc': 1}; // 1`
+* Added support for marking previously mutable binding immutable with `:=`.
+** Can be used for declarations and package exports.
+** Must take place in same scope as declaration.
+* Better generated code when an argument to an inlined function is not provided,
+  so it evaluates to undefined.
+** `var f := \x -> x.x; f();` will output `undefined.x;`
+* Object literal keys may be identifiers or numbers.
+
 # 0.22.1 - April 8, 2014
 * Restored support for ellipsis pattern without id.
 
