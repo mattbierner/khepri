@@ -1,6 +1,9 @@
 # ChangeLog #
 
-# 0.23.0 - April 10, 2014
+## 0.23.1 - April 13, 2014
+* Compiler ~2x faster.
+
+## 0.23.0 - April 10, 2014
 * Non Computed member Access operator to function `var f := (.abc); f {'abc': 1}; // 1`
 * Added support for marking previously mutable binding immutable with `:=`.
 ** Can be used for declarations and package exports.
@@ -10,22 +13,22 @@
 ** `var f := \x -> x.x; f();` will output `undefined.x;`
 * Object literal keys may be identifiers or numbers.
 
-# 0.22.1 - April 8, 2014
+## 0.22.1 - April 8, 2014
 * Restored support for ellipsis pattern without id.
 
-# 0.22.0 - April 8, 2014
+## 0.22.0 - April 8, 2014
 * Added slice unpack support
 ** Can be used in array unpacks and arguments unpacks.
 ** `var rest := \x ...xs -> xs`;
 * Allow lambda to be ended by `¤` to denote end of body.
 
-# 0.21.15 - April 7, 2014
+## 0.21.15 - April 7, 2014
 * Fixed reading from STDIN and writing to a file.
 
-# 0.21.14 - April 7, 2014
+## 0.21.14 - April 7, 2014
 * Fixed amd package generation for imports.
 
-# 0.21.13 - April 7, 2014
+## 0.21.13 - April 7, 2014
 * Globals pruned if inlining makes them unreachable.
 ** `(+, 1);` generates `\y -> y + 1` with no `_add`
 ** While `(+)` generates `var __add = \x y -> x + y; __add;`
@@ -33,7 +36,7 @@
   value.
 * Unused declarators without inits can also be pruned.
 
-# 0.21.12 - April 6, 2014
+## 0.21.12 - April 6, 2014
 * Basic unreachable binding pruning.
 ** Compose now should have same overhead as a `compose` function in the worst case,
   but multi composes can be optimized to a single set of potentially inlined function calls.
