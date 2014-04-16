@@ -12,10 +12,10 @@ with
     import 'khepri-compile::compile' khepriCompile
 in {
 
-var compiler = \input, options ->
+var compiler := \input options ->
    lex input
        |> parseStream
-       |> (\x -> khepriCompile(x, options))
+       |> \x -> khepriCompile(x, options) ¤
        |> unparse
        |> print;
 

@@ -1,5 +1,15 @@
 # ChangeLog #
 
+## 0.24.1 - April 16, 2014
+* Fixed bug that could cause the arguments unpack of an inlined function to be
+  pruned.
+* Improvements to constant folding of non-immutable bindings.
+
+## 0.24.0 - April 15, 2014
+* Assignment expressions not counted in reachability.
+* `delete` may only be used on member expressions and not identifiers.
+* Calls to lambdas that use the arguments object can be inlined.
+
 ## 0.23.1 - April 13, 2014
 * Compiler ~2x faster.
 
