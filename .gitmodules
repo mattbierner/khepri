@@ -43,3 +43,6 @@
 [submodule "dependencies/zipper-m"]
 	path = dependencies/zipper-m
 	url = https://github.com/mattbierner/zipper-m.git
+[submodule "dependencies/hamt"]
+	path = dependencies/hamt
+	url = https://github.com/mattbierner/hamt.git
