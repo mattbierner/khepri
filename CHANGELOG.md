@@ -1,6 +1,11 @@
 # ChangeLog #
 
 ## 0.24.1 - April 16, 2014
+* Fixed `var f := \-> let y -> y;` with local bindings being inlined incorrectly.
+* Improved inlining for fns like `var f := \x -> \y -> x + y;  f 1 2;` to
+  output `3`;
+
+## 0.24.1 - April 16, 2014
 * Fixed bug that could cause the arguments unpack of an inlined function to be
   pruned.
 * Improvements to constant folding of non-immutable bindings.
