@@ -1,6 +1,9 @@
 # ChangeLog #
 
-## 0.24.1 - April 16, 2014
+## 0.24.3 - April 16, 2014
+* Revert to count assignment in reachability.
+
+## 0.24.2 - April 16, 2014
 * Fixed `var f := \-> let y -> y;` with local bindings being inlined incorrectly.
 * Improved inlining for fns like `var f := \x -> \y -> x + y;  f 1 2;` to
   output `3`;
