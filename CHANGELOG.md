@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 0.24.4 - April 17, 2014
+* Fixed inline of compose with mutable capture
+
 ## 0.24.3 - April 16, 2014
 * Revert to count assignment in reachability.
 
