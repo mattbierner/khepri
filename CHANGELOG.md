@@ -1,5 +1,10 @@
 # ChangeLog #
 
+## 0.24.5 - April 17, 2014
+* Fixed bug with inline that could cause non local ids to get renamed when
+  function is inlined into a non local context.
+* Restored accidentally commented out reachable pass.
+
 ## 0.24.4 - April 17, 2014
 * Fixed inline of compose with mutable capture
 

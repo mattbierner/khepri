@@ -1,7 +1,7 @@
 {
     "name": "khepri",
     "preferGlobal": true,
-    "version": "0.24.4",
+    "version": "0.24.5",
     "description": "Khepri Programming Language",
     "author": "Matt Bierner",
     "license": "MIT",
@@ -36,7 +36,7 @@
     "dependencies": {
         "khepri-ast": "3.9.x",
         
-        "khepri-compile": "0.5.6",
+        "khepri-compile": "0.5.7",
         "khepri-parse": "1.0.0",
 
         "ecma-unparse": "3.3.x",
