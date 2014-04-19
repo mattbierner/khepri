@@ -1,5 +1,10 @@
 # ChangeLog #
 
+## 0.24.6 - April 19, 2014
+* Restored limited pruning of bindings in inline stage so curry expressions are
+  better inlined.
+* Prune arguments binding if unused.
+
 ## 0.24.5 - April 17, 2014
 * Fixed bug with inline that could cause non local ids to get renamed when
   function is inlined into a non local context.
