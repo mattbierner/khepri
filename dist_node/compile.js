@@ -11,14 +11,11 @@ var __o = require("ecma-unparse")["unparse"],
     __o2 = require("khepri-parse")["parse"]["parser"],
     parseStream = __o2["parseStream"],
     khepriCompile = require("khepri-compile")["compile"],
-    compile, compiler = (function(input, options) {
-        return print(unparse((function(x) {
-            return khepriCompile(x, options);
-        })(parseStream(lex(input)))));
-    });
+    compile;
 (compile = (function(input, header, options, ok, err) {
     try {
-        return ok(((header || "") + compiler(input, options)));
+        var x;
+        return ok(((header || "") + print(unparse(((x = parseStream(lex(input))), khepriCompile(x, options))))));
     } catch (e) {
         return err(e);
     }

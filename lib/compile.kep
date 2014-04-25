@@ -15,7 +15,7 @@ in {
 var compiler := \input options ->
    lex input
        |> parseStream
-       |> \x -> khepriCompile(x, options) ค
+       |> \x -> khepriCompile(x, options) ยง
        |> unparse
        |> print;
 
