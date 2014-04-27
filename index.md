@@ -5,8 +5,8 @@ layout: base
 # About
 Khepri is a programming language that reworks ECMAScript to be better for untyped
 functional-style programming. Khepri's syntax eliminates some of ECMAScript's
-clutter, and makes operations like function composition, currying, and using
-operators as functions easy and fast.
+clutter, and makes operations like function composition, partial application, and
+using operators as functions easy and fast.
 
 ```javascript
 // Khepri function that sums elements of an input array and divides result by 2
@@ -39,7 +39,8 @@ package (stream cons first rest forEach foldl reverse toArray from)
 // These are only visible in the package.
 var NIL := null;
 
-// Using Khepri's lambda syntax
+// Using Khepri's lambda syntax.
+// Lambda functions can be inlined by the compiler.
 var flip := \f -> \x y -> f(y, x);
 
 var constant := \x -> \ -> x;
@@ -52,7 +53,7 @@ stream = \val f -> ({'first': val, 'rest': f});
 // Function application without parens
 cons = \val s -> stream(val, constant s);
 
-// Convert an operator to a function and curry it
+// Convert an operator to a function and bind an argument
 var isEmpty := (===, NIL);
 
 // Unpacks parameters in lambda
@@ -71,7 +72,7 @@ foldl = \f z s -> {
     return r;
 };
 
-// Currying a function
+// Partial application
 reverse = foldl@(flip cons, NIL);
 
 toArray = foldl@([].concat.bind([]), []);
