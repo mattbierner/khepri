@@ -13,7 +13,8 @@ with
 in {
 
 var compiler := \input options ->
-   lex input
+   input
+       |> lex
        |> parseStream
        |> \x -> khepriCompile(x, options) §
        |> unparse
@@ -30,7 +31,7 @@ var compiler := \input options ->
  * @param ok Success callback.
  * @param err Error callback.
  */
-compile = \input, header, options, ok, err -> {
+compile = \input header options ok err -> {
     try {
         return ok((header || '') + compiler(input, options));
     } catch (e) {
