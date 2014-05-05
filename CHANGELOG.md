@@ -1,5 +1,18 @@
 # ChangeLog #
 
+## 0.24.8 - April 19, 2014
+* When compiling a file, compiler uses error messages display the file
+  name where the error occurred. Useful when compiling multiple files in a dir.
+
+## 0.24.7 - April 19, 2014
+* Fixed many issues with renaming of unpacked values, causing errors on when inlined
+** Fixed arguments and self unpacks not renamed.
+** Fixed slice unpack of arguments unpack not renamed.
+* Better code generation when using import patterns.
+** Will prune unused values unpacked from an import.
+* Fixed inling issue where locals were not updated correctly after multiple passes
+  inling, so they were renamed incorrectly.
+
 ## 0.24.6 - April 19, 2014
 * Restored limited pruning of bindings in inline stage so curry expressions are
   better inlined.
@@ -51,7 +64,7 @@
 * Added slice unpack support
 ** Can be used in array unpacks and arguments unpacks.
 ** `var rest := \x ...xs -> xs`;
-* Allow lambda to be ended by `¤` to denote end of body.
+* Allow lambda to be ended by `ï¿½` to denote end of body.
 
 ## 0.21.15 - April 7, 2014
 * Fixed reading from STDIN and writing to a file.

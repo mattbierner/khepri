@@ -12,9 +12,8 @@ with
     import 'khepri-compile::compile' khepriCompile
 in {
 
-var compiler := \input options ->
-   input
-       |> lex
+var compiler := \input options file ->
+   lex(input, file)
        |> parseStream
        |> \x -> khepriCompile(x, options) §
        |> unparse
@@ -28,10 +27,11 @@ var compiler := \input options ->
  * @param input {string} Khepri source input.
  * @param [header] Optional header to prefix output with.
  * @param [options] Compiler options.
+ * @param [file] Source file name.
  * @param ok Success callback.
  * @param err Error callback.
  */
-compile = \input header options ok err -> {
+compile = \input header options file ok err -> {
     try {
         return ok((header || '') + compiler(input, options));
     } catch (e) {

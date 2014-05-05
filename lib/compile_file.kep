@@ -6,12 +6,17 @@ with
     import 'path' path,
     import 'fs' fs,
     
+    import 'async' {each},
+    
     import './compile' compile
 in {
 
 static console;
 
 var KHEPRI_EXT := `^\.kep$`i;
+
+var rename := \file ->
+    path.basename(file, '.kep') + '.js';
 
 /**
  * @param inFile Path to input file or directory.
@@ -22,17 +27,17 @@ var KHEPRI_EXT := `^\.kep$`i;
  * @param ok Success callback
  * @param err Error callback.
  */
-compileFile = \inFile, outFile, header, options, ok, error ->
+compileFile := \inFile, outFile, header, options, ok, error ->
     fs.realpath(inFile, \err resolvedPath -> {
         if (err) throw err;
         
         // Walk sub directories and compile all `*.kep` files.
         if (fs.lstatSync(resolvedPath).isDirectory())
             return fs.readdir(resolvedPath, \err files -> {
-                files.forEach \ file -> {
+                each @ files \ file -> {
                     var subPath = path.join(inFile, file);
                     
-                    if (fs.lstatSync(subPath).isDirectory()){
+                    if (fs.lstatSync(subPath).isDirectory())
                         return compileFile(
                             subPath,
                             outFile && path.join(outFile, file),
@@ -40,12 +45,11 @@ compileFile = \inFile, outFile, header, options, ok, error ->
                             options,
                             ok,
                             error);
-                    }
                     
                     if (path.extname(file).match(KHEPRI_EXT))
                         return compileFile(
                             subPath,
-                            outFile && path.join(outFile, path.basename(file, '.kep') + '.js'),
+                            outFile && path.join(outFile, rename file),
                             header,
                             options,
                             ok,
@@ -53,7 +57,7 @@ compileFile = \inFile, outFile, header, options, ok, error ->
                 };
             });
         
-        fs.readFile(resolvedPath, 'utf8', \err, data -> {
+        fs.readFile(resolvedPath, 'utf8', \err data -> {
             if (err) throw err;
             
             if (outFile)
@@ -65,6 +69,7 @@ compileFile = \inFile, outFile, header, options, ok, error ->
                     :header(inFile)
                     :header,
                 options,
+                inFile,
                 \data -> ok(data, inFile, outFile),
                 \data -> error(data, inFile, outFile));
         });
