@@ -3,6 +3,7 @@
 ## 0.24.8 - April 19, 2014
 * When compiling a file, compiler uses error messages display the file
   name where the error occurred. Useful when compiling multiple files in a dir.
+* Better error message for undefined var.
 
 ## 0.24.7 - April 19, 2014
 * Fixed many issues with renaming of unpacked values, causing errors on when inlined
