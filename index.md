@@ -4,13 +4,20 @@ layout: base
 
 # About
 Khepri is a programming language that reworks ECMAScript to be better for untyped
-functional-style programming. Khepri's syntax eliminates some of ECMAScript's
-clutter, and makes operations like function composition, partial application, and
-using operators as functions easy and fast.
+functional-style programming. Khepri makes ECMAScript's syntax more concise and expressive,
+with support for [lambdas](https://github.com/mattbierner/khepri/wiki/functions),
+[unpacks](https://github.com/mattbierner/khepri/wiki/unpack-patterns),
+and [user defined infix and prefix operators](https://github.com/mattbierner/khepri/wiki/User-Defined-Operators).
+
+Khepri also makes it easy to perform operations like
+[function composition](https://github.com/mattbierner/khepri/wiki/Symbols-and-Operators#-and----forward-composition-operator),
+[partial application](https://github.com/mattbierner/khepri/wiki/Symbols-and-Operators#---partial-application-operator),
+[binding variables in expressions](https://github.com/mattbierner/khepri/wiki/let-expression),
+and using operators, all with minimal performance overhead.
 
 ```javascript
 // Khepri function that sums elements of an input array and divides result by 2
-var sum := foldl@((+), 0) \> (_/, 2);
+var sum := foldl@((+), 0) \> (_ / 2);
 sum [1, 2, 3, 4];
 
 // VS ECMAScript to do the same
@@ -33,7 +40,7 @@ Tiny lazy annotated stream library in Khepri.
 
 ```javascript
  // Declare a package and some exports
-package (stream cons first rest forEach foldl reverse toArray from)
+package (stream cons first rest forEach foldl reverse toArray from (+<))
 {
 // Declare some immutable bindings.
 // These are only visible in the package.
@@ -46,15 +53,21 @@ var flip := \f -> \x y -> f(y, x);
 var constant := \x -> \ -> x;
 
 // Export a symbol.
-// Uses Khepri lambda syntax for a
-// lambda returning object literal.
-stream = \val f -> ({'first': val, 'rest': f});
+// This assignment marks `stream` as the export and declares that this is
+// the final value of `stream`.
+// Uses Khepri lambda syntax for a lambda returning object literal.
+stream := \val f -> ({'first': val, 'rest': f});
 
-// Function application without parens
-cons = \val s -> stream(val, constant s);
+// Function application without parens in `constant`
+cons := \val s -> stream(val, constant s);
+
+// Khepri's prefix and infix user defined operators can be used
+// almost anywhere an identifier symbol can. They are lexically
+// scoped as well, and you can even redefine builtin operators locally.
+(+<) := cons;
 
 // Convert an operator to a function and bind an argument
-var isEmpty := (===, NIL);
+var isEmpty := (=== NIL);
 
 // Unpacks parameters in lambda
 first = \{first} -> first;
@@ -99,8 +112,9 @@ Using the stream library in another file
 ```javascript
 package ()
 with
-    // Import the stream library and unpack some symbols
-    import 'stream' stream#{cons foldl reverse}
+    // Import the stream library and unpack some symbols.
+    // We can now use our custom cons infix operator.
+    import 'stream' stream#{(+<) foldl reverse}
 in {
     // Declare global.
     // Khepri is lexically scoped and vars must be defined before use
@@ -109,7 +123,7 @@ in {
     var s = stream.from [2, 3, 4];
     
     // pipelining
-    cons(1, s)
+    1 +< s // using our custom cons operator
         |> reverse
         |> foldl@((/), 120) // create function from operator
         |> console.log; // prints 5

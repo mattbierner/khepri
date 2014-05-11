@@ -2,6 +2,7 @@
 #################
 .project
 node_modules
+.settings
 
 # OS Files #
 ############
