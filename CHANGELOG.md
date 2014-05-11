@@ -1,12 +1,24 @@
 # ChangeLog #
 
+## 1.0.0 - May 10, 2014
+* Fixed op to function of `void`.
+* Added support for custom prefix unary and infix binary operators
+** Can be used in variable declarations, package exports, and unpacks.
+** Operators inherit precedence from their prefix op `1 +? 2 *> 3` is `(1 +? (2 *> 3));`
+* Changed argument unpack syntax to require a prefixed `-`. `\-args(x ...)-> ...`
+** Allows the parser to produce better error messages and support operators in the
+  parameter list `\(+) -> 1 + 2;`
+* Removed the not very useful unary operator curry syntax.
+* Allow a curried binary operator to omit the comma for the argument in most cases.
+** The two exceptions being `(new, x)` and `(., x)`;
+
 ## 0.24.8 - April 19, 2014
-* When compiling a file, compiler uses error messages display the file
+* When compiling a file, compiler error messages display the file
   name where the error occurred. Useful when compiling multiple files in a dir.
 * Better error message for undefined var.
 
 ## 0.24.7 - April 19, 2014
-* Fixed many issues with renaming of unpacked values, causing errors on when inlined
+* Fixed many issues with renaming of unpacked values, causing errors when inlined.
 ** Fixed arguments and self unpacks not renamed.
 ** Fixed slice unpack of arguments unpack not renamed.
 * Better code generation when using import patterns.
