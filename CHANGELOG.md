@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.0.3 - May 13, 2014
+* Fixed infix ops like `->-` that include punctuators.
+
 ## 1.0.2 - May 13, 2014
 * Fixed negated equality ops.
 
