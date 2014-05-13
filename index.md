@@ -13,7 +13,8 @@ Khepri also makes it easy to perform operations like
 [function composition](https://github.com/mattbierner/khepri/wiki/Symbols-and-Operators#-and----forward-composition-operator),
 [partial application](https://github.com/mattbierner/khepri/wiki/Symbols-and-Operators#---partial-application-operator),
 [binding variables in expressions](https://github.com/mattbierner/khepri/wiki/let-expression),
-and using operators, all with minimal performance overhead.
+and using [operators as functions](https://github.com/mattbierner/khepri/wiki/operator-to-function),
+all with minimal performance overhead.
 
 ```javascript
 // Khepri function that sums elements of an input array and divides result by 2
