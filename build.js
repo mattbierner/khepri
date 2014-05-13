@@ -18,8 +18,8 @@
 
         'hamt': 'dependencies/hamt/dist/hamt',
         
-        'ecma-unparse': '../ecma-unparse/dist',
-        'ecma-ast': '../ecma-ast/dist',
+        'ecma-unparse': 'dependencies/ecma-unparse/dist',
+        'ecma-ast': 'dependencies/ecma-ast/dist',
         'khepri-ast': 'dependencies/khepri-ast/dist',
         
         'neith': 'dependencies/neith/dist',
