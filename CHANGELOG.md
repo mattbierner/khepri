@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.0.2 - May 13, 2014
+* Fixed negated equality ops.
+
 ## 1.0.1 - May 12, 2014
 * Fixed identifier operators like `instanceof` being undefined.
 
