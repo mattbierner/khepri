@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.0.1 - May 12, 2014
+* Fixed identifier operators like `instanceof` being undefined.
+
 ## 1.0.0 - May 10, 2014
 * Fixed op to function of `void`.
 * Added support for custom prefix unary and infix binary operators
