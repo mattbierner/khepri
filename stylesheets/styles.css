@@ -556,6 +556,7 @@ header > .group {
 }
 
 header #title {
+    display: block;
     float: left;
     color: #333;
 }
