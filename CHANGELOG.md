@@ -1,6 +1,10 @@
 # ChangeLog #
 
-## 1.0.4 - June 15, 2014
+## 1.0.6 - July 30, 2014
+* Fixed compiler generating bad ASTs due to failure to update to use latest
+  Khepri-ast API.
+
+## 1.0.5 - June 15, 2014
 * Fixed operators with `?` not generating correct names.
 * Fixed not erroring on reassignment of built-in immutable ops.
 ** Local hiding of built-in ops  ok
