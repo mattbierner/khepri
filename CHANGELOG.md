@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.0.7 - July 31, 2014
+* Fixed new operator not included as standard language builtin.
+
 ## 1.0.6 - July 30, 2014
 * Fixed compiler generating bad ASTs due to failure to update to use latest
   Khepri-ast API.
