@@ -1,5 +1,18 @@
 # ChangeLog #
 
+## 1.1.0 - Sep 8, 2014
+* Added the checked operator `??`:
+** Pseudo code is: `var (??) := \o f -> o && f o;`
+** Allows writing safe member accessors: `o??.x`
+** RHS lazily evaluated.
+* Added support for generalized dot expressions
+** These are unary functions that operate on a object: `.x` is `\o -> o.x`
+** Dot expressions may contain any call or accessor: `.x.f(1 + 2).(computed)`
+** Can be used almost anywhere: `.type \> (=== 'x')`
+* Added support for checked object and array patterns `\?{x b}`.
+** Ensures that base is a valid object before evaluating all child elements.
+** All sub patterns of a checked pattern are implicitly checked.
+
 ## 1.0.7 - July 31, 2014
 * Fixed new operator not included as standard language builtin.
 
