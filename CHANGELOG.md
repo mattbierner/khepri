@@ -1,6 +1,6 @@
 # ChangeLog #
 
-## 1.1.1 - Sep 9, 2014
+## 1.1.2 - Sep 9, 2014
 * Fixed `??` lexed as puctuator instead of operator.
 * Fixed `(??, 1)` needing comma.
 
