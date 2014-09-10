@@ -37,7 +37,7 @@
         "khepri-ast": "4.7.x",
         
         "khepri-compile": "1.2.1",
-        "khepri-parse": "2.4.3",
+        "khepri-parse": "2.4.5",
 
         "ecma-unparse": "3.3.x",
         

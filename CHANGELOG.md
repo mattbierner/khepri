@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 1.1.1 - Sep 9, 2014
+* Fixed `??` lexed as puctuator instead of operator.
+* Fixed `(??, 1)` needing comma.
+
 ## 1.1.0 - Sep 8, 2014
 * Added the checked operator `??`:
 ** Pseudo code is: `var (??) := \o f -> o && f o;`
