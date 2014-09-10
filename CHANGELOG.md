@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.1.3 - Sep 9, 2014
+* Fixed potential call stack issue for large programs.
+
 ## 1.1.2 - Sep 9, 2014
 * Fixed `??` lexed as puctuator instead of operator.
 * Fixed `(??, 1)` needing comma.
