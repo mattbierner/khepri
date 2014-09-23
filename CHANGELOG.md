@@ -1,5 +1,22 @@
 # ChangeLog #
 
+## 1.2.0 - Sep 22, 2014
+* Support for identifier alias exports.
+** `package (x # alias) { ... }`
+* Support for with and try body lambdas.
+** `\x -> try { ... } catch (e) { ... } finally { ... }`
+** `\x -> with import 'x' x in { ... }`
+* Restricted bindings so that they may only be marked immutable if they have
+  not previously been mutated in any enclosed scope.
+* Better performance of slice unpacks.
+** For inlined functions with know args targets, results in no call overhead.
+* Added `<<|` and `|>>` to apply a function to an array of args.
+** `var (<<|) = \f args -> f.apply(null, args);`
+** `var (|>>) = \args f -> f.apply(null, args);`
+* Fixed bug where lambdas in loops did not properly capture closure values.
+* Removed Python watcher.
+** Always use `-w` on main Khepri executable.
+
 ## 1.1.3 - Sep 9, 2014
 * Fixed potential call stack issue for large programs.
 
