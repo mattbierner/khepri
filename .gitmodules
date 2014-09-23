@@ -46,3 +46,6 @@
 [submodule "dependencies/hamt"]
 	path = dependencies/hamt
 	url = https://github.com/mattbierner/hamt.git
+[submodule "dependencies/xregexp"]
+	path = dependencies/xregexp
+	url = https://github.com/mattbierner/xregexp.git
