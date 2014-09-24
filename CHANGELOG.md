@@ -1,5 +1,10 @@
 # ChangeLog #
 
+## 1.2.1 - Sep 23, 2014
+* Fixed immutable assignments in chained assignment statements not propagating
+  immutablity correctly, and therefore not taking full advantage of constant propagating.
+* Relaxed some restrictions on working binding prop.
+
 ## 1.2.0 - Sep 22, 2014
 * Support for identifier alias exports.
 ** `package (x # alias) { ... }`
