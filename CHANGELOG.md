@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.2.1 - Sep 25, 2014
+* Fixed bug where compiler would inline indirect recursive calls forever.
+
 ## 1.2.1 - Sep 23, 2014
 * Fixed immutable assignments in chained assignment statements not propagating
   immutablity correctly, and therefore not taking full advantage of constant propagating.
