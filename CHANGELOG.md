@@ -1,6 +1,9 @@
 # ChangeLog #
 
-## 1.2.1 - Sep 25, 2014
+## 1.2.3 - Sep 30, 2014
+* Fixed delete expressions.
+
+## 1.2.2 - Sep 25, 2014
 * Fixed bug where compiler would inline indirect recursive calls forever.
 
 ## 1.2.1 - Sep 23, 2014
