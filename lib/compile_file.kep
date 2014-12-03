@@ -27,9 +27,11 @@ var rename := \file ->
  * @param ok Success callback
  * @param err Error callback.
  */
-compileFile := \inFile, outFile, header, options, ok, error ->
-    fs.realpath(inFile, \err resolvedPath -> {
-        if (err) throw err;
+compileFile := \inFile outFile header options ok error ->
+    fs.realpath @ (inFile) \err resolvedPath -> {
+        if (err) {
+            return error("Could not open file: " + inFile);
+        }
         
         // Walk sub directories and compile all `*.kep` files.
         if (fs.lstatSync(resolvedPath).isDirectory())
@@ -57,8 +59,10 @@ compileFile := \inFile, outFile, header, options, ok, error ->
                 };
             });
         
-        fs.readFile(resolvedPath, 'utf8', \err data -> {
-            if (err) throw err;
+        fs.readFile @ (resolvedPath, 'utf8') \err data -> {
+            if (err) {
+                return error("Could not open file: " + inFile);
+            }
             
             if (outFile)
                 console.log("Khepri'" + inFile + "' to:'" + outFile + "'");
@@ -72,7 +76,7 @@ compileFile := \inFile, outFile, header, options, ok, error ->
                 inFile,
                 \data -> ok(data, inFile, outFile),
                 \data -> error(data, inFile, outFile));
-        });
-    });
+        };
+    };
 
 }

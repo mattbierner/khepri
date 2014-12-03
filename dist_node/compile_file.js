@@ -5,12 +5,14 @@
 var path = require("path"),
     fs = require("fs"),
     __o = require("async"),
-    each = __o["each"],
     compile = require("./compile"),
-    compileFile, KHEPRI_EXT = /^\.kep$/i;
+    compileFile, each = __o["each"],
+    KHEPRI_EXT = /^\.kep$/i;
 (compileFile = (function(inFile, outFile, header, options, ok, error) {
     return fs.realpath(inFile, (function(err, resolvedPath) {
-        if (err) throw err;
+        if (err) {
+            return error(("Could not open file: " + inFile));
+        }
         if (fs.lstatSync(resolvedPath)
             .isDirectory()) return fs.readdir(resolvedPath, (function(err0, files) {
             each(files, (function(file) {
@@ -25,7 +27,9 @@ var path = require("path"),
             }));
         }));
         fs.readFile(resolvedPath, "utf8", (function(err0, data) {
-            if (err0) throw err0;
+            if (err0) {
+                return error(("Could not open file: " + inFile));
+            }
             if (outFile) console.log((((("Khepri'" + inFile) + "' to:'") + outFile) + "'"));
             compile(data, (((typeof header) === "function") ? header(inFile) : header), options,
                 inFile, (function(data0) {
