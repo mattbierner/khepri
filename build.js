@@ -26,7 +26,7 @@
         'ecma-ast-zipper': 'dependencies/ecma-ast-zipper/dist/ecma_zipper',
         'khepri-ast-zipper': 'dependencies/khepri-ast-zipper/dist/khepri_zipper',
         
-        'XRegExp': 'dependencies/XRegExp/xregexp-all'
+        'xregexp': 'dependencies/xregexp/xregexp-all'
     },
     name: "javascripts/console.js",
     out: "javascripts/console-built.js"
