@@ -84,7 +84,7 @@ forEach = \f s -> {
 };
 
 foldl = \f z s -> {
-    var r = s;
+    var r = z;
     forEach(\x -> { r = f(r, x); }, s);
     return r;
 };
@@ -133,6 +133,8 @@ in {
         |> console.log; // prints 5
 }
 ```
+
+See [Nu](http://mattbierner.github.io/nu/) for a more complete example of a lazy stream library written in Khepri.
 
 ## Using Khepri
 
