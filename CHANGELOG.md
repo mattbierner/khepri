@@ -1,5 +1,8 @@
 # ChangeLog #
 
+## 1.2.5 - April 19, 2015
+* Fix object pattern with operator key.
+
 ## 1.2.4 - Dec 2, 2014
 * Fixed xregexp path on systems with case sensitive file names. (Thanks @geluspeculum)
 * Better message when input file cannot be read.
