@@ -81,7 +81,7 @@ forEach = \f s -> {
 };
 
 foldl = \f z s -> {
-    var r = s;
+    var r = z;
     forEach(\x -> { r = f(r, x); }, s);
     return r;
 };
