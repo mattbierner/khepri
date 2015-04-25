@@ -1,5 +1,9 @@
 # ChangeLog #
 
+## 1.2.6 - April 24, 2015
+* Fixed recursive mutable variable declaration functions inlining forever.
+* Added rewriting for equality expressions to inlining pass to produce better code.
+
 ## 1.2.5 - April 19, 2015
 * Fix object pattern with operator key.
 
