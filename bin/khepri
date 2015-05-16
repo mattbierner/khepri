@@ -37,6 +37,10 @@ var argParse = require('optimist')
     .options('o', {
         'describe': 'Output file or directory'
     })
+    .boolean('prune', {
+        default: false,
+        'describe': 'Prune user defined bindings?'
+    })
     .options('package_manager', {
         'default': 'amd',
         'describe': 'Package manager to target. (amd | node)'
@@ -66,7 +70,8 @@ var inFile = argv._[0],
     header = argv['header'];
 
 var options = {
-    package_manager: argv.package_manager
+    package_manager: argv.package_manager,
+    prune: argv.prune
 };
 
 var defaultHeader = function(input) {

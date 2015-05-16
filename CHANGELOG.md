@@ -1,5 +1,17 @@
 # ChangeLog #
 
+## 1.3.0 - May 15, 2015
+* Added support for reserved word members and object literals.
+** `a.try(x)` and `{try: ...}`
+** `a.try(x)` translates to `a["try"](x)` for older interpreters.
+* Better inlining of working assignment expression.
+* Fixed some weirdness around undefined inlining.
+* Added option to preserve user bindings instead of pruning them all.
+** Controlled by `'prune'` option passed to compiler.
+
+## 1.2.7 - May 11, 2015
+* Fixed reverse pipe N not defined as builtin.
+
 ## 1.2.6 - April 24, 2015
 * Fixed recursive mutable variable declaration functions inlining forever.
 * Added rewriting for equality expressions to inlining pass to produce better code.
