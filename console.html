@@ -13,34 +13,37 @@ extra_js:
   - javascripts/console-built.js
 ---
 
-<div id='try-khepri' class='cf'>
-    <div id="console" class='cf'>
-        <div id='khepri-input'>
+<div id="try-khepri" class="cf">
+    <div id="console" class="cf">
+        <div id="khepri-input">
             <h2>Khepri</h2>
-            <textarea id='khepri-console-input'></textarea>
+            <textarea id="khepri-console-input"></textarea>
         </div>
         
-        <div id='javascript-output'>
+        <div id="javascript-output">
             <h2>Javascript</h2>
-            <textarea id='javascript-console-output'></textarea>
+            <textarea id="javascript-console-output"></textarea>
         </div>
     </div>
   
-    <div class='cf'>
-        <div id='console-controls'>
-            <button id='translate-button'>Translate</button>
+    <div class="cf">
+        <div id="console-controls">
+            <button id="translate-button">Translate</button>
         </div>
-        <div id='console-options'>
+        <div id="console-options">
             <span>Package Manager:</span>
-            <select id='package_manager'>
+            <select id="package_manager">
                 <option value="amd">AMD</option>
                 <option value="node">Node</option>
             </select>
+            <input type="checkbox" id="prune">
+                Prune unused bindings?
+            </input>
         </div>
 
-        <div id='console-output'>
+        <div id="console-output">
             <h2>Output</h2>
-            <pre id='text-out'></pre>
+            <pre id="text-out"></pre>
         </div>
     </div>
 </div>

@@ -26,7 +26,8 @@ var translate = function(input) {
     $('#text-out').text('');
     
     var options = {
-        'package_manager': $('#package_manager').val()
+        'package_manager': $('#package_manager').val(),
+        'prune': $('#prune').prop('checked')
     };
     
     try {
